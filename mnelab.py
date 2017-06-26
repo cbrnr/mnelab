@@ -89,7 +89,8 @@ class MainWindow(QMainWindow):
         file_menu = menubar.addMenu("&File")
         self.open_file_action = file_menu.addAction("&Open...", self.open_file,
                                                     "Ctrl+O")
-        self.close_file_action = file_menu.addAction("&Close", self.close_file)
+        self.close_file_action = file_menu.addAction("&Close", self.close_file,
+                                                     "Ctrl+W")
         file_menu.addSeparator()
         file_menu.addAction("&Quit", self.close, "Ctrl+Q")
 
@@ -106,18 +107,18 @@ class MainWindow(QMainWindow):
         help_menu.addAction("&About", self.show_about)
         help_menu.addAction("About &Qt", self.show_about_qt)
 
-        main = QSplitter()
+        splitter = QSplitter()
         self.listview = QListView()
         self.listview.setFocusPolicy(0)
         self.listview.setFrameStyle(0)
         self.listview.setModel(self.names)
         self.listview.clicked.connect(self.activate_data)
-        main.addWidget(self.listview)
+        splitter.addWidget(self.listview)
         self.infowidget = InfoWidget()
-        main.addWidget(self.infowidget)
-        width = main.size().width()
-        main.setSizes((width * 0.25, width * 0.75))
-        self.setCentralWidget(main)
+        splitter.addWidget(self.infowidget)
+        width = splitter.size().width()
+        splitter.setSizes((width * 0.25, width * 0.75))
+        self.setCentralWidget(splitter)
 
         self._toggle_actions(False)
         self.show()
@@ -128,25 +129,27 @@ class MainWindow(QMainWindow):
         fname = QFileDialog.getOpenFileName(self, "Open file",
                                             filter="*.bdf *.edf")[0]
         if fname:
-            self.index += 1
+            self.load_file(fname)
 
-            self.data.insert(self.index, {})
+    def load_file(self, fname):
+        self.index += 1
+        self.data.insert(self.index, {})
 
-            name, _ = splitext(split(fname)[-1])
-            self.names.insertRows(self.index, 1)
-            self.names.setData(self.names.index(self.index), name)
+        name, _ = splitext(split(fname)[-1])
+        self.names.insertRows(self.index, 1)
+        self.names.setData(self.names.index(self.index), name)
 
-            raw = mne.io.read_raw_edf(fname, stim_channel=None, preload=True)
+        raw = mne.io.read_raw_edf(fname, stim_channel=None, preload=True)
 
-            self.data[self.index]["fname"] = fname
-            self.data[self.index]["raw"] = raw
-            self.data[self.index]["events"] = None
+        self.data[self.index]["fname"] = fname
+        self.data[self.index]["raw"] = raw
+        self.data[self.index]["events"] = None
 
-            self.infowidget.set_values(self.get_info())
+        self.infowidget.set_values(self.get_info())
 
-            self.listview.setCurrentIndex(self.names.index(self.index))
-            self.infowidget.set_title(name)
-            self._toggle_actions()
+        self.listview.setCurrentIndex(self.names.index(self.index))
+        self.infowidget.set_title(name)
+        self._toggle_actions()
 
     def close_file(self):
         """Close current file.
@@ -229,5 +232,9 @@ class MainWindow(QMainWindow):
 
 
 app = QApplication(sys.argv)
+app.setApplicationName("MNELAB")
 main = MainWindow()
+if len(sys.argv) > 1:  # open files from command line arguments
+    for f in sys.argv[1:]:
+        main.load_file(f)
 sys.exit(app.exec_())
