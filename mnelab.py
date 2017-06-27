@@ -1,6 +1,7 @@
 import sys
 from collections import Counter
 from os.path import getsize, split, splitext
+from copy import deepcopy
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QGridLayout, QLabel,
                              QVBoxLayout, QFileDialog, QWidget, QSplitter,
                              QMessageBox, QListView, QSizePolicy)
@@ -78,8 +79,8 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.data = []  # list of loaded data sets
-        self.names = QStringListModel()
         self.index = -1  # currently active data set
+        self.current = None  # copy of currently active data set
 
         self.setGeometry(300, 300, 800, 600)
         self.setWindowTitle("MNELAB")
@@ -108,6 +109,7 @@ class MainWindow(QMainWindow):
         help_menu.addAction("About &Qt", self.show_about_qt)
 
         splitter = QSplitter()
+        self.names = QStringListModel()
         self.listview = QListView()
         self.listview.setFocusPolicy(0)
         self.listview.setFrameStyle(0)
@@ -145,6 +147,8 @@ class MainWindow(QMainWindow):
         self.data[self.index]["raw"] = raw
         self.data[self.index]["events"] = None
 
+        self.current = deepcopy(self.data[self.index])
+
         self.infowidget.set_values(self.get_info())
 
         self.listview.setCurrentIndex(self.names.index(self.index))
@@ -156,21 +160,22 @@ class MainWindow(QMainWindow):
         """
         self.data.pop(self.index)
         self.names.removeRows(self.index, 1)
-        if self.index >= len(self.data):
+        if self.index >= len(self.data):  # removed last entry in list
             self.index = len(self.data) - 1
-        if self.index > -1:
+        if self.index > -1:  # if there are still open data sets
             self.infowidget.set_values(self.get_info())
             self.infowidget.set_title(self.names.stringList()[self.index])
         else:
+            self.current = None
             self.infowidget.set_title("")
             self.infowidget.clear()
             self._toggle_actions(False)
 
     def get_info(self):
-        """Get basic information of current file.
+        """Get basic information on current file.
         """
-        raw = self.data[self.index]["raw"]
-        fname = self.data[self.index]["fname"]
+        raw = self.current["raw"]
+        fname = self.current["fname"]
 
         nchan = raw.info["nchan"]
         chans = Counter([channel_type(raw.info, i) for i in range(nchan)])
@@ -192,14 +197,15 @@ class MainWindow(QMainWindow):
         """Update index and information based on the file list.
         """
         self.index = current.row()
+        self.current = deepcopy(self.data[self.index])
         self.infowidget.set_values(self.get_info())
         self.infowidget.set_title(self.names.data(current, 0))
 
     def plot_raw(self):
         """Plot raw data.
         """
-        events = self.data[self.index]["events"]
-        self.data[self.index]["raw"].plot(events=events)
+        events = self.current["events"]
+        self.current["raw"].plot(events=events)
 
     def load_ica(self):
         """Load ICA solution from a file.
@@ -220,6 +226,9 @@ class MainWindow(QMainWindow):
         """Show About Qt dialog.
         """
         QMessageBox.aboutQt(self, "About Qt")
+
+    def add_dataset(self, name=None):
+        pass
 
     def _toggle_actions(self, enabled=True):
         """Toggle actions.
