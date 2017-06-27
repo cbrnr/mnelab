@@ -4,11 +4,42 @@ from os.path import getsize, split, splitext
 from copy import deepcopy
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QGridLayout, QLabel,
                              QVBoxLayout, QFileDialog, QWidget, QSplitter,
-                             QMessageBox, QListView, QSizePolicy)
+                             QMessageBox, QListView, QSizePolicy, QDialog,
+                             QDialogButtonBox, QLineEdit)
 from PyQt5.QtCore import QStringListModel, pyqtSlot, QModelIndex
 
 import mne
 from mne.io.pick import channel_type
+
+
+class FilterDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Filter data")
+        vbox = QVBoxLayout(self)
+        grid = QGridLayout()
+        grid.addWidget(QLabel("Low cutoff frequency (Hz):"), 0, 0)
+        self.lowedit = QLineEdit()
+        grid.addWidget(self.lowedit, 0, 1)
+        grid.addWidget(QLabel("High cutoff frequency (Hz):"), 1, 0)
+        self.highedit = QLineEdit()
+        grid.addWidget(self.highedit, 1, 1)
+        vbox.addLayout(grid)
+        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
+                                     QDialogButtonBox.Cancel)
+        vbox.addWidget(buttonbox)
+        buttonbox.accepted.connect(self.accept)
+        buttonbox.rejected.connect(self.reject)
+
+    @property
+    def low(self):
+        low = self.lowedit.text()
+        return float(low) if low else None
+
+    @property
+    def high(self):
+        high = self.highedit.text()
+        return float(high) if high else None
 
 
 class InfoWidget(QWidget):
@@ -83,7 +114,8 @@ class MainWindow(QMainWindow):
         self.plot_raw_action = plot_menu.addAction("&Raw data", self.plot_raw)
 
         tools_menu = menubar.addMenu("&Tools")
-        self.filter_action = tools_menu.addAction("&Filter data...")
+        self.filter_action = tools_menu.addAction("&Filter data...",
+                                                  self.filter_data)
         self.run_ica_action = tools_menu.addAction("&Run ICA...")
         self.import_ica_action = tools_menu.addAction("&Load ICA...",
                                                       self.load_ica)
@@ -151,7 +183,7 @@ class MainWindow(QMainWindow):
         nchan = raw.info["nchan"]
         chans = Counter([channel_type(raw.info, i) for i in range(nchan)])
 
-        return {"File name": fname,
+        return {"File name": fname if fname else "-",
                 "Number of channels": raw.info["nchan"],
                 "Channels": ", ".join(
                     [" ".join([str(v), k.upper()]) for k, v in chans.items()]),
@@ -160,7 +192,7 @@ class MainWindow(QMainWindow):
                 "Length": str(raw.n_times / raw.info["sfreq"]) + " s",
                 "Size in memory": "{:.2f} MB".format(
                     raw._data.nbytes / 1024 ** 2),
-                "Size on disk": "{:.2f} MB".format(
+                "Size on disk": "-" if not fname else "{:.2f} MB".format(
                     getsize(fname) / 1024 ** 2)}
 
     @pyqtSlot(QModelIndex)
@@ -184,6 +216,18 @@ class MainWindow(QMainWindow):
                                             filter="*.fif *.fif.gz")
         if fname[0]:
             self.state.ica = mne.preprocessing.read_ica(fname[0])
+
+    def filter_data(self):
+        dialog = FilterDialog()
+
+        if dialog.exec_():
+            print(dialog.low, dialog.high)
+            self.current["raw"].filter(dialog.low, dialog.high)
+            if QMessageBox.question(self, "Add new data set",
+                                    "Store the current signals in a new data "
+                                    "set?") == QMessageBox.Yes:
+                self._insert_data({"fname": "", "raw": self.current["raw"],
+                                   "events": None}, "NEW")
 
     def show_about(self):
         """Show About dialog.
