@@ -19,33 +19,17 @@ class InfoWidget(QWidget):
     values : dict
         Each key/value pair in this dict will be displayed in a row, separated
         by a colon.
-    title : str
-        Title (displayed in boldface).
     """
-    def __init__(self, values={}, title=""):
+    def __init__(self, values={}):
         super().__init__()
-        self.title = QLabel()
-        self.set_title(title)
         vbox = QVBoxLayout(self)
-        vbox.addWidget(self.title)
-        vbox.addSpacing(10)
         self.grid = QGridLayout()
         self.grid.setColumnStretch(1, 1)
         vbox.addLayout(self.grid)
         vbox.addStretch(1)
         self.set_values(values)
 
-    def set_title(self, title=""):
-        """Set title of the widget.
-
-        Parameters
-        ----------
-        title : str
-            Title (displayed in boldface).
-        """
-        self.title.setText("<b>{}</b>".format(title))
-
-    def set_values(self, values={}):
+    def set_values(self, values={}, title=""):
         """Set values (and overwrite existing values).
 
         Parameters
@@ -139,27 +123,22 @@ class MainWindow(QMainWindow):
         new = {"fname": fname, "raw": raw, "events": None}
         name, _ = splitext(split(fname)[-1])
 
-        self.insert_data(new, name)
+        self._insert_data(new, name)
         self.current = deepcopy(self.data[self.index])
 
         self.infowidget.set_values(self.get_info())
         self.listview.setCurrentIndex(self.names.index(self.index))
-        self.infowidget.set_title(name)
         self._toggle_actions()
 
     def close_file(self):
         """Close current file.
         """
-        self.data.pop(self.index)
-        self.names.removeRows(self.index, 1)
-        if self.index >= len(self.data):  # removed last entry in list
-            self.index = len(self.data) - 1
+        self._pop_data(self.index)
+
         if self.index > -1:  # if there are still open data sets
             self.infowidget.set_values(self.get_info())
-            self.infowidget.set_title(self.names.stringList()[self.index])
         else:
             self.current = None
-            self.infowidget.set_title("")
             self.infowidget.clear()
             self._toggle_actions(False)
 
@@ -191,7 +170,6 @@ class MainWindow(QMainWindow):
         self.index = current.row()
         self.current = deepcopy(self.data[self.index])
         self.infowidget.set_values(self.get_info())
-        self.infowidget.set_title(self.names.data(current, 0))
 
     def plot_raw(self):
         """Plot raw data.
@@ -219,7 +197,7 @@ class MainWindow(QMainWindow):
         """
         QMessageBox.aboutQt(self, "About Qt")
 
-    def insert_data(self, data, name=None):
+    def _insert_data(self, data, name=None):
         """Insert new data set at current index.
         """
         self.index += 1
@@ -228,6 +206,14 @@ class MainWindow(QMainWindow):
         if name is None:
             name, _ = splitext(split(data["fname"])[-1])
         self.names.setData(self.names.index(self.index), name)
+
+    def _pop_data(self, index):
+        """Remove data set at current index.
+        """
+        self.data.pop(self.index)
+        self.names.removeRows(self.index, 1)
+        if self.index >= len(self.data):  # removed last entry in list
+            self.index = len(self.data) - 1
 
     def _toggle_actions(self, enabled=True):
         """Toggle actions.
