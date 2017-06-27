@@ -134,23 +134,15 @@ class MainWindow(QMainWindow):
             self.load_file(fname)
 
     def load_file(self, fname):
-        self.index += 1
-        self.data.insert(self.index, {})
-
-        name, _ = splitext(split(fname)[-1])
-        self.names.insertRows(self.index, 1)
-        self.names.setData(self.names.index(self.index), name)
-
         raw = mne.io.read_raw_edf(fname, stim_channel=None, preload=True)
 
-        self.data[self.index]["fname"] = fname
-        self.data[self.index]["raw"] = raw
-        self.data[self.index]["events"] = None
+        new = {"fname": fname, "raw": raw, "events": None}
+        name, _ = splitext(split(fname)[-1])
 
+        self.insert_data(new, name)
         self.current = deepcopy(self.data[self.index])
 
         self.infowidget.set_values(self.get_info())
-
         self.listview.setCurrentIndex(self.names.index(self.index))
         self.infowidget.set_title(name)
         self._toggle_actions()
@@ -227,8 +219,15 @@ class MainWindow(QMainWindow):
         """
         QMessageBox.aboutQt(self, "About Qt")
 
-    def add_dataset(self, name=None):
-        pass
+    def insert_data(self, data, name=None):
+        """Insert new data set at current index.
+        """
+        self.index += 1
+        self.data.insert(self.index, data)
+        self.names.insertRows(self.index, 1)
+        if name is None:
+            name, _ = splitext(split(data["fname"])[-1])
+        self.names.setData(self.names.index(self.index), name)
 
     def _toggle_actions(self, enabled=True):
         """Toggle actions.
