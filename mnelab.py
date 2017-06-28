@@ -168,7 +168,7 @@ class MainWindow(QMainWindow):
         self._pop_data(self.index)
 
         if self.index > -1:  # if there are still open data sets
-            self.infowidget.set_values(self.get_info())
+            self._update_current()
         else:
             self.current = None
             self.infowidget.clear()
@@ -200,6 +200,9 @@ class MainWindow(QMainWindow):
         """Update index and information based on the file list.
         """
         self.index = current.row()
+        self._update_current()
+
+    def _update_current(self):
         self.current = deepcopy(self.data[self.index])
         self.infowidget.set_values(self.get_info())
 
