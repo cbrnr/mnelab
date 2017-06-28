@@ -1,90 +1,16 @@
 import sys
 from collections import Counter
-from os.path import getsize, split, splitext
 from copy import deepcopy
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QGridLayout, QLabel,
-                             QVBoxLayout, QFileDialog, QWidget, QSplitter,
-                             QMessageBox, QListView, QSizePolicy, QDialog,
-                             QDialogButtonBox, QLineEdit)
-from PyQt5.QtCore import QStringListModel, pyqtSlot, QModelIndex
+from os.path import getsize, split, splitext
 
 import mne
+from PyQt5.QtCore import pyqtSlot, QStringListModel, QModelIndex
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
+                             QMessageBox, QListView)
 from mne.io.pick import channel_type
 
-
-class FilterDialog(QDialog):
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("Filter data")
-        vbox = QVBoxLayout(self)
-        grid = QGridLayout()
-        grid.addWidget(QLabel("Low cutoff frequency (Hz):"), 0, 0)
-        self.lowedit = QLineEdit()
-        grid.addWidget(self.lowedit, 0, 1)
-        grid.addWidget(QLabel("High cutoff frequency (Hz):"), 1, 0)
-        self.highedit = QLineEdit()
-        grid.addWidget(self.highedit, 1, 1)
-        vbox.addLayout(grid)
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                     QDialogButtonBox.Cancel)
-        vbox.addWidget(buttonbox)
-        buttonbox.accepted.connect(self.accept)
-        buttonbox.rejected.connect(self.reject)
-
-    @property
-    def low(self):
-        low = self.lowedit.text()
-        return float(low) if low else None
-
-    @property
-    def high(self):
-        high = self.highedit.text()
-        return float(high) if high else None
-
-
-class InfoWidget(QWidget):
-    """Display basic file information.
-
-    Parameters
-    ----------
-    values : dict
-        Each key/value pair in this dict will be displayed in a row, separated
-        by a colon.
-    """
-    def __init__(self, values={}):
-        super().__init__()
-        vbox = QVBoxLayout(self)
-        self.grid = QGridLayout()
-        self.grid.setColumnStretch(1, 1)
-        vbox.addLayout(self.grid)
-        vbox.addStretch(1)
-        self.set_values(values)
-
-    def set_values(self, values={}, title=""):
-        """Set values (and overwrite existing values).
-
-        Parameters
-        ----------
-        values : dict
-            Each key/value pair in this dict will be displayed in a row,
-            separated by a colon.
-        """
-        self.clear()
-        for row, (k, v) in enumerate(values.items()):
-            col0 = QLabel(str(k) + ":")
-            col1 = QLabel(str(v))
-            col1.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
-            self.grid.addWidget(col0, row, 0)
-            self.grid.addWidget(col1, row, 1)
-
-    def clear(self):
-        """Clear all values.
-        """
-        item = self.grid.takeAt(0)
-        while item:
-            item.widget().deleteLater()
-            del item
-            item = self.grid.takeAt(0)
+from filterdialog import FilterDialog
+from infowidget import InfoWidget
 
 
 class MainWindow(QMainWindow):
@@ -202,10 +128,6 @@ class MainWindow(QMainWindow):
         self.index = current.row()
         self._update_current()
 
-    def _update_current(self):
-        self.current = deepcopy(self.data[self.index])
-        self.infowidget.set_values(self.get_info())
-
     def plot_raw(self):
         """Plot raw data.
         """
@@ -243,6 +165,10 @@ class MainWindow(QMainWindow):
         """Show About Qt dialog.
         """
         QMessageBox.aboutQt(self, "About Qt")
+
+    def _update_current(self):
+        self.current = deepcopy(self.data[self.index])
+        self.infowidget.set_values(self.get_info())
 
     def _insert_data(self, data, name=None):
         """Insert new data set at current index.
