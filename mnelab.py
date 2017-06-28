@@ -13,15 +13,69 @@ from filterdialog import FilterDialog
 from infowidget import InfoWidget
 
 
+class EmptyDataSetsError(Exception):
+    pass
+
+
+class DataSets:
+    def __init__(self):
+        self.data = []  # contains all data sets
+        self.index = -1  # index of the currently active data set
+        self.current = None  # copy of currently active data set
+
+    def insert_data(self, dataset):
+        """Insert new data set at current index.
+        """
+        self.index += 1
+        self.data.insert(self.index, dataset)
+        self.update_current()
+
+    def remove_data(self, index):
+        """Remove data set at current index.
+        """
+        try:
+            self.data.pop(self.index)
+        except IndexError:
+            raise EmptyDataSetsError("Cannot remove data set from empty list.")
+        else:
+            if self.index >= len(self.data):  # if last entry was removed
+                self.index = len(self.data) - 1  # reset index to last entry
+            self.update_current()
+
+    def update_current(self):
+        """Update current data set copy.
+        """
+        if self.index > -1:
+            self.current = deepcopy(self.data[self.index])
+        else:
+            self.current = None
+
+    def names(self):
+        """Return a list of all names.
+        """
+        return [item.name for item in self.data]
+
+    def __len__(self):
+        """Return number of data sets.
+        """
+        return len(self.data)
+
+
+class DataSet:
+    def __init__(self, name=None, fname=None, raw=None, events=None):
+        self.name = name
+        self.fname = fname
+        self.raw = raw
+        self.events = events
+
+
 class MainWindow(QMainWindow):
     """MNELAB main window.
     """
     def __init__(self):
         super().__init__()
 
-        self.data = []  # list of loaded data sets
-        self.index = -1  # currently active data set
-        self.current = None  # copy of currently active data set
+        self.datasets = DataSets()
 
         self.setGeometry(300, 300, 800, 600)
         self.setWindowTitle("MNELAB")
@@ -29,8 +83,7 @@ class MainWindow(QMainWindow):
         menubar = self.menuBar()
 
         file_menu = menubar.addMenu("&File")
-        self.open_file_action = file_menu.addAction("&Open...", self.open_file,
-                                                    "Ctrl+O")
+        file_menu.addAction("&Open...", self.open_file, "Ctrl+O")
         self.close_file_action = file_menu.addAction("&Close", self.close_file,
                                                      "Ctrl+W")
         file_menu.addSeparator()
@@ -50,14 +103,14 @@ class MainWindow(QMainWindow):
         help_menu.addAction("&About", self.show_about)
         help_menu.addAction("About &Qt", self.show_about_qt)
 
-        splitter = QSplitter()
         self.names = QStringListModel()
-        self.listview = QListView()
-        self.listview.setFocusPolicy(0)
-        self.listview.setFrameStyle(0)
-        self.listview.setModel(self.names)
-        self.listview.clicked.connect(self.activate_data)
-        splitter.addWidget(self.listview)
+        splitter = QSplitter()
+        self.sidebar = QListView()
+        self.sidebar.setFocusPolicy(0)
+        self.sidebar.setFrameStyle(0)
+        self.sidebar.setModel(self.names)
+        self.sidebar.clicked.connect(self.activate_data)
+        splitter.addWidget(self.sidebar)
         self.infowidget = InfoWidget()
         splitter.addWidget(self.infowidget)
         width = splitter.size().width()
@@ -78,23 +131,23 @@ class MainWindow(QMainWindow):
     def load_file(self, fname):
         raw = mne.io.read_raw_edf(fname, stim_channel=None, preload=True)
 
-        new = {"fname": fname, "raw": raw, "events": None}
         name, _ = splitext(split(fname)[-1])
 
-        self._insert_data(new, name)
-        self.current = deepcopy(self.data[self.index])
+        self.datasets.insert_data(DataSet(name=name, fname=fname, raw=raw))
+        self.datasets.update_current()
+        self._update_sidebar()
 
         self.infowidget.set_values(self.get_info())
-        self.listview.setCurrentIndex(self.names.index(self.index))
+        self.sidebar.setCurrentIndex(self.names.index(self.index))
         self._toggle_actions()
 
     def close_file(self):
         """Close current file.
         """
-        self._pop_data(self.index)
+        self.datasets.remove_data(self.index)
 
         if self.index > -1:  # if there are still open data sets
-            self._update_current()
+            self.datasets_update_current()
         else:
             self.current = None
             self.infowidget.clear()
@@ -166,27 +219,8 @@ class MainWindow(QMainWindow):
         """
         QMessageBox.aboutQt(self, "About Qt")
 
-    def _update_current(self):
-        self.current = deepcopy(self.data[self.index])
-        self.infowidget.set_values(self.get_info())
-
-    def _insert_data(self, data, name=None):
-        """Insert new data set at current index.
-        """
-        self.index += 1
-        self.data.insert(self.index, data)
-        self.names.insertRows(self.index, 1)
-        if name is None:
-            name, _ = splitext(split(data["fname"])[-1])
-        self.names.setData(self.names.index(self.index), name)
-
-    def _pop_data(self, index):
-        """Remove data set at current index.
-        """
-        self.data.pop(self.index)
-        self.names.removeRows(self.index, 1)
-        if self.index >= len(self.data):  # removed last entry in list
-            self.index = len(self.data) - 1
+    def _update_sidebar(self):
+        self.names = self.datasets.names
 
     def _toggle_actions(self, enabled=True):
         """Toggle actions.
