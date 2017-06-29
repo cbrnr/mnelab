@@ -67,7 +67,7 @@ class MainWindow(QMainWindow):
         self.sidebar.setFocusPolicy(0)
         self.sidebar.setFrameStyle(0)
         self.sidebar.setModel(self.names)
-        self.sidebar.clicked.connect(self.update_data)
+        self.sidebar.clicked.connect(self._update_data)
         splitter.addWidget(self.sidebar)
         self.infowidget = InfoWidget()
         splitter.addWidget(self.infowidget)
@@ -138,15 +138,6 @@ class MainWindow(QMainWindow):
                     raw._data.nbytes / 1024 ** 2),
                 "Size on disk": "-" if not fname else "{:.2f} MB".format(
                     getsize(fname) / 1024 ** 2)}
-
-    @pyqtSlot(QModelIndex)
-    def update_data(self, selected):
-        """Update index and information based on the state of the sidebar.
-        """
-        if selected.row() != self.datasets.index:
-            self.datasets.index = selected.row()
-            self.datasets.update_current()
-            self._update_main()
 
     def plot_raw(self):
         """Plot raw data.
@@ -242,6 +233,15 @@ class MainWindow(QMainWindow):
         else:
             statusbar = False
         return {"recent": recent, "statusbar": statusbar}
+
+    @pyqtSlot(QModelIndex)
+    def _update_data(self, selected):
+        """Update index and information based on the state of the sidebar.
+        """
+        if selected.row() != self.datasets.index:
+            self.datasets.index = selected.row()
+            self.datasets.update_current()
+            self._update_main()
 
     @pyqtSlot()
     def _update_recent_menu(self):
