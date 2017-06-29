@@ -3,7 +3,7 @@ from collections import Counter
 from os.path import getsize, split, splitext
 
 import mne
-from PyQt5.QtCore import pyqtSlot, QStringListModel, QModelIndex
+from PyQt5.QtCore import pyqtSlot, QStringListModel, QModelIndex, QSettings
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                              QMessageBox, QListView)
@@ -21,6 +21,9 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.datasets = DataSets()
+        self._max_recent = 6  # maximum number of recent files
+
+        self._read_settings()
 
         self.setGeometry(300, 300, 800, 600)
         self.setWindowTitle("MNELAB")
@@ -29,6 +32,9 @@ class MainWindow(QMainWindow):
 
         file_menu = menubar.addMenu("&File")
         file_menu.addAction("&Open...", self.open_file, QKeySequence.Open)
+        self.recent_menu = file_menu.addMenu("Open Recent")
+        if not self.recent:
+            self.recent_menu.setEnabled(False)
         self.close_file_action = file_menu.addAction("&Close", self.close_file,
                                                      QKeySequence.Close)
         file_menu.addSeparator()
@@ -81,6 +87,7 @@ class MainWindow(QMainWindow):
         self.datasets.insert_data(DataSet(name=name, fname=fname, raw=raw))
         self._update_sidebar()
         self._update_main()
+        self._add_recent(fname)
         self._toggle_actions()
 
     def close_file(self):
@@ -181,9 +188,29 @@ class MainWindow(QMainWindow):
         self.run_ica_action.setEnabled(enabled)
         self.import_ica_action.setEnabled(enabled)
 
+    def _add_recent(self, fname):
+        if fname in self.recent:  # avoid duplicates
+            self.recent.remove(fname)
+        self.recent.insert(0, fname)
+        while len(self.recent) > self._max_recent:  # prune list
+            self.recent.pop()
+        self._write_settings()
+        if not self.recent_menu.isEnabled():
+            self.recent_menu.setEnabled(True)
+
+    def _write_settings(self):
+        settings = QSettings()
+        settings.setValue("recent", self.recent)
+
+    def _read_settings(self):
+        settings = QSettings()
+        recent = settings.value("recent")
+        self.recent = recent if recent else []
+
 
 app = QApplication(sys.argv)
 app.setApplicationName("MNELAB")
+app.setOrganizationName("cbrnr")
 main = MainWindow()
 if len(sys.argv) > 1:  # open files from command line arguments
     for f in sys.argv[1:]:
