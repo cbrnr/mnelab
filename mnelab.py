@@ -22,6 +22,7 @@ class MainWindow(QMainWindow):
 
         self.datasets = DataSets()
         self._max_recent = 6  # maximum number of recent files
+        self.history = []  # command history
 
         settings = self._read_settings()
         self.recent = settings["recent"] if settings["recent"] else []
@@ -94,9 +95,9 @@ class MainWindow(QMainWindow):
 
     def load_file(self, fname):
         raw = mne.io.read_raw_edf(fname, stim_channel=None, preload=True)
-
         name, _ = splitext(split(fname)[-1])
-
+        self.history.append("raw = mne.io.read_raw_edf({}, stim_channel=None, "
+                            "preload=True)".format(fname))
         self.datasets.insert_data(DataSet(name=name, fname=fname, raw=raw))
         self._update_sidebar()
         self._update_main()
@@ -165,7 +166,9 @@ class MainWindow(QMainWindow):
         dialog = FilterDialog()
 
         if dialog.exec_():
-            self.datasets.current.raw.filter(dialog.low, dialog.high)
+            low, high = dialog.low, dialog.high
+            self.datasets.current.raw.filter(low, high)
+            self.history.append("raw.filter({}, {})".format(low, high))
             if QMessageBox.question(self, "Add new data set",
                                     "Store the current signals in a new data "
                                     "set?") == QMessageBox.Yes:
@@ -257,6 +260,10 @@ class MainWindow(QMainWindow):
         else:
             self.statusBar().hide()
         self._write_settings()
+
+    def closeEvent(self, event):
+        print(self.history)
+        event.accept()
 
 
 app = QApplication(sys.argv)
