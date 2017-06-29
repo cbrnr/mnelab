@@ -23,7 +23,8 @@ class MainWindow(QMainWindow):
         self.datasets = DataSets()
         self._max_recent = 6  # maximum number of recent files
 
-        self._read_settings()
+        settings = self._read_settings()
+        self.recent = settings["recent"] if settings["recent"] else []
 
         self.setGeometry(300, 300, 800, 600)
         self.setWindowTitle("MNELAB")
@@ -52,6 +53,9 @@ class MainWindow(QMainWindow):
         self.import_ica_action = tools_menu.addAction("&Load ICA...",
                                                       self.load_ica)
 
+        view_menu = menubar.addMenu("&View")
+        view_menu.addAction("Show/hide statusbar", self._toggle_statusbar)
+
         help_menu = menubar.addMenu("&Help")
         help_menu.addAction("&About", self.show_about)
         help_menu.addAction("About &Qt", self.show_about_qt)
@@ -72,6 +76,10 @@ class MainWindow(QMainWindow):
 
         self.status_label = QLabel()
         self.statusBar().addPermanentWidget(self.status_label)
+        if settings["statusbar"]:
+            self.statusBar().show()
+        else:
+            self.statusBar().hide()
 
         self._toggle_actions(False)
         self.show()
@@ -214,12 +222,19 @@ class MainWindow(QMainWindow):
 
     def _write_settings(self):
         settings = QSettings()
-        settings.setValue("recent", self.recent)
+        if self.recent:
+            settings.setValue("recent", self.recent)
+        settings.setValue("statusbar", not self.statusBar().isHidden())
 
     def _read_settings(self):
         settings = QSettings()
         recent = settings.value("recent")
-        self.recent = recent if recent else []
+        statusbar = settings.value("statusbar")
+        if (statusbar is None) or (statusbar == "true"):
+            statusbar = True
+        else:
+            statusbar = False
+        return {"recent": recent, "statusbar": statusbar}
 
     @pyqtSlot()
     def _update_recent_menu(self):
@@ -230,6 +245,14 @@ class MainWindow(QMainWindow):
     @pyqtSlot(QAction)
     def _load_recent(self, action):
         self.load_file(action.text())
+
+    @pyqtSlot()
+    def _toggle_statusbar(self):
+        if self.statusBar().isHidden():
+            self.statusBar().show()
+        else:
+            self.statusBar().hide()
+        self._write_settings()
 
 
 app = QApplication(sys.argv)
