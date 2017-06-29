@@ -150,8 +150,8 @@ class MainWindow(QMainWindow):
     def plot_raw(self):
         """Plot raw data.
         """
-        events = self.current["events"]
-        self.current["raw"].plot(events=events)
+        events = self.datasets.current.events
+        self.datasets.current.raw.plot(events=events)
 
     def load_ica(self):
         """Load ICA solution from a file.
@@ -165,12 +165,16 @@ class MainWindow(QMainWindow):
         dialog = FilterDialog()
 
         if dialog.exec_():
-            self.current["raw"].filter(dialog.low, dialog.high)
+            self.datasets.current.raw.filter(dialog.low, dialog.high)
             if QMessageBox.question(self, "Add new data set",
                                     "Store the current signals in a new data "
                                     "set?") == QMessageBox.Yes:
-                self._insert_data({"fname": "", "raw": self.current["raw"],
-                                   "events": None}, "NEW")
+                new = DataSet(name="NEW", fname="",
+                              raw=self.datasets.current.raw)
+                self.datasets.insert_data(new)
+                self._update_sidebar()
+                self._update_main()
+                self._update_statusbar()
 
     def show_about(self):
         """Show About dialog.
