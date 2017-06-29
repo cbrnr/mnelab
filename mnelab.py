@@ -4,6 +4,7 @@ from os.path import getsize, split, splitext
 
 import mne
 from PyQt5.QtCore import pyqtSlot, QStringListModel, QModelIndex
+from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                              QMessageBox, QListView)
 from mne.io.pick import channel_type
@@ -27,11 +28,11 @@ class MainWindow(QMainWindow):
         menubar = self.menuBar()
 
         file_menu = menubar.addMenu("&File")
-        file_menu.addAction("&Open...", self.open_file, "Ctrl+O")
+        file_menu.addAction("&Open...", self.open_file, QKeySequence.Open)
         self.close_file_action = file_menu.addAction("&Close", self.close_file,
-                                                     "Ctrl+W")
+                                                     QKeySequence.Close)
         file_menu.addSeparator()
-        file_menu.addAction("&Quit", self.close, "Ctrl+Q")
+        file_menu.addAction("&Quit", self.close, QKeySequence.Quit)
 
         plot_menu = menubar.addMenu("&Plot")
         self.plot_raw_action = plot_menu.addAction("&Raw data", self.plot_raw)
