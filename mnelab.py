@@ -30,7 +30,7 @@ class DataSets:
         self.data.insert(self.index, dataset)
         self.update_current()
 
-    def remove_data(self, index):
+    def remove_data(self):
         """Remove data set at current index.
         """
         try:
@@ -50,6 +50,7 @@ class DataSets:
         else:
             self.current = None
 
+    @property
     def names(self):
         """Return a list of all names.
         """
@@ -109,7 +110,7 @@ class MainWindow(QMainWindow):
         self.sidebar.setFocusPolicy(0)
         self.sidebar.setFrameStyle(0)
         self.sidebar.setModel(self.names)
-        self.sidebar.clicked.connect(self.activate_data)
+        self.sidebar.clicked.connect(self.update_data)
         splitter.addWidget(self.sidebar)
         self.infowidget = InfoWidget()
         splitter.addWidget(self.infowidget)
@@ -134,30 +135,26 @@ class MainWindow(QMainWindow):
         name, _ = splitext(split(fname)[-1])
 
         self.datasets.insert_data(DataSet(name=name, fname=fname, raw=raw))
-        self.datasets.update_current()
         self._update_sidebar()
-
-        self.infowidget.set_values(self.get_info())
-        self.sidebar.setCurrentIndex(self.names.index(self.index))
+        self._update_main()
         self._toggle_actions()
 
     def close_file(self):
         """Close current file.
         """
-        self.datasets.remove_data(self.index)
+        self.datasets.remove_data()
+        self._update_sidebar()
+        self._update_main()
 
-        if self.index > -1:  # if there are still open data sets
-            self.datasets_update_current()
-        else:
-            self.current = None
+        if not self.datasets:
             self.infowidget.clear()
             self._toggle_actions(False)
 
     def get_info(self):
         """Get basic information on current file.
         """
-        raw = self.current["raw"]
-        fname = self.current["fname"]
+        raw = self.datasets.current.raw
+        fname = self.datasets.current.fname
 
         nchan = raw.info["nchan"]
         chans = Counter([channel_type(raw.info, i) for i in range(nchan)])
@@ -175,11 +172,13 @@ class MainWindow(QMainWindow):
                     getsize(fname) / 1024 ** 2)}
 
     @pyqtSlot(QModelIndex)
-    def activate_data(self, current):
-        """Update index and information based on the file list.
+    def update_data(self, selected):
+        """Update index and information based on the state of the sidebar.
         """
-        self.index = current.row()
-        self._update_current()
+        if selected.row() != self.datasets.index:
+            self.datasets.index = selected.row()
+            self.datasets.update_current()
+            self._update_main()
 
     def plot_raw(self):
         """Plot raw data.
@@ -220,7 +219,14 @@ class MainWindow(QMainWindow):
         QMessageBox.aboutQt(self, "About Qt")
 
     def _update_sidebar(self):
-        self.names = self.datasets.names
+        self.names.setStringList(self.datasets.names)
+        self.sidebar.setCurrentIndex(self.names.index(self.datasets.index))
+
+    def _update_main(self):
+        if self.datasets:
+            self.infowidget.set_values(self.get_info())
+        else:
+            self.infowidget.clear()
 
     def _toggle_actions(self, enabled=True):
         """Toggle actions.
