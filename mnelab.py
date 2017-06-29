@@ -96,8 +96,8 @@ class MainWindow(QMainWindow):
     def load_file(self, fname):
         raw = mne.io.read_raw_edf(fname, stim_channel=None, preload=True)
         name, _ = splitext(split(fname)[-1])
-        self.history.append("raw = mne.io.read_raw_edf({}, stim_channel=None, "
-                            "preload=True)".format(fname))
+        self.history.append("raw = mne.io.read_raw_edf('{}', "
+                            "stim_channel=None, preload=True)".format(fname))
         self.datasets.insert_data(DataSet(name=name, fname=fname, raw=raw))
         self._update_sidebar()
         self._update_main()
@@ -262,7 +262,9 @@ class MainWindow(QMainWindow):
         self._write_settings()
 
     def closeEvent(self, event):
-        print(self.history)
+        print("\nCommand History")
+        print("===============")
+        print("\n".join(self.history))
         event.accept()
 
 
