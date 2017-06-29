@@ -6,7 +6,7 @@ import mne
 from PyQt5.QtCore import pyqtSlot, QStringListModel, QModelIndex, QSettings
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
-                             QMessageBox, QListView)
+                             QMessageBox, QListView, QAction)
 from mne.io.pick import channel_type
 
 from datasets import DataSets, DataSet
@@ -33,6 +33,8 @@ class MainWindow(QMainWindow):
         file_menu = menubar.addMenu("&File")
         file_menu.addAction("&Open...", self.open_file, QKeySequence.Open)
         self.recent_menu = file_menu.addMenu("Open Recent")
+        self.recent_menu.aboutToShow.connect(self._update_recent_menu)
+        self.recent_menu.triggered.connect(self._load_recent)
         if not self.recent:
             self.recent_menu.setEnabled(False)
         self.close_file_action = file_menu.addAction("&Close", self.close_file,
@@ -206,6 +208,16 @@ class MainWindow(QMainWindow):
         settings = QSettings()
         recent = settings.value("recent")
         self.recent = recent if recent else []
+
+    @pyqtSlot()
+    def _update_recent_menu(self):
+        self.recent_menu.clear()
+        for recent in self.recent:
+            self.recent_menu.addAction(recent)
+
+    @pyqtSlot(QAction)
+    def _load_recent(self, action):
+        self.load_file(action.text())
 
 
 app = QApplication(sys.argv)
