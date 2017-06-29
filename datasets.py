@@ -44,6 +44,10 @@ class DataSets:
         """
         return [item.name for item in self.data]
 
+    @property
+    def nbytes(self):
+        return sum([item.raw._data.nbytes for item in self.data])
+
     def __len__(self):
         """Return number of data sets.
         """

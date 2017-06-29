@@ -6,7 +6,7 @@ import mne
 from PyQt5.QtCore import pyqtSlot, QStringListModel, QModelIndex, QSettings
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
-                             QMessageBox, QListView, QAction)
+                             QMessageBox, QListView, QAction, QLabel)
 from mne.io.pick import channel_type
 
 from datasets import DataSets, DataSet
@@ -70,6 +70,9 @@ class MainWindow(QMainWindow):
         splitter.setSizes((width * 0.25, width * 0.75))
         self.setCentralWidget(splitter)
 
+        self.status_label = QLabel()
+        self.statusBar().addPermanentWidget(self.status_label)
+
         self._toggle_actions(False)
         self.show()
 
@@ -90,6 +93,7 @@ class MainWindow(QMainWindow):
         self._update_sidebar()
         self._update_main()
         self._add_recent(fname)
+        self._update_statusbar()
         self._toggle_actions()
 
     def close_file(self):
@@ -98,10 +102,12 @@ class MainWindow(QMainWindow):
         self.datasets.remove_data()
         self._update_sidebar()
         self._update_main()
+        self._update_statusbar()
 
         if not self.datasets:
             self.infowidget.clear()
             self._toggle_actions(False)
+            self.status_label.clear()
 
     def get_info(self):
         """Get basic information on current file.
@@ -151,7 +157,6 @@ class MainWindow(QMainWindow):
         dialog = FilterDialog()
 
         if dialog.exec_():
-            print(dialog.low, dialog.high)
             self.current["raw"].filter(dialog.low, dialog.high)
             if QMessageBox.question(self, "Add new data set",
                                     "Store the current signals in a new data "
@@ -180,6 +185,13 @@ class MainWindow(QMainWindow):
             self.infowidget.set_values(self.get_info())
         else:
             self.infowidget.clear()
+
+    def _update_statusbar(self):
+        if self.datasets:
+            mb = self.datasets.nbytes / 1024 ** 2
+            self.status_label.setText("Total Memory: {:.2f} MB".format(mb))
+        else:
+            self.status_label.clear()
 
     def _toggle_actions(self, enabled=True):
         """Toggle actions.
