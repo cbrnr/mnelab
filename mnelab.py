@@ -290,9 +290,10 @@ class MainWindow(QMainWindow):
         self._write_settings()
 
     def closeEvent(self, event):
-        print("\nCommand History")
-        print("===============")
-        print("\n".join(self.history))
+        if self.history:
+            print("\nCommand History")
+            print("===============")
+            print("\n".join(self.history))
         event.accept()
 
 
