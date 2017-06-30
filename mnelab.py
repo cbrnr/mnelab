@@ -6,7 +6,8 @@ import mne
 from PyQt5.QtCore import pyqtSlot, QStringListModel, QModelIndex, QSettings
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
-                             QMessageBox, QListView, QAction, QLabel)
+                             QMessageBox, QListView, QAction, QLabel,
+                             QStatusBar)
 from mne.io.pick import channel_type
 
 from datasets import DataSets, DataSet
@@ -160,7 +161,10 @@ class MainWindow(QMainWindow):
         """Plot raw data.
         """
         events = self.datasets.current.events
-        self.datasets.current.raw.plot(events=events)
+        fig = self.datasets.current.raw.plot(events=events, show=False)
+        win = fig.canvas.manager.window
+        win.findChild(QStatusBar).hide()
+        fig.show()
 
     def load_ica(self):
         """Load ICA solution from a file.
