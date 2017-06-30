@@ -20,8 +20,10 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        self.MAX_RECENT = 6  # maximum number of recent files
+        self.SUPPORTED_FORMATS = "*.bdf *.edf"
+
         self.datasets = DataSets()
-        self._max_recent = 6  # maximum number of recent files
         self.history = []  # command history
 
         settings = self._read_settings()
@@ -50,6 +52,8 @@ class MainWindow(QMainWindow):
         tools_menu = menubar.addMenu("&Tools")
         self.filter_action = tools_menu.addAction("&Filter data...",
                                                   self.filter_data)
+        self.find_events_action = tools_menu.addAction("Find &events...",
+                                                       self.find_events)
         self.run_ica_action = tools_menu.addAction("&Run ICA...")
         self.import_ica_action = tools_menu.addAction("&Load ICA...",
                                                       self.load_ica)
@@ -89,16 +93,17 @@ class MainWindow(QMainWindow):
         """Open file.
         """
         fname = QFileDialog.getOpenFileName(self, "Open file",
-                                            filter="*.bdf *.edf")[0]
+                                            filter=self.SUPPORTED_FORMATS)[0]
         if fname:
             self.load_file(fname)
 
     def load_file(self, fname):
         raw = mne.io.read_raw_edf(fname, stim_channel=None, preload=True)
-        name, _ = splitext(split(fname)[-1])
+        name, ext = splitext(split(fname)[-1])
         self.history.append("raw = mne.io.read_raw_edf('{}', "
                             "stim_channel=None, preload=True)".format(fname))
-        self.datasets.insert_data(DataSet(name=name, fname=fname, raw=raw))
+        self.datasets.insert_data(DataSet(name=name, fname=fname,
+                                          ftype=ext[1:].upper(), raw=raw))
         self._update_sidebar()
         self._update_main()
         self._add_recent(fname)
@@ -127,13 +132,25 @@ class MainWindow(QMainWindow):
         nchan = raw.info["nchan"]
         chans = Counter([channel_type(raw.info, i) for i in range(nchan)])
 
+        if self.datasets.current.events is not None:
+            nevents = self.datasets.current.events.shape[0]
+        else:
+            nevents = None
+
+        if self.datasets.current.ftype is not None:
+            ftype = self.datasets.current.ftype
+        else:
+            ftype = "-"
+
         return {"File name": fname if fname else "-",
+                "File type": ftype,
                 "Number of channels": raw.info["nchan"],
                 "Channels": ", ".join(
                     [" ".join([str(v), k.upper()]) for k, v in chans.items()]),
                 "Samples": raw.n_times,
                 "Sampling frequency": str(raw.info["sfreq"]) + " Hz",
                 "Length": str(raw.n_times / raw.info["sfreq"]) + " s",
+                "Events": nevents if nevents is not None else "-",
                 "Size in memory": "{:.2f} MB".format(
                     raw._data.nbytes / 1024 ** 2),
                 "Size on disk": "-" if not fname else "{:.2f} MB".format(
@@ -153,6 +170,9 @@ class MainWindow(QMainWindow):
         if fname[0]:
             self.state.ica = mne.preprocessing.read_ica(fname[0])
 
+    def find_events(self):
+        pass
+
     def filter_data(self):
         dialog = FilterDialog()
 
@@ -163,8 +183,7 @@ class MainWindow(QMainWindow):
             if QMessageBox.question(self, "Add new data set",
                                     "Store the current signals in a new data "
                                     "set?") == QMessageBox.Yes:
-                new = DataSet(name="NEW", fname="",
-                              raw=self.datasets.current.raw)
+                new = DataSet(name="NEW", raw=self.datasets.current.raw)
                 self.datasets.insert_data(new)
                 self._update_sidebar()
                 self._update_main()
@@ -205,6 +224,7 @@ class MainWindow(QMainWindow):
         self.close_file_action.setEnabled(enabled)
         self.plot_raw_action.setEnabled(enabled)
         self.filter_action.setEnabled(enabled)
+        self.find_events_action.setEnabled(enabled)
         self.run_ica_action.setEnabled(enabled)
         self.import_ica_action.setEnabled(enabled)
 
@@ -212,7 +232,7 @@ class MainWindow(QMainWindow):
         if fname in self.recent:  # avoid duplicates
             self.recent.remove(fname)
         self.recent.insert(0, fname)
-        while len(self.recent) > self._max_recent:  # prune list
+        while len(self.recent) > self.MAX_RECENT:  # prune list
             self.recent.pop()
         self._write_settings()
         if not self.recent_menu.isEnabled():
