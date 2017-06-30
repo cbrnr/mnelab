@@ -60,7 +60,9 @@ class MainWindow(QMainWindow):
                                                       self.load_ica)
 
         view_menu = menubar.addMenu("&View")
-        view_menu.addAction("Show/hide statusbar", self._toggle_statusbar)
+        statusbar_action = view_menu.addAction("Statusbar",
+                                               self._toggle_statusbar)
+        statusbar_action.setCheckable(True)
 
         help_menu = menubar.addMenu("&Help")
         help_menu.addAction("&About", self.show_about)
@@ -84,8 +86,10 @@ class MainWindow(QMainWindow):
         self.statusBar().addPermanentWidget(self.status_label)
         if settings["statusbar"]:
             self.statusBar().show()
+            statusbar_action.setChecked(True)
         else:
             self.statusBar().hide()
+            statusbar_action.setChecked(False)
 
         self._toggle_actions(False)
         self.show()
