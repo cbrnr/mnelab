@@ -166,7 +166,9 @@ class MainWindow(QMainWindow):
         """Plot raw data.
         """
         events = self.datasets.current.events
-        fig = self.datasets.current.raw.plot(events=events, show=False)
+        nchan = self.datasets.current.raw.info["nchan"]
+        fig = self.datasets.current.raw.plot(events=events, n_channels=nchan,
+                                             show=False)
         win = fig.canvas.manager.window
         win.findChild(QStatusBar).hide()
         fig.show()
