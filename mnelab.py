@@ -4,7 +4,8 @@ from os.path import getsize, split, splitext
 
 import matplotlib
 import mne
-from PyQt5.QtCore import pyqtSlot, QStringListModel, QModelIndex, QSettings
+from PyQt5.QtCore import (pyqtSlot, QStringListModel, QModelIndex, QSettings,
+                          QEvent)
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                              QMessageBox, QListView, QAction, QLabel,
@@ -311,6 +312,7 @@ class MainWindow(QMainWindow):
             self.statusBar().hide()
         self._write_settings()
 
+    @pyqtSlot(QEvent)
     def closeEvent(self, event):
         self._write_settings()
         if self.history:
