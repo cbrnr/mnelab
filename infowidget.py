@@ -11,7 +11,7 @@ class InfoWidget(QWidget):
         Each key/value pair in this dict will be displayed in a row, separated
         by a colon.
     """
-    def __init__(self, values={}):
+    def __init__(self, values=None):
         super().__init__()
         vbox = QVBoxLayout(self)
         self.grid = QGridLayout()
@@ -20,7 +20,7 @@ class InfoWidget(QWidget):
         vbox.addStretch(1)
         self.set_values(values)
 
-    def set_values(self, values={}):
+    def set_values(self, values=None):
         """Set values (and overwrite existing values).
 
         Parameters
@@ -30,12 +30,13 @@ class InfoWidget(QWidget):
             separated by a colon.
         """
         self.clear()
-        for row, (key, value) in enumerate(values.items()):
-            left = QLabel(str(key) + ":")
-            right = QLabel(str(value))
-            right.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
-            self.grid.addWidget(left, row, 0)
-            self.grid.addWidget(right, row, 1)
+        if values:
+            for row, (key, value) in enumerate(values.items()):
+                left = QLabel(str(key) + ":")
+                right = QLabel(str(value))
+                right.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
+                self.grid.addWidget(left, row, 0)
+                self.grid.addWidget(right, row, 1)
 
     def clear(self):
         """Clear all values.
