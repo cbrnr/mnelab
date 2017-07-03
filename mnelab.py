@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                              QMessageBox, QListView, QAction, QLabel,
                              QStatusBar)
 from mne.io.pick import channel_type
+from mne.filter import filter_data
 
 from datasets import DataSets, DataSet
 from filterdialog import FilterDialog
@@ -35,7 +36,7 @@ class MainWindow(QMainWindow):
         if settings["geometry"]:
             self.restoreGeometry(settings["geometry"])
         else:
-            self.setGeometry(300, 300, 800, 600)  # default window size
+            self.setGeometry(300, 300, 1000, 750)  # default window size
             self.move(QApplication.desktop().screen().rect().center() -
                       self.rect().center())  # center window
         if settings["state"]:
@@ -88,7 +89,7 @@ class MainWindow(QMainWindow):
         self.infowidget = InfoWidget()
         splitter.addWidget(self.infowidget)
         width = splitter.size().width()
-        splitter.setSizes((width * 0.25, width * 0.75))
+        splitter.setSizes((width * 0.3, width * 0.7))
         self.setCentralWidget(splitter)
 
         self.status_label = QLabel()
@@ -186,7 +187,7 @@ class MainWindow(QMainWindow):
         """Plot raw data.
         """
         events = self.datasets.current.events
-        nchan = self.datasets.current.raw.info["nchan"]
+        nchan = 16  #self.datasets.current.raw.info["nchan"]
         fig = self.datasets.current.raw.plot(events=events, n_channels=nchan,
                                              show=False)
         win = fig.canvas.manager.window
@@ -209,16 +210,40 @@ class MainWindow(QMainWindow):
 
         if dialog.exec_():
             low, high = dialog.low, dialog.high
-            self.datasets.current.raw.filter(low, high)
+            filtered = filter_data(self.datasets.current.raw._data,
+                                   self.datasets.current.raw.info["sfreq"],
+                                   l_freq=low, h_freq=high)
+            # self.datasets.current.raw.filter(low, high)
             self.history.append("raw.filter({}, {})".format(low, high))
-            if QMessageBox.question(self, "Add new data set",
-                                    "Store the current signals in a new data "
-                                    "set?") == QMessageBox.Yes:
-                new = DataSet(name="NEW", raw=self.datasets.current.raw)
+
+            # if current data is stored in a file we create a new data set with
+            # the modified data
+            if self.datasets.current.fname:
+                self.datasets.current.raw._data = filtered
+                new = DataSet(name=self.datasets.current.name + " (filtered)",
+                              raw=self.datasets.current.raw)
                 self.datasets.insert_data(new)
                 self._update_sidebar()
                 self._update_main()
                 self._update_statusbar()
+            # otherwise ask if the current data set should be overwritten (in
+            # memory) or if a new data set should be created
+            else:
+                msg = QMessageBox.question(self, "Overwrite existing data set",
+                                           "Overwrite existing data set?")
+                if msg == QMessageBox.No:  # create new data set
+                    copy = self.datasets.current.raw.copy()
+                    copy._data = filtered
+                    new = DataSet(name=self.datasets.current.name +
+                                  " (filtered)", raw=copy)
+                    self.datasets.insert_data(new)
+                    self._update_sidebar()
+                    self._update_main()
+                    self._update_statusbar()
+                else:  # overwrite existing data set
+                    self.datasets.current.raw._data = filtered
+                    idx = self.datasets.index
+                    self.datasets.data[idx] = self.datasets.current
 
     def show_about(self):
         """Show About dialog.
