@@ -4,7 +4,7 @@ from os.path import getsize, split, splitext
 
 import matplotlib
 import mne
-from PyQt5.QtCore import pyqtSlot, QStringListModel, QModelIndex, QSettings, QRect
+from PyQt5.QtCore import pyqtSlot, QStringListModel, QModelIndex, QSettings
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                              QMessageBox, QListView, QAction, QLabel,
