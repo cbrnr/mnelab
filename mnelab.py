@@ -104,7 +104,7 @@ class MainWindow(QMainWindow):
         self.show()
 
     def open_file(self):
-        """Open file.
+        """Show open file dialog.
         """
         fname = QFileDialog.getOpenFileName(self, "Open file",
                                             filter=self.SUPPORTED_FORMATS)[0]
@@ -112,6 +112,13 @@ class MainWindow(QMainWindow):
             self.load_file(fname)
 
     def load_file(self, fname):
+        """Load file.
+
+        Parameters
+        ----------
+        fname : str
+            File name.
+        """
         raw = mne.io.read_raw_edf(fname, stim_channel=None, preload=True)
         name, ext = splitext(split(fname)[-1])
         self.history.append("raw = mne.io.read_raw_edf('{}', "
@@ -139,6 +146,11 @@ class MainWindow(QMainWindow):
 
     def get_info(self):
         """Get basic information on current file.
+
+        Returns
+        -------
+        info : dict
+            Dictionary with information on current file.
         """
         raw = self.datasets.current.raw
         fname = self.datasets.current.fname
@@ -239,6 +251,12 @@ class MainWindow(QMainWindow):
 
     def _toggle_actions(self, enabled=True):
         """Toggle actions.
+
+        Parameters
+        ----------
+        enabled : bool
+            Specifies whether actions should be enabled (True) or disabled
+            (False).
         """
         self.close_file_action.setEnabled(enabled)
         self.plot_raw_action.setEnabled(enabled)
@@ -248,6 +266,13 @@ class MainWindow(QMainWindow):
         self.import_ica_action.setEnabled(enabled)
 
     def _add_recent(self, fname):
+        """Add a file to recent file list.
+
+        Parameters
+        ----------
+        fname : str
+            File name.
+        """
         if fname in self.recent:  # avoid duplicates
             self.recent.remove(fname)
         self.recent.insert(0, fname)
@@ -258,6 +283,8 @@ class MainWindow(QMainWindow):
             self.recent_menu.setEnabled(True)
 
     def _write_settings(self):
+        """Write application settings.
+        """
         settings = QSettings()
         if self.recent:
             settings.setValue("recent", self.recent)
@@ -266,6 +293,14 @@ class MainWindow(QMainWindow):
         settings.setValue("state", self.saveState())
 
     def _read_settings(self):
+        """Read application settings.
+
+        Returns
+        -------
+        settings : dict
+            The restored settings values are returned in a dictionary for
+            further processing.
+        """
         settings = QSettings()
 
         recent = settings.value("recent")
@@ -288,6 +323,11 @@ class MainWindow(QMainWindow):
     @pyqtSlot(QModelIndex)
     def _update_data(self, selected):
         """Update index and information based on the state of the sidebar.
+
+        Parameters
+        ----------
+        selected : QModelIndex
+            Index of the selected row.
         """
         if selected.row() != self.datasets.index:
             self.datasets.index = selected.row()
@@ -314,6 +354,13 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(QEvent)
     def closeEvent(self, event):
+        """Close application.
+
+        Parameters
+        ----------
+        event : QEvent
+            Close event.
+        """
         self._write_settings()
         if self.history:
             print("\nCommand History")
