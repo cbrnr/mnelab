@@ -25,7 +25,7 @@ class MainWindow(QMainWindow):
         self.MAX_RECENT = 6  # maximum number of recent files
         self.SUPPORTED_FORMATS = "*.bdf *.edf"
 
-        self.datasets = DataSets()
+        self.datasets = DataSets()  # contains currently loaded data sets
         self.history = []  # command history
 
         settings = self._read_settings()
@@ -34,7 +34,9 @@ class MainWindow(QMainWindow):
         if settings["geometry"]:
             self.restoreGeometry(settings["geometry"])
         else:
-            self.setGeometry(300, 300, 800, 600)
+            self.setGeometry(300, 300, 800, 600)  # default window size
+            self.move(QApplication.desktop().screen().rect().center() -
+                      self.rect().center())  # center window
         if settings["state"]:
             self.restoreState(settings["state"])
 
