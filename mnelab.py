@@ -2,6 +2,7 @@ import sys
 from collections import Counter
 from os.path import getsize, split, splitext
 
+import matplotlib
 import mne
 from PyQt5.QtCore import pyqtSlot, QStringListModel, QModelIndex, QSettings
 from PyQt5.QtGui import QKeySequence
@@ -297,6 +298,7 @@ class MainWindow(QMainWindow):
         event.accept()
 
 
+matplotlib.use("Qt5Agg")
 app = QApplication(sys.argv)
 app.setApplicationName("MNELAB")
 app.setOrganizationName("cbrnr")
