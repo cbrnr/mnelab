@@ -80,6 +80,7 @@ class MainWindow(QMainWindow):
         help_menu.addAction("About &Qt", self.show_about_qt)
 
         self.names = QStringListModel()
+        self.names.dataChanged.connect(self._update_names)
         splitter = QSplitter()
         self.sidebar = QListView()
         self.sidebar.setFrameStyle(0)
@@ -358,6 +359,13 @@ class MainWindow(QMainWindow):
             self.datasets.index = selected.row()
             self.datasets.update_current()
             self._update_main()
+
+    @pyqtSlot(QModelIndex, QModelIndex)
+    def _update_names(self, topleft, bottomright):
+        start, stop = topleft.row(), bottomright.row()
+        for index in range(start, stop + 1):
+            self.datasets.data[index].name = self.names.stringList()[index]
+        self.datasets.current.name = self.datasets.names[self.datasets.index]
 
     @pyqtSlot()
     def _update_recent_menu(self):
