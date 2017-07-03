@@ -4,7 +4,7 @@ from os.path import getsize, split, splitext
 
 import matplotlib
 import mne
-from PyQt5.QtCore import pyqtSlot, QStringListModel, QModelIndex, QSettings
+from PyQt5.QtCore import pyqtSlot, QStringListModel, QModelIndex, QSettings, QRect
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                              QMessageBox, QListView, QAction, QLabel,
@@ -29,9 +29,15 @@ class MainWindow(QMainWindow):
         self.history = []  # command history
 
         settings = self._read_settings()
-        self.recent = settings["recent"] if settings["recent"] else []
+        self.recent = settings["recent"]
 
-        self.setGeometry(300, 300, 800, 600)
+        if settings["geometry"]:
+            self.restoreGeometry(settings["geometry"])
+        else:
+            self.setGeometry(300, 300, 800, 600)
+        if settings["state"]:
+            self.restoreState(settings["state"])
+
         self.setWindowTitle("MNELAB")
 
         menubar = self.menuBar()
@@ -254,16 +260,28 @@ class MainWindow(QMainWindow):
         if self.recent:
             settings.setValue("recent", self.recent)
         settings.setValue("statusbar", not self.statusBar().isHidden())
+        settings.setValue("geometry", self.saveGeometry())
+        settings.setValue("state", self.saveState())
 
     def _read_settings(self):
         settings = QSettings()
+
         recent = settings.value("recent")
+        if not recent:
+            recent = []  # default is empty list
+
         statusbar = settings.value("statusbar")
-        if (statusbar is None) or (statusbar == "true"):
+        if (not statusbar) or (statusbar == "true"):  # default is True
             statusbar = True
         else:
             statusbar = False
-        return {"recent": recent, "statusbar": statusbar}
+
+        geometry = settings.value("geometry")
+
+        state = settings.value("state")
+
+        return {"recent": recent, "statusbar": statusbar, "geometry": geometry,
+                "state": state}
 
     @pyqtSlot(QModelIndex)
     def _update_data(self, selected):
@@ -293,6 +311,7 @@ class MainWindow(QMainWindow):
         self._write_settings()
 
     def closeEvent(self, event):
+        self._write_settings()
         if self.history:
             print("\nCommand History")
             print("===============")
