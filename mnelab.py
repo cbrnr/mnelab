@@ -60,6 +60,8 @@ class MainWindow(QMainWindow):
 
         plot_menu = menubar.addMenu("&Plot")
         self.plot_raw_action = plot_menu.addAction("&Raw data", self.plot_raw)
+        self.plot_psd_action = plot_menu.addAction("&Power spectral "
+                                                   "density...", self.plot_psd)
 
         tools_menu = menubar.addMenu("&Tools")
         self.filter_action = tools_menu.addAction("&Filter data...",
@@ -190,6 +192,9 @@ class MainWindow(QMainWindow):
         win.findChild(QStatusBar).hide()
         fig.show()
 
+    def plot_psd(self):
+        self.all.current.raw.plot_psd(average=False, spatial_colors=False)
+
     def load_ica(self):
         """Load ICA solution from a file.
         """
@@ -209,7 +214,6 @@ class MainWindow(QMainWindow):
             filtered = filter_data(self.all.current.raw._data,
                                    self.all.current.raw.info["sfreq"],
                                    l_freq=low, h_freq=high)
-            # self.datasets.current.raw.filter(low, high)
             self.history.append("raw.filter({}, {})".format(low, high))
 
             # if current data is stored in a file we create a new data set with
@@ -283,6 +287,7 @@ class MainWindow(QMainWindow):
         """
         self.close_file_action.setEnabled(enabled)
         self.plot_raw_action.setEnabled(enabled)
+        self.plot_psd_action.setEnabled(enabled)
         self.filter_action.setEnabled(enabled)
         self.find_events_action.setEnabled(enabled)
         self.run_ica_action.setEnabled(enabled)
