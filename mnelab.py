@@ -89,6 +89,7 @@ class MainWindow(QMainWindow):
         splitter = QSplitter()
         self.sidebar = QListView()
         self.sidebar.setFrameStyle(0)
+        self.sidebar.setFocusPolicy(0)
         self.sidebar.setModel(self.names)
         self.sidebar.clicked.connect(self._update_data)
         splitter.addWidget(self.sidebar)
