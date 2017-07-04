@@ -416,7 +416,7 @@ class MainWindow(QMainWindow):
             print("\nCommand History")
             print("===============")
             print("\n".join(self.history))
-        event.accept()
+        QApplication.quit()
 
 
 matplotlib.use("Qt5Agg")
