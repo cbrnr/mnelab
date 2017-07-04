@@ -18,6 +18,9 @@ from filterdialog import FilterDialog
 from infowidget import InfoWidget
 
 
+__version__ = "0.1.0"
+
+
 class MainWindow(QMainWindow):
     """MNELAB main window.
     """
@@ -249,9 +252,13 @@ class MainWindow(QMainWindow):
     def show_about(self):
         """Show About dialog.
         """
-        QMessageBox.about(self, "About MNELAB",
-                          "Licensed under the BSD 3-clause license.\n"
-                          "Copyright 2017 by Clemens Brunner.")
+        msg = """<b>MNELAB {}</b><br/><br/>
+        <a href="https://github.com/cbrnr/mnelab">MNELAB</a> - a graphical user
+        interface for
+        <a href="https://github.com/mne-tools/mne-python">MNE</a>.<br/><br/>
+        Licensed under the BSD 3-clause license.<br/>
+        Copyright 2017 by Clemens Brunner.""".format(__version__)
+        QMessageBox.about(self, "About MNELAB", msg)
 
     def show_about_qt(self):
         """Show About Qt dialog.
