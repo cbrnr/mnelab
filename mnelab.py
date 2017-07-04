@@ -358,11 +358,13 @@ class MainWindow(QMainWindow):
             self._update_infowidget()
 
     @pyqtSlot(QModelIndex, QModelIndex)
-    def _update_names(self, topleft, bottomright):
-        start, stop = topleft.row(), bottomright.row()
-        for index in range(start, stop + 1):
+    def _update_names(self, start, stop):
+        """Update names in DataSets after changes in sidebar.
+        """
+        for index in range(start.row(), stop.row() + 1):
             self.all.data[index].name = self.names.stringList()[index]
-        self.all.current.name = self.all.names[self.all.index]
+        if self.all.index in range(start.row(), stop.row() + 1):
+            self.all.current.name = self.all.names[self.all.index]
 
     @pyqtSlot()
     def _update_recent_menu(self):
