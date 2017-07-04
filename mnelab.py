@@ -27,11 +27,11 @@ class MainWindow(QMainWindow):
         self.MAX_RECENT = 6  # maximum number of recent files
         self.SUPPORTED_FORMATS = "*.bdf *.edf"
 
-        self.datasets = DataSets()  # contains currently loaded data sets
+        self.all = DataSets()  # contains currently loaded data sets
         self.history = []  # command history
 
         settings = self._read_settings()
-        self.recent = settings["recent"]
+        self.recent = settings["recent"]  # list of recent files
 
         if settings["geometry"]:
             self.restoreGeometry(settings["geometry"])
@@ -121,30 +121,29 @@ class MainWindow(QMainWindow):
         fname : str
             File name.
         """
+        # TODO: check if fname exists
         raw = mne.io.read_raw_edf(fname, stim_channel=None, preload=True)
         name, ext = splitext(split(fname)[-1])
         self.history.append("raw = mne.io.read_raw_edf('{}', "
                             "stim_channel=None, preload=True)".format(fname))
-        self.datasets.insert_data(DataSet(name=name, fname=fname,
-                                          ftype=ext[1:].upper(), raw=raw))
-        self._update_sidebar()
-        self._update_main()
-        self._add_recent(fname)
+        self.all.insert_data(DataSet(name=name, fname=fname,
+                                     ftype=ext[1:].upper(), raw=raw))
+        self._update_sidebar(self.all.names, self.all.index)
+        self._update_infowidget()
         self._update_statusbar()
+        self._add_recent(fname)
         self._toggle_actions()
 
     def close_file(self):
         """Close current file.
         """
-        self.datasets.remove_data()
-        self._update_sidebar()
-        self._update_main()
+        self.all.remove_data()
+        self._update_sidebar(self.all.names, self.all.index)
+        self._update_infowidget()
         self._update_statusbar()
 
-        if not self.datasets:
-            self.infowidget.clear()
+        if not self.all:
             self._toggle_actions(False)
-            self.status_label.clear()
 
     def get_info(self):
         """Get basic information on current file.
@@ -154,31 +153,27 @@ class MainWindow(QMainWindow):
         info : dict
             Dictionary with information on current file.
         """
-        raw = self.datasets.current.raw
-        fname = self.datasets.current.fname
+        raw = self.all.current.raw
+        fname = self.all.current.fname
+        ftype = self.all.current.ftype
 
         nchan = raw.info["nchan"]
         chans = Counter([channel_type(raw.info, i) for i in range(nchan)])
 
-        if self.datasets.current.events is not None:
-            nevents = self.datasets.current.events.shape[0]
+        if self.all.current.events:
+            nevents = self.all.current.events.shape[0]
         else:
             nevents = None
 
-        if self.datasets.current.ftype is not None:
-            ftype = self.datasets.current.ftype
-        else:
-            ftype = "-"
-
         return {"File name": fname if fname else "-",
-                "File type": ftype,
-                "Number of channels": raw.info["nchan"],
+                "File type": ftype if ftype else "-",
+                "Number of channels": nchan,
                 "Channels": ", ".join(
                     [" ".join([str(v), k.upper()]) for k, v in chans.items()]),
                 "Samples": raw.n_times,
                 "Sampling frequency": str(raw.info["sfreq"]) + " Hz",
                 "Length": str(raw.n_times / raw.info["sfreq"]) + " s",
-                "Events": nevents if nevents is not None else "-",
+                "Events": nevents if nevents else "-",
                 "Size in memory": "{:.2f} MB".format(
                     raw._data.nbytes / 1024 ** 2),
                 "Size on disk": "-" if not fname else "{:.2f} MB".format(
@@ -187,10 +182,10 @@ class MainWindow(QMainWindow):
     def plot_raw(self):
         """Plot raw data.
         """
-        events = self.datasets.current.events
+        events = self.all.current.events
         nchan = 16  #self.datasets.current.raw.info["nchan"]
-        fig = self.datasets.current.raw.plot(events=events, n_channels=nchan,
-                                             show=False)
+        fig = self.all.current.raw.plot(events=events, n_channels=nchan,
+                                        show=False)
         win = fig.canvas.manager.window
         win.findChild(QStatusBar).hide()
         fig.show()
@@ -211,21 +206,21 @@ class MainWindow(QMainWindow):
 
         if dialog.exec_():
             low, high = dialog.low, dialog.high
-            filtered = filter_data(self.datasets.current.raw._data,
-                                   self.datasets.current.raw.info["sfreq"],
+            filtered = filter_data(self.all.current.raw._data,
+                                   self.all.current.raw.info["sfreq"],
                                    l_freq=low, h_freq=high)
             # self.datasets.current.raw.filter(low, high)
             self.history.append("raw.filter({}, {})".format(low, high))
 
             # if current data is stored in a file we create a new data set with
             # the modified data
-            if self.datasets.current.fname:
-                self.datasets.current.raw._data = filtered
-                new = DataSet(name=self.datasets.current.name + " (filtered)",
-                              raw=self.datasets.current.raw)
-                self.datasets.insert_data(new)
-                self._update_sidebar()
-                self._update_main()
+            if self.all.current.fname:
+                self.all.current.raw._data = filtered
+                new = DataSet(name=self.all.current.name + " (filtered)",
+                              raw=self.all.current.raw)
+                self.all.insert_data(new)
+                self._update_sidebar(self.all.names, self.all.index)
+                self._update_infowidget()
                 self._update_statusbar()
             # otherwise ask if the current data set should be overwritten (in
             # memory) or if a new data set should be created
@@ -233,18 +228,18 @@ class MainWindow(QMainWindow):
                 msg = QMessageBox.question(self, "Overwrite existing data set",
                                            "Overwrite existing data set?")
                 if msg == QMessageBox.No:  # create new data set
-                    copy = self.datasets.current.raw.copy()
+                    copy = self.all.current.raw.copy()
                     copy._data = filtered
-                    new = DataSet(name=self.datasets.current.name +
+                    new = DataSet(name=self.all.current.name +
                                   " (filtered)", raw=copy)
-                    self.datasets.insert_data(new)
-                    self._update_sidebar()
-                    self._update_main()
+                    self.all.insert_data(new)
+                    self._update_sidebar(self.all.names, self.all.index)
+                    self._update_infowidget()
                     self._update_statusbar()
                 else:  # overwrite existing data set
-                    self.datasets.current.raw._data = filtered
-                    idx = self.datasets.index
-                    self.datasets.data[idx] = self.datasets.current
+                    self.all.current.raw._data = filtered
+                    idx = self.all.index
+                    self.all.data[idx] = self.all.current
 
     def show_about(self):
         """Show About dialog.
@@ -258,19 +253,21 @@ class MainWindow(QMainWindow):
         """
         QMessageBox.aboutQt(self, "About Qt")
 
-    def _update_sidebar(self):
-        self.names.setStringList(self.datasets.names)
-        self.sidebar.setCurrentIndex(self.names.index(self.datasets.index))
+    def _update_sidebar(self, names, index):
+        """Update (overwrite) sidebar with names and current index.
+        """
+        self.names.setStringList(names)
+        self.sidebar.setCurrentIndex(self.names.index(index))
 
-    def _update_main(self):
-        if self.datasets:
+    def _update_infowidget(self):
+        if self.all:
             self.infowidget.set_values(self.get_info())
         else:
             self.infowidget.clear()
 
     def _update_statusbar(self):
-        if self.datasets:
-            mb = self.datasets.nbytes / 1024 ** 2
+        if self.all:
+            mb = self.all.nbytes / 1024 ** 2
             self.status_label.setText("Total Memory: {:.2f} MB".format(mb))
         else:
             self.status_label.clear()
@@ -355,17 +352,17 @@ class MainWindow(QMainWindow):
         selected : QModelIndex
             Index of the selected row.
         """
-        if selected.row() != self.datasets.index:
-            self.datasets.index = selected.row()
-            self.datasets.update_current()
-            self._update_main()
+        if selected.row() != self.all.index:
+            self.all.index = selected.row()
+            self.all.update_current()
+            self._update_infowidget()
 
     @pyqtSlot(QModelIndex, QModelIndex)
     def _update_names(self, topleft, bottomright):
         start, stop = topleft.row(), bottomright.row()
         for index in range(start, stop + 1):
-            self.datasets.data[index].name = self.names.stringList()[index]
-        self.datasets.current.name = self.datasets.names[self.datasets.index]
+            self.all.data[index].name = self.names.stringList()[index]
+        self.all.current.name = self.all.names[self.all.index]
 
     @pyqtSlot()
     def _update_recent_menu(self):

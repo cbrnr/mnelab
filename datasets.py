@@ -7,7 +7,7 @@ class EmptyDataSetsError(Exception):
 
 class DataSets:
     def __init__(self):
-        self.data = []  # contains all data sets
+        self.data = []  # list of DataSet items
         self.index = -1  # index of the currently active data set
         self.current = None  # copy of currently active data set
 
