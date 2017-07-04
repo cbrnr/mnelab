@@ -188,6 +188,7 @@ class MainWindow(QMainWindow):
         nchan = 16  #self.datasets.current.raw.info["nchan"]
         fig = self.all.current.raw.plot(events=events, n_channels=nchan,
                                         show=False)
+        self.history.append("raw.plot(n_channels={})".format(nchan))
         win = fig.canvas.manager.window
         win.findChild(QStatusBar).hide()
         fig.show()
