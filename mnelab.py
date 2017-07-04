@@ -193,11 +193,16 @@ class MainWindow(QMainWindow):
                                         show=False)
         self.history.append("raw.plot(n_channels={})".format(nchan))
         win = fig.canvas.manager.window
+        win.setWindowTitle("Raw data")
         win.findChild(QStatusBar).hide()
         fig.show()
 
     def plot_psd(self):
-        self.all.current.raw.plot_psd(average=False, spatial_colors=False)
+        fig = self.all.current.raw.plot_psd(average=False,
+                                            spatial_colors=False, show=False)
+        win = fig.canvas.manager.window
+        win.setWindowTitle("Power spectral density")
+        fig.show()
 
     def load_ica(self):
         """Load ICA solution from a file.
