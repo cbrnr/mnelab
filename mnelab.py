@@ -69,9 +69,13 @@ class MainWindow(QMainWindow):
         tools_menu = menubar.addMenu("&Tools")
         self.filter_action = tools_menu.addAction("&Filter data...",
                                                   self.filter_data)
+        self.setref_action = tools_menu.addAction("&Set reference channels...",
+                                                  self.set_reference)
+        self.reref_action = tools_menu.addAction("&Re-reference data...",
+                                                 self.re_reference)
         self.find_events_action = tools_menu.addAction("Find &events...",
                                                        self.find_events)
-        self.run_ica_action = tools_menu.addAction("&Run ICA...")
+        self.run_ica_action = tools_menu.addAction("Run &ICA...")
         self.import_ica_action = tools_menu.addAction("&Load ICA...",
                                                       self.load_ica)
 
@@ -180,6 +184,7 @@ class MainWindow(QMainWindow):
                 "Sampling frequency": str(raw.info["sfreq"]) + " Hz",
                 "Length": str(raw.n_times / raw.info["sfreq"]) + " s",
                 "Events": nevents if nevents else "-",
+                "Reference": "-",
                 "Size in memory": "{:.2f} MB".format(
                     raw._data.nbytes / 1024 ** 2),
                 "Size on disk": "-" if not fname else "{:.2f} MB".format(
@@ -255,6 +260,12 @@ class MainWindow(QMainWindow):
                     idx = self.all.index
                     self.all.data[idx] = self.all.current
 
+    def set_reference(self):
+        pass
+
+    def re_reference(self):
+        pass
+
     def show_about(self):
         """Show About dialog.
         """
@@ -264,7 +275,8 @@ class MainWindow(QMainWindow):
         <a href="https://github.com/mne-tools/mne-python">MNE</a>.<br/><br/>
         This program uses MNE version {}.<br/><br/>
         Licensed under the BSD 3-clause license.<br/>
-        Copyright 2017 by Clemens Brunner.""".format(__version__, mne.__version__)
+        Copyright 2017 by Clemens Brunner.""".format(__version__,
+                                                     mne.__version__)
         QMessageBox.about(self, "About MNELAB", msg)
 
     def show_about_qt(self):
@@ -304,6 +316,8 @@ class MainWindow(QMainWindow):
         self.plot_raw_action.setEnabled(enabled)
         self.plot_psd_action.setEnabled(enabled)
         self.filter_action.setEnabled(enabled)
+        self.setref_action.setEnabled(enabled)
+        self.reref_action.setEnabled(enabled)
         self.find_events_action.setEnabled(enabled)
         self.run_ica_action.setEnabled(enabled)
         self.import_ica_action.setEnabled(enabled)
