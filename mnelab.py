@@ -5,10 +5,10 @@ from os.path import getsize, split, splitext
 import matplotlib
 import mne
 from PyQt5.QtCore import (pyqtSlot, QStringListModel, QModelIndex, QSettings,
-                          QEvent)
+                          QEvent, Qt)
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
-                             QMessageBox, QListView, QAction, QLabel,
+                             QMessageBox, QListView, QAction, QLabel, QFrame,
                              QStatusBar)
 from mne.io.pick import channel_type
 from mne.filter import filter_data
@@ -88,8 +88,8 @@ class MainWindow(QMainWindow):
         self.names.dataChanged.connect(self._update_names)
         splitter = QSplitter()
         self.sidebar = QListView()
-        self.sidebar.setFrameStyle(0)
-        self.sidebar.setFocusPolicy(0)
+        self.sidebar.setFrameStyle(QFrame.NoFrame)
+        self.sidebar.setFocusPolicy(Qt.NoFocus)
         self.sidebar.setModel(self.names)
         self.sidebar.clicked.connect(self._update_data)
         splitter.addWidget(self.sidebar)
