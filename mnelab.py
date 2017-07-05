@@ -262,8 +262,9 @@ class MainWindow(QMainWindow):
         <a href="https://github.com/cbrnr/mnelab">MNELAB</a> - a graphical user
         interface for
         <a href="https://github.com/mne-tools/mne-python">MNE</a>.<br/><br/>
+        This program uses MNE version {}.<br/><br/>
         Licensed under the BSD 3-clause license.<br/>
-        Copyright 2017 by Clemens Brunner.""".format(__version__)
+        Copyright 2017 by Clemens Brunner.""".format(__version__, mne.__version__)
         QMessageBox.about(self, "About MNELAB", msg)
 
     def show_about_qt(self):
