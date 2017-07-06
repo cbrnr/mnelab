@@ -15,6 +15,7 @@ from mne.filter import filter_data
 
 from datasets import DataSets, DataSet
 from filterdialog import FilterDialog
+from referencedialog import ReferenceDialog
 from infowidget import InfoWidget
 
 
@@ -51,7 +52,7 @@ class MainWindow(QMainWindow):
 
         file_menu = menubar.addMenu("&File")
         file_menu.addAction("&Open...", self.open_file, QKeySequence.Open)
-        self.recent_menu = file_menu.addMenu("Open Recent")
+        self.recent_menu = file_menu.addMenu("Open recent")
         self.recent_menu.aboutToShow.connect(self._update_recent_menu)
         self.recent_menu.triggered.connect(self._load_recent)
         if not self.recent:
@@ -69,7 +70,7 @@ class MainWindow(QMainWindow):
         tools_menu = menubar.addMenu("&Tools")
         self.filter_action = tools_menu.addAction("&Filter data...",
                                                   self.filter_data)
-        self.setref_action = tools_menu.addAction("&Set reference channels...",
+        self.setref_action = tools_menu.addAction("&Set current reference...",
                                                   self.set_reference)
         self.reref_action = tools_menu.addAction("&Re-reference data...",
                                                  self.re_reference)
@@ -166,6 +167,7 @@ class MainWindow(QMainWindow):
         raw = self.all.current.raw
         fname = self.all.current.fname
         ftype = self.all.current.ftype
+        reference = self.all.current.reference
 
         nchan = raw.info["nchan"]
         chans = Counter([channel_type(raw.info, i) for i in range(nchan)])
@@ -184,7 +186,7 @@ class MainWindow(QMainWindow):
                 "Sampling frequency": str(raw.info["sfreq"]) + " Hz",
                 "Length": str(raw.n_times / raw.info["sfreq"]) + " s",
                 "Events": nevents if nevents else "-",
-                "Reference": "-",
+                "Reference": reference if reference else "-",
                 "Size in memory": "{:.2f} MB".format(
                     raw._data.nbytes / 1024 ** 2),
                 "Size on disk": "-" if not fname else "{:.2f} MB".format(
@@ -230,41 +232,29 @@ class MainWindow(QMainWindow):
                                    self.all.current.raw.info["sfreq"],
                                    l_freq=low, h_freq=high)
             self.history.append("raw.filter({}, {})".format(low, high))
-
-            # if current data is stored in a file we create a new data set with
-            # the modified data
-            if self.all.current.fname:
-                self.all.current.raw._data = filtered
-                new = DataSet(name=self.all.current.name + " (filtered)",
-                              raw=self.all.current.raw)
-                self.all.insert_data(new)
-                self._update_sidebar(self.all.names, self.all.index)
-                self._update_infowidget()
-                self._update_statusbar()
-            # otherwise ask if the current data set should be overwritten (in
-            # memory) or if a new data set should be created
-            else:
-                msg = QMessageBox.question(self, "Overwrite existing data set",
-                                           "Overwrite existing data set?")
-                if msg == QMessageBox.No:  # create new data set
-                    copy = self.all.current.raw.copy()
-                    copy._data = filtered
-                    new = DataSet(name=self.all.current.name +
-                                  " (filtered)", raw=copy)
-                    self.all.insert_data(new)
-                    self._update_sidebar(self.all.names, self.all.index)
-                    self._update_infowidget()
-                    self._update_statusbar()
-                else:  # overwrite existing data set
-                    self.all.current.raw._data = filtered
-                    idx = self.all.index
-                    self.all.data[idx] = self.all.current
+            self._update_datasets(filtered)
 
     def set_reference(self):
-        pass
+        dialog = ReferenceDialog("Set current reference")
+        if dialog.exec_():
+            if dialog.average.isChecked():
+                print("Average selected")
+            else:
+                print("Channel(s) selected")
+                channellist = dialog.channellist.text().split(",")
+                channellist = [c.strip() for c in channellist]
+                print(channellist)
 
     def re_reference(self):
-        pass
+        dialog = ReferenceDialog("Re-reference data")
+        if dialog.exec_():
+            if dialog.average.isChecked():
+                print("Average selected")
+            else:
+                print("Channel(s) selected")
+                channellist = dialog.channellist.text().split(",")
+                channellist = [c.strip() for c in channellist]
+                print(channellist)
 
     def show_about(self):
         """Show About dialog.
@@ -283,6 +273,33 @@ class MainWindow(QMainWindow):
         """Show About Qt dialog.
         """
         QMessageBox.aboutQt(self, "About Qt")
+
+    def _update_datasets(self, data):
+        # if current data is stored in a file create a new data set
+        if self.all.current.fname:
+            self.all.current.raw._data = data
+            new = DataSet(name=self.all.current.name + " (filtered)",
+                          raw=self.all.current.raw)
+            self.all.insert_data(new)
+        # otherwise ask if the current data set should be overwritten (in
+        # memory) or if a new data set should be created
+        else:
+            msg = QMessageBox.question(self, "Overwrite existing data set",
+                                       "Overwrite existing data set?")
+            if msg == QMessageBox.No:  # create new data set
+                copy = self.all.current.raw.copy()
+                copy._data = data
+                new = DataSet(name=self.all.current.name +
+                                   " (filtered)", raw=copy)
+                self.all.insert_data(new)
+            else:  # overwrite existing data set
+                self.all.current.raw._data = data
+                new = DataSet(name=self.all.current.name + " (filtered)",
+                              raw=self.all.current.raw)
+                self.all.update_data(new)
+        self._update_sidebar(self.all.names, self.all.index)
+        self._update_infowidget()
+        self._update_statusbar()
 
     def _update_sidebar(self, names, index):
         """Update (overwrite) sidebar with names and current index.

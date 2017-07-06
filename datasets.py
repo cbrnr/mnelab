@@ -30,6 +30,10 @@ class DataSets:
                 self.index = len(self.data) - 1  # reset index to last entry
             self.update_current()
 
+    def update_data(self, dataset):
+        self.data[self.index] = dataset
+        self.update_current()
+
     def update_current(self):
         """Update current data set copy.
         """
@@ -56,9 +60,10 @@ class DataSets:
 
 class DataSet:
     def __init__(self, name=None, fname=None, ftype=None, raw=None,
-                 events=None):
+                 events=None, reference=None):
         self.name = name
         self.fname = fname
         self.ftype = ftype
         self.raw = raw
         self.events = events
+        self.reference = reference
