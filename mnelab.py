@@ -232,7 +232,7 @@ class MainWindow(QMainWindow):
                                    self.all.current.raw.info["sfreq"],
                                    l_freq=low, h_freq=high)
             self.history.append("raw.filter({}, {})".format(low, high))
-            self._update_datasets(filtered)
+            self._update_datasets(filtered, " ({}-{} Hz)".format(low, high))
 
     def set_reference(self):
         dialog = ReferenceDialog("Set current reference")
@@ -274,11 +274,11 @@ class MainWindow(QMainWindow):
         """
         QMessageBox.aboutQt(self, "About Qt")
 
-    def _update_datasets(self, data):
+    def _update_datasets(self, data, append):
         # if current data is stored in a file create a new data set
         if self.all.current.fname:
             self.all.current.raw._data = data
-            new = DataSet(name=self.all.current.name + " (filtered)",
+            new = DataSet(name=self.all.current.name + append,
                           raw=self.all.current.raw)
             self.all.insert_data(new)
         # otherwise ask if the current data set should be overwritten (in
@@ -289,12 +289,11 @@ class MainWindow(QMainWindow):
             if msg == QMessageBox.No:  # create new data set
                 copy = self.all.current.raw.copy()
                 copy._data = data
-                new = DataSet(name=self.all.current.name +
-                                   " (filtered)", raw=copy)
+                new = DataSet(name=self.all.current.name + append, raw=copy)
                 self.all.insert_data(new)
             else:  # overwrite existing data set
                 self.all.current.raw._data = data
-                new = DataSet(name=self.all.current.name + " (filtered)",
+                new = DataSet(name=self.all.current.name + append,
                               raw=self.all.current.raw)
                 self.all.update_data(new)
         self._update_sidebar(self.all.names, self.all.index)
