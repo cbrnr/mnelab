@@ -6,7 +6,7 @@ import matplotlib
 import mne
 from PyQt5.QtCore import (pyqtSlot, QStringListModel, QModelIndex, QSettings,
                           QEvent, Qt)
-from PyQt5.QtGui import QKeySequence
+from PyQt5.QtGui import QKeySequence, QDropEvent
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                              QMessageBox, QListView, QAction, QLabel, QFrame,
                              QStatusBar)
@@ -112,6 +112,8 @@ class MainWindow(QMainWindow):
         else:
             self.statusBar().hide()
             statusbar_action.setChecked(False)
+
+        self.setAcceptDrops(True)
 
         self._toggle_actions(False)
         self.show()
@@ -433,6 +435,19 @@ class MainWindow(QMainWindow):
         else:
             self.statusBar().hide()
         self._write_settings()
+
+    @pyqtSlot(QDropEvent)
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()
+
+    @pyqtSlot(QDropEvent)
+    def dropEvent(self, event):
+        mime = event.mimeData()
+        if mime.hasUrls():
+            urls = mime.urls()
+            for url in urls:
+                self.load_file(url.toLocalFile())
 
     @pyqtSlot(QEvent)
     def closeEvent(self, event):
