@@ -205,7 +205,7 @@ class MainWindow(QMainWindow):
 
     def pick_channels(self):
         channels = self.all.current.raw.info["ch_names"]
-        dialog = PickChannelsDialog(channels)
+        dialog = PickChannelsDialog(self, channels)
         if dialog.exec_():
             picks = [item.data(0) for item in dialog.channels.selectedItems()]
             drops = set(channels) - set(picks)
@@ -218,7 +218,8 @@ class MainWindow(QMainWindow):
     def set_bads(self):
         channels = self.all.current.raw.info["ch_names"]
         selected = self.all.current.raw.info["bads"]
-        dialog = PickChannelsDialog(channels, selected, "Set bad channels")
+        dialog = PickChannelsDialog(self, channels, selected,
+                                    "Set bad channels")
         if dialog.exec_():
             bads = [item.data(0) for item in dialog.channels.selectedItems()]
             self.all.current.raw.info["bads"] = bads
@@ -257,7 +258,7 @@ class MainWindow(QMainWindow):
         pass
 
     def filter_data(self):
-        dialog = FilterDialog()
+        dialog = FilterDialog(self)
 
         if dialog.exec_():
             low, high = dialog.low, dialog.high
@@ -271,7 +272,7 @@ class MainWindow(QMainWindow):
             self._update_datasets(new)
 
     def set_reference(self):
-        dialog = ReferenceDialog("Set current reference")
+        dialog = ReferenceDialog(self, "Set current reference")
         if dialog.exec_():
             if dialog.average.isChecked():
                 print("Average selected")
@@ -282,7 +283,7 @@ class MainWindow(QMainWindow):
                 print(channellist)
 
     def reref(self):
-        dialog = ReferenceDialog("Re-reference data")
+        dialog = ReferenceDialog(self, "Re-reference data")
         if dialog.exec_():
             if dialog.average.isChecked():  # average reference
                 tmp, _ = mne.set_eeg_reference(self.all.current.raw, None)

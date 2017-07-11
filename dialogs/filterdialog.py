@@ -3,8 +3,8 @@ from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
 
 
 class FilterDialog(QDialog):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super().__init__(parent)
         self.setWindowTitle("Filter data")
         vbox = QVBoxLayout(self)
         grid = QGridLayout()

@@ -2,8 +2,8 @@ from PyQt5.QtWidgets import QDialog, QVBoxLayout, QListWidget, QDialogButtonBox
 
 
 class PickChannelsDialog(QDialog):
-    def __init__(self, channels, selected=[], title="Pick channels"):
-        super().__init__()
+    def __init__(self, parent, channels, selected=[], title="Pick channels"):
+        super().__init__(parent)
         self.setWindowTitle(title)
         vbox = QVBoxLayout(self)
         self.channels = QListWidget()

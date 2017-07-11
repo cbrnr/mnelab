@@ -3,8 +3,8 @@ from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLineEdit,
 
 
 class ReferenceDialog(QDialog):
-    def __init__(self, title="Re-reference data"):
-        super().__init__()
+    def __init__(self, parent, title="Re-reference data"):
+        super().__init__(parent)
         self.setWindowTitle(title)
         vbox = QVBoxLayout(self)
         grid = QGridLayout()
