@@ -298,7 +298,7 @@ class MainWindow(QMainWindow):
         """
         QMessageBox.aboutQt(self, "About Qt")
 
-    def _update_datasets(self, dataset, suffix=""):
+    def _update_datasets(self, dataset):
         # if current data is stored in a file create a new data set
         if self.all.current.fname:
             self.all.insert_data(dataset)
@@ -340,8 +340,7 @@ class MainWindow(QMainWindow):
         Parameters
         ----------
         enabled : bool
-            Specifies whether actions should be enabled (True) or disabled
-            (False).
+            Specifies whether actions are enabled (True) or disabled (False).
         """
         self.close_file_action.setEnabled(enabled)
         self.pick_chans_action.setEnabled(enabled)
