@@ -13,6 +13,11 @@ class DataSets:
 
     def insert_data(self, dataset):
         """Insert new data set at current index.
+
+        Parameters
+        ----------
+        dataset : DataSet
+            New data set.
         """
         self.index += 1
         self.data.insert(self.index, dataset)
@@ -31,6 +36,13 @@ class DataSets:
             self.update_current()
 
     def update_data(self, dataset):
+        """Update data set at current index.
+
+        Parameters
+        ----------
+        dataset : DataSet
+            New data set that overwrites the current one.
+        """
         self.data[self.index] = dataset
         self.update_current()
 
