@@ -14,6 +14,7 @@ from mne.io.pick import channel_type
 from mne.filter import filter_data
 
 from datasets import DataSets, DataSet
+from pickchannels import PickChannelsDialog
 from filterdialog import FilterDialog
 from referencedialog import ReferenceDialog
 from infowidget import InfoWidget
@@ -61,6 +62,10 @@ class MainWindow(QMainWindow):
                                                      QKeySequence.Close)
         file_menu.addSeparator()
         file_menu.addAction("&Quit", self.close, QKeySequence.Quit)
+
+        edit_menu = menubar.addMenu("&Edit")
+        self.pick_chans_action = edit_menu.addAction("Pick &channels...",
+                                                     self.pick_channels)
 
         plot_menu = menubar.addMenu("&Plot")
         self.plot_raw_action = plot_menu.addAction("&Raw data", self.plot_raw)
@@ -194,6 +199,18 @@ class MainWindow(QMainWindow):
                 "Size on disk": "-" if not fname else "{:.2f} MB".format(
                     getsize(fname) / 1024 ** 2)}
 
+    def pick_channels(self):
+        channels = self.all.current.raw.info["ch_names"]
+        dialog = PickChannelsDialog(channels)
+        if dialog.exec_():
+            picks = [item.data(0) for item in dialog.channels.selectedItems()]
+            drops = set(channels) - set(picks)
+            tmp = self.all.current.raw.drop_channels(drops)
+            name = self.all.current.name + " (channels dropped)"
+            new = DataSet(raw=tmp, name=name)
+            self.history.append("raw.drop({})".format(drops))
+            self._update_datasets(new)
+
     def plot_raw(self):
         """Plot raw data.
         """
@@ -230,11 +247,14 @@ class MainWindow(QMainWindow):
 
         if dialog.exec_():
             low, high = dialog.low, dialog.high
-            filtered = filter_data(self.all.current.raw._data,
-                                   self.all.current.raw.info["sfreq"],
-                                   l_freq=low, h_freq=high)
+            tmp = filter_data(self.all.current.raw._data,
+                              self.all.current.raw.info["sfreq"],
+                              l_freq=low, h_freq=high)
+            name = self.all.current.name + " ({}-{} Hz)".format(low, high)
+            new = DataSet(raw=mne.io.RawArray(tmp, self.all.current.raw.info),
+                          name=name)
             self.history.append("raw.filter({}, {})".format(low, high))
-            self._update_datasets(filtered, " ({}-{} Hz)".format(low, high))
+            self._update_datasets(new)
 
     def set_reference(self):
         dialog = ReferenceDialog("Set current reference")
@@ -250,10 +270,13 @@ class MainWindow(QMainWindow):
     def re_reference(self):
         dialog = ReferenceDialog("Re-reference data")
         if dialog.exec_():
-            if dialog.average.isChecked():
-                print("Average selected")
+            if dialog.average.isChecked():  # average reference
+                tmp, _ = mne.set_eeg_reference(self.all.current.raw, None)
+                tmp.apply_proj()
+                name = self.all.current.name + " (average ref)"
+                new = DataSet(raw=tmp, name=name, reference="average")
+                self._update_datasets(new)
             else:
-                print("Channel(s) selected")
                 channellist = dialog.channellist.text().split(",")
                 channellist = [c.strip() for c in channellist]
                 print(channellist)
@@ -276,28 +299,19 @@ class MainWindow(QMainWindow):
         """
         QMessageBox.aboutQt(self, "About Qt")
 
-    def _update_datasets(self, data, append):
+    def _update_datasets(self, dataset, suffix=""):
         # if current data is stored in a file create a new data set
         if self.all.current.fname:
-            self.all.current.raw._data = data
-            new = DataSet(name=self.all.current.name + append,
-                          raw=self.all.current.raw)
-            self.all.insert_data(new)
-        # otherwise ask if the current data set should be overwritten (in
-        # memory) or if a new data set should be created
+            self.all.insert_data(dataset)
+        # otherwise ask if the current data set should be overwritten or if a
+        # new data set should be created
         else:
             msg = QMessageBox.question(self, "Overwrite existing data set",
                                        "Overwrite existing data set?")
             if msg == QMessageBox.No:  # create new data set
-                copy = self.all.current.raw.copy()
-                copy._data = data
-                new = DataSet(name=self.all.current.name + append, raw=copy)
-                self.all.insert_data(new)
+                self.all.insert_data(dataset)
             else:  # overwrite existing data set
-                self.all.current.raw._data = data
-                new = DataSet(name=self.all.current.name + append,
-                              raw=self.all.current.raw)
-                self.all.update_data(new)
+                self.all.update_data(dataset)
         self._update_sidebar(self.all.names, self.all.index)
         self._update_infowidget()
         self._update_statusbar()
@@ -331,6 +345,7 @@ class MainWindow(QMainWindow):
             (False).
         """
         self.close_file_action.setEnabled(enabled)
+        self.pick_chans_action.setEnabled(enabled)
         self.plot_raw_action.setEnabled(enabled)
         self.plot_psd_action.setEnabled(enabled)
         self.filter_action.setEnabled(enabled)
