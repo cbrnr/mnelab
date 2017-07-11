@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
-                             QLineEdit, QDialogButtonBox, QRadioButton)
+from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLineEdit,
+                             QDialogButtonBox, QRadioButton)
 
 
 class ReferenceDialog(QDialog):

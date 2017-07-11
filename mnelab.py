@@ -10,15 +10,14 @@ from PyQt5.QtGui import QKeySequence, QDropEvent
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                              QMessageBox, QListView, QAction, QLabel, QFrame,
                              QStatusBar)
-from mne.io.pick import channel_type
 from mne.filter import filter_data
+from mne.io.pick import channel_type
 
-from datasets import DataSets, DataSet
-from pickchannels import PickChannelsDialog
-from filterdialog import FilterDialog
-from referencedialog import ReferenceDialog
-from infowidget import InfoWidget
-
+from dialogs.filterdialog import FilterDialog
+from dialogs.pickchannelsdialog import PickChannelsDialog
+from dialogs.referencedialog import ReferenceDialog
+from utils.datasets import DataSets, DataSet
+from widgets.infowidget import InfoWidget
 
 __version__ = "0.1.0"
 
@@ -66,6 +65,10 @@ class MainWindow(QMainWindow):
         edit_menu = menubar.addMenu("&Edit")
         self.pick_chans_action = edit_menu.addAction("Pick &channels...",
                                                      self.pick_channels)
+        self.setref_action = edit_menu.addAction("&Set current reference...",
+                                                  self.set_reference)
+        self.reref_action = edit_menu.addAction("&Re-reference data...",
+                                                 self.re_reference)
 
         plot_menu = menubar.addMenu("&Plot")
         self.plot_raw_action = plot_menu.addAction("&Raw data", self.plot_raw)
@@ -75,10 +78,6 @@ class MainWindow(QMainWindow):
         tools_menu = menubar.addMenu("&Tools")
         self.filter_action = tools_menu.addAction("&Filter data...",
                                                   self.filter_data)
-        self.setref_action = tools_menu.addAction("&Set current reference...",
-                                                  self.set_reference)
-        self.reref_action = tools_menu.addAction("&Re-reference data...",
-                                                 self.re_reference)
         self.find_events_action = tools_menu.addAction("Find &events...",
                                                        self.find_events)
         self.run_ica_action = tools_menu.addAction("Run &ICA...")
