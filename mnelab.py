@@ -65,6 +65,8 @@ class MainWindow(QMainWindow):
         edit_menu = menubar.addMenu("&Edit")
         self.pick_chans_action = edit_menu.addAction("Pick &channels...",
                                                      self.pick_channels)
+        self.set_bads_action = edit_menu.addAction("Set &bad channels...",
+                                                   self.set_bads)
         self.setref_action = edit_menu.addAction("&Set current reference...",
                                                   self.set_reference)
         self.reref_action = edit_menu.addAction("&Re-reference data...",
@@ -210,6 +212,15 @@ class MainWindow(QMainWindow):
             self.history.append("raw.drop({})".format(drops))
             self._update_datasets(new)
 
+    def set_bads(self):
+        channels = self.all.current.raw.info["ch_names"]
+        selected = self.all.current.raw.info["bads"]
+        dialog = PickChannelsDialog(channels, selected, "Set bad channels")
+        if dialog.exec_():
+            bads = [item.data(0) for item in dialog.channels.selectedItems()]
+            self.all.current.raw.info["bads"] = bads
+            self.all.data[self.all.index].raw.info["bads"] = bads
+
     def plot_raw(self):
         """Plot raw data.
         """
@@ -344,6 +355,7 @@ class MainWindow(QMainWindow):
         """
         self.close_file_action.setEnabled(enabled)
         self.pick_chans_action.setEnabled(enabled)
+        self.set_bads_action.setEnabled(enabled)
         self.plot_raw_action.setEnabled(enabled)
         self.plot_psd_action.setEnabled(enabled)
         self.filter_action.setEnabled(enabled)
