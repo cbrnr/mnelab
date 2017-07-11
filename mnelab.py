@@ -228,6 +228,7 @@ class MainWindow(QMainWindow):
         nchan = self.all.current.raw.info["nchan"]
         fig = self.all.current.raw.plot(events=events, n_channels=nchan,
                                         show=False)
+        fig.axes[0].set_title(self.all.current.name)
         self.history.append("raw.plot(n_channels={})".format(nchan))
         win = fig.canvas.manager.window
         win.setWindowTitle("Raw data")
