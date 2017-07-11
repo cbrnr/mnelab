@@ -1,6 +1,6 @@
 import sys
 from collections import Counter
-from os.path import getsize, split, splitext
+from os.path import getsize, split, splitext, join
 
 import matplotlib
 import mne
@@ -60,13 +60,17 @@ class MainWindow(QMainWindow):
         self.close_file_action = file_menu.addAction("&Close", self.close_file,
                                                      QKeySequence.Close)
         file_menu.addSeparator()
+        self.export_bad_action = file_menu.addAction("Export &bad channels...",
+                                                     self.export_bads)
+        file_menu.addSeparator()
         file_menu.addAction("&Quit", self.close, QKeySequence.Quit)
 
         edit_menu = menubar.addMenu("&Edit")
         self.pick_chans_action = edit_menu.addAction("Pick &channels...",
                                                      self.pick_channels)
-        self.set_bads_action = edit_menu.addAction("Set &bad channels...",
+        self.set_bads_action = edit_menu.addAction("&Bad channels...",
                                                    self.set_bads)
+        edit_menu.addSeparator()
         # self.setref_action = edit_menu.addAction("&Set current reference...",
         #                                           self.set_reference)
         self.reref_action = edit_menu.addAction("&Re-reference data...",
@@ -153,6 +157,16 @@ class MainWindow(QMainWindow):
         self._add_recent(fname)
         self._toggle_actions()
 
+    def export_bads(self):
+        fname = QFileDialog.getSaveFileName(self, "Export bad channels",
+                                            filter="*.csv")[0]
+        if fname:
+            name, ext = splitext(split(fname)[-1])
+            ext = ext if ext else ".csv"  # automatically add extension
+            fname = join(split(fname)[0], name + ext)
+            with open(fname, "w") as f:
+                f.write(",".join(self.all.current.raw.info["bads"]))
+
     def close_file(self):
         """Close current file.
         """
@@ -218,12 +232,12 @@ class MainWindow(QMainWindow):
     def set_bads(self):
         channels = self.all.current.raw.info["ch_names"]
         selected = self.all.current.raw.info["bads"]
-        dialog = PickChannelsDialog(self, channels, selected,
-                                    "Set bad channels")
+        dialog = PickChannelsDialog(self, channels, selected, "Bad channels")
         if dialog.exec_():
             bads = [item.data(0) for item in dialog.channels.selectedItems()]
             self.all.current.raw.info["bads"] = bads
             self.all.data[self.all.index].raw.info["bads"] = bads
+            self._toggle_actions(True)
 
     def plot_raw(self):
         """Plot raw data.
@@ -361,6 +375,11 @@ class MainWindow(QMainWindow):
             Specifies whether actions are enabled (True) or disabled (False).
         """
         self.close_file_action.setEnabled(enabled)
+        if self.all.data:
+            bads = bool(self.all.current.raw.info["bads"])
+            self.export_bad_action.setEnabled(enabled and bads)
+        else:
+            self.export_bad_action.setEnabled(enabled)
         self.pick_chans_action.setEnabled(enabled)
         self.set_bads_action.setEnabled(enabled)
         self.plot_raw_action.setEnabled(enabled)
