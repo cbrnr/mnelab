@@ -67,10 +67,10 @@ class MainWindow(QMainWindow):
                                                      self.pick_channels)
         self.set_bads_action = edit_menu.addAction("Set &bad channels...",
                                                    self.set_bads)
-        self.setref_action = edit_menu.addAction("&Set current reference...",
-                                                  self.set_reference)
+        # self.setref_action = edit_menu.addAction("&Set current reference...",
+        #                                           self.set_reference)
         self.reref_action = edit_menu.addAction("&Re-reference data...",
-                                                 self.re_reference)
+                                                self.reref)
 
         plot_menu = menubar.addMenu("&Plot")
         self.plot_raw_action = plot_menu.addAction("&Raw data", self.plot_raw)
@@ -185,6 +185,9 @@ class MainWindow(QMainWindow):
         else:
             nevents = None
 
+        if isinstance(reference, list):
+            reference = ",".join(reference)
+
         return {"File name": fname if fname else "-",
                 "File type": ftype if ftype else "-",
                 "Number of channels": nchan,
@@ -278,7 +281,7 @@ class MainWindow(QMainWindow):
                 channellist = [c.strip() for c in channellist]
                 print(channellist)
 
-    def re_reference(self):
+    def reref(self):
         dialog = ReferenceDialog("Re-reference data")
         if dialog.exec_():
             if dialog.average.isChecked():  # average reference
@@ -287,10 +290,12 @@ class MainWindow(QMainWindow):
                 name = self.all.current.name + " (average ref)"
                 new = DataSet(raw=tmp, name=name, reference="average")
                 self._update_datasets(new)
-            else:
-                channellist = dialog.channellist.text().split(",")
-                channellist = [c.strip() for c in channellist]
-                print(channellist)
+            else:  # single or multiple channels
+                ref = [c.strip() for c in dialog.channellist.text().split(",")]
+                tmp, _ = mne.set_eeg_reference(self.all.current.raw, ref)
+                name = self.all.current.name + " (ref {})".format(",".join(ref))
+                new = DataSet(raw=tmp, name=name, reference=ref)
+                self._update_datasets(new)
 
     def show_about(self):
         """Show About dialog.
@@ -360,7 +365,7 @@ class MainWindow(QMainWindow):
         self.plot_raw_action.setEnabled(enabled)
         self.plot_psd_action.setEnabled(enabled)
         self.filter_action.setEnabled(enabled)
-        self.setref_action.setEnabled(enabled)
+        # self.setref_action.setEnabled(enabled)
         self.reref_action.setEnabled(enabled)
         self.find_events_action.setEnabled(enabled)
         self.run_ica_action.setEnabled(enabled)
