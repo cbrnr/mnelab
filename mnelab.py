@@ -60,6 +60,8 @@ class MainWindow(QMainWindow):
         self.close_file_action = file_menu.addAction("&Close", self.close_file,
                                                      QKeySequence.Close)
         file_menu.addSeparator()
+        self.import_bad_action = file_menu.addAction("Import bad channels...",
+                                                     self.import_bads)
         self.export_bad_action = file_menu.addAction("Export &bad channels...",
                                                      self.export_bads)
         file_menu.addSeparator()
@@ -166,6 +168,14 @@ class MainWindow(QMainWindow):
             fname = join(split(fname)[0], name + ext)
             with open(fname, "w") as f:
                 f.write(",".join(self.all.current.raw.info["bads"]))
+
+    def import_bads(self):
+        fname = QFileDialog.getOpenFileName(self, "Import bad channels",
+                                            filter="*.csv")[0]
+        if fname:
+            with open(fname) as f:
+                bads = f.read().replace(" ", "").split(",")
+                print(bads)  # TODO
 
     def close_file(self):
         """Close current file.
@@ -380,6 +390,7 @@ class MainWindow(QMainWindow):
             self.export_bad_action.setEnabled(enabled and bads)
         else:
             self.export_bad_action.setEnabled(enabled)
+        self.import_bad_action.setEnabled(enabled)
         self.pick_chans_action.setEnabled(enabled)
         self.set_bads_action.setEnabled(enabled)
         self.plot_raw_action.setEnabled(enabled)
