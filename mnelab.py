@@ -214,7 +214,7 @@ class MainWindow(QMainWindow):
         """Plot raw data.
         """
         events = self.all.current.events
-        nchan = 16  #self.datasets.current.raw.info["nchan"]
+        nchan = self.all.current.raw.info["nchan"]
         fig = self.all.current.raw.plot(events=events, n_channels=nchan,
                                         show=False)
         self.history.append("raw.plot(n_channels={})".format(nchan))
