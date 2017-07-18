@@ -1,6 +1,6 @@
 import sys
 from collections import Counter
-from os.path import getsize, split, splitext, join
+from os.path import getsize, join, split, splitext
 
 import matplotlib
 import mne
@@ -73,10 +73,10 @@ class MainWindow(QMainWindow):
         self.set_bads_action = edit_menu.addAction("&Bad channels...",
                                                    self.set_bads)
         edit_menu.addSeparator()
-        # self.setref_action = edit_menu.addAction("&Set current reference...",
-        #                                           self.set_reference)
         self.reref_action = edit_menu.addAction("&Re-reference data...",
                                                 self.reref)
+        self.setref_action = edit_menu.addAction("&Set current reference...",
+                                                 self.set_reference)
 
         plot_menu = menubar.addMenu("&Plot")
         self.plot_raw_action = plot_menu.addAction("&Raw data", self.plot_raw)
@@ -299,12 +299,14 @@ class MainWindow(QMainWindow):
         dialog = ReferenceDialog(self, "Set current reference")
         if dialog.exec_():
             if dialog.average.isChecked():
-                print("Average selected")
+                self.all.current.reference = "average"
+                self.all.data[self.all.index].reference = "average"
+                self._update_infowidget()
             else:
-                print("Channel(s) selected")
                 channellist = dialog.channellist.text().split(",")
                 channellist = [c.strip() for c in channellist]
-                print(channellist)
+                mne.add_reference_channels(self.all.current.raw, channellist,
+                                           copy=False)
 
     def reref(self):
         dialog = ReferenceDialog(self, "Re-reference data")
@@ -318,7 +320,8 @@ class MainWindow(QMainWindow):
             else:  # single or multiple channels
                 ref = [c.strip() for c in dialog.channellist.text().split(",")]
                 tmp, _ = mne.set_eeg_reference(self.all.current.raw, ref)
-                name = self.all.current.name + " (ref {})".format(",".join(ref))
+                refstr = ",".join(ref)
+                name = self.all.current.name + " (ref {})".format(refstr)
                 new = DataSet(raw=tmp, name=name, reference=ref)
                 self._update_datasets(new)
 
@@ -396,7 +399,7 @@ class MainWindow(QMainWindow):
         self.plot_raw_action.setEnabled(enabled)
         self.plot_psd_action.setEnabled(enabled)
         self.filter_action.setEnabled(enabled)
-        # self.setref_action.setEnabled(enabled)
+        self.setref_action.setEnabled(enabled)
         self.reref_action.setEnabled(enabled)
         self.find_events_action.setEnabled(enabled)
         self.run_ica_action.setEnabled(enabled)
