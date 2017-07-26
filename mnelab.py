@@ -149,12 +149,13 @@ class MainWindow(QMainWindow):
             File name.
         """
         # TODO: check if fname exists
-        raw = mne.io.read_raw_edf(fname, stim_channel=None, preload=True)
+        raw = mne.io.read_raw_edf(fname, stim_channel=-1, preload=True)
         name, ext = splitext(split(fname)[-1])
         self.history.append("raw = mne.io.read_raw_edf('{}', "
                             "stim_channel=None, preload=True)".format(fname))
         self.all.insert_data(DataSet(name=name, fname=fname,
                                      ftype=ext[1:].upper(), raw=raw))
+        self.find_events()
         self._update_sidebar(self.all.names, self.all.index)
         self._update_infowidget()
         self._update_statusbar()
@@ -225,10 +226,12 @@ class MainWindow(QMainWindow):
         nchan = raw.info["nchan"]
         chans = Counter([channel_type(raw.info, i) for i in range(nchan)])
 
-        if self.all.current.events:
+        if self.all.current.events is not None:
             nevents = self.all.current.events.shape[0]
+            unique = [str(e) for e in set(self.all.current.events[:, 2])]
+            events = "{} ({})".format(nevents, ", ".join(unique))
         else:
-            nevents = None
+            events = "-"
 
         if isinstance(reference, list):
             reference = ",".join(reference)
@@ -241,7 +244,7 @@ class MainWindow(QMainWindow):
                 "Samples": raw.n_times,
                 "Sampling frequency": str(raw.info["sfreq"]) + " Hz",
                 "Length": str(raw.n_times / raw.info["sfreq"]) + " s",
-                "Events": nevents if nevents else "-",
+                "Events": events,
                 "Reference": reference if reference else "-",
                 "Size in memory": "{:.2f} MB".format(
                     raw._data.nbytes / 1024 ** 2),
@@ -280,8 +283,8 @@ class MainWindow(QMainWindow):
         events = self.all.current.events
         nchan = self.all.current.raw.info["nchan"]
         fig = self.all.current.raw.plot(events=events, n_channels=nchan,
+                                        title=self.all.current.name,
                                         show=False)
-        fig.axes[0].set_title(self.all.current.name)
         self.history.append("raw.plot(n_channels={})".format(nchan))
         win = fig.canvas.manager.window
         win.setWindowTitle("Raw data")
@@ -306,7 +309,11 @@ class MainWindow(QMainWindow):
             self.state.ica = mne.preprocessing.read_ica(fname[0])
 
     def find_events(self):
-        pass
+        events = mne.find_events(self.all.current.raw, consecutive=False)
+        if events.shape[0] > 0:  # if events were found
+            self.all.current.events = events
+            self.all.data[self.all.index].events = events
+            self._update_infowidget()
 
     def filter_data(self):
         """Filter data.
