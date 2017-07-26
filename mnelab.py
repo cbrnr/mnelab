@@ -59,6 +59,8 @@ class MainWindow(QMainWindow):
             self.recent_menu.setEnabled(False)
         self.close_file_action = file_menu.addAction("&Close", self.close_file,
                                                      QKeySequence.Close)
+        self.close_all_action = file_menu.addAction("Close all",
+                                                    self.close_all)
         file_menu.addSeparator()
         self.import_bad_action = file_menu.addAction("Import bad channels...",
                                                      self.import_bads)
@@ -187,6 +189,13 @@ class MainWindow(QMainWindow):
 
         if not self.all:
             self._toggle_actions(False)
+
+    def close_all(self):
+        msg = QMessageBox.question(self, "Close all data sets",
+                                   "Close all data sets?")
+        if msg == QMessageBox.Yes:
+            while self.all:
+                self.close_file()
 
     def get_info(self):
         """Get basic information on current file.
@@ -388,6 +397,7 @@ class MainWindow(QMainWindow):
             Specifies whether actions are enabled (True) or disabled (False).
         """
         self.close_file_action.setEnabled(enabled)
+        self.close_all_action.setEnabled(enabled)
         if self.all.data:
             bads = bool(self.all.current.raw.info["bads"])
             self.export_bad_action.setEnabled(enabled and bads)
