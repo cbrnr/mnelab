@@ -162,6 +162,8 @@ class MainWindow(QMainWindow):
         self._toggle_actions()
 
     def export_bads(self):
+        """Export bad channels info to a CSV file.
+        """
         fname = QFileDialog.getSaveFileName(self, "Export bad channels",
                                             filter="*.csv")[0]
         if fname:
@@ -172,6 +174,8 @@ class MainWindow(QMainWindow):
                 f.write(",".join(self.all.current.raw.info["bads"]))
 
     def import_bads(self):
+        """Import bad channels info from a CSV file.
+        """
         fname = QFileDialog.getOpenFileName(self, "Import bad channels",
                                             filter="*.csv")[0]
         if fname:
@@ -197,6 +201,8 @@ class MainWindow(QMainWindow):
             self._toggle_actions(False)
 
     def close_all(self):
+        """Close all currently open data sets.
+        """
         msg = QMessageBox.question(self, "Close all data sets",
                                    "Close all data sets?")
         if msg == QMessageBox.Yes:
@@ -243,6 +249,8 @@ class MainWindow(QMainWindow):
                     getsize(fname) / 1024 ** 2)}
 
     def pick_channels(self):
+        """Pick channels in current data set.
+        """
         channels = self.all.current.raw.info["ch_names"]
         dialog = PickChannelsDialog(self, channels)
         if dialog.exec_():
@@ -255,6 +263,8 @@ class MainWindow(QMainWindow):
             self._update_datasets(new)
 
     def set_bads(self):
+        """Set bad channels.
+        """
         channels = self.all.current.raw.info["ch_names"]
         selected = self.all.current.raw.info["bads"]
         dialog = PickChannelsDialog(self, channels, selected, "Bad channels")
@@ -279,6 +289,8 @@ class MainWindow(QMainWindow):
         fig.show()
 
     def plot_psd(self):
+        """Plot power spectral density (PSD).
+        """
         fig = self.all.current.raw.plot_psd(average=False,
                                             spatial_colors=False, show=False)
         win = fig.canvas.manager.window
@@ -297,6 +309,8 @@ class MainWindow(QMainWindow):
         pass
 
     def filter_data(self):
+        """Filter data.
+        """
         dialog = FilterDialog(self)
 
         if dialog.exec_():
@@ -311,6 +325,8 @@ class MainWindow(QMainWindow):
             self._update_datasets(new)
 
     def set_reference(self):
+        """Set the current reference.
+        """
         dialog = ReferenceDialog(self, "Set current reference")
         if dialog.exec_():
             if dialog.average.isChecked():
@@ -327,6 +343,8 @@ class MainWindow(QMainWindow):
                 self._update_datasets(new)
 
     def reref(self):
+        """Re-reference data.
+        """
         dialog = ReferenceDialog(self, "Re-reference data")
         if dialog.exec_():
             if dialog.average.isChecked():  # average reference
