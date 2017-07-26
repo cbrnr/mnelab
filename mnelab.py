@@ -177,7 +177,13 @@ class MainWindow(QMainWindow):
         if fname:
             with open(fname) as f:
                 bads = f.read().replace(" ", "").split(",")
-                print(bads)  # TODO
+                if set(bads) - set(self.all.current.raw.info["ch_names"]):
+                    QMessageBox.critical(self, "Channel labels not found",
+                                         "Some channel labels from the file "
+                                         "are not present in the data.")
+                else:
+                    self.all.current.raw.info["bads"] = bads
+                    self.all.data[self.all.index].raw.info["bads"] = bads
 
     def close_file(self):
         """Close current file.
