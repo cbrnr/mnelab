@@ -313,9 +313,12 @@ class MainWindow(QMainWindow):
                 self._update_infowidget()
             else:
                 channellist = dialog.channellist.text().split(",")
-                channellist = [c.strip() for c in channellist]
-                mne.add_reference_channels(self.all.current.raw, channellist,
-                                           copy=False)
+                channels = [c.strip() for c in channellist]
+                tmp = mne.add_reference_channels(self.all.current.raw,
+                                                 channels)
+                name = self.all.current.name + " (ref added)"
+                new = DataSet(raw=tmp, name=name, reference=channellist)
+                self._update_datasets(new)
 
     def reref(self):
         dialog = ReferenceDialog(self, "Re-reference data")
