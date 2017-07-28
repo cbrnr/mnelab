@@ -501,10 +501,8 @@ class MainWindow(QMainWindow):
             recent = []  # default is empty list
 
         statusbar = settings.value("statusbar")
-        if (not statusbar) or (statusbar == "true"):  # default is True
+        if statusbar is None:  # default is True
             statusbar = True
-        else:
-            statusbar = False
 
         geometry = settings.value("geometry")
 
