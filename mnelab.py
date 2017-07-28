@@ -259,7 +259,7 @@ class MainWindow(QMainWindow):
             drops = set(channels) - set(picks)
             tmp = self.all.current.raw.drop_channels(drops)
             name = self.all.current.name + " (channels dropped)"
-            new = DataSet(raw=tmp, name=name)
+            new = DataSet(raw=tmp, name=name, events=self.all.current.events)
             self.history.append("raw.drop({})".format(drops))
             self._update_datasets(new)
 
@@ -334,7 +334,7 @@ class MainWindow(QMainWindow):
                               l_freq=low, h_freq=high)
             name = self.all.current.name + " ({}-{} Hz)".format(low, high)
             new = DataSet(raw=mne.io.RawArray(tmp, self.all.current.raw.info),
-                          name=name)
+                          name=name, events=self.all.current.events)
             self.history.append("raw.filter({}, {})".format(low, high))
             self._update_datasets(new)
 
@@ -347,7 +347,8 @@ class MainWindow(QMainWindow):
                 tmp, _ = mne.set_eeg_reference(self.all.current.raw, None)
                 tmp.apply_proj()
                 name = self.all.current.name + " (average ref)"
-                new = DataSet(raw=tmp, name=name, reference="average")
+                new = DataSet(raw=tmp, name=name, reference="average",
+                              events=self.all.current.events)
             else:
                 ref = [c.strip() for c in dialog.channellist.text().split(",")]
                 refstr = ",".join(ref)
@@ -365,7 +366,8 @@ class MainWindow(QMainWindow):
                     # re-reference to existing channel(s)
                     tmp, _ = mne.set_eeg_reference(self.all.current.raw, ref)
                 name = self.all.current.name + " (ref {})".format(refstr)
-                new = DataSet(raw=tmp, name=name, reference=refstr)
+                new = DataSet(raw=tmp, name=name, reference=refstr,
+                              events=self.all.current.events)
             self._update_datasets(new)
 
     def show_about(self):
