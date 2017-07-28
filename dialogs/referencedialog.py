@@ -3,9 +3,9 @@ from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLineEdit,
 
 
 class ReferenceDialog(QDialog):
-    def __init__(self, parent, title="Re-reference data"):
+    def __init__(self, parent):
         super().__init__(parent)
-        self.setWindowTitle(title)
+        self.setWindowTitle("Set reference")
         vbox = QVBoxLayout(self)
         grid = QGridLayout()
         self.average = QRadioButton("Average")
