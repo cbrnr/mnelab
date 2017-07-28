@@ -289,6 +289,15 @@ class MainWindow(QMainWindow):
         win = fig.canvas.manager.window
         win.setWindowTitle("Raw data")
         win.findChild(QStatusBar).hide()
+
+        # prevent closing the window with the escape key
+        try:
+            key_events = fig.canvas.callbacks.callbacks["key_press_event"][8]
+        except KeyError:
+            pass
+        else:  # this requires MNE >=0.15
+            key_events.func.keywords["params"]["close_key"] = None
+
         fig.show()
 
     def plot_psd(self):
