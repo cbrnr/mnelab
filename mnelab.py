@@ -5,7 +5,7 @@ from os.path import getsize, join, split, splitext
 import matplotlib
 import mne
 from PyQt5.QtCore import (pyqtSlot, QStringListModel, QModelIndex, QSettings,
-                          QEvent, Qt)
+                          QEvent, Qt, QObject)
 from PyQt5.QtGui import QKeySequence, QDropEvent
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                              QMessageBox, QListView, QAction, QLabel, QFrame,
@@ -220,19 +220,25 @@ class MainWindow(QMainWindow):
         fname = self.all.current.fname
         ftype = self.all.current.ftype
         reference = self.all.current.reference
+        events = self.all.current.events
 
         nchan = raw.info["nchan"]
         chans = Counter([channel_type(raw.info, i) for i in range(nchan)])
 
-        if self.all.current.events is not None:
-            nevents = self.all.current.events.shape[0]
-            unique = [str(e) for e in set(self.all.current.events[:, 2])]
+        if events is not None:
+            nevents = events.shape[0]
+            unique = [str(e) for e in set(events[:, 2])]
             events = "{} ({})".format(nevents, ", ".join(unique))
         else:
             events = "-"
 
         if isinstance(reference, list):
             reference = ",".join(reference)
+
+        if raw.annotations is not None:
+            annots = len(raw.annotations.description)
+        else:
+            annots = "-"
 
         return {"File name": fname if fname else "-",
                 "File type": ftype if ftype else "-",
@@ -243,6 +249,7 @@ class MainWindow(QMainWindow):
                 "Sampling frequency": str(raw.info["sfreq"]) + " Hz",
                 "Length": str(raw.n_times / raw.info["sfreq"]) + " s",
                 "Events": events,
+                "Annotations": annots,
                 "Reference": reference if reference else "-",
                 "Size in memory": "{:.2f} MB".format(
                     raw._data.nbytes / 1024 ** 2),
@@ -287,6 +294,7 @@ class MainWindow(QMainWindow):
         win = fig.canvas.manager.window
         win.setWindowTitle("Raw data")
         win.findChild(QStatusBar).hide()
+        win.installEventFilter(self)  # detect if the figure is closed
 
         # prevent closing the window with the escape key
         try:
@@ -572,6 +580,12 @@ class MainWindow(QMainWindow):
             print("===============")
             print("\n".join(self.history))
         QApplication.quit()
+
+    def eventFilter(self, source, event):
+        # currently the only source is the raw plot window
+        if event.type() == QEvent.Close:
+            self._update_infowidget()
+        return QObject.eventFilter(self, source, event)
 
 
 matplotlib.use("Qt5Agg")
