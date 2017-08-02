@@ -29,7 +29,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.MAX_RECENT = 6  # maximum number of recent files
-        self.SUPPORTED_FORMATS = "*.bdf *.edf"
+        self.SUPPORTED_FORMATS = "*.bdf *.edf *.vhdr"
 
         self.all = DataSets()  # contains currently loaded data sets
         self.history = []  # command history
@@ -147,10 +147,18 @@ class MainWindow(QMainWindow):
             File name.
         """
         # TODO: check if fname exists
-        raw = mne.io.read_raw_edf(fname, stim_channel=-1, preload=True)
         name, ext = splitext(split(fname)[-1])
-        self.history.append("raw = mne.io.read_raw_edf('{}', "
-                            "stim_channel=None, preload=True)".format(fname))
+        raw = None
+        if ext in ['.edf', '.bdf']:
+            raw = mne.io.read_raw_edf(fname, stim_channel=-1, preload=True)
+            self.history.append("raw = mne.io.read_raw_edf('{}', "
+                                "stim_channel=None, "
+                                "preload=True)".format(fname))
+        elif ext in ['.vhdr']:
+            raw = mne.io.read_raw_brainvision(fname, preload=True)
+            self.history.append("raw = mne.io.read_raw_brainvision('{}', "
+                                "preload=True)".format(fname))
+        
         self.all.insert_data(DataSet(name=name, fname=fname,
                                      ftype=ext[1:].upper(), raw=raw))
         self.find_events()
