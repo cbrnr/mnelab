@@ -1,6 +1,6 @@
 import sys
 from collections import Counter
-from os.path import getsize, join, split, splitext
+from os.path import exists, getsize, join, split, splitext
 
 import matplotlib
 import mne
@@ -146,7 +146,13 @@ class MainWindow(QMainWindow):
         fname : str
             File name.
         """
-        # TODO: check if fname exists
+        if not exists(fname):
+            QMessageBox.critical(self, "File not found.",
+                                 "This file does not exist in this location:\n"
+                                 "{fname}\n"
+                                 "Has it been renamed or moved?"
+                                 .format(fname=fname))
+            return
         name, ext = splitext(split(fname)[-1])
         raw = None
         if ext in ['.edf', '.bdf']:
@@ -158,7 +164,7 @@ class MainWindow(QMainWindow):
             raw = mne.io.read_raw_brainvision(fname, preload=True)
             self.history.append("raw = mne.io.read_raw_brainvision('{}', "
                                 "preload=True)".format(fname))
-        
+
         self.all.insert_data(DataSet(name=name, fname=fname,
                                      ftype=ext[1:].upper(), raw=raw))
         self.find_events()
