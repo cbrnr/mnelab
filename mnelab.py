@@ -152,11 +152,12 @@ class MainWindow(QMainWindow):
         if ext in ['.edf', '.bdf']:
             raw = mne.io.read_raw_edf(fname, stim_channel=-1, preload=True)
             self.history.append("raw = mne.io.read_raw_edf('{}', "
-                            "stim_channel=None, preload=True)".format(fname))
-        if ext in ['.vhdr']:
+                                "stim_channel=None, "
+                                "preload=True)".format(fname))
+        elif ext in ['.vhdr']:
             raw = mne.io.read_raw_brainvision(fname, preload=True)
             self.history.append("raw = mne.io.read_raw_brainvision('{}', "
-                            "preload=True)".format(fname))
+                                "preload=True)".format(fname))
         
         self.all.insert_data(DataSet(name=name, fname=fname,
                                      ftype=ext[1:].upper(), raw=raw))
