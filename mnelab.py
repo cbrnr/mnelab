@@ -147,11 +147,9 @@ class MainWindow(QMainWindow):
             File name.
         """
         if not exists(fname):
-            QMessageBox.critical(self, "File not found.",
-                                 "This file does not exist in this location:\n"
-                                 "{fname}\n"
-                                 "Has it been renamed or moved?"
-                                 .format(fname=fname))
+            QMessageBox.critical(self, "File not found",
+                                 "{} does not exist.".format(fname))
+            self._remove_recent(fname)
             return
         name, ext = splitext(split(fname)[-1])
         raw = None
@@ -488,6 +486,20 @@ class MainWindow(QMainWindow):
         self._write_settings()
         if not self.recent_menu.isEnabled():
             self.recent_menu.setEnabled(True)
+
+    def _remove_recent(self, fname):
+        """Remove file from recent file list.
+
+        Parameters
+        ----------
+        fname : str
+            File name.
+        """
+        if fname in self.recent:
+            self.recent.remove(fname)
+            self._write_settings()
+            if not self.recent:
+                self.recent_menu.setEnabled(False)
 
     def _write_settings(self):
         """Write application settings.
