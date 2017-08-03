@@ -69,6 +69,8 @@ class MainWindow(QMainWindow):
                                                      self.export_bads)
         self.export_events_action = file_menu.addAction("Export &events...",
                                                         self.export_events)
+        self.export_anno_action = file_menu.addAction("Export &annotations...",
+                                                      self.export_annotations)
         file_menu.addSeparator()
         file_menu.addAction("&Quit", self.close, QKeySequence.Quit)
 
@@ -218,6 +220,27 @@ class MainWindow(QMainWindow):
             fname = join(split(fname)[0], name + ext)
             np.savetxt(fname, self.all.current.events[:, [0, 2]], fmt="%d",
                        delimiter=",", header="pos,type", comments="")
+
+    def export_annotations(self):
+        """Export annotations to a CSV file.
+
+        The resulting CSV file has three columns. The first column contains the
+        annotation type, the second column contains the onset (in s), and the
+        third column contains the duration (in s). The first line is a header
+        containing the column names.
+        """
+        fname = QFileDialog.getSaveFileName(self, "Export annotations",
+                                            filter="*.csv")[0]
+        if fname:
+            name, ext = splitext(split(fname)[-1])
+            ext = ext if ext else ".csv"  # automatically add extension
+            fname = join(split(fname)[0], name + ext)
+            anns = self.all.current.raw.annotations
+            with open(fname, "w") as f:
+                f.write("type,onset,duration\n")
+                for a in zip(anns.description, anns.onset, anns.duration):
+                    f.write(",".join([a[0], str(a[1]), str(a[2])]))
+                    f.write("\n")
 
     def close_file(self):
         """Close current file.
@@ -478,9 +501,12 @@ class MainWindow(QMainWindow):
             self.export_bad_action.setEnabled(enabled and bads)
             events = self.all.current.events is not None
             self.export_events_action.setEnabled(enabled and events)
+            annot = self.all.current.raw.annotations is not None
+            self.export_anno_action.setEnabled(enabled and annot)
         else:
             self.export_bad_action.setEnabled(enabled)
             self.export_events_action.setEnabled(enabled)
+            self.export_anno_action.setEnabled(enabled)
         self.import_bad_action.setEnabled(enabled)
         self.pick_chans_action.setEnabled(enabled)
         self.set_bads_action.setEnabled(enabled)
@@ -633,6 +659,7 @@ class MainWindow(QMainWindow):
         # currently the only source is the raw plot window
         if event.type() == QEvent.Close:
             self._update_infowidget()
+            self._toggle_actions()
         return QObject.eventFilter(self, source, event)
 
 
