@@ -351,7 +351,7 @@ class MainWindow(QMainWindow):
             low, high = dialog.low, dialog.high
             tmp = filter_data(self.all.current.raw._data,
                               self.all.current.raw.info["sfreq"],
-                              l_freq=low, h_freq=high)
+                              l_freq=low, h_freq=high, fir_design="firwin")
             name = self.all.current.name + " ({}-{} Hz)".format(low, high)
             new = DataSet(raw=mne.io.RawArray(tmp, self.all.current.raw.info),
                           name=name, events=self.all.current.events)
