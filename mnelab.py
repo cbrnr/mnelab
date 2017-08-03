@@ -2,6 +2,7 @@ import sys
 from collections import Counter
 from os.path import exists, getsize, join, split, splitext
 
+import numpy as np
 import matplotlib
 import mne
 from PyQt5.QtCore import (pyqtSlot, QStringListModel, QModelIndex, QSettings,
@@ -66,6 +67,8 @@ class MainWindow(QMainWindow):
                                                      self.import_bads)
         self.export_bad_action = file_menu.addAction("Export &bad channels...",
                                                      self.export_bads)
+        self.export_events_action = file_menu.addAction("Export &events...",
+                                                        self.export_events)
         file_menu.addSeparator()
         file_menu.addAction("&Quit", self.close, QKeySequence.Quit)
 
@@ -199,6 +202,22 @@ class MainWindow(QMainWindow):
                 else:
                     self.all.current.raw.info["bads"] = bads
                     self.all.data[self.all.index].raw.info["bads"] = bads
+
+    def export_events(self):
+        """Export events to a CSV file.
+
+        The resulting CSV file has two columns. The first column contains the
+        position (in samples), whereas the second column contains the type of
+        the events. The first line is a header containing the column names.
+        """
+        fname = QFileDialog.getSaveFileName(self, "Export events",
+                                            filter="*.csv")[0]
+        if fname:
+            name, ext = splitext(split(fname)[-1])
+            ext = ext if ext else ".csv"  # automatically add extension
+            fname = join(split(fname)[0], name + ext)
+            np.savetxt(fname, self.all.current.events[:, [0, 2]], fmt="%d",
+                       delimiter=",", header="pos,type", comments="")
 
     def close_file(self):
         """Close current file.
@@ -457,8 +476,11 @@ class MainWindow(QMainWindow):
         if self.all.data:
             bads = bool(self.all.current.raw.info["bads"])
             self.export_bad_action.setEnabled(enabled and bads)
+            events = self.all.current.events is not None
+            self.export_events_action.setEnabled(enabled and events)
         else:
             self.export_bad_action.setEnabled(enabled)
+            self.export_events_action.setEnabled(enabled)
         self.import_bad_action.setEnabled(enabled)
         self.pick_chans_action.setEnabled(enabled)
         self.set_bads_action.setEnabled(enabled)
