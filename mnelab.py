@@ -65,6 +65,9 @@ class MainWindow(QMainWindow):
         file_menu.addSeparator()
         self.import_bad_action = file_menu.addAction("Import bad channels...",
                                                      self.import_bads)
+        self.import_anno_action = file_menu.addAction("Import annotations...",
+                                                      self.import_annotations)
+        file_menu.addSeparator()
         self.export_bad_action = file_menu.addAction("Export &bad channels...",
                                                      self.export_bads)
         self.export_events_action = file_menu.addAction("Export &events...",
@@ -241,6 +244,31 @@ class MainWindow(QMainWindow):
                 for a in zip(anns.description, anns.onset, anns.duration):
                     f.write(",".join([a[0], str(a[1]), str(a[2])]))
                     f.write("\n")
+
+    def import_annotations(self):
+        fname = QFileDialog.getOpenFileName(self, "Import annotations",
+                                            filter="*.csv")[0]
+        if fname:
+            descs, onsets, durations = [], [], []
+            fs = self.all.current.raw.info["sfreq"]
+            with open(fname) as f:
+                f.readline()  # skip header
+                for line in f:
+                    ann = line.split(",")
+                    onset = float(ann[1].strip())
+                    duration = float(ann[2].strip())
+                    if onset > self.all.current.raw.n_times / fs:
+                        QMessageBox.critical(self, "Invalid annotations",
+                                             "One or more annotations are "
+                                             "outside of the data range.")
+                        return
+                    descs.append(ann[0].strip())
+                    onsets.append(onset)
+                    durations.append(duration)
+            annotations = mne.Annotations(onsets, durations, descs)
+            self.all.current.raw.annotations = annotations
+            self.all.data[self.all.index].raw.annotations = annotations
+            self._update_infowidget()
 
     def close_file(self):
         """Close current file.
@@ -508,6 +536,7 @@ class MainWindow(QMainWindow):
             self.export_events_action.setEnabled(enabled)
             self.export_anno_action.setEnabled(enabled)
         self.import_bad_action.setEnabled(enabled)
+        self.import_anno_action.setEnabled(enabled)
         self.pick_chans_action.setEnabled(enabled)
         self.set_bads_action.setEnabled(enabled)
         self.plot_raw_action.setEnabled(enabled)
