@@ -17,6 +17,7 @@ from mne.io.pick import channel_type
 
 from dialogs.filterdialog import FilterDialog
 from dialogs.pickchannelsdialog import PickChannelsDialog
+from dialogs.pickbadchannelsdialog import PickBadChannelsDialog
 from dialogs.referencedialog import ReferenceDialog
 from dialogs.montagedialog import MontageDialog
 from utils.datasets import DataSets, DataSet
@@ -364,12 +365,13 @@ class MainWindow(QMainWindow):
         """Set bad channels.
         """
         channels = self.all.current.raw.info["ch_names"]
-        selected = self.all.current.raw.info["bads"]
-        dialog = PickChannelsDialog(self, channels, selected, "Bad channels")
+        bads = self.all.current.raw.info["bads"]
+        dialog = PickBadChannelsDialog(self, channels, bads)
         if dialog.exec_():
-            bads = [item.data(0) for item in dialog.channels.selectedItems()]
+            bads = [item.data(0) for item in dialog.ui.badListWidget.findItems("", Qt.MatchContains)]
             self.all.current.raw.info["bads"] = bads
             self.all.data[self.all.index].raw.info["bads"] = bads
+            self.history.append("raw.info['bads'] = {}".format(bads))
             self._toggle_actions(True)
 
     def set_montage(self):
