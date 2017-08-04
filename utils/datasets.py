@@ -72,10 +72,11 @@ class DataSets:
 
 class DataSet:
     def __init__(self, name=None, fname=None, ftype=None, raw=None,
-                 events=None, reference=None):
+                 events=None, reference=None, montage=None):
         self.name = name
         self.fname = fname
         self.ftype = ftype
         self.raw = raw
         self.events = events
         self.reference = reference
+        self.montage = montage

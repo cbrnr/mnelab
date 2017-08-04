@@ -1,6 +1,7 @@
 import sys
 from collections import Counter
 from os.path import exists, getsize, join, split, splitext
+from os import listdir
 
 import numpy as np
 import matplotlib
@@ -17,6 +18,7 @@ from mne.io.pick import channel_type
 from dialogs.filterdialog import FilterDialog
 from dialogs.pickchannelsdialog import PickChannelsDialog
 from dialogs.referencedialog import ReferenceDialog
+from dialogs.montagedialog import MontageDialog
 from utils.datasets import DataSets, DataSet
 from widgets.infowidget import InfoWidget
 
@@ -80,8 +82,10 @@ class MainWindow(QMainWindow):
         edit_menu = menubar.addMenu("&Edit")
         self.pick_chans_action = edit_menu.addAction("Pick &channels...",
                                                      self.pick_channels)
-        self.set_bads_action = edit_menu.addAction("&Bad channels...",
+        self.set_bads_action = edit_menu.addAction("Set &bad channels...",
                                                    self.set_bads)
+        self.set_montage_action = edit_menu.addAction("Set &montage...",
+                                                      self.set_montage)
         edit_menu.addSeparator()
         self.setref_action = edit_menu.addAction("&Set reference...",
                                                  self.set_reference)
@@ -303,6 +307,7 @@ class MainWindow(QMainWindow):
         ftype = self.all.current.ftype
         reference = self.all.current.reference
         events = self.all.current.events
+        montage = self.all.current.montage
 
         nchan = raw.info["nchan"]
         chans = Counter([channel_type(raw.info, i) for i in range(nchan)])
@@ -333,6 +338,7 @@ class MainWindow(QMainWindow):
                 "Events": events,
                 "Annotations": annots,
                 "Reference": reference if reference else "-",
+                "Montage": montage if montage is not None else "-",
                 "Size in memory": "{:.2f} MB".format(
                     raw._data.nbytes / 1024 ** 2),
                 "Size on disk": "-" if not fname else "{:.2f} MB".format(
@@ -363,6 +369,25 @@ class MainWindow(QMainWindow):
             self.all.current.raw.info["bads"] = bads
             self.all.data[self.all.index].raw.info["bads"] = bads
             self._toggle_actions(True)
+
+    def set_montage(self):
+        """Set montage.
+        """
+        path = join(mne.__path__[0], "channels", "data", "montages")
+        supported = (".elc", ".txt", ".csd", ".sfp", ".elp", ".hpts", ".loc",
+                     ".locs", ".eloc", ".bvef")
+        files = [splitext(f) for f in listdir(path)]
+        montages = sorted([f for f, ext in files if ext in supported])
+        dialog = MontageDialog(self, montages,
+                               selected=self.all.current.montage)
+        if dialog.exec_():
+            name = dialog.montages.selectedItems()[0].data(0)
+            self.all.current.montage = name
+            self.all.data[self.all.index].montage = name
+            montage = mne.channels.read_montage(name)
+            self.all.current.raw.set_montage(montage)
+            self.all.data[self.all.index].raw.set_montage(montage)
+            self._update_infowidget()
 
     def plot_raw(self):
         """Plot raw data.
@@ -539,6 +564,7 @@ class MainWindow(QMainWindow):
         self.import_anno_action.setEnabled(enabled)
         self.pick_chans_action.setEnabled(enabled)
         self.set_bads_action.setEnabled(enabled)
+        self.set_montage_action.setEnabled(enabled)
         self.plot_raw_action.setEnabled(enabled)
         self.plot_psd_action.setEnabled(enabled)
         self.filter_action.setEnabled(enabled)
