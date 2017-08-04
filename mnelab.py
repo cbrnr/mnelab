@@ -380,6 +380,7 @@ class MainWindow(QMainWindow):
                      ".locs", ".eloc", ".bvef")
         files = [splitext(f) for f in listdir(path)]
         montages = sorted([f for f, ext in files if ext in supported])
+        # TODO: currently it is not possible to remove an existing montage
         dialog = MontageDialog(self, montages,
                                selected=self.all.current.montage)
         if dialog.exec_():
