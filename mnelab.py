@@ -94,6 +94,8 @@ class MainWindow(QMainWindow):
         self.plot_raw_action = plot_menu.addAction("&Raw data", self.plot_raw)
         self.plot_psd_action = plot_menu.addAction("&Power spectral "
                                                    "density...", self.plot_psd)
+        self.plot_montage_action = plot_menu.addAction("Current &montage",
+                                                       self.plot_montage)
 
         tools_menu = menubar.addMenu("&Tools")
         self.filter_action = tools_menu.addAction("&Filter data...",
@@ -388,6 +390,7 @@ class MainWindow(QMainWindow):
             self.all.current.raw.set_montage(montage)
             self.all.data[self.all.index].raw.set_montage(montage)
             self._update_infowidget()
+            self._toggle_actions()
 
     def plot_raw(self):
         """Plot raw data.
@@ -421,6 +424,10 @@ class MainWindow(QMainWindow):
         win = fig.canvas.manager.window
         win.setWindowTitle("Power spectral density")
         fig.show()
+
+    def plot_montage(self):
+        montage = mne.channels.read_montage(self.all.current.montage)
+        montage.plot(kind="topomap")
 
     def load_ica(self):
         """Load ICA solution from a file.
@@ -556,10 +563,13 @@ class MainWindow(QMainWindow):
             self.export_events_action.setEnabled(enabled and events)
             annot = self.all.current.raw.annotations is not None
             self.export_anno_action.setEnabled(enabled and annot)
+            montage = bool(self.all.current.montage)
+            self.plot_montage_action.setEnabled(enabled and montage)
         else:
             self.export_bad_action.setEnabled(enabled)
             self.export_events_action.setEnabled(enabled)
             self.export_anno_action.setEnabled(enabled)
+            self.plot_montage_action.setEnabled(enabled)
         self.import_bad_action.setEnabled(enabled)
         self.import_anno_action.setEnabled(enabled)
         self.pick_chans_action.setEnabled(enabled)
