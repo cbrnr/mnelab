@@ -388,7 +388,7 @@ class MainWindow(QMainWindow):
             self.all.current.montage = name
             self.all.data[self.all.index].montage = name
             montage = mne.channels.read_montage(name)
-            try: 
+            try:
                 self.all.current.raw.set_montage(montage)
                 self.all.data[self.all.index].raw.set_montage(montage)
                 self._update_infowidget()
