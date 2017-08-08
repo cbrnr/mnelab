@@ -388,10 +388,13 @@ class MainWindow(QMainWindow):
             self.all.current.montage = name
             self.all.data[self.all.index].montage = name
             montage = mne.channels.read_montage(name)
-            self.all.current.raw.set_montage(montage)
-            self.all.data[self.all.index].raw.set_montage(montage)
-            self._update_infowidget()
-            self._toggle_actions()
+            try:
+                self.all.current.raw.set_montage(montage)
+                self.all.data[self.all.index].raw.set_montage(montage)
+                self._update_infowidget()
+                self._toggle_actions()
+            except ValueError as v:
+                print(v)
 
     def plot_raw(self):
         """Plot raw data.
@@ -428,7 +431,10 @@ class MainWindow(QMainWindow):
 
     def plot_montage(self):
         montage = mne.channels.read_montage(self.all.current.montage)
-        montage.plot(kind="topomap")
+        if int(mne.__version__.split('.')[1]) >= 15:
+            montage.plot(kind="topomap")
+        else:
+            montage.plot()
 
     def load_ica(self):
         """Load ICA solution from a file.
