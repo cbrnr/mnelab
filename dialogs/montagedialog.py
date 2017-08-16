@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QListWidget, QDialogButtonBox
 from PyQt5.QtCore import pyqtSlot
 
+
 class MontageDialog(QDialog):
     def __init__(self, parent, montages, selected=None):
         super().__init__(parent)

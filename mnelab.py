@@ -11,7 +11,7 @@ from PyQt5.QtCore import (pyqtSlot, QStringListModel, QModelIndex, QSettings,
 from PyQt5.QtGui import QKeySequence, QDropEvent
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                              QMessageBox, QListView, QAction, QLabel, QFrame,
-                             QStatusBar)
+                             QStatusBar, QToolBar)
 from mne.filter import filter_data
 from mne.io.pick import channel_type
 
@@ -385,13 +385,21 @@ class MainWindow(QMainWindow):
                                selected=self.all.current.montage)
         if dialog.exec_():
             name = dialog.montages.selectedItems()[0].data(0)
-            self.all.current.montage = name
-            self.all.data[self.all.index].montage = name
             montage = mne.channels.read_montage(name)
-            self.all.current.raw.set_montage(montage)
-            self.all.data[self.all.index].raw.set_montage(montage)
-            self._update_infowidget()
-            self._toggle_actions()
+
+            ch_names = self.all.current.raw.info["ch_names"]
+            # check if at least one channel name matches a name in the montage
+            if set(ch_names) & set(montage.ch_names):
+                self.all.current.montage = name
+                self.all.data[self.all.index].montage = name
+                self.all.current.raw.set_montage(montage)
+                self.all.data[self.all.index].raw.set_montage(montage)
+                self._update_infowidget()
+                self._toggle_actions()
+            else:
+                QMessageBox.critical(self, "No matching channel names",
+                                     "Channel names defined in the montage do "
+                                     "not match any channel name in the data.")
 
     def plot_raw(self):
         """Plot raw data.
@@ -428,7 +436,12 @@ class MainWindow(QMainWindow):
 
     def plot_montage(self):
         montage = mne.channels.read_montage(self.all.current.montage)
-        montage.plot(kind="topomap")
+        fig = montage.plot(show_names=True, show=False)
+        win = fig.canvas.manager.window
+        win.setWindowTitle("Montage")
+        win.findChild(QStatusBar).hide()
+        win.findChild(QToolBar).hide()
+        fig.show()
 
     def load_ica(self):
         """Load ICA solution from a file.
