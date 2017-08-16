@@ -379,7 +379,8 @@ class MainWindow(QMainWindow):
         supported = (".elc", ".txt", ".csd", ".sfp", ".elp", ".hpts", ".loc",
                      ".locs", ".eloc", ".bvef")
         files = [splitext(f) for f in listdir(path)]
-        montages = sorted([f for f, ext in files if ext in supported])
+        montages = sorted([f for f, ext in files if ext in supported],
+                          key=str.lower)
         # TODO: currently it is not possible to remove an existing montage
         dialog = MontageDialog(self, montages,
                                selected=self.all.current.montage)
@@ -435,6 +436,8 @@ class MainWindow(QMainWindow):
         fig.show()
 
     def plot_montage(self):
+        """Plot montage.
+        """
         montage = mne.channels.read_montage(self.all.current.montage)
         fig = montage.plot(show_names=True, show=False)
         win = fig.canvas.manager.window
