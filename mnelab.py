@@ -19,6 +19,7 @@ from dialogs.filterdialog import FilterDialog
 from dialogs.pickchannelsdialog import PickChannelsDialog
 from dialogs.referencedialog import ReferenceDialog
 from dialogs.montagedialog import MontageDialog
+from dialogs.channeldialog import ChannelDialog
 from utils.datasets import DataSets, DataSet
 from widgets.infowidget import InfoWidget
 
@@ -86,6 +87,8 @@ class MainWindow(QMainWindow):
                                                    self.set_bads)
         self.set_montage_action = edit_menu.addAction("Set &montage...",
                                                       self.set_montage)
+        self.set_channel_info = edit_menu.addAction("Set Channel info...",
+                                                      self.set_channel_info)
         edit_menu.addSeparator()
         self.setref_action = edit_menu.addAction("&Set reference...",
                                                  self.set_reference)
@@ -401,6 +404,12 @@ class MainWindow(QMainWindow):
                 QMessageBox.critical(self, "No matching channel names",
                                      "Channel names defined in the montage do "
                                      "not match any channel name in the data.")
+
+    def set_channel_info(self):
+        dialog = ChannelDialog(self, raw=self.all.current.raw)
+        if dialog.exec_():
+            print("Working here...")
+
 
     def plot_raw(self):
         """Plot raw data.
