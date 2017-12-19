@@ -21,7 +21,7 @@ class PickChannelsDialog(QDialog):
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
         self.channels.itemSelectionChanged.connect(self.toggle_buttons)
-        self.toggle_buttons()  # initialize OK and View buttons state
+        self.toggle_buttons()  # initialize OK button state
 
     @pyqtSlot()
     def toggle_buttons(self):
