@@ -22,10 +22,14 @@ from dialogs.montagedialog import MontageDialog
 from utils.datasets import DataSets, DataSet
 from widgets.infowidget import InfoWidget
 
+
 __version__ = "0.1.0"
 
 
 data = DataSets()  # contains currently loaded data sets
+history = []  # command history
+MAX_RECENT = 6  # maximum number of recent files
+SUPPORTED_FORMATS = "*.bdf *.edf *.vhdr"
 
 
 class MainWindow(QMainWindow):
@@ -34,14 +38,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.MAX_RECENT = 6  # maximum number of recent files
-        self.SUPPORTED_FORMATS = "*.bdf *.edf *.vhdr"
-
-        self.history = []  # command history
-
         settings = self._read_settings()
         self.recent = settings["recent"]  # list of recent files
-
         if settings["geometry"]:
             self.restoreGeometry(settings["geometry"])
         else:
@@ -150,7 +148,7 @@ class MainWindow(QMainWindow):
         """Show open file dialog.
         """
         fname = QFileDialog.getOpenFileName(self, "Open file",
-                                            filter=self.SUPPORTED_FORMATS)[0]
+                                            filter=SUPPORTED_FORMATS)[0]
         if fname:
             self.load_file(fname)
 
@@ -168,19 +166,20 @@ class MainWindow(QMainWindow):
             self._remove_recent(fname)
             return
         name, ext = splitext(split(fname)[-1])
-        raw = None
+        ftype = ext[1:].upper()
+        if ext not in SUPPORTED_FORMATS:
+            raise ValueError("File format {} is not supported.".format(ftype))
+
         if ext in ['.edf', '.bdf']:
             raw = mne.io.read_raw_edf(fname, stim_channel=-1, preload=True)
-            self.history.append("raw = mne.io.read_raw_edf('{}', "
-                                "stim_channel=None, "
-                                "preload=True)".format(fname))
+            history.append("raw = mne.io.read_raw_edf('{}', "
+                           "stim_channel=-1, preload=True)".format(fname))
         elif ext in ['.vhdr']:
             raw = mne.io.read_raw_brainvision(fname, preload=True)
-            self.history.append("raw = mne.io.read_raw_brainvision('{}', "
-                                "preload=True)".format(fname))
+            history.append("raw = mne.io.read_raw_brainvision('{}', "
+                           "preload=True)".format(fname))
 
-        data.insert_data(DataSet(name=name, fname=fname, ftype=ext[1:].upper(),
-                                 raw=raw))
+        data.insert_data(DataSet(name=name, fname=fname, ftype=ftype, raw=raw))
         self.find_events()
         self._update_sidebar(data.names, data.index)
         self._update_infowidget()
@@ -359,7 +358,7 @@ class MainWindow(QMainWindow):
             tmp = data.current.raw.drop_channels(drops)
             name = data.current.name + " (channels dropped)"
             new = DataSet(raw=tmp, name=name, events=data.current.events)
-            self.history.append("raw.drop({})".format(drops))
+            history.append("raw.drop({})".format(drops))
             self._update_datasets(new)
 
     def set_bads(self):
@@ -412,7 +411,7 @@ class MainWindow(QMainWindow):
         fig = data.current.raw.plot(events=events, n_channels=nchan,
                                         title=data.current.name,
                                         show=False)
-        self.history.append("raw.plot(n_channels={})".format(nchan))
+        history.append("raw.plot(n_channels={})".format(nchan))
         win = fig.canvas.manager.window
         win.setWindowTitle("Raw data")
         win.findChild(QStatusBar).hide()
@@ -476,7 +475,7 @@ class MainWindow(QMainWindow):
             name = data.current.name + " ({}-{} Hz)".format(low, high)
             new = DataSet(raw=mne.io.RawArray(tmp, data.current.raw.info),
                           name=name, events=data.current.events)
-            self.history.append("raw.filter({}, {})".format(low, high))
+            history.append("raw.filter({}, {})".format(low, high))
             self._update_datasets(new)
 
     def set_reference(self):
@@ -613,7 +612,7 @@ class MainWindow(QMainWindow):
         if fname in self.recent:  # avoid duplicates
             self.recent.remove(fname)
         self.recent.insert(0, fname)
-        while len(self.recent) > self.MAX_RECENT:  # prune list
+        while len(self.recent) > MAX_RECENT:  # prune list
             self.recent.pop()
         self._write_settings()
         if not self.recent_menu.isEnabled():
@@ -637,8 +636,7 @@ class MainWindow(QMainWindow):
         """Write application settings.
         """
         settings = QSettings()
-        if self.recent:
-            settings.setValue("recent", self.recent)
+        settings.setValue("recent", self.recent)
         settings.setValue("statusbar", not self.statusBar().isHidden())
         settings.setValue("geometry", self.saveGeometry())
         settings.setValue("state", self.saveState())
@@ -663,7 +661,6 @@ class MainWindow(QMainWindow):
             statusbar = True
 
         geometry = settings.value("geometry")
-
         state = settings.value("state")
 
         return {"recent": recent, "statusbar": statusbar, "geometry": geometry,
@@ -733,10 +730,10 @@ class MainWindow(QMainWindow):
             Close event.
         """
         self._write_settings()
-        if self.history:
+        if history:
             print("\nCommand History")
             print("===============")
-            print("\n".join(self.history))
+            print("\n".join(history))
         QApplication.quit()
 
     def eventFilter(self, source, event):
