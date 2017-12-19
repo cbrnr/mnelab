@@ -354,7 +354,7 @@ class MainWindow(QMainWindow):
         """Pick channels in current data set.
         """
         channels = data.current.raw.info["ch_names"]
-        dialog = PickChannelsDialog(self, channels)
+        dialog = PickChannelsDialog(self, channels, selected=channels)
         if dialog.exec_():
             picks = [item.data(0) for item in dialog.channels.selectedItems()]
             drops = set(channels) - set(picks)
