@@ -321,7 +321,12 @@ class MainWindow(QMainWindow):
         if events is not None:
             nevents = events.shape[0]
             unique = [str(e) for e in sorted(set(events[:, 2]))]
-            events = "{} ({})".format(nevents, ", ".join(unique))
+            if len(unique) > 20:  # do not show all events
+                first = ", ".join(unique[:10])
+                last = ", ".join(unique[-10:])
+                events = "{} ({})".format(nevents, first + ", ..., " + last)
+            else:
+                events = "{} ({})".format(nevents, ", ".join(unique))
         else:
             events = "-"
 
