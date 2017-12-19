@@ -38,6 +38,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        # restore settings
         settings = self._read_settings()
         self.recent = settings["recent"]  # list of recent files
         if settings["geometry"]:
@@ -51,6 +52,7 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle("MNELAB")
 
+        # initialize menus
         menubar = self.menuBar()
 
         file_menu = menubar.addMenu("&File")
@@ -72,10 +74,10 @@ class MainWindow(QMainWindow):
         file_menu.addSeparator()
         self.export_bad_action = file_menu.addAction("Export &bad channels...",
                                                      self.export_bads)
-        self.export_events_action = file_menu.addAction("Export &events...",
-                                                        self.export_events)
         self.export_anno_action = file_menu.addAction("Export &annotations...",
                                                       self.export_annotations)
+        self.export_events_action = file_menu.addAction("Export &events...",
+                                                        self.export_events)
         file_menu.addSeparator()
         file_menu.addAction("&Quit", self.close, QKeySequence.Quit)
 
@@ -115,6 +117,7 @@ class MainWindow(QMainWindow):
         help_menu.addAction("&About", self.show_about)
         help_menu.addAction("About &Qt", self.show_about_qt)
 
+        # set up data model for sidebar (list of open files)
         self.names = QStringListModel()
         self.names.dataChanged.connect(self._update_names)
         splitter = QSplitter()
