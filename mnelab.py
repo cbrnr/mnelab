@@ -25,6 +25,9 @@ from widgets.infowidget import InfoWidget
 __version__ = "0.1.0"
 
 
+data = DataSets()  # contains currently loaded data sets
+
+
 class MainWindow(QMainWindow):
     """MNELAB main window.
     """
@@ -34,7 +37,6 @@ class MainWindow(QMainWindow):
         self.MAX_RECENT = 6  # maximum number of recent files
         self.SUPPORTED_FORMATS = "*.bdf *.edf *.vhdr"
 
-        self.all = DataSets()  # contains currently loaded data sets
         self.history = []  # command history
 
         settings = self._read_settings()
@@ -177,10 +179,10 @@ class MainWindow(QMainWindow):
             self.history.append("raw = mne.io.read_raw_brainvision('{}', "
                                 "preload=True)".format(fname))
 
-        self.all.insert_data(DataSet(name=name, fname=fname,
-                                     ftype=ext[1:].upper(), raw=raw))
+        data.insert_data(DataSet(name=name, fname=fname, ftype=ext[1:].upper(),
+                                 raw=raw))
         self.find_events()
-        self._update_sidebar(self.all.names, self.all.index)
+        self._update_sidebar(data.names, data.index)
         self._update_infowidget()
         self._update_statusbar()
         self._add_recent(fname)
@@ -196,7 +198,7 @@ class MainWindow(QMainWindow):
             ext = ext if ext else ".csv"  # automatically add extension
             fname = join(split(fname)[0], name + ext)
             with open(fname, "w") as f:
-                f.write(",".join(self.all.current.raw.info["bads"]))
+                f.write(",".join(data.current.raw.info["bads"]))
 
     def import_bads(self):
         """Import bad channels info from a CSV file.
@@ -206,13 +208,13 @@ class MainWindow(QMainWindow):
         if fname:
             with open(fname) as f:
                 bads = f.read().replace(" ", "").split(",")
-                if set(bads) - set(self.all.current.raw.info["ch_names"]):
+                if set(bads) - set(data.current.raw.info["ch_names"]):
                     QMessageBox.critical(self, "Channel labels not found",
                                          "Some channel labels from the file "
                                          "are not present in the data.")
                 else:
-                    self.all.current.raw.info["bads"] = bads
-                    self.all.data[self.all.index].raw.info["bads"] = bads
+                    data.current.raw.info["bads"] = bads
+                    data.data[data.index].raw.info["bads"] = bads
 
     def export_events(self):
         """Export events to a CSV file.
@@ -227,7 +229,7 @@ class MainWindow(QMainWindow):
             name, ext = splitext(split(fname)[-1])
             ext = ext if ext else ".csv"  # automatically add extension
             fname = join(split(fname)[0], name + ext)
-            np.savetxt(fname, self.all.current.events[:, [0, 2]], fmt="%d",
+            np.savetxt(fname, data.current.events[:, [0, 2]], fmt="%d",
                        delimiter=",", header="pos,type", comments="")
 
     def export_annotations(self):
@@ -244,7 +246,7 @@ class MainWindow(QMainWindow):
             name, ext = splitext(split(fname)[-1])
             ext = ext if ext else ".csv"  # automatically add extension
             fname = join(split(fname)[0], name + ext)
-            anns = self.all.current.raw.annotations
+            anns = data.current.raw.annotations
             with open(fname, "w") as f:
                 f.write("type,onset,duration\n")
                 for a in zip(anns.description, anns.onset, anns.duration):
@@ -256,14 +258,14 @@ class MainWindow(QMainWindow):
                                             filter="*.csv")[0]
         if fname:
             descs, onsets, durations = [], [], []
-            fs = self.all.current.raw.info["sfreq"]
+            fs = data.current.raw.info["sfreq"]
             with open(fname) as f:
                 f.readline()  # skip header
                 for line in f:
                     ann = line.split(",")
                     onset = float(ann[1].strip())
                     duration = float(ann[2].strip())
-                    if onset > self.all.current.raw.n_times / fs:
+                    if onset > data.current.raw.n_times / fs:
                         QMessageBox.critical(self, "Invalid annotations",
                                              "One or more annotations are "
                                              "outside of the data range.")
@@ -272,19 +274,19 @@ class MainWindow(QMainWindow):
                     onsets.append(onset)
                     durations.append(duration)
             annotations = mne.Annotations(onsets, durations, descs)
-            self.all.current.raw.annotations = annotations
-            self.all.data[self.all.index].raw.annotations = annotations
+            data.raw.annotations = annotations
+            data.data[data.index].raw.annotations = annotations
             self._update_infowidget()
 
     def close_file(self):
         """Close current file.
         """
-        self.all.remove_data()
-        self._update_sidebar(self.all.names, self.all.index)
+        data.remove_data()
+        self._update_sidebar(data.names, data.index)
         self._update_infowidget()
         self._update_statusbar()
 
-        if not self.all:
+        if not data:
             self._toggle_actions(False)
 
     def close_all(self):
@@ -293,7 +295,7 @@ class MainWindow(QMainWindow):
         msg = QMessageBox.question(self, "Close all data sets",
                                    "Close all data sets?")
         if msg == QMessageBox.Yes:
-            while self.all:
+            while data:
                 self.close_file()
 
     def get_info(self):
@@ -304,19 +306,19 @@ class MainWindow(QMainWindow):
         info : dict
             Dictionary with information on current file.
         """
-        raw = self.all.current.raw
-        fname = self.all.current.fname
-        ftype = self.all.current.ftype
-        reference = self.all.current.reference
-        events = self.all.current.events
-        montage = self.all.current.montage
+        raw = data.current.raw
+        fname = data.current.fname
+        ftype = data.current.ftype
+        reference = data.current.reference
+        events = data.current.events
+        montage = data.current.montage
 
         nchan = raw.info["nchan"]
         chans = Counter([channel_type(raw.info, i) for i in range(nchan)])
 
         if events is not None:
             nevents = events.shape[0]
-            unique = [str(e) for e in set(events[:, 2])]
+            unique = [str(e) for e in sorted(set(events[:, 2]))]
             events = "{} ({})".format(nevents, ", ".join(unique))
         else:
             events = "-"
@@ -349,27 +351,27 @@ class MainWindow(QMainWindow):
     def pick_channels(self):
         """Pick channels in current data set.
         """
-        channels = self.all.current.raw.info["ch_names"]
+        channels = data.current.raw.info["ch_names"]
         dialog = PickChannelsDialog(self, channels)
         if dialog.exec_():
             picks = [item.data(0) for item in dialog.channels.selectedItems()]
             drops = set(channels) - set(picks)
-            tmp = self.all.current.raw.drop_channels(drops)
-            name = self.all.current.name + " (channels dropped)"
-            new = DataSet(raw=tmp, name=name, events=self.all.current.events)
+            tmp = data.current.raw.drop_channels(drops)
+            name = data.current.name + " (channels dropped)"
+            new = DataSet(raw=tmp, name=name, events=data.current.events)
             self.history.append("raw.drop({})".format(drops))
             self._update_datasets(new)
 
     def set_bads(self):
         """Set bad channels.
         """
-        channels = self.all.current.raw.info["ch_names"]
-        selected = self.all.current.raw.info["bads"]
+        channels = data.current.raw.info["ch_names"]
+        selected = data.current.raw.info["bads"]
         dialog = PickChannelsDialog(self, channels, selected, "Bad channels")
         if dialog.exec_():
             bads = [item.data(0) for item in dialog.channels.selectedItems()]
-            self.all.current.raw.info["bads"] = bads
-            self.all.data[self.all.index].raw.info["bads"] = bads
+            data.current.raw.info["bads"] = bads
+            data.data[data.index].raw.info["bads"] = bads
             self._toggle_actions(True)
 
     def set_montage(self):
@@ -383,18 +385,18 @@ class MainWindow(QMainWindow):
                           key=str.lower)
         # TODO: currently it is not possible to remove an existing montage
         dialog = MontageDialog(self, montages,
-                               selected=self.all.current.montage)
+                               selected=data.current.montage)
         if dialog.exec_():
             name = dialog.montages.selectedItems()[0].data(0)
             montage = mne.channels.read_montage(name)
 
-            ch_names = self.all.current.raw.info["ch_names"]
+            ch_names = data.current.raw.info["ch_names"]
             # check if at least one channel name matches a name in the montage
             if set(ch_names) & set(montage.ch_names):
-                self.all.current.montage = name
-                self.all.data[self.all.index].montage = name
-                self.all.current.raw.set_montage(montage)
-                self.all.data[self.all.index].raw.set_montage(montage)
+                data.current.montage = name
+                data.data[data.index].montage = name
+                data.current.raw.set_montage(montage)
+                data.data[data.index].raw.set_montage(montage)
                 self._update_infowidget()
                 self._toggle_actions()
             else:
@@ -405,10 +407,10 @@ class MainWindow(QMainWindow):
     def plot_raw(self):
         """Plot raw data.
         """
-        events = self.all.current.events
-        nchan = self.all.current.raw.info["nchan"]
-        fig = self.all.current.raw.plot(events=events, n_channels=nchan,
-                                        title=self.all.current.name,
+        events = data.current.events
+        nchan = data.current.raw.info["nchan"]
+        fig = data.current.raw.plot(events=events, n_channels=nchan,
+                                        title=data.current.name,
                                         show=False)
         self.history.append("raw.plot(n_channels={})".format(nchan))
         win = fig.canvas.manager.window
@@ -429,7 +431,7 @@ class MainWindow(QMainWindow):
     def plot_psd(self):
         """Plot power spectral density (PSD).
         """
-        fig = self.all.current.raw.plot_psd(average=False,
+        fig = data.current.raw.plot_psd(average=False,
                                             spatial_colors=False, show=False)
         win = fig.canvas.manager.window
         win.setWindowTitle("Power spectral density")
@@ -438,7 +440,7 @@ class MainWindow(QMainWindow):
     def plot_montage(self):
         """Plot montage.
         """
-        montage = mne.channels.read_montage(self.all.current.montage)
+        montage = mne.channels.read_montage(data.current.montage)
         fig = montage.plot(show_names=True, show=False)
         win = fig.canvas.manager.window
         win.setWindowTitle("Montage")
@@ -455,10 +457,10 @@ class MainWindow(QMainWindow):
             self.state.ica = mne.preprocessing.read_ica(fname[0])
 
     def find_events(self):
-        events = mne.find_events(self.all.current.raw, consecutive=False)
+        events = mne.find_events(data.current.raw, consecutive=False)
         if events.shape[0] > 0:  # if events were found
-            self.all.current.events = events
-            self.all.data[self.all.index].events = events
+            data.current.events = events
+            data.data[data.index].events = events
             self._update_infowidget()
 
     def filter_data(self):
@@ -468,12 +470,12 @@ class MainWindow(QMainWindow):
 
         if dialog.exec_():
             low, high = dialog.low, dialog.high
-            tmp = filter_data(self.all.current.raw._data,
-                              self.all.current.raw.info["sfreq"],
+            tmp = filter_data(data.current.raw._data,
+                              data.current.raw.info["sfreq"],
                               l_freq=low, h_freq=high, fir_design="firwin")
-            name = self.all.current.name + " ({}-{} Hz)".format(low, high)
-            new = DataSet(raw=mne.io.RawArray(tmp, self.all.current.raw.info),
-                          name=name, events=self.all.current.events)
+            name = data.current.name + " ({}-{} Hz)".format(low, high)
+            new = DataSet(raw=mne.io.RawArray(tmp, data.current.raw.info),
+                          name=name, events=data.current.events)
             self.history.append("raw.filter({}, {})".format(low, high))
             self._update_datasets(new)
 
@@ -483,18 +485,18 @@ class MainWindow(QMainWindow):
         dialog = ReferenceDialog(self)
         if dialog.exec_():
             if dialog.average.isChecked():
-                tmp, _ = mne.set_eeg_reference(self.all.current.raw, None)
+                tmp, _ = mne.set_eeg_reference(data.current.raw, None)
                 tmp.apply_proj()
-                name = self.all.current.name + " (average ref)"
+                name = data.current.name + " (average ref)"
                 new = DataSet(raw=tmp, name=name, reference="average",
-                              events=self.all.current.events)
+                              events=data.current.events)
             else:
                 ref = [c.strip() for c in dialog.channellist.text().split(",")]
                 refstr = ",".join(ref)
-                if set(ref) - set(self.all.current.raw.info["ch_names"]):
+                if set(ref) - set(data.current.raw.info["ch_names"]):
                     # add new reference channel(s) to data
                     try:
-                        tmp = mne.add_reference_channels(self.all.current.raw,
+                        tmp = mne.add_reference_channels(data.current.raw,
                                                          ref)
                     except RuntimeError:
                         QMessageBox.critical(self, "Cannot add new channels",
@@ -503,10 +505,10 @@ class MainWindow(QMainWindow):
                         return
                 else:
                     # re-reference to existing channel(s)
-                    tmp, _ = mne.set_eeg_reference(self.all.current.raw, ref)
-                name = self.all.current.name + " (ref {})".format(refstr)
+                    tmp, _ = mne.set_eeg_reference(data.current.raw, ref)
+                name = data.current.name + " (ref {})".format(refstr)
                 new = DataSet(raw=tmp, name=name, reference=refstr,
-                              events=self.all.current.events)
+                              events=data.current.events)
             self._update_datasets(new)
 
     def show_about(self):
@@ -529,18 +531,18 @@ class MainWindow(QMainWindow):
 
     def _update_datasets(self, dataset):
         # if current data is stored in a file create a new data set
-        if self.all.current.fname:
-            self.all.insert_data(dataset)
+        if data.current.fname:
+            data.insert_data(dataset)
         # otherwise ask if the current data set should be overwritten or if a
         # new data set should be created
         else:
             msg = QMessageBox.question(self, "Overwrite existing data set",
                                        "Overwrite existing data set?")
             if msg == QMessageBox.No:  # create new data set
-                self.all.insert_data(dataset)
+                data.insert_data(dataset)
             else:  # overwrite existing data set
-                self.all.update_data(dataset)
-        self._update_sidebar(self.all.names, self.all.index)
+                data.update_data(dataset)
+        self._update_sidebar(data.names, data.index)
         self._update_infowidget()
         self._update_statusbar()
 
@@ -551,14 +553,14 @@ class MainWindow(QMainWindow):
         self.sidebar.setCurrentIndex(self.names.index(index))
 
     def _update_infowidget(self):
-        if self.all:
+        if data:
             self.infowidget.set_values(self.get_info())
         else:
             self.infowidget.clear()
 
     def _update_statusbar(self):
-        if self.all:
-            mb = self.all.nbytes / 1024 ** 2
+        if data:
+            mb = data.nbytes / 1024 ** 2
             self.status_label.setText("Total Memory: {:.2f} MB".format(mb))
         else:
             self.status_label.clear()
@@ -573,14 +575,14 @@ class MainWindow(QMainWindow):
         """
         self.close_file_action.setEnabled(enabled)
         self.close_all_action.setEnabled(enabled)
-        if self.all.data:
-            bads = bool(self.all.current.raw.info["bads"])
+        if data.data:
+            bads = bool(data.current.raw.info["bads"])
             self.export_bad_action.setEnabled(enabled and bads)
-            events = self.all.current.events is not None
+            events = data.current.events is not None
             self.export_events_action.setEnabled(enabled and events)
-            annot = self.all.current.raw.annotations is not None
+            annot = data.current.raw.annotations is not None
             self.export_anno_action.setEnabled(enabled and annot)
-            montage = bool(self.all.current.montage)
+            montage = bool(data.current.montage)
             self.plot_montage_action.setEnabled(enabled and montage)
         else:
             self.export_bad_action.setEnabled(enabled)
@@ -676,9 +678,9 @@ class MainWindow(QMainWindow):
         selected : QModelIndex
             Index of the selected row.
         """
-        if selected.row() != self.all.index:
-            self.all.index = selected.row()
-            self.all.update_current()
+        if selected.row() != data.index:
+            data.index = selected.row()
+            data.update_current()
             self._update_infowidget()
 
     @pyqtSlot(QModelIndex, QModelIndex)
@@ -686,9 +688,9 @@ class MainWindow(QMainWindow):
         """Update names in DataSets after changes in sidebar.
         """
         for index in range(start.row(), stop.row() + 1):
-            self.all.data[index].name = self.names.stringList()[index]
-        if self.all.index in range(start.row(), stop.row() + 1):
-            self.all.current.name = self.all.names[self.all.index]
+            data.data[index].name = self.names.stringList()[index]
+        if data.index in range(start.row(), stop.row() + 1):
+            data.current.name = data.names[data.index]
 
     @pyqtSlot()
     def _update_recent_menu(self):
