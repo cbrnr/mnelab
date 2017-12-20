@@ -87,8 +87,6 @@ class MainWindow(QMainWindow):
                                                      self.pick_channels)
         self.chan_props_action = edit_menu.addAction("Channel &properties...",
                                                      self.channel_properties)
-        self.set_bads_action = edit_menu.addAction("Set &bad channels...",
-                                                   self.set_bads)
         self.set_montage_action = edit_menu.addAction("Set &montage...",
                                                       self.set_montage)
         edit_menu.addSeparator()
@@ -384,17 +382,6 @@ class MainWindow(QMainWindow):
                     for i, x in enumerate(bads) if x]
             data.current.raw.info["bads"] = bads
             data.data[data.index].raw.info["bads"] = bads
-
-    def set_bads(self):
-        """Set bad channels.
-        """
-        channels = data.current.raw.info["ch_names"]
-        selected = data.current.raw.info["bads"]
-        dialog = PickChannelsDialog(self, channels, selected, "Bad channels")
-        if dialog.exec_():
-            bads = [item.data(0) for item in dialog.channels.selectedItems()]
-            data.current.raw.info["bads"] = bads
-            data.data[data.index].raw.info["bads"] = bads
             self._toggle_actions(True)
 
     def set_montage(self):
@@ -616,7 +603,6 @@ class MainWindow(QMainWindow):
         self.import_anno_action.setEnabled(enabled)
         self.pick_chans_action.setEnabled(enabled)
         self.chan_props_action.setEnabled(enabled)
-        self.set_bads_action.setEnabled(enabled)
         self.set_montage_action.setEnabled(enabled)
         self.plot_raw_action.setEnabled(enabled)
         self.plot_psd_action.setEnabled(enabled)

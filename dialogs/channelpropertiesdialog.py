@@ -19,7 +19,6 @@ class ChannelPropertiesDialog(QDialog):
             self.model.setItem(index, 1, QStandardItem(ch["ch_name"]))
             self.model.setItem(index, 2, QStandardItem(str(ch["kind"])))
             bad = QStandardItem()
-            bad.setData("", Qt.CheckStateRole)
             bad.setCheckable(True)
             bad.setEditable(False)
             checked = ch["ch_name"] in info["bads"]
