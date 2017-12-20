@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QDialogButtonBox, QTableWidget, QTableWidgetItem,
-                             QAbstractItemView, QCheckBox, QComboBox, QHBoxLayout, QTableView, QHeaderView)
+                             QAbstractItemView, QCheckBox, QComboBox, QHBoxLayout, QTableView, QHeaderView, QStyledItemDelegate)
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt
 
@@ -18,6 +18,9 @@ class ChannelPropertiesDialog(QDialog):
             self.model.setItem(index, 0, item)
             self.model.setItem(index, 1, QStandardItem(ch["ch_name"]))
             self.model.setItem(index, 2, QStandardItem(str(ch["kind"])))
+            bad = QStandardItem()
+            bad.setData(ch["ch_name"] in info["bads"], Qt.CheckStateRole)
+            self.model.setItem(index, 3, bad)
 
         self.view = QTableView()
         self.view.setModel(self.model)
@@ -39,4 +42,3 @@ class ChannelPropertiesDialog(QDialog):
         self.buttonbox.rejected.connect(self.reject)
 
         self.resize(400, 650)
-
