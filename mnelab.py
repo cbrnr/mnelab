@@ -19,6 +19,7 @@ from dialogs.filterdialog import FilterDialog
 from dialogs.pickchannelsdialog import PickChannelsDialog
 from dialogs.referencedialog import ReferenceDialog
 from dialogs.montagedialog import MontageDialog
+from dialogs.channelpropertiesdialog import ChannelPropertiesDialog
 from utils.datasets import DataSets, DataSet
 from widgets.infowidget import InfoWidget
 
@@ -84,6 +85,8 @@ class MainWindow(QMainWindow):
         edit_menu = menubar.addMenu("&Edit")
         self.pick_chans_action = edit_menu.addAction("Pick &channels...",
                                                      self.pick_channels)
+        self.chan_props_action = edit_menu.addAction("Channel &properties...",
+                                                     self.channel_properties)
         self.set_bads_action = edit_menu.addAction("Set &bad channels...",
                                                    self.set_bads)
         self.set_montage_action = edit_menu.addAction("Set &montage...",
@@ -369,6 +372,11 @@ class MainWindow(QMainWindow):
             history.append("raw.drop({})".format(drops))
             self._update_datasets(new)
 
+    def channel_properties(self):
+        dialog = ChannelPropertiesDialog(self, data.current.raw.info)
+        if dialog.exec_():
+            pass
+
     def set_bads(self):
         """Set bad channels.
         """
@@ -599,6 +607,7 @@ class MainWindow(QMainWindow):
         self.import_bad_action.setEnabled(enabled)
         self.import_anno_action.setEnabled(enabled)
         self.pick_chans_action.setEnabled(enabled)
+        self.chan_props_action.setEnabled(enabled)
         self.set_bads_action.setEnabled(enabled)
         self.set_montage_action.setEnabled(enabled)
         self.plot_raw_action.setEnabled(enabled)
