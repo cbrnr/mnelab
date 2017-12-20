@@ -375,7 +375,15 @@ class MainWindow(QMainWindow):
     def channel_properties(self):
         dialog = ChannelPropertiesDialog(self, data.current.raw.info)
         if dialog.exec_():
-            pass
+            bads = [None] * data.current.raw.info["nchan"]
+            for i in range(dialog.model.rowCount()):
+                channel = dialog.model.item(i, 0).data(Qt.DisplayRole)
+                checked = dialog.model.item(i, 3).checkState()
+                bads[channel] = True if checked == Qt.Checked else False
+            bads = [data.current.raw.info["ch_names"][i]
+                    for i, x in enumerate(bads) if x]
+            data.current.raw.info["bads"] = bads
+            data.data[data.index].raw.info["bads"] = bads
 
     def set_bads(self):
         """Set bad channels.
