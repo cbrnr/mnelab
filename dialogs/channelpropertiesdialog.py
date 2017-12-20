@@ -19,7 +19,11 @@ class ChannelPropertiesDialog(QDialog):
             self.model.setItem(index, 1, QStandardItem(ch["ch_name"]))
             self.model.setItem(index, 2, QStandardItem(str(ch["kind"])))
             bad = QStandardItem()
-            bad.setData(ch["ch_name"] in info["bads"], Qt.CheckStateRole)
+            bad.setData("", Qt.CheckStateRole)
+            bad.setCheckable(True)
+            bad.setEditable(False)
+            checked = ch["ch_name"] in info["bads"]
+            bad.setCheckState(Qt.Checked if checked else Qt.Unchecked)
             self.model.setItem(index, 3, bad)
 
         self.view = QTableView()
@@ -28,7 +32,7 @@ class ChannelPropertiesDialog(QDialog):
         self.view.horizontalHeader().setStretchLastSection(True)
         self.view.horizontalHeader().setSectionResizeMode(QHeaderView.Fixed)
         self.view.setShowGrid(False)
-        self.view.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.view.setSelectionMode(QAbstractItemView.NoSelection)
         self.view.setSortingEnabled(True)
         self.view.sortByColumn(0, Qt.AscendingOrder)
         self.view.resizeColumnsToContents()
