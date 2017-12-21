@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QDialogButtonBox, QTableWidget, QTableWidgetItem,
-                             QAbstractItemView, QCheckBox, QComboBox, QHBoxLayout, QTableView, QHeaderView, QStyledItemDelegate)
+from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QDialogButtonBox,
+                             QAbstractItemView, QTableView, QHeaderView)
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt
 
