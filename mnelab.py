@@ -371,15 +371,23 @@ class MainWindow(QMainWindow):
             self._update_datasets(new)
 
     def channel_properties(self):
-        dialog = ChannelPropertiesDialog(self, data.current.raw.info)
+        info = data.current.raw.info
+        dialog = ChannelPropertiesDialog(self, info)
         if dialog.exec_():
             dialog.model.sort(0)
             bads = []
+            renamed = {}
             for i in range(dialog.model.rowCount()):
+                new_label = dialog.model.item(i, 1).data(Qt.DisplayRole)
+                old_label = info["ch_names"][i]
+                if new_label != old_label:
+                    renamed[old_label] = new_label
                 if dialog.model.item(i, 3).checkState() == Qt.Checked:
-                    bads.append(data.current.raw.info["ch_names"][i])
-            data.current.raw.info["bads"] = bads
+                    bads.append(info["ch_names"][i])
+            info["bads"] = bads
             data.data[data.index].raw.info["bads"] = bads
+            mne.rename_channels(info, renamed)
+            mne.rename_channels(data.data[data.index].raw.info, renamed)
             self._toggle_actions(True)
 
     def set_montage(self):
