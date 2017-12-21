@@ -3,6 +3,8 @@ from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QDialogButtonBox,
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt
 
+from mne.io.pick import channel_type
+
 
 class ChannelPropertiesDialog(QDialog):
     def __init__(self, parent, info, title="Channel Properties"):
@@ -17,7 +19,8 @@ class ChannelPropertiesDialog(QDialog):
             item.setFlags(item.flags() & ~Qt.ItemIsEditable)
             self.model.setItem(index, 0, item)
             self.model.setItem(index, 1, QStandardItem(ch["ch_name"]))
-            self.model.setItem(index, 2, QStandardItem(str(ch["kind"])))
+            kind = channel_type(info, index).upper()
+            self.model.setItem(index, 2, QStandardItem(str(kind)))
             bad = QStandardItem()
             bad.setCheckable(True)
             bad.setEditable(False)
