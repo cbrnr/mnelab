@@ -85,6 +85,7 @@ class ComboBoxDelegate(QStyledItemDelegate):
     def setEditorData(self, editor, index):
         value = index.model().data(index, Qt.EditRole)
         editor.setCurrentIndex(editor.findText(value))
+        editor.showPopup()
 
     def setModelData(self, editor, model, index):
         value = editor.currentText()
