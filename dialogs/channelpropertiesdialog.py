@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QDialogButtonBox,
-                             QAbstractItemView, QTableView, QHeaderView)
+                             QAbstractItemView, QTableView, QHeaderView,
+                             QStyledItemDelegate, QComboBox)
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, QSortFilterProxyModel
 
@@ -34,6 +35,8 @@ class ChannelPropertiesDialog(QDialog):
 
         self.view = QTableView()
         self.view.setModel(self.proxymodel)
+        self.view.setItemDelegateForColumn(2, ComboBoxDelegate(self.view))
+        self.view.setEditTriggers(QAbstractItemView.AllEditTriggers)
         self.view.verticalHeader().setVisible(False)
         self.view.horizontalHeader().setStretchLastSection(True)
         self.view.horizontalHeader().setSectionResizeMode(QHeaderView.Fixed)
@@ -42,6 +45,8 @@ class ChannelPropertiesDialog(QDialog):
         self.view.setSortingEnabled(True)
         self.view.sortByColumn(0, Qt.AscendingOrder)
         self.view.resizeColumnsToContents()
+        # for i in range(self.model.rowCount()):
+        #         self.view.openPersistentEditor(self.model.index(i, 2))
 
         vbox = QVBoxLayout(self)
         vbox.addWidget(self.view)
@@ -69,3 +74,21 @@ class MySortFilterProxyModel(QSortFilterProxyModel):
             right_data = self.sourceModel().data(right, Qt.UserRole)
 
         return left_data < right_data
+
+
+class ComboBoxDelegate(QStyledItemDelegate):
+    def createEditor(self, parent, option, index):
+        editor = QComboBox(parent)
+        editor.addItems(["EEG", "EMG", "EOG", "ECG", "MEG"])
+        return editor
+
+    def setEditorData(self, editor, index):
+        value = index.model().data(index, Qt.EditRole)
+        editor.setCurrentIndex(editor.findText(value))
+
+    def setModelData(self, editor, model, index):
+        value = editor.currentText()
+        model.setData(index, value, Qt.EditRole)
+
+    def updateEditorGeometry(self, editor, option, index):
+        editor.setGeometry(option.rect)
