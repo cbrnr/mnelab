@@ -373,13 +373,11 @@ class MainWindow(QMainWindow):
     def channel_properties(self):
         dialog = ChannelPropertiesDialog(self, data.current.raw.info)
         if dialog.exec_():
-            bads = [None] * data.current.raw.info["nchan"]
+            dialog.model.sort(0)
+            bads = []
             for i in range(dialog.model.rowCount()):
-                channel = dialog.model.item(i, 0).data(Qt.DisplayRole)
-                checked = dialog.model.item(i, 3).checkState()
-                bads[channel] = True if checked == Qt.Checked else False
-            bads = [data.current.raw.info["ch_names"][i]
-                    for i, x in enumerate(bads) if x]
+                if dialog.model.item(i, 3).checkState() == Qt.Checked:
+                    bads.append(data.current.raw.info["ch_names"][i])
             data.current.raw.info["bads"] = bads
             data.data[data.index].raw.info["bads"] = bads
             self._toggle_actions(True)
