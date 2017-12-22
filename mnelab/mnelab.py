@@ -375,17 +375,27 @@ class MainWindow(QMainWindow):
             dialog.model.sort(0)
             bads = []
             renamed = {}
+            types = {}
             for i in range(dialog.model.rowCount()):
                 new_label = dialog.model.item(i, 1).data(Qt.DisplayRole)
                 old_label = info["ch_names"][i]
                 if new_label != old_label:
                     renamed[old_label] = new_label
+                new_type = dialog.model.item(i, 2).data(Qt.DisplayRole).lower()
+                old_type = channel_type(info, i).lower()
+                if new_type != old_type:
+                    types[new_label] = new_type
                 if dialog.model.item(i, 3).checkState() == Qt.Checked:
                     bads.append(info["ch_names"][i])
             info["bads"] = bads
             data.data[data.index].raw.info["bads"] = bads
-            mne.rename_channels(info, renamed)
-            mne.rename_channels(data.data[data.index].raw.info, renamed)
+            if renamed:
+                mne.rename_channels(info, renamed)
+                mne.rename_channels(data.data[data.index].raw.info, renamed)
+            if types:
+                data.current.raw.set_channel_types(types)
+                data.data[data.index].raw.set_channel_types(types)
+                self._update_infowidget()
             self._toggle_actions(True)
 
     def set_montage(self):
