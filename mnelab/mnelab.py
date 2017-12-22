@@ -15,13 +15,13 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
 from mne.filter import filter_data
 from mne.io.pick import channel_type
 
-from dialogs.filterdialog import FilterDialog
-from dialogs.pickchannelsdialog import PickChannelsDialog
-from dialogs.referencedialog import ReferenceDialog
-from dialogs.montagedialog import MontageDialog
-from dialogs.channelpropertiesdialog import ChannelPropertiesDialog
-from utils.datasets import DataSets, DataSet
-from widgets.infowidget import InfoWidget
+from .dialogs.filterdialog import FilterDialog
+from .dialogs.pickchannelsdialog import PickChannelsDialog
+from .dialogs.referencedialog import ReferenceDialog
+from .dialogs.montagedialog import MontageDialog
+from .dialogs.channelpropertiesdialog import ChannelPropertiesDialog
+from .utils.datasets import DataSets, DataSet
+from .widgets.infowidget import InfoWidget
 
 
 __version__ = "0.1.0"
