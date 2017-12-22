@@ -1,10 +1,8 @@
-import sys
 from collections import Counter
 from os.path import exists, getsize, join, split, splitext
 from os import listdir
 
 import numpy as np
-import matplotlib
 import mne
 from PyQt5.QtCore import (pyqtSlot, QStringListModel, QModelIndex, QSettings,
                           QEvent, Qt, QObject)
@@ -15,12 +13,13 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
 from mne.filter import filter_data
 from mne.io.pick import channel_type
 
-from dialogs.filterdialog import FilterDialog
-from dialogs.pickchannelsdialog import PickChannelsDialog
-from dialogs.referencedialog import ReferenceDialog
-from dialogs.montagedialog import MontageDialog
-from utils.datasets import DataSets, DataSet
-from widgets.infowidget import InfoWidget
+from .dialogs.filterdialog import FilterDialog
+from .dialogs.pickchannelsdialog import PickChannelsDialog
+from .dialogs.referencedialog import ReferenceDialog
+from .dialogs.montagedialog import MontageDialog
+from .dialogs.channelpropertiesdialog import ChannelPropertiesDialog
+from .utils.datasets import DataSets, DataSet
+from .widgets.infowidget import InfoWidget
 
 
 __version__ = "0.1.0"
@@ -84,8 +83,8 @@ class MainWindow(QMainWindow):
         edit_menu = menubar.addMenu("&Edit")
         self.pick_chans_action = edit_menu.addAction("Pick &channels...",
                                                      self.pick_channels)
-        self.set_bads_action = edit_menu.addAction("Set &bad channels...",
-                                                   self.set_bads)
+        self.chan_props_action = edit_menu.addAction("Channel &properties...",
+                                                     self.channel_properties)
         self.set_montage_action = edit_menu.addAction("Set &montage...",
                                                       self.set_montage)
         edit_menu.addSeparator()
@@ -369,16 +368,34 @@ class MainWindow(QMainWindow):
             history.append("raw.drop({})".format(drops))
             self._update_datasets(new)
 
-    def set_bads(self):
-        """Set bad channels.
-        """
-        channels = data.current.raw.info["ch_names"]
-        selected = data.current.raw.info["bads"]
-        dialog = PickChannelsDialog(self, channels, selected, "Bad channels")
+    def channel_properties(self):
+        info = data.current.raw.info
+        dialog = ChannelPropertiesDialog(self, info)
         if dialog.exec_():
-            bads = [item.data(0) for item in dialog.channels.selectedItems()]
-            data.current.raw.info["bads"] = bads
+            dialog.model.sort(0)
+            bads = []
+            renamed = {}
+            types = {}
+            for i in range(dialog.model.rowCount()):
+                new_label = dialog.model.item(i, 1).data(Qt.DisplayRole)
+                old_label = info["ch_names"][i]
+                if new_label != old_label:
+                    renamed[old_label] = new_label
+                new_type = dialog.model.item(i, 2).data(Qt.DisplayRole).lower()
+                old_type = channel_type(info, i).lower()
+                if new_type != old_type:
+                    types[new_label] = new_type
+                if dialog.model.item(i, 3).checkState() == Qt.Checked:
+                    bads.append(info["ch_names"][i])
+            info["bads"] = bads
             data.data[data.index].raw.info["bads"] = bads
+            if renamed:
+                mne.rename_channels(info, renamed)
+                mne.rename_channels(data.data[data.index].raw.info, renamed)
+            if types:
+                data.current.raw.set_channel_types(types)
+                data.data[data.index].raw.set_channel_types(types)
+                self._update_infowidget()
             self._toggle_actions(True)
 
     def set_montage(self):
@@ -599,7 +616,7 @@ class MainWindow(QMainWindow):
         self.import_bad_action.setEnabled(enabled)
         self.import_anno_action.setEnabled(enabled)
         self.pick_chans_action.setEnabled(enabled)
-        self.set_bads_action.setEnabled(enabled)
+        self.chan_props_action.setEnabled(enabled)
         self.set_montage_action.setEnabled(enabled)
         self.plot_raw_action.setEnabled(enabled)
         self.plot_psd_action.setEnabled(enabled)
@@ -750,14 +767,3 @@ class MainWindow(QMainWindow):
             self._update_infowidget()
             self._toggle_actions()
         return QObject.eventFilter(self, source, event)
-
-
-matplotlib.use("Qt5Agg")
-app = QApplication(sys.argv)
-app.setApplicationName("MNELAB")
-app.setOrganizationName("cbrnr")
-main = MainWindow()
-if len(sys.argv) > 1:  # open files from command line arguments
-    for f in sys.argv[1:]:
-        main.load_file(f)
-sys.exit(app.exec_())
