@@ -28,7 +28,7 @@ __version__ = "0.1.0"
 data = DataSets()  # contains currently loaded data sets
 history = []  # command history
 MAX_RECENT = 6  # maximum number of recent files
-SUPPORTED_FORMATS = "*.bdf *.edf *.vhdr"
+SUPPORTED_FORMATS = "*.bdf *.edf *.fif *.vhdr"
 
 
 class MainWindow(QMainWindow):
@@ -71,6 +71,8 @@ class MainWindow(QMainWindow):
         self.import_anno_action = file_menu.addAction("Import annotations...",
                                                       self.import_annotations)
         file_menu.addSeparator()
+        self.export_raw_action = file_menu.addAction("Export &raw...",
+                                                     self.export_raw)
         self.export_bad_action = file_menu.addAction("Export &bad channels...",
                                                      self.export_bads)
         self.export_anno_action = file_menu.addAction("Export &annotations...",
@@ -172,11 +174,15 @@ class MainWindow(QMainWindow):
         if ext not in SUPPORTED_FORMATS:
             raise ValueError("File format {} is not supported.".format(ftype))
 
-        if ext in ['.edf', '.bdf']:
+        if ext in [".edf", ".bdf"]:
             raw = mne.io.read_raw_edf(fname, stim_channel=-1, preload=True)
             history.append("raw = mne.io.read_raw_edf('{}', "
                            "stim_channel=-1, preload=True)".format(fname))
-        elif ext in ['.vhdr']:
+        elif ext in [".fif"]:
+            raw = mne.io.read_raw_fif(fname, preload=True)
+            history.append("raw = mne.io.read_raw_fif('{}',"
+                           "preload=True)".format(fname))
+        elif ext in [".vhdr"]:
             raw = mne.io.read_raw_brainvision(fname, preload=True)
             history.append("raw = mne.io.read_raw_brainvision('{}', "
                            "preload=True)".format(fname))
@@ -188,6 +194,17 @@ class MainWindow(QMainWindow):
         self._update_statusbar()
         self._add_recent(fname)
         self._toggle_actions()
+
+    def export_raw(self):
+        """Export raw to FIF file.
+        """
+        fname = QFileDialog.getSaveFileName(self, "Export raw",
+                                            filter="*.fif")[0]
+        if fname:
+            name, ext = splitext(split(fname)[-1])
+            ext = ext if ext else ".fif"  # automatically add extension
+            fname = join(split(fname)[0], name + ext)
+            data.current.raw.save(fname)
 
     def export_bads(self):
         """Export bad channels info to a CSV file.
@@ -599,6 +616,7 @@ class MainWindow(QMainWindow):
         """
         self.close_file_action.setEnabled(enabled)
         self.close_all_action.setEnabled(enabled)
+        self.export_raw_action.setEnabled(enabled)
         if data.data:
             bads = bool(data.current.raw.info["bads"])
             self.export_bad_action.setEnabled(enabled and bads)
