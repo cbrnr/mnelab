@@ -1,10 +1,8 @@
-import sys
 from collections import Counter
 from os.path import exists, getsize, join, split, splitext
 from os import listdir
 
 import numpy as np
-import matplotlib
 import mne
 from PyQt5.QtCore import (pyqtSlot, QStringListModel, QModelIndex, QSettings,
                           QEvent, Qt, QObject)
@@ -759,14 +757,3 @@ class MainWindow(QMainWindow):
             self._update_infowidget()
             self._toggle_actions()
         return QObject.eventFilter(self, source, event)
-
-
-matplotlib.use("Qt5Agg")
-app = QApplication(sys.argv)
-app.setApplicationName("MNELAB")
-app.setOrganizationName("cbrnr")
-main = MainWindow()
-if len(sys.argv) > 1:  # open files from command line arguments
-    for f in sys.argv[1:]:
-        main.load_file(f)
-sys.exit(app.exec_())
