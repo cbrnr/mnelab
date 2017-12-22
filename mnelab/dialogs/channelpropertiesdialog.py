@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QDialogButtonBox,
                              QAbstractItemView, QTableView, QHeaderView,
                              QStyledItemDelegate, QComboBox)
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
-from PyQt5.QtCore import Qt, QSortFilterProxyModel
+from PyQt5.QtCore import Qt, QSortFilterProxyModel, pyqtSlot
 
 from mne.io.pick import channel_type
 
@@ -30,6 +30,7 @@ class ChannelPropertiesDialog(QDialog):
             bad.setCheckState(Qt.Checked if checked else Qt.Unchecked)
             self.model.setItem(index, 3, bad)
 
+        self.model.itemChanged.connect(bad_changed)
         self.proxymodel = MySortFilterProxyModel()
         self.proxymodel.setSourceModel(self.model)
 
@@ -93,3 +94,11 @@ class ComboBoxDelegate(QStyledItemDelegate):
 
     def updateEditorGeometry(self, editor, option, index):
         editor.setGeometry(option.rect)
+
+
+@pyqtSlot()
+def bad_changed(item):
+    if item.checkState() == Qt.Checked:
+        item.setData(True, Qt.UserRole)
+    else:
+        item.setData(False, Qt.UserRole)
