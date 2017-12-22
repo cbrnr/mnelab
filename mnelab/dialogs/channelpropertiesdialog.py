@@ -6,6 +6,11 @@ from PyQt5.QtCore import Qt, QSortFilterProxyModel, pyqtSlot
 
 from mne.io.pick import channel_type
 
+from ..utils.fixes import get_channel_types
+
+
+channel_types = [k.upper() for k in get_channel_types().keys()]
+
 
 class ChannelPropertiesDialog(QDialog):
     def __init__(self, parent, info, title="Channel Properties"):
@@ -80,7 +85,7 @@ class MySortFilterProxyModel(QSortFilterProxyModel):
 class ComboBoxDelegate(QStyledItemDelegate):
     def createEditor(self, parent, option, index):
         editor = QComboBox(parent)
-        editor.addItems(["EEG", "EMG", "EOG", "ECG", "MEG"])
+        editor.addItems(channel_types)
         return editor
 
     def setEditorData(self, editor, index):
