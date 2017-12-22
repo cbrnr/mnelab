@@ -45,7 +45,6 @@ class ChannelPropertiesDialog(QDialog):
         self.view.setEditTriggers(QAbstractItemView.AllEditTriggers)
         self.view.verticalHeader().setVisible(False)
         self.view.horizontalHeader().setStretchLastSection(True)
-        self.view.horizontalHeader().setSectionResizeMode(QHeaderView.Fixed)
         self.view.setShowGrid(False)
         self.view.setSelectionMode(QAbstractItemView.NoSelection)
         self.view.setSortingEnabled(True)
