@@ -37,6 +37,7 @@ class ChannelPropertiesDialog(QDialog):
 
         self.model.itemChanged.connect(bad_changed)
         self.proxymodel = MySortFilterProxyModel()
+        self.proxymodel.setDynamicSortFilter(False)
         self.proxymodel.setSourceModel(self.model)
 
         self.view = QTableView()
@@ -49,9 +50,6 @@ class ChannelPropertiesDialog(QDialog):
         self.view.setSelectionMode(QAbstractItemView.NoSelection)
         self.view.setSortingEnabled(True)
         self.view.sortByColumn(0, Qt.AscendingOrder)
-        self.view.resizeColumnsToContents()
-        # for i in range(self.model.rowCount()):
-        #         self.view.openPersistentEditor(self.model.index(i, 2))
 
         vbox = QVBoxLayout(self)
         vbox.addWidget(self.view)
@@ -61,7 +59,10 @@ class ChannelPropertiesDialog(QDialog):
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
 
-        self.resize(400, 650)
+        self.resize(500, 650)
+        self.view.setColumnWidth(0, 75)
+        self.view.setColumnWidth(1, 150)
+        self.view.setColumnWidth(2, 90)
 
 
 class MySortFilterProxyModel(QSortFilterProxyModel):
@@ -82,9 +83,15 @@ class MySortFilterProxyModel(QSortFilterProxyModel):
 
 
 class ComboBoxDelegate(QStyledItemDelegate):
+    @pyqtSlot()
+    def commit_data(self):
+        self.commitData.emit(self.sender())
+        self.closeEditor.emit(self.sender())
+
     def createEditor(self, parent, option, index):
         editor = QComboBox(parent)
         editor.addItems(channel_types)
+        editor.currentIndexChanged.connect(self.commit_data)
         return editor
 
     def setEditorData(self, editor, index):
