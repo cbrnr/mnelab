@@ -1,1 +1,1 @@
-from .mnelab import MainWindow
+from .mainwindow import MainWindow
