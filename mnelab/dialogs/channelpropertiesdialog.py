@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QDialogButtonBox,
-                             QAbstractItemView, QTableView, QHeaderView,
-                             QStyledItemDelegate, QComboBox)
+                             QAbstractItemView, QTableView, QComboBox,
+                             QStyledItemDelegate)
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, QSortFilterProxyModel, pyqtSlot
 
