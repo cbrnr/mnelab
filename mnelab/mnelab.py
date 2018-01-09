@@ -331,8 +331,13 @@ class MainWindow(QMainWindow):
         events = data.current.events
         montage = data.current.montage
 
-        nchan = raw.info["nchan"]
-        chans = Counter([channel_type(raw.info, i) for i in range(nchan)])
+        if raw.info["bads"]:
+            nbads = len(raw.info["bads"])
+            nchan = "{} ({} bad)".format(raw.info["nchan"], nbads)
+        else:
+            nchan = raw.info["nchan"]
+        chans = Counter([channel_type(raw.info, i)
+                         for i in range(raw.info["nchan"])])
 
         if events is not None:
             nevents = events.shape[0]
@@ -412,7 +417,7 @@ class MainWindow(QMainWindow):
             if types:
                 data.current.raw.set_channel_types(types)
                 data.data[data.index].raw.set_channel_types(types)
-                self._update_infowidget()
+            self._update_infowidget()
             self._toggle_actions(True)
 
     def set_montage(self):
