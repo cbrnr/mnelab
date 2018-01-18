@@ -1,6 +1,8 @@
 from collections import Counter
 from os.path import exists, getsize, join, split, splitext
 from os import listdir
+import time
+from multiprocessing import Pool
 
 import numpy as np
 import mne
@@ -18,6 +20,8 @@ from .dialogs.pickchannelsdialog import PickChannelsDialog
 from .dialogs.referencedialog import ReferenceDialog
 from .dialogs.montagedialog import MontageDialog
 from .dialogs.channelpropertiesdialog import ChannelPropertiesDialog
+from .dialogs.runicadialog import RunICADialog
+from .dialogs.calcdialog import CalcDialog
 from .utils.datasets import DataSets, DataSet
 from .widgets.infowidget import InfoWidget
 
@@ -104,7 +108,7 @@ class MainWindow(QMainWindow):
                                                   self.filter_data)
         self.find_events_action = tools_menu.addAction("Find &events...",
                                                        self.find_events)
-        self.run_ica_action = tools_menu.addAction("Run &ICA...")
+        self.run_ica_action = tools_menu.addAction("Run &ICA...", self.run_ica)
         self.import_ica_action = tools_menu.addAction("&Load ICA...",
                                                       self.load_ica)
 
@@ -493,6 +497,19 @@ class MainWindow(QMainWindow):
                                             filter="*.fif *.fif.gz")
         if fname[0]:
             self.state.ica = mne.preprocessing.read_ica(fname[0])
+
+    def run_ica(self):
+        dialog = RunICADialog(self, data.current.raw.info["nchan"])
+
+        if dialog.exec_():
+            calc = CalcDialog(self, "Calculating ICA", "Calculating ICA.")
+            method = dialog.methodbox.currentText()
+            ica = mne.preprocessing.ICA(method=dialog.methods[method])
+            pool = Pool(1)
+            pool.apply_async(func=ica.fit, args=(data.current.raw,),
+                             callback=lambda x: calc.accept())
+            if not calc.exec_():
+                pool.terminate()
 
     def find_events(self):
         """Find events in data."""
