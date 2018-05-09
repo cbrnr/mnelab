@@ -1,8 +1,7 @@
 from collections import Counter
 from os.path import exists, getsize, join, split, splitext
 from os import listdir
-import time
-from multiprocessing import Pool
+import multiprocessing as mp
 
 import numpy as np
 import mne
@@ -505,7 +504,7 @@ class MainWindow(QMainWindow):
             calc = CalcDialog(self, "Calculating ICA", "Calculating ICA.")
             method = dialog.methodbox.currentText()
             ica = mne.preprocessing.ICA(method=dialog.methods[method])
-            pool = Pool(1)
+            pool = mp.Pool(1)
             pool.apply_async(func=ica.fit, args=(data.current.raw,),
                              callback=lambda x: calc.accept())
             if not calc.exec_():
