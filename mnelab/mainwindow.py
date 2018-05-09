@@ -327,6 +327,7 @@ class MainWindow(QMainWindow):
         reference = data.current.reference
         events = data.current.events
         montage = data.current.montage
+        ica = data.current.ica
 
         if raw.info["bads"]:
             nbads = len(raw.info["bads"])
@@ -359,6 +360,12 @@ class MainWindow(QMainWindow):
         else:
             annots = "-"
 
+        if ica is not None:
+            method = ica.method.replace("-", " ").title()
+            icas = f"{method} ({ica.n_components_} components)"
+        else:
+            icas = "-"
+
         return {"File name": fname if fname else "-",
                 "File type": ftype if ftype else "-",
                 "Number of channels": nchan,
@@ -371,6 +378,7 @@ class MainWindow(QMainWindow):
                 "Annotations": annots,
                 "Reference": reference if reference else "-",
                 "Montage": montage if montage is not None else "-",
+                "ICA": icas,
                 "Size in memory": "{:.2f} MB".format(
                     raw._data.nbytes / 1024 ** 2),
                 "Size on disk": "-" if not fname else "{:.2f} MB".format(
@@ -498,6 +506,7 @@ class MainWindow(QMainWindow):
             self.state.ica = mne.preprocessing.read_ica(fname[0])
 
     def run_ica(self):
+        """Run ICA calculation."""
         dialog = RunICADialog(self, data.current.raw.info["nchan"])
 
         if dialog.exec_():
@@ -505,10 +514,14 @@ class MainWindow(QMainWindow):
             method = dialog.methodbox.currentText()
             ica = mne.preprocessing.ICA(method=dialog.methods[method])
             pool = mp.Pool(1)
-            pool.apply_async(func=ica.fit, args=(data.current.raw,),
-                             callback=lambda x: calc.accept())
+            res = pool.apply_async(func=ica.fit, args=(data.current.raw,),
+                                   callback=lambda x: calc.accept())
             if not calc.exec_():
                 pool.terminate()
+            else:
+                data.current.ica = res.get(timeout=1)
+                data.data[data.index].ica = res.get(timeout=1)
+                self._update_infowidget()
 
     def find_events(self):
         """Find events in data."""
