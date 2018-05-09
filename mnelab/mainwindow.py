@@ -32,8 +32,7 @@ SUPPORTED_FORMATS = "*.bdf *.edf *.fif *.vhdr"
 
 
 class MainWindow(QMainWindow):
-    """MNELAB main window.
-    """
+    """MNELAB main window."""
     def __init__(self):
         super().__init__()
 
@@ -149,8 +148,7 @@ class MainWindow(QMainWindow):
         self.show()
 
     def open_file(self):
-        """Show open file dialog.
-        """
+        """Show open file dialog."""
         fname = QFileDialog.getOpenFileName(self, "Open file",
                                             filter=SUPPORTED_FORMATS)[0]
         if fname:
@@ -196,8 +194,7 @@ class MainWindow(QMainWindow):
         self._toggle_actions()
 
     def export_raw(self):
-        """Export raw to FIF file.
-        """
+        """Export raw to FIF file."""
         fname = QFileDialog.getSaveFileName(self, "Export raw",
                                             filter="*.fif")[0]
         if fname:
@@ -207,8 +204,7 @@ class MainWindow(QMainWindow):
             data.current.raw.save(fname)
 
     def export_bads(self):
-        """Export bad channels info to a CSV file.
-        """
+        """Export bad channels info to a CSV file."""
         fname = QFileDialog.getSaveFileName(self, "Export bad channels",
                                             filter="*.csv")[0]
         if fname:
@@ -219,8 +215,7 @@ class MainWindow(QMainWindow):
                 f.write(",".join(data.current.raw.info["bads"]))
 
     def import_bads(self):
-        """Import bad channels info from a CSV file.
-        """
+        """Import bad channels info from a CSV file."""
         fname = QFileDialog.getOpenFileName(self, "Import bad channels",
                                             filter="*.csv")[0]
         if fname:
@@ -272,6 +267,7 @@ class MainWindow(QMainWindow):
                     f.write("\n")
 
     def import_annotations(self):
+        """Import annotations from a CSV file."""
         fname = QFileDialog.getOpenFileName(self, "Import annotations",
                                             filter="*.csv")[0]
         if fname:
@@ -297,8 +293,7 @@ class MainWindow(QMainWindow):
             self._update_infowidget()
 
     def close_file(self):
-        """Close current file.
-        """
+        """Close current file."""
         data.remove_data()
         self._update_sidebar(data.names, data.index)
         self._update_infowidget()
@@ -308,8 +303,7 @@ class MainWindow(QMainWindow):
             self._toggle_actions(False)
 
     def close_all(self):
-        """Close all currently open data sets.
-        """
+        """Close all currently open data sets."""
         msg = QMessageBox.question(self, "Close all data sets",
                                    "Close all data sets?")
         if msg == QMessageBox.Yes:
@@ -377,8 +371,7 @@ class MainWindow(QMainWindow):
                     getsize(fname) / 1024 ** 2)}
 
     def pick_channels(self):
-        """Pick channels in current data set.
-        """
+        """Pick channels in current data set."""
         channels = data.current.raw.info["ch_names"]
         dialog = PickChannelsDialog(self, channels, selected=channels)
         if dialog.exec_():
@@ -391,6 +384,7 @@ class MainWindow(QMainWindow):
             self._update_datasets(new)
 
     def channel_properties(self):
+        """Show channel properties dialog."""
         info = data.current.raw.info
         dialog = ChannelPropertiesDialog(self, info)
         if dialog.exec_():
@@ -421,8 +415,7 @@ class MainWindow(QMainWindow):
             self._toggle_actions(True)
 
     def set_montage(self):
-        """Set montage.
-        """
+        """Set montage."""
         path = join(mne.__path__[0], "channels", "data", "montages")
         supported = (".elc", ".txt", ".csd", ".sfp", ".elp", ".hpts", ".loc",
                      ".locs", ".eloc", ".bvef")
@@ -451,8 +444,7 @@ class MainWindow(QMainWindow):
                                      "not match any channel name in the data.")
 
     def plot_raw(self):
-        """Plot raw data.
-        """
+        """Plot raw data."""
         events = data.current.events
         nchan = data.current.raw.info["nchan"]
         fig = data.current.raw.plot(events=events, n_channels=nchan,
@@ -475,8 +467,7 @@ class MainWindow(QMainWindow):
         fig.show()
 
     def plot_psd(self):
-        """Plot power spectral density (PSD).
-        """
+        """Plot power spectral density (PSD)."""
         fig = data.current.raw.plot_psd(average=False,
                                             spatial_colors=False, show=False)
         win = fig.canvas.manager.window
@@ -484,8 +475,7 @@ class MainWindow(QMainWindow):
         fig.show()
 
     def plot_montage(self):
-        """Plot montage.
-        """
+        """Plot montage."""
         montage = mne.channels.read_montage(data.current.montage)
         fig = montage.plot(show_names=True, show=False)
         win = fig.canvas.manager.window
@@ -495,14 +485,14 @@ class MainWindow(QMainWindow):
         fig.show()
 
     def load_ica(self):
-        """Load ICA solution from a file.
-        """
+        """Load ICA solution from a file."""
         fname = QFileDialog.getOpenFileName(self, "Load ICA",
                                             filter="*.fif *.fif.gz")
         if fname[0]:
             self.state.ica = mne.preprocessing.read_ica(fname[0])
 
     def find_events(self):
+        """Find events in data."""
         events = mne.find_events(data.current.raw, consecutive=False)
         if events.shape[0] > 0:  # if events were found
             data.current.events = events
@@ -510,8 +500,7 @@ class MainWindow(QMainWindow):
             self._update_infowidget()
 
     def filter_data(self):
-        """Filter data.
-        """
+        """Filter data."""
         dialog = FilterDialog(self)
 
         if dialog.exec_():
@@ -526,8 +515,7 @@ class MainWindow(QMainWindow):
             self._update_datasets(new)
 
     def set_reference(self):
-        """Set reference.
-        """
+        """Set reference."""
         dialog = ReferenceDialog(self)
         if dialog.exec_():
             if dialog.average.isChecked():
@@ -558,21 +546,23 @@ class MainWindow(QMainWindow):
             self._update_datasets(new)
 
     def show_about(self):
-        """Show About dialog.
-        """
-        msg = """<b>MNELAB {}</b><br/><br/>
+        """Show About dialog."""
+        msg = """<p style="font-weight: bold">MNELAB {}</p>
+        <p style="font-weight: normal">
         <a href="https://github.com/cbrnr/mnelab">MNELAB</a> - a graphical user
         interface for
-        <a href="https://github.com/mne-tools/mne-python">MNE</a>.<br/><br/>
-        This program uses MNE version {}.<br/><br/>
-        Licensed under the BSD 3-clause license.<br/>
-        Copyright 2017 by Clemens Brunner.""".format(__version__,
-                                                     mne.__version__)
+        <a href="https://github.com/mne-tools/mne-python">MNE</a>.</p>
+        <p style="font-weight: normal">
+        This program uses MNE version {}.</p>
+        <p style="font-weight: normal">
+        Licensed under the BSD 3-clause license.</p>
+        <p style="font-weight: normal">
+        Copyright 2017-2018 by Clemens Brunner.</p>""".format(__version__,
+                                                          mne.__version__)
         QMessageBox.about(self, "About MNELAB", msg)
 
     def show_about_qt(self):
-        """Show About Qt dialog.
-        """
+        """Show About Qt dialog."""
         QMessageBox.aboutQt(self, "About Qt")
 
     def _update_datasets(self, dataset):
@@ -593,8 +583,7 @@ class MainWindow(QMainWindow):
         self._update_statusbar()
 
     def _update_sidebar(self, names, index):
-        """Update (overwrite) sidebar with names and current index.
-        """
+        """Update (overwrite) sidebar with names and current index."""
         self.names.setStringList(names)
         self.sidebar.setCurrentIndex(self.names.index(index))
 
@@ -681,8 +670,7 @@ class MainWindow(QMainWindow):
                 self.recent_menu.setEnabled(False)
 
     def _write_settings(self):
-        """Write application settings.
-        """
+        """Write application settings."""
         settings = QSettings()
         settings.setValue("recent", self.recent)
         settings.setValue("statusbar", not self.statusBar().isHidden())
@@ -730,8 +718,7 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(QModelIndex, QModelIndex)
     def _update_names(self, start, stop):
-        """Update names in DataSets after changes in sidebar.
-        """
+        """Update names in DataSets after changes in sidebar."""
         for index in range(start.row(), stop.row() + 1):
             data.data[index].name = self.names.stringList()[index]
         if data.index in range(start.row(), stop.row() + 1):
