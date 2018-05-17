@@ -332,6 +332,9 @@ class MainWindow(QMainWindow):
             nchan = raw.info["nchan"]
         chans = Counter([channel_type(raw.info, i)
                          for i in range(raw.info["nchan"])])
+        # sort by channel type, and always move "stim" to end of list
+        chans = sorted(dict(chans).items(),
+                       key=lambda x: (x[0] == "stim", x[0]))
 
         if events is not None:
             nevents = events.shape[0]
@@ -357,10 +360,10 @@ class MainWindow(QMainWindow):
                 "File type": ftype if ftype else "-",
                 "Number of channels": nchan,
                 "Channels": ", ".join(
-                    [" ".join([str(v), k.upper()]) for k, v in chans.items()]),
+                    [" ".join([str(v), k.upper()]) for k, v in chans]),
                 "Samples": raw.n_times,
-                "Sampling frequency": str(raw.info["sfreq"]) + " Hz",
-                "Length": str(raw.n_times / raw.info["sfreq"]) + " s",
+                "Sampling frequency": f"{raw.info['sfreq']:.2f} Hz",
+                "Length": f"{raw.n_times / raw.info['sfreq']:.2f} s",
                 "Events": events,
                 "Annotations": annots,
                 "Reference": reference if reference else "-",
