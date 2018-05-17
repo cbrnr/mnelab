@@ -4,9 +4,7 @@ from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QDialogButtonBox,
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtCore import Qt, QSortFilterProxyModel, pyqtSlot
 
-from mne.io.pick import channel_type
-
-from ..utils.fixes import get_channel_types
+from mne.io.pick import channel_type, get_channel_types
 
 
 channel_types = [k.upper() for k in get_channel_types().keys()]
