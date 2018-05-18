@@ -507,7 +507,15 @@ class MainWindow(QMainWindow):
 
     def run_ica(self):
         """Run ICA calculation."""
-        dialog = RunICADialog(self, data.current.raw.info["nchan"])
+        try:
+            import picard
+        except ImportError:
+            have_picard = False
+        else:
+            have_picard = True
+
+        dialog = RunICADialog(self, data.current.raw.info["nchan"],
+                              have_picard)
 
         if dialog.exec_():
             calc = CalcDialog(self, "Calculating ICA", "Calculating ICA.")
