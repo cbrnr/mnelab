@@ -178,7 +178,7 @@ class MainWindow(QMainWindow):
                            "stim_channel=-1, preload=True)".format(fname))
         elif ext in [".fif"]:
             raw = mne.io.read_raw_fif(fname, preload=True)
-            history.append("raw = mne.io.read_raw_fif('{}',"
+            history.append("raw = mne.io.read_raw_fif('{}', "
                            "preload=True)".format(fname))
         elif ext in [".vhdr"]:
             raw = mne.io.read_raw_brainvision(fname, preload=True)
