@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt
 
 
 class RunICADialog(QDialog):
-    def __init__(self, parent, nchan):
+    def __init__(self, parent, nchan, have_picard=True):
         super().__init__(parent)
         self.setWindowTitle("Run ICA")
         vbox = QVBoxLayout(self)
@@ -13,6 +13,8 @@ class RunICADialog(QDialog):
         self.methodbox = QComboBox()
         self.methods = {"Extended Infomax": "extended-infomax",
                         "Infomax": "infomax", "FastICA": "fastica"}
+        if have_picard:
+            self.methods["Picard"] = "picard"
         self.methodbox.addItems(self.methods.keys())
         grid.addWidget(self.methodbox, 0, 1)
         grid.addWidget(QLabel("Number of components:"), 1, 0)
