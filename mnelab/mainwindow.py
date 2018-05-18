@@ -471,8 +471,8 @@ class MainWindow(QMainWindow):
 
     def plot_psd(self):
         """Plot power spectral density (PSD)."""
-        fig = data.current.raw.plot_psd(average=False,
-                                            spatial_colors=False, show=False)
+        fig = data.current.raw.plot_psd(average=False, spatial_colors=False,
+                                        show=False)
         win = fig.canvas.manager.window
         win.setWindowTitle("Power spectral density")
         fig.show()
@@ -525,7 +525,7 @@ class MainWindow(QMainWindow):
                 tmp, _ = mne.set_eeg_reference(data.current.raw, None)
                 tmp.apply_proj()
                 name = data.current.name + " (average ref)"
-                new = DataSet(raw=tmp, name=name, reference="average",
+                new = DataSet(raw=tmp, name=name, reference="Average",
                               events=data.current.events)
             else:
                 ref = [c.strip() for c in dialog.channellist.text().split(",")]
