@@ -519,11 +519,13 @@ class MainWindow(QMainWindow):
 
         if dialog.exec_():
             calc = CalcDialog(self, "Calculating ICA", "Calculating ICA.")
-            method = dialog.methodbox.currentText()
+            method = dialog.method.currentText()
+            exclude_bad_segments = dialog.exclude_bad_segments.isChecked()
             ica = mne.preprocessing.ICA(method=dialog.methods[method])
             pool = mp.Pool(1)
+            kwds = {"reject_by_annotation": exclude_bad_segments}
             res = pool.apply_async(func=ica.fit, args=(data.current.raw,),
-                                   callback=lambda x: calc.accept())
+                                   kwds=kwds, callback=lambda x: calc.accept())
             if not calc.exec_():
                 pool.terminate()
             else:
