@@ -27,7 +27,7 @@ from .widgets.infowidget import InfoWidget
 
 __version__ = "0.1.0"
 
-
+# TODO: separate data from GUI (model/view)
 data = DataSets()  # contains currently loaded data sets
 history = []  # command history
 MAX_RECENT = 6  # maximum number of recent files
