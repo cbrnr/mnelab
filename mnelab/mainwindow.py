@@ -1,6 +1,7 @@
 from collections import Counter
 from os.path import exists, getsize, join, split, splitext
 from os import listdir
+import multiprocessing as mp
 
 import numpy as np
 import mne
@@ -18,6 +19,8 @@ from .dialogs.pickchannelsdialog import PickChannelsDialog
 from .dialogs.referencedialog import ReferenceDialog
 from .dialogs.montagedialog import MontageDialog
 from .dialogs.channelpropertiesdialog import ChannelPropertiesDialog
+from .dialogs.runicadialog import RunICADialog
+from .dialogs.calcdialog import CalcDialog
 from .utils.datasets import DataSets, DataSet
 from .widgets.infowidget import InfoWidget
 
@@ -104,7 +107,7 @@ class MainWindow(QMainWindow):
                                                   self.filter_data)
         self.find_events_action = tools_menu.addAction("Find &events...",
                                                        self.find_events)
-        self.run_ica_action = tools_menu.addAction("Run &ICA...")
+        self.run_ica_action = tools_menu.addAction("Run &ICA...", self.run_ica)
         self.import_ica_action = tools_menu.addAction("&Load ICA...",
                                                       self.load_ica)
 
@@ -324,6 +327,7 @@ class MainWindow(QMainWindow):
         reference = data.current.reference
         events = data.current.events
         montage = data.current.montage
+        ica = data.current.ica
 
         if raw.info["bads"]:
             nbads = len(raw.info["bads"])
@@ -356,6 +360,12 @@ class MainWindow(QMainWindow):
         else:
             annots = "-"
 
+        if ica is not None:
+            method = ica.method.replace("-", " ").title()
+            icas = f"{method} ({ica.n_components_} components)"
+        else:
+            icas = "-"
+
         return {"File name": fname if fname else "-",
                 "File type": ftype if ftype else "-",
                 "Number of channels": nchan,
@@ -368,6 +378,7 @@ class MainWindow(QMainWindow):
                 "Annotations": annots,
                 "Reference": reference if reference else "-",
                 "Montage": montage if montage is not None else "-",
+                "ICA": icas,
                 "Size in memory": "{:.2f} MB".format(
                     raw._data.nbytes / 1024 ** 2),
                 "Size on disk": "-" if not fname else "{:.2f} MB".format(
@@ -493,6 +504,34 @@ class MainWindow(QMainWindow):
                                             filter="*.fif *.fif.gz")
         if fname[0]:
             self.state.ica = mne.preprocessing.read_ica(fname[0])
+
+    def run_ica(self):
+        """Run ICA calculation."""
+        try:
+            import picard
+        except ImportError:
+            have_picard = False
+        else:
+            have_picard = True
+
+        dialog = RunICADialog(self, data.current.raw.info["nchan"],
+                              have_picard)
+
+        if dialog.exec_():
+            calc = CalcDialog(self, "Calculating ICA", "Calculating ICA.")
+            method = dialog.method.currentText()
+            exclude_bad_segments = dialog.exclude_bad_segments.isChecked()
+            ica = mne.preprocessing.ICA(method=dialog.methods[method])
+            pool = mp.Pool(1)
+            kwds = {"reject_by_annotation": exclude_bad_segments}
+            res = pool.apply_async(func=ica.fit, args=(data.current.raw,),
+                                   kwds=kwds, callback=lambda x: calc.accept())
+            if not calc.exec_():
+                pool.terminate()
+            else:
+                data.current.ica = res.get(timeout=1)
+                data.data[data.index].ica = res.get(timeout=1)
+                self._update_infowidget()
 
     def find_events(self):
         """Find events in data."""
