@@ -1,9 +1,7 @@
-from collections import Counter
-from os.path import exists, getsize, join, split, splitext
+from os.path import join, splitext
 from os import listdir
 import multiprocessing as mp
 
-import numpy as np
 import mne
 from PyQt5.QtCore import (pyqtSlot, QStringListModel, QModelIndex, QSettings,
                           QEvent, Qt, QObject)
@@ -21,23 +19,32 @@ from .dialogs.montagedialog import MontageDialog
 from .dialogs.channelpropertiesdialog import ChannelPropertiesDialog
 from .dialogs.runicadialog import RunICADialog
 from .dialogs.calcdialog import CalcDialog
-from .utils.datasets import DataSets, DataSet
 from .widgets.infowidget import InfoWidget
+from .model import (SUPPORTED_FORMATS, LabelsNotFoundError,
+                    InvalidAnnotationsError)
 
 
 __version__ = "0.1.0"
 
-# TODO: separate data from GUI (model/view)
-data = DataSets()  # contains currently loaded data sets
 history = []  # command history
 MAX_RECENT = 6  # maximum number of recent files
-SUPPORTED_FORMATS = "*.bdf *.edf *.fif *.vhdr"
 
 
 class MainWindow(QMainWindow):
     """MNELAB main window."""
-    def __init__(self):
+    def __init__(self, model):
+        """Initialize MNELAB main window.
+
+        Parameters
+        ----------
+        model : mnelab.model.Model instance
+            The main window needs to connect to a model containing all data
+            sets. This decouples the GUI from the data (model/view).
+        """
         super().__init__()
+
+        self.model = model  # data model
+        self.setWindowTitle("MNELAB")
 
         # restore settings
         settings = self._read_settings()
@@ -51,13 +58,10 @@ class MainWindow(QMainWindow):
         if settings["state"]:
             self.restoreState(settings["state"])
 
-        self.setWindowTitle("MNELAB")
-
         # initialize menus
-        menubar = self.menuBar()
-
-        file_menu = menubar.addMenu("&File")
-        file_menu.addAction("&Open...", self.open_file, QKeySequence.Open)
+        file_menu = self.menuBar().addMenu("&File")
+        file_menu.addAction("&Open...", lambda: self.open_file(model.load),
+                            QKeySequence.Open)
         self.recent_menu = file_menu.addMenu("Open recent")
         self.recent_menu.aboutToShow.connect(self._update_recent_menu)
         self.recent_menu.triggered.connect(self._load_recent)
@@ -69,22 +73,22 @@ class MainWindow(QMainWindow):
                                                     self.close_all)
         file_menu.addSeparator()
         self.import_bad_action = file_menu.addAction("Import bad channels...",
-                                                     self.import_bads)
+                                                     lambda: self.import_file(model.import_bads, "Import bad channels", "*.csv"))
         self.import_anno_action = file_menu.addAction("Import annotations...",
-                                                      self.import_annotations)
+                                                      lambda: self.import_file(model.import_annotations, "Import annotations", "*.csv"))
         file_menu.addSeparator()
         self.export_raw_action = file_menu.addAction("Export &raw...",
-                                                     self.export_raw)
+                                                     lambda: self.export_file(model.export_raw, "Export raw", "*.fif"))
         self.export_bad_action = file_menu.addAction("Export &bad channels...",
-                                                     self.export_bads)
-        self.export_anno_action = file_menu.addAction("Export &annotations...",
-                                                      self.export_annotations)
+                                                     lambda: self.export_file(model.export_bads, "Export bad channels", "*.csv"))
         self.export_events_action = file_menu.addAction("Export &events...",
-                                                        self.export_events)
+                                                        lambda: self.export_file(model.export_events, "Export events", "*.csv"))
+        self.export_anno_action = file_menu.addAction("Export &annotations...",
+                                                      lambda: self.export_file(model.export_annotations, "Export annotations", "*.csv"))
         file_menu.addSeparator()
         file_menu.addAction("&Quit", self.close, QKeySequence.Quit)
 
-        edit_menu = menubar.addMenu("&Edit")
+        edit_menu = self.menuBar().addMenu("&Edit")
         self.pick_chans_action = edit_menu.addAction("Pick &channels...",
                                                      self.pick_channels)
         self.chan_props_action = edit_menu.addAction("Channel &properties...",
@@ -95,28 +99,28 @@ class MainWindow(QMainWindow):
         self.setref_action = edit_menu.addAction("&Set reference...",
                                                  self.set_reference)
 
-        plot_menu = menubar.addMenu("&Plot")
+        plot_menu = self.menuBar().addMenu("&Plot")
         self.plot_raw_action = plot_menu.addAction("&Raw data", self.plot_raw)
         self.plot_psd_action = plot_menu.addAction("&Power spectral "
                                                    "density...", self.plot_psd)
         self.plot_montage_action = plot_menu.addAction("Current &montage",
                                                        self.plot_montage)
 
-        tools_menu = menubar.addMenu("&Tools")
+        tools_menu = self.menuBar().addMenu("&Tools")
         self.filter_action = tools_menu.addAction("&Filter data...",
                                                   self.filter_data)
         self.find_events_action = tools_menu.addAction("Find &events...",
-                                                       self.find_events)
+                                                       self.model.find_events)
         self.run_ica_action = tools_menu.addAction("Run &ICA...", self.run_ica)
         self.import_ica_action = tools_menu.addAction("&Load ICA...",
                                                       self.load_ica)
 
-        view_menu = menubar.addMenu("&View")
+        view_menu = self.menuBar().addMenu("&View")
         statusbar_action = view_menu.addAction("Statusbar",
                                                self._toggle_statusbar)
         statusbar_action.setCheckable(True)
 
-        help_menu = menubar.addMenu("&Help")
+        help_menu = self.menuBar().addMenu("&Help")
         help_menu.addAction("&About", self.show_about)
         help_menu.addAction("About &Qt", self.show_about_qt)
 
@@ -146,163 +150,47 @@ class MainWindow(QMainWindow):
             statusbar_action.setChecked(False)
 
         self.setAcceptDrops(True)
-
         self._toggle_actions(False)
-        self.show()
 
-    def open_file(self):
+    def data_changed(self):
+        self._update_sidebar(self.model.names, self.model.index)
+        self._update_infowidget()
+        self._update_statusbar()
+        self._add_recent(self.model.data[self.model.index]["fname"])
+        self._toggle_actions()
+
+    def open_file(self, func):
         """Show open file dialog."""
         fname = QFileDialog.getOpenFileName(self, "Open file",
                                             filter=SUPPORTED_FORMATS)[0]
         if fname:
-            self.load_file(fname)
+            func(fname)
 
-    def load_file(self, fname):
-        """Load file.
-
-        Parameters
-        ----------
-        fname : str
-            File name.
-        """
-        if not exists(fname):
-            QMessageBox.critical(self, "File not found",
-                                 "{} does not exist.".format(fname))
-            self._remove_recent(fname)
-            return
-        name, ext = splitext(split(fname)[-1])
-        ftype = ext[1:].upper()
-        if ext not in SUPPORTED_FORMATS:
-            raise ValueError("File format {} is not supported.".format(ftype))
-
-        if ext in [".edf", ".bdf"]:
-            raw = mne.io.read_raw_edf(fname, stim_channel=-1, preload=True)
-            history.append("raw = mne.io.read_raw_edf('{}', "
-                           "stim_channel=-1, preload=True)".format(fname))
-        elif ext in [".fif"]:
-            raw = mne.io.read_raw_fif(fname, preload=True)
-            history.append("raw = mne.io.read_raw_fif('{}', "
-                           "preload=True)".format(fname))
-        elif ext in [".vhdr"]:
-            raw = mne.io.read_raw_brainvision(fname, preload=True)
-            history.append("raw = mne.io.read_raw_brainvision('{}', "
-                           "preload=True)".format(fname))
-
-        data.insert_data(DataSet(name=name, fname=fname, ftype=ftype, raw=raw))
-        self.find_events()
-        self._update_sidebar(data.names, data.index)
-        self._update_infowidget()
-        self._update_statusbar()
-        self._add_recent(fname)
-        self._toggle_actions()
-
-    def export_raw(self):
-        """Export raw to FIF file."""
-        fname = QFileDialog.getSaveFileName(self, "Export raw",
-                                            filter="*.fif")[0]
+    def export_file(self, func, text, ffilter):
+        """Export to file."""
+        fname = QFileDialog.getSaveFileName(self, text, filter=ffilter)[0]
         if fname:
-            name, ext = splitext(split(fname)[-1])
-            ext = ext if ext else ".fif"  # automatically add extension
-            fname = join(split(fname)[0], name + ext)
-            data.current.raw.save(fname)
+            func(fname)
 
-    def export_bads(self):
-        """Export bad channels info to a CSV file."""
-        fname = QFileDialog.getSaveFileName(self, "Export bad channels",
-                                            filter="*.csv")[0]
+    def import_file(self, func, text, ffilter):
+        """Import file."""
+        fname = QFileDialog.getOpenFileName(self, text, filter=ffilter)[0]
         if fname:
-            name, ext = splitext(split(fname)[-1])
-            ext = ext if ext else ".csv"  # automatically add extension
-            fname = join(split(fname)[0], name + ext)
-            with open(fname, "w") as f:
-                f.write(",".join(data.current.raw.info["bads"]))
-
-    def import_bads(self):
-        """Import bad channels info from a CSV file."""
-        fname = QFileDialog.getOpenFileName(self, "Import bad channels",
-                                            filter="*.csv")[0]
-        if fname:
-            with open(fname) as f:
-                bads = f.read().replace(" ", "").split(",")
-                if set(bads) - set(data.current.raw.info["ch_names"]):
-                    QMessageBox.critical(self, "Channel labels not found",
-                                         "Some channel labels from the file "
-                                         "are not present in the data.")
-                else:
-                    data.current.raw.info["bads"] = bads
-                    data.data[data.index].raw.info["bads"] = bads
-
-    def export_events(self):
-        """Export events to a CSV file.
-
-        The resulting CSV file has two columns. The first column contains the
-        position (in samples), whereas the second column contains the type of
-        the events. The first line is a header containing the column names.
-        """
-        fname = QFileDialog.getSaveFileName(self, "Export events",
-                                            filter="*.csv")[0]
-        if fname:
-            name, ext = splitext(split(fname)[-1])
-            ext = ext if ext else ".csv"  # automatically add extension
-            fname = join(split(fname)[0], name + ext)
-            np.savetxt(fname, data.current.events[:, [0, 2]], fmt="%d",
-                       delimiter=",", header="pos,type", comments="")
-
-    def export_annotations(self):
-        """Export annotations to a CSV file.
-
-        The resulting CSV file has three columns. The first column contains the
-        annotation type, the second column contains the onset (in s), and the
-        third column contains the duration (in s). The first line is a header
-        containing the column names.
-        """
-        fname = QFileDialog.getSaveFileName(self, "Export annotations",
-                                            filter="*.csv")[0]
-        if fname:
-            name, ext = splitext(split(fname)[-1])
-            ext = ext if ext else ".csv"  # automatically add extension
-            fname = join(split(fname)[0], name + ext)
-            anns = data.current.raw.annotations
-            with open(fname, "w") as f:
-                f.write("type,onset,duration\n")
-                for a in zip(anns.description, anns.onset, anns.duration):
-                    f.write(",".join([a[0], str(a[1]), str(a[2])]))
-                    f.write("\n")
-
-    def import_annotations(self):
-        """Import annotations from a CSV file."""
-        fname = QFileDialog.getOpenFileName(self, "Import annotations",
-                                            filter="*.csv")[0]
-        if fname:
-            descs, onsets, durations = [], [], []
-            fs = data.current.raw.info["sfreq"]
-            with open(fname) as f:
-                f.readline()  # skip header
-                for line in f:
-                    ann = line.split(",")
-                    onset = float(ann[1].strip())
-                    duration = float(ann[2].strip())
-                    if onset > data.current.raw.n_times / fs:
-                        QMessageBox.critical(self, "Invalid annotations",
-                                             "One or more annotations are "
-                                             "outside of the data range.")
-                        return
-                    descs.append(ann[0].strip())
-                    onsets.append(onset)
-                    durations.append(duration)
-            annotations = mne.Annotations(onsets, durations, descs)
-            data.raw.annotations = annotations
-            data.data[data.index].raw.annotations = annotations
-            self._update_infowidget()
+            try:
+                func(fname)
+            except LabelsNotFoundError as e:
+                QMessageBox.critical(self, "Channel labels not found", str(e))
+            except InvalidAnnotationsError as e:
+                QMessageBox.critical(self, "Invalid annotations", str(e))
 
     def close_file(self):
-        """Close current file."""
-        data.remove_data()
-        self._update_sidebar(data.names, data.index)
+        """Close current data set."""
+        self.model.remove_data()
+        self._update_sidebar(self.model.names, self.model.index)
         self._update_infowidget()
         self._update_statusbar()
 
-        if not data:
+        if len(self.model) == 0:
             self._toggle_actions(False)
 
     def close_all(self):
@@ -310,79 +198,8 @@ class MainWindow(QMainWindow):
         msg = QMessageBox.question(self, "Close all data sets",
                                    "Close all data sets?")
         if msg == QMessageBox.Yes:
-            while data:
+            while len(self.model) > 0:
                 self.close_file()
-
-    def get_info(self):
-        """Get basic information on current file.
-
-        Returns
-        -------
-        info : dict
-            Dictionary with information on current file.
-        """
-        raw = data.current.raw
-        fname = data.current.fname
-        ftype = data.current.ftype
-        reference = data.current.reference
-        events = data.current.events
-        montage = data.current.montage
-        ica = data.current.ica
-
-        if raw.info["bads"]:
-            nbads = len(raw.info["bads"])
-            nchan = "{} ({} bad)".format(raw.info["nchan"], nbads)
-        else:
-            nchan = raw.info["nchan"]
-        chans = Counter([channel_type(raw.info, i)
-                         for i in range(raw.info["nchan"])])
-        # sort by channel type, and always move "stim" to end of list
-        chans = sorted(dict(chans).items(),
-                       key=lambda x: (x[0] == "stim", x[0]))
-
-        if events is not None:
-            nevents = events.shape[0]
-            unique = [str(e) for e in sorted(set(events[:, 2]))]
-            if len(unique) > 20:  # do not show all events
-                first = ", ".join(unique[:10])
-                last = ", ".join(unique[-10:])
-                events = "{} ({})".format(nevents, first + ", ..., " + last)
-            else:
-                events = "{} ({})".format(nevents, ", ".join(unique))
-        else:
-            events = "-"
-
-        if isinstance(reference, list):
-            reference = ",".join(reference)
-
-        if raw.annotations is not None:
-            annots = len(raw.annotations.description)
-        else:
-            annots = "-"
-
-        if ica is not None:
-            method = ica.method.replace("-", " ").title()
-            icas = f"{method} ({ica.n_components_} components)"
-        else:
-            icas = "-"
-
-        return {"File name": fname if fname else "-",
-                "File type": ftype if ftype else "-",
-                "Number of channels": nchan,
-                "Channels": ", ".join(
-                    [" ".join([str(v), k.upper()]) for k, v in chans]),
-                "Samples": raw.n_times,
-                "Sampling frequency": f"{raw.info['sfreq']:.2f} Hz",
-                "Length": f"{raw.n_times / raw.info['sfreq']:.2f} s",
-                "Events": events,
-                "Annotations": annots,
-                "Reference": reference if reference else "-",
-                "Montage": montage if montage is not None else "-",
-                "ICA": icas,
-                "Size in memory": "{:.2f} MB".format(
-                    raw._data.nbytes / 1024 ** 2),
-                "Size on disk": "-" if not fname else "{:.2f} MB".format(
-                    getsize(fname) / 1024 ** 2)}
 
     def pick_channels(self):
         """Pick channels in current data set."""
@@ -533,14 +350,6 @@ class MainWindow(QMainWindow):
                 data.data[data.index].ica = res.get(timeout=1)
                 self._update_infowidget()
 
-    def find_events(self):
-        """Find events in data."""
-        events = mne.find_events(data.current.raw, consecutive=False)
-        if events.shape[0] > 0:  # if events were found
-            data.current.events = events
-            data.data[data.index].events = events
-            self._update_infowidget()
-
     def filter_data(self):
         """Filter data."""
         dialog = FilterDialog(self)
@@ -589,18 +398,17 @@ class MainWindow(QMainWindow):
 
     def show_about(self):
         """Show About dialog."""
-        msg = """<p style="font-weight: bold">MNELAB {}</p>
+        msg = f"""<p style="font-weight: bold">MNELAB {__version__}</p>
         <p style="font-weight: normal">
         <a href="https://github.com/cbrnr/mnelab">MNELAB</a> - a graphical user
         interface for
         <a href="https://github.com/mne-tools/mne-python">MNE</a>.</p>
         <p style="font-weight: normal">
-        This program uses MNE version {}.</p>
+        This program uses MNE version {mne.__version__}.</p>
         <p style="font-weight: normal">
         Licensed under the BSD 3-clause license.</p>
         <p style="font-weight: normal">
-        Copyright 2017-2018 by Clemens Brunner.</p>""".format(__version__,
-                                                          mne.__version__)
+        Copyright 2017-2018 by Clemens Brunner.</p>"""
         QMessageBox.about(self, "About MNELAB", msg)
 
     def show_about_qt(self):
@@ -630,14 +438,14 @@ class MainWindow(QMainWindow):
         self.sidebar.setCurrentIndex(self.names.index(index))
 
     def _update_infowidget(self):
-        if data:
-            self.infowidget.set_values(self.get_info())
+        if self.model.data:
+            self.infowidget.set_values(self.model.get_info())
         else:
             self.infowidget.clear()
 
     def _update_statusbar(self):
-        if data:
-            mb = data.nbytes / 1024 ** 2
+        if self.model.data:
+            mb = self.model.nbytes / 1024 ** 2
             self.status_label.setText("Total Memory: {:.2f} MB".format(mb))
         else:
             self.status_label.clear()
@@ -653,14 +461,15 @@ class MainWindow(QMainWindow):
         self.close_file_action.setEnabled(enabled)
         self.close_all_action.setEnabled(enabled)
         self.export_raw_action.setEnabled(enabled)
-        if data.data:
-            bads = bool(data.current.raw.info["bads"])
+        if self.model.data:
+            current = self.model.data[self.model.index]
+            bads = bool(current["raw"].info["bads"])
             self.export_bad_action.setEnabled(enabled and bads)
-            events = data.current.events is not None
+            events = current["events"] is not None
             self.export_events_action.setEnabled(enabled and events)
-            annot = data.current.raw.annotations is not None
+            annot = current["raw"].annotations is not None
             self.export_anno_action.setEnabled(enabled and annot)
-            montage = bool(data.current.montage)
+            montage = bool(current["montage"])
             self.plot_montage_action.setEnabled(enabled and montage)
         else:
             self.export_bad_action.setEnabled(enabled)
@@ -774,7 +583,7 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(QAction)
     def _load_recent(self, action):
-        self.load_file(action.text())
+        self.model.load(action.text())
 
     @pyqtSlot()
     def _toggle_statusbar(self):
