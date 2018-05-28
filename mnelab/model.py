@@ -238,7 +238,7 @@ class Model:
             annots = "-"
 
         if ica is not None:
-            method = ica.method.replace("-", " ").title()
+            method = ica.method.replace("-", " ").title().replace("ica", "ICA")
             ica = f"{method} ({ica.n_components_} components)"
         else:
             ica = "-"
