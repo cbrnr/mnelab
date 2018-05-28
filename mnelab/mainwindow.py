@@ -29,6 +29,39 @@ __version__ = "0.1.0"
 MAX_RECENT = 6  # maximum number of recent files
 
 
+def read_settings():
+    """Read application settings.
+
+    Returns
+    -------
+    settings : dict
+        The restored settings values are returned in a dictionary for
+        further processing.
+    """
+    settings = QSettings()
+
+    recent = settings.value("recent")
+    if not recent:
+        recent = []  # default is empty list
+
+    statusbar = settings.value("statusbar")
+    if statusbar is None:  # default is True
+        statusbar = True
+
+    geometry = settings.value("geometry")
+    state = settings.value("state")
+
+    return {"recent": recent, "statusbar": statusbar, "geometry": geometry,
+            "state": state}
+
+
+def write_settings(*args, **kwargs):
+    """Write application settings."""
+    settings = QSettings()
+    for key, value in kwargs.items():
+        settings.setValue(key, value)
+
+
 class MainWindow(QMainWindow):
     """MNELAB main window."""
     def __init__(self, model):
@@ -46,7 +79,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("MNELAB")
 
         # restore settings
-        settings = self._read_settings()
+        settings = read_settings()
         self.recent = settings["recent"]  # list of recent files
         if settings["geometry"]:
             self.restoreGeometry(settings["geometry"])
@@ -243,18 +276,16 @@ class MainWindow(QMainWindow):
                           key=str.lower)
         # TODO: currently it is not possible to remove an existing montage
         dialog = MontageDialog(self, montages,
-                               selected=data.current.montage)
+                               selected=self.model.current["montage"])
         if dialog.exec_():
             name = dialog.montages.selectedItems()[0].data(0)
             montage = mne.channels.read_montage(name)
 
-            ch_names = data.current.raw.info["ch_names"]
+            ch_names = self.model.current["raw"].info["ch_names"]
             # check if at least one channel name matches a name in the montage
             if set(ch_names) & set(montage.ch_names):
-                data.current.montage = name
-                data.data[data.index].montage = name
-                data.current.raw.set_montage(montage)
-                data.data[data.index].raw.set_montage(montage)
+                self.model.current["montage"] = name
+                self.model.current["raw"].set_montage(montage)
                 self._update_infowidget()
                 self._toggle_actions()
             else:
@@ -264,11 +295,11 @@ class MainWindow(QMainWindow):
 
     def plot_raw(self):
         """Plot raw data."""
-        events = data.current.events
-        nchan = data.current.raw.info["nchan"]
-        fig = data.current.raw.plot(events=events, n_channels=nchan,
-                                        title=data.current.name,
-                                        show=False)
+        events = self.model.current["events"]
+        nchan = self.model.current["raw"].info["nchan"]
+        fig = self.model.current["raw"].plot(events=events, n_channels=nchan,
+                                             title=self.model.current["name"],
+                                             show=False)
         self.model.history.append("raw.plot(n_channels={})".format(nchan))
         win = fig.canvas.manager.window
         win.setWindowTitle("Raw data")
@@ -287,15 +318,16 @@ class MainWindow(QMainWindow):
 
     def plot_psd(self):
         """Plot power spectral density (PSD)."""
-        fig = data.current.raw.plot_psd(average=False, spatial_colors=False,
-                                        show=False)
+        fig = self.model.current["raw"].plot_psd(average=False,
+                                                 spatial_colors=False,
+                                                 show=False)
         win = fig.canvas.manager.window
         win.setWindowTitle("Power spectral density")
         fig.show()
 
     def plot_montage(self):
         """Plot montage."""
-        montage = mne.channels.read_montage(data.current.montage)
+        montage = mne.channels.read_montage(self.model.current["montage"])
         fig = montage.plot(show_names=True, show=False)
         win = fig.canvas.manager.window
         win.setWindowTitle("Montage")
@@ -319,7 +351,7 @@ class MainWindow(QMainWindow):
         else:
             have_picard = True
 
-        dialog = RunICADialog(self, data.current.raw.info["nchan"],
+        dialog = RunICADialog(self, self.model.current["raw"].info["nchan"],
                               have_picard)
 
         if dialog.exec_():
@@ -329,13 +361,13 @@ class MainWindow(QMainWindow):
             ica = mne.preprocessing.ICA(method=dialog.methods[method])
             pool = mp.Pool(1)
             kwds = {"reject_by_annotation": exclude_bad_segments}
-            res = pool.apply_async(func=ica.fit, args=(data.current.raw,),
+            res = pool.apply_async(func=ica.fit,
+                                   args=(self.model.current["raw"],),
                                    kwds=kwds, callback=lambda x: calc.accept())
             if not calc.exec_():
                 pool.terminate()
             else:
-                data.current.ica = res.get(timeout=1)
-                data.data[data.index].ica = res.get(timeout=1)
+                self.model.current["ica"] = res.get(timeout=1)
                 self._update_infowidget()
 
     def filter_data(self):
@@ -344,10 +376,10 @@ class MainWindow(QMainWindow):
 
         if dialog.exec_():
             low, high = dialog.low, dialog.high
-            tmp = filter_data(data.current.raw._data,
-                              data.current.raw.info["sfreq"],
+            tmp = filter_data(self.model.current["raw"]._data,
+                              self.model.current["raw"].info["sfreq"],
                               l_freq=low, h_freq=high, fir_design="firwin")
-            name = data.current.name + " ({}-{} Hz)".format(low, high)
+            name = self.model.current["name"] + " ({}-{} Hz)".format(low, high)
             new = DataSet(raw=mne.io.RawArray(tmp, data.current.raw.info),
                           name=name, events=data.current.events)
             self.model.history.append("raw.filter({}, {})".format(low, high))
@@ -486,7 +518,7 @@ class MainWindow(QMainWindow):
         self.recent.insert(0, fname)
         while len(self.recent) > MAX_RECENT:  # prune list
             self.recent.pop()
-        self._write_settings()
+        write_settings(recent=self.recent)
         if not self.recent_menu.isEnabled():
             self.recent_menu.setEnabled(True)
 
@@ -500,42 +532,9 @@ class MainWindow(QMainWindow):
         """
         if fname in self.recent:
             self.recent.remove(fname)
-            self._write_settings()
+            write_settings(recent=self.recent)
             if not self.recent:
                 self.recent_menu.setEnabled(False)
-
-    def _write_settings(self):
-        """Write application settings."""
-        settings = QSettings()
-        settings.setValue("recent", self.recent)
-        settings.setValue("statusbar", not self.statusBar().isHidden())
-        settings.setValue("geometry", self.saveGeometry())
-        settings.setValue("state", self.saveState())
-
-    def _read_settings(self):
-        """Read application settings.
-
-        Returns
-        -------
-        settings : dict
-            The restored settings values are returned in a dictionary for
-            further processing.
-        """
-        settings = QSettings()
-
-        recent = settings.value("recent")
-        if not recent:
-            recent = []  # default is empty list
-
-        statusbar = settings.value("statusbar")
-        if statusbar is None:  # default is True
-            statusbar = True
-
-        geometry = settings.value("geometry")
-        state = settings.value("state")
-
-        return {"recent": recent, "statusbar": statusbar, "geometry": geometry,
-                "state": state}
 
     @pyqtSlot(QModelIndex)
     def _update_data(self, selected):
@@ -572,7 +571,7 @@ class MainWindow(QMainWindow):
             self.statusBar().show()
         else:
             self.statusBar().hide()
-        self._write_settings()
+        write_settings(statusbar=not self.statusBar().isHidden())
 
     @pyqtSlot(QDropEvent)
     def dragEnterEvent(self, event):
@@ -596,7 +595,7 @@ class MainWindow(QMainWindow):
         event : QEvent
             Close event.
         """
-        self._write_settings()
+        write_settings(geometry=self.saveGeometry(), state=self.saveState())
         if self.model.history:
             print("\nCommand History")
             print("===============")
