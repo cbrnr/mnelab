@@ -295,9 +295,9 @@ class MainWindow(QMainWindow):
             picks = [item.data(0) for item in dialog.channels.selectedItems()]
             drops = set(channels) - set(picks)
             if drops:
-                self._duplicate()
+                self.auto_duplicate()
                 f(drops)
-        # history.append("raw.drop({})".format(drops))
+                self.history.append(f"raw.drop({drops})")
 
     def channel_properties(self):
         """Show channel properties dialog."""
@@ -496,7 +496,7 @@ class MainWindow(QMainWindow):
         """Show About Qt dialog."""
         QMessageBox.aboutQt(self, "About Qt")
 
-    def _duplicate(self):
+    def auto_duplicate(self):
         # if current data is stored in a file create a new data set
         if self.model.current["fname"]:
             self.model.duplicate_data()
