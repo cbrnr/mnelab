@@ -26,7 +26,6 @@ from .model import (SUPPORTED_FORMATS, LabelsNotFoundError,
 
 __version__ = "0.1.0"
 
-history = []  # command history
 MAX_RECENT = 6  # maximum number of recent files
 
 
@@ -269,7 +268,7 @@ class MainWindow(QMainWindow):
         fig = data.current.raw.plot(events=events, n_channels=nchan,
                                         title=data.current.name,
                                         show=False)
-        history.append("raw.plot(n_channels={})".format(nchan))
+        self.model.history.append("raw.plot(n_channels={})".format(nchan))
         win = fig.canvas.manager.window
         win.setWindowTitle("Raw data")
         win.findChild(QStatusBar).hide()
@@ -350,7 +349,7 @@ class MainWindow(QMainWindow):
             name = data.current.name + " ({}-{} Hz)".format(low, high)
             new = DataSet(raw=mne.io.RawArray(tmp, data.current.raw.info),
                           name=name, events=data.current.events)
-            history.append("raw.filter({}, {})".format(low, high))
+            self.model.history.append("raw.filter({}, {})".format(low, high))
             self._update_datasets(new)
 
     def set_reference(self):
@@ -601,10 +600,10 @@ class MainWindow(QMainWindow):
             Close event.
         """
         self._write_settings()
-        if history:
+        if self.model.history:
             print("\nCommand History")
             print("===============")
-            print("\n".join(history))
+            print("\n".join(self.model.history))
         QApplication.quit()
 
     def eventFilter(self, source, event):

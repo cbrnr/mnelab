@@ -31,6 +31,7 @@ def new_or_edit(f):
 
 
 def data_changed(f):
+    """Call self.view.data_changed method after function call."""
     @wraps(f)
     def wrapper(*args):
         f(*args)
@@ -44,6 +45,7 @@ class Model:
         self.view = None  # current view
         self.data = []  # list of data sets
         self.index = -1  # index of currently active data set
+        self.history = []  # command history
 
     @data_changed
     def insert_data(self, dataset):
@@ -96,16 +98,16 @@ class Model:
 
         if ext.lower() in [".edf", ".bdf"]:
             raw = mne.io.read_raw_edf(fname, preload=True)
-            # history.append("raw = mne.io.read_raw_edf('{}', "
-            #                "stim_channel=-1, preload=True)".format(fname))
+            self.history.append(f"raw = mne.io.read_raw_edf('{fname}', "
+                                f"preload=True)")
         elif ext in [".fif"]:
             raw = mne.io.read_raw_fif(fname, preload=True)
-            # history.append("raw = mne.io.read_raw_fif('{}', "
-            #                "preload=True)".format(fname))
+            self.history.append(f"raw = mne.io.read_raw_fif('{fname}', "
+                                f"preload=True)")
         elif ext in [".vhdr"]:
             raw = mne.io.read_raw_brainvision(fname, preload=True)
-            # history.append("raw = mne.io.read_raw_brainvision('{}', "
-            #                "preload=True)".format(fname))
+            self.history.append(f"raw = mne.io.read_raw_brainvision('{fname}',"
+                                f" preload=True)")
 
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
                                      ftype=ftype, raw=raw))
@@ -117,6 +119,7 @@ class Model:
         events = mne.find_events(self.current["raw"], consecutive=False)
         if events.shape[0] > 0:  # if events were found
             self.current["events"] = events
+            self.history.append("events = mne.find_events(raw)")
 
     def export_raw(self, fname):
         """Export raw to FIF file."""
