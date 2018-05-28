@@ -1,5 +1,7 @@
 from os.path import getsize, join, split, splitext
 from collections import Counter, defaultdict
+from functools import wraps
+from copy import deepcopy
 from numpy import savetxt
 import mne
 
@@ -10,8 +12,30 @@ SUPPORTED_FORMATS = "*.bdf *.edf *.fif *.vhdr"
 class LabelsNotFoundError(Exception):
     pass
 
+
 class InvalidAnnotationsError(Exception):
     pass
+
+
+def new_or_edit(f):
+    @wraps(f)
+    def wrapper(*args):
+        self = args[0]
+        # if data is stored in a file, create a new data set
+        if self.current["fname"] is not None:
+            self.insert_data(deepcopy(self.current))
+            self.current["fname"] = None
+        # apply function
+        return f(*args)
+    return wrapper
+
+
+def data_changed(f):
+    @wraps(f)
+    def wrapper(*args):
+        f(*args)
+        args[0].view.data_changed()
+    return wrapper
 
 
 class Model:
@@ -21,15 +45,18 @@ class Model:
         self.data = []  # list of data sets
         self.index = -1  # index of currently active data set
 
+    @data_changed
     def insert_data(self, dataset):
-        """Insert data set at current index."""
+        """Insert data set after current index."""
         self.index += 1
         self.data.insert(self.index, dataset)
 
+    @data_changed
     def update_data(self, dataset):
         """Update/overwrite data set at current index."""
         self.current = dataset
 
+    @data_changed
     def remove_data(self):
         """Remove data set at current index."""
         try:
@@ -59,6 +86,7 @@ class Model:
         """Return number of data sets."""
         return len(self.data)
 
+    @data_changed
     def load(self, fname):
         """Load data set from file."""
         name, ext = splitext(split(fname)[-1])
@@ -82,14 +110,13 @@ class Model:
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
                                      ftype=ftype, raw=raw))
         self.find_events()
-        self.view.data_changed()
 
+    @data_changed
     def find_events(self):
         """Find events in raw data."""
         events = mne.find_events(self.current["raw"], consecutive=False)
         if events.shape[0] > 0:  # if events were found
             self.current["events"] = events
-            self.view.data_changed()
 
     def export_raw(self, fname):
         """Export raw to FIF file."""
@@ -126,19 +153,20 @@ class Model:
                 f.write(",".join([a[0], str(a[1]), str(a[2])]))
                 f.write("\n")
 
+    @data_changed
     def import_bads(self, fname):
         """Import bad channels info from a CSV file."""
         with open(fname) as f:
             bads = f.read().replace(" ", "").strip().split(",")
             unknown = set(bads) - set(self.current["raw"].info["ch_names"])
             if unknown:
-                msg = ("The following imported channel labels are not present" +
-                       " in the data: " + ",".join(unknown))
+                msg = ("The following imported channel labels are not " +
+                       "present in the data: " + ",".join(unknown))
                 raise LabelsNotFoundError(msg)
             else:
                 self.current["raw"].info["bads"] = bads
-                self.view.data_changed()
 
+    @data_changed
     def import_annotations(self, fname):
         """Import annotations from a CSV file."""
         descs, onsets, durations = [], [], []
@@ -160,7 +188,6 @@ class Model:
                         durations.append(duration)
         annotations = mne.Annotations(onsets, durations, descs)
         self.current["raw"].annotations = annotations
-        self.view.data_changed()
 
     def get_info(self):
         """Get basic information on current data set.
@@ -232,3 +259,10 @@ class Model:
                 "ICA": ica,
                 "Size in memory": f"{raw._data.nbytes / 1024 ** 2:.2f} MB",
                 "Size on disk": size_disk}
+
+    @data_changed
+    @new_or_edit
+    def drop_channels(self, drops):
+        self.current["raw"] = self.current["raw"].drop_channels(drops)
+        self.current["name"] = self.current["name"] + " (channels dropped)"
+        self.view.data_changed()

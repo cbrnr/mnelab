@@ -67,7 +67,7 @@ class MainWindow(QMainWindow):
         self.recent_menu.triggered.connect(self._load_recent)
         if not self.recent:
             self.recent_menu.setEnabled(False)
-        self.close_file_action = file_menu.addAction("&Close", self.close_file,
+        self.close_file_action = file_menu.addAction("&Close", self.model.remove_data,
                                                      QKeySequence.Close)
         self.close_all_action = file_menu.addAction("Close all",
                                                     self.close_all)
@@ -90,7 +90,7 @@ class MainWindow(QMainWindow):
 
         edit_menu = self.menuBar().addMenu("&Edit")
         self.pick_chans_action = edit_menu.addAction("Pick &channels...",
-                                                     self.pick_channels)
+                                                     lambda: self.pick_channels(model.drop_channels))
         self.chan_props_action = edit_menu.addAction("Channel &properties...",
                                                      self.channel_properties)
         self.set_montage_action = edit_menu.addAction("Set &montage...",
@@ -156,42 +156,33 @@ class MainWindow(QMainWindow):
         self._update_sidebar(self.model.names, self.model.index)
         self._update_infowidget()
         self._update_statusbar()
-        self._add_recent(self.model.data[self.model.index]["fname"])
         self._toggle_actions()
+        if len(self.model) > 0:
+            self._add_recent(self.model.current["fname"])
 
-    def open_file(self, func):
+    def open_file(self, f):
         """Show open file dialog."""
         fname = QFileDialog.getOpenFileName(self, "Open file",
                                             filter=SUPPORTED_FORMATS)[0]
         if fname:
-            func(fname)
+            f(fname)
 
-    def export_file(self, func, text, ffilter):
+    def export_file(self, f, text, ffilter):
         """Export to file."""
         fname = QFileDialog.getSaveFileName(self, text, filter=ffilter)[0]
         if fname:
-            func(fname)
+            f(fname)
 
-    def import_file(self, func, text, ffilter):
+    def import_file(self, f, text, ffilter):
         """Import file."""
         fname = QFileDialog.getOpenFileName(self, text, filter=ffilter)[0]
         if fname:
             try:
-                func(fname)
+                f(fname)
             except LabelsNotFoundError as e:
                 QMessageBox.critical(self, "Channel labels not found", str(e))
             except InvalidAnnotationsError as e:
                 QMessageBox.critical(self, "Invalid annotations", str(e))
-
-    def close_file(self):
-        """Close current data set."""
-        self.model.remove_data()
-        self._update_sidebar(self.model.names, self.model.index)
-        self._update_infowidget()
-        self._update_statusbar()
-
-        if len(self.model) == 0:
-            self._toggle_actions(False)
 
     def close_all(self):
         """Close all currently open data sets."""
@@ -199,24 +190,22 @@ class MainWindow(QMainWindow):
                                    "Close all data sets?")
         if msg == QMessageBox.Yes:
             while len(self.model) > 0:
-                self.close_file()
+                self.model.remove_data()
 
-    def pick_channels(self):
+    def pick_channels(self, f):
         """Pick channels in current data set."""
-        channels = data.current.raw.info["ch_names"]
+        channels = self.model.current["raw"].info["ch_names"]
         dialog = PickChannelsDialog(self, channels, selected=channels)
         if dialog.exec_():
             picks = [item.data(0) for item in dialog.channels.selectedItems()]
             drops = set(channels) - set(picks)
-            tmp = data.current.raw.drop_channels(drops)
-            name = data.current.name + " (channels dropped)"
-            new = DataSet(raw=tmp, name=name, events=data.current.events)
-            history.append("raw.drop({})".format(drops))
-            self._update_datasets(new)
+            if drops:
+                f(drops)
+        # history.append("raw.drop({})".format(drops))
 
     def channel_properties(self):
         """Show channel properties dialog."""
-        info = data.current.raw.info
+        info = self.model.current["raw"].info
         dialog = ChannelPropertiesDialog(self, info)
         if dialog.exec_():
             dialog.model.sort(0)
@@ -235,13 +224,12 @@ class MainWindow(QMainWindow):
                 if dialog.model.item(i, 3).checkState() == Qt.Checked:
                     bads.append(info["ch_names"][i])
             info["bads"] = bads
-            data.data[data.index].raw.info["bads"] = bads
+            self.model.current["raw"].info["bads"] = bads
             if renamed:
                 mne.rename_channels(info, renamed)
-                mne.rename_channels(data.data[data.index].raw.info, renamed)
+                mne.rename_channels(self.model.current["raw"].info, renamed)
             if types:
-                data.current.raw.set_channel_types(types)
-                data.data[data.index].raw.set_channel_types(types)
+                self.model.current["raw"].set_channel_types(types)
             self._update_infowidget()
             self._toggle_actions(True)
 
@@ -417,20 +405,18 @@ class MainWindow(QMainWindow):
 
     def _update_datasets(self, dataset):
         # if current data is stored in a file create a new data set
-        if data.current.fname:
-            data.insert_data(dataset)
+        if self.model.current["fname"]:
+            self.model.insert_data(dataset)
         # otherwise ask if the current data set should be overwritten or if a
         # new data set should be created
         else:
             msg = QMessageBox.question(self, "Overwrite existing data set",
                                        "Overwrite existing data set?")
             if msg == QMessageBox.No:  # create new data set
-                data.insert_data(dataset)
+                self.model.insert_data(dataset)
             else:  # overwrite existing data set
-                data.update_data(dataset)
-        self._update_sidebar(data.names, data.index)
-        self._update_infowidget()
-        self._update_statusbar()
+                self.model.update_data(dataset)
+        self.data_changed()
 
     def _update_sidebar(self, names, index):
         """Update (overwrite) sidebar with names and current index."""
@@ -458,6 +444,8 @@ class MainWindow(QMainWindow):
         enabled : bool
             Specifies whether actions are enabled (True) or disabled (False).
         """
+        if len(self.model) == 0:  # disable if no data sets are currently open
+            enabled = False
         self.close_file_action.setEnabled(enabled)
         self.close_all_action.setEnabled(enabled)
         self.export_raw_action.setEnabled(enabled)
@@ -562,18 +550,15 @@ class MainWindow(QMainWindow):
         selected : QModelIndex
             Index of the selected row.
         """
-        if selected.row() != data.index:
-            data.index = selected.row()
-            data.update_current()
+        if selected.row() != self.model.index:
+            self.model.index = selected.row()
             self._update_infowidget()
 
     @pyqtSlot(QModelIndex, QModelIndex)
     def _update_names(self, start, stop):
         """Update names in DataSets after changes in sidebar."""
         for index in range(start.row(), stop.row() + 1):
-            data.data[index].name = self.names.stringList()[index]
-        if data.index in range(start.row(), stop.row() + 1):
-            data.current.name = data.names[data.index]
+            self.model.data[index].name = self.names.stringList()[index]
 
     @pyqtSlot()
     def _update_recent_menu(self):
