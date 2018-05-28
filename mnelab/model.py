@@ -265,4 +265,3 @@ class Model:
     def drop_channels(self, drops):
         self.current["raw"] = self.current["raw"].drop_channels(drops)
         self.current["name"] = self.current["name"] + " (channels dropped)"
-        self.view.data_changed()
