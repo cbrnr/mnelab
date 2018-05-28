@@ -195,13 +195,63 @@ class MainWindow(QMainWindow):
             statusbar_action.setChecked(False)
 
         self.setAcceptDrops(True)
-        self._toggle_actions(False)
+        self.data_changed()
 
     def data_changed(self):
-        self._update_sidebar(self.model.names, self.model.index)
-        self._update_infowidget()
-        self._update_statusbar()
-        self._toggle_actions()
+        # update sidebar
+        self.names.setStringList(self.model.names)
+        self.sidebar.setCurrentIndex(self.names.index(self.model.index))
+
+        # update info widget
+        if self.model.data:
+            self.infowidget.set_values(self.model.get_info())
+        else:
+            self.infowidget.clear()
+
+        # update status bar
+        if self.model.data:
+            mb = self.model.nbytes / 1024 ** 2
+            self.status_label.setText("Total Memory: {:.2f} MB".format(mb))
+        else:
+            self.status_label.clear()
+
+        # toggle actions
+        if len(self.model) == 0:  # disable if no data sets are currently open
+            enabled = False
+        else:
+            enabled = True
+        self.close_file_action.setEnabled(enabled)
+        self.close_all_action.setEnabled(enabled)
+        self.export_raw_action.setEnabled(enabled)
+        if self.model.data:
+            current = self.model.data[self.model.index]
+            bads = bool(current["raw"].info["bads"])
+            self.export_bad_action.setEnabled(enabled and bads)
+            events = current["events"] is not None
+            self.export_events_action.setEnabled(enabled and events)
+            annot = current["raw"].annotations is not None
+            self.export_anno_action.setEnabled(enabled and annot)
+            montage = bool(current["montage"])
+            self.plot_montage_action.setEnabled(enabled and montage)
+        else:
+            self.export_bad_action.setEnabled(enabled)
+            self.export_events_action.setEnabled(enabled)
+            self.export_anno_action.setEnabled(enabled)
+            self.plot_montage_action.setEnabled(enabled)
+        self.import_bad_action.setEnabled(enabled)
+        self.import_anno_action.setEnabled(enabled)
+        self.pick_chans_action.setEnabled(enabled)
+        self.chan_props_action.setEnabled(enabled)
+        self.set_montage_action.setEnabled(enabled)
+        self.plot_raw_action.setEnabled(enabled)
+        self.plot_psd_action.setEnabled(enabled)
+        self.filter_action.setEnabled(enabled)
+        self.setref_action.setEnabled(enabled)
+        self.find_events_action.setEnabled(enabled)
+        self.run_ica_action.setEnabled(enabled)
+        self.import_ica_action.setEnabled(enabled)
+
+        # add to recent files
         if len(self.model) > 0:
             self._add_recent(self.model.current["fname"])
 
@@ -276,8 +326,7 @@ class MainWindow(QMainWindow):
                 mne.rename_channels(self.model.current["raw"].info, renamed)
             if types:
                 self.model.current["raw"].set_channel_types(types)
-            self._update_infowidget()
-            self._toggle_actions(True)
+            self.data_changed()
 
     def set_montage(self):
         """Set montage."""
@@ -299,8 +348,7 @@ class MainWindow(QMainWindow):
             if set(ch_names) & set(montage.ch_names):
                 self.model.current["montage"] = name
                 self.model.current["raw"].set_montage(montage)
-                self._update_infowidget()
-                self._toggle_actions()
+                self.data_changed()
             else:
                 QMessageBox.critical(self, "No matching channel names",
                                      "Channel names defined in the montage do "
@@ -381,7 +429,7 @@ class MainWindow(QMainWindow):
                 pool.terminate()
             else:
                 self.model.current["ica"] = res.get(timeout=1)
-                self._update_infowidget()
+                self.data_changed()
 
     def filter_data(self):
         """Filter data."""
@@ -459,65 +507,6 @@ class MainWindow(QMainWindow):
             if msg == QMessageBox.No:  # create new data set
                 self.model.duplicate_data()
 
-    def _update_sidebar(self, names, index):
-        """Update (overwrite) sidebar with names and current index."""
-        self.names.setStringList(names)
-        self.sidebar.setCurrentIndex(self.names.index(index))
-
-    def _update_infowidget(self):
-        if self.model.data:
-            self.infowidget.set_values(self.model.get_info())
-        else:
-            self.infowidget.clear()
-
-    def _update_statusbar(self):
-        if self.model.data:
-            mb = self.model.nbytes / 1024 ** 2
-            self.status_label.setText("Total Memory: {:.2f} MB".format(mb))
-        else:
-            self.status_label.clear()
-
-    def _toggle_actions(self, enabled=True):
-        """Toggle actions.
-
-        Parameters
-        ----------
-        enabled : bool
-            Specifies whether actions are enabled (True) or disabled (False).
-        """
-        if len(self.model) == 0:  # disable if no data sets are currently open
-            enabled = False
-        self.close_file_action.setEnabled(enabled)
-        self.close_all_action.setEnabled(enabled)
-        self.export_raw_action.setEnabled(enabled)
-        if self.model.data:
-            current = self.model.data[self.model.index]
-            bads = bool(current["raw"].info["bads"])
-            self.export_bad_action.setEnabled(enabled and bads)
-            events = current["events"] is not None
-            self.export_events_action.setEnabled(enabled and events)
-            annot = current["raw"].annotations is not None
-            self.export_anno_action.setEnabled(enabled and annot)
-            montage = bool(current["montage"])
-            self.plot_montage_action.setEnabled(enabled and montage)
-        else:
-            self.export_bad_action.setEnabled(enabled)
-            self.export_events_action.setEnabled(enabled)
-            self.export_anno_action.setEnabled(enabled)
-            self.plot_montage_action.setEnabled(enabled)
-        self.import_bad_action.setEnabled(enabled)
-        self.import_anno_action.setEnabled(enabled)
-        self.pick_chans_action.setEnabled(enabled)
-        self.chan_props_action.setEnabled(enabled)
-        self.set_montage_action.setEnabled(enabled)
-        self.plot_raw_action.setEnabled(enabled)
-        self.plot_psd_action.setEnabled(enabled)
-        self.filter_action.setEnabled(enabled)
-        self.setref_action.setEnabled(enabled)
-        self.find_events_action.setEnabled(enabled)
-        self.run_ica_action.setEnabled(enabled)
-        self.import_ica_action.setEnabled(enabled)
-
     def _add_recent(self, fname):
         """Add a file to recent file list.
 
@@ -560,7 +549,7 @@ class MainWindow(QMainWindow):
         """
         if selected.row() != self.model.index:
             self.model.index = selected.row()
-            self._update_infowidget()
+            self.data_changed()
 
     @pyqtSlot(QModelIndex, QModelIndex)
     def _update_names(self, start, stop):
@@ -618,6 +607,5 @@ class MainWindow(QMainWindow):
     def eventFilter(self, source, event):
         # currently the only source is the raw plot window
         if event.type() == QEvent.Close:
-            self._update_infowidget()
-            self._toggle_actions()
+            self.data_changed()
         return QObject.eventFilter(self, source, event)
