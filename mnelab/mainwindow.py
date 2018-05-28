@@ -199,6 +199,7 @@ class MainWindow(QMainWindow):
             picks = [item.data(0) for item in dialog.channels.selectedItems()]
             drops = set(channels) - set(picks)
             if drops:
+                self._duplicate()
                 f(drops)
         # history.append("raw.drop({})".format(drops))
 
@@ -402,20 +403,16 @@ class MainWindow(QMainWindow):
         """Show About Qt dialog."""
         QMessageBox.aboutQt(self, "About Qt")
 
-    def _update_datasets(self, dataset):
+    def _duplicate(self):
         # if current data is stored in a file create a new data set
         if self.model.current["fname"]:
-            self.model.insert_data(dataset)
-        # otherwise ask if the current data set should be overwritten or if a
-        # new data set should be created
+            self.model.duplicate_data()
+        # otherwise ask the user
         else:
             msg = QMessageBox.question(self, "Overwrite existing data set",
                                        "Overwrite existing data set?")
             if msg == QMessageBox.No:  # create new data set
-                self.model.insert_data(dataset)
-            else:  # overwrite existing data set
-                self.model.update_data(dataset)
-        self.data_changed()
+                self.model.duplicate_data()
 
     def _update_sidebar(self, names, index):
         """Update (overwrite) sidebar with names and current index."""
@@ -557,7 +554,7 @@ class MainWindow(QMainWindow):
     def _update_names(self, start, stop):
         """Update names in DataSets after changes in sidebar."""
         for index in range(start.row(), stop.row() + 1):
-            self.model.data[index].name = self.names.stringList()[index]
+            self.model.data[index]["name"] = self.names.stringList()[index]
 
     @pyqtSlot()
     def _update_recent_menu(self):

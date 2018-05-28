@@ -17,19 +17,6 @@ class InvalidAnnotationsError(Exception):
     pass
 
 
-def new_or_edit(f):
-    @wraps(f)
-    def wrapper(*args):
-        self = args[0]
-        # if data is stored in a file, create a new data set
-        if self.current["fname"] is not None:
-            self.insert_data(deepcopy(self.current))
-            self.current["fname"] = None
-        # apply function
-        return f(*args)
-    return wrapper
-
-
 def data_changed(f):
     """Call self.view.data_changed method after function call."""
     @wraps(f)
@@ -69,6 +56,13 @@ class Model:
             if self.index >= len(self.data):  # if last entry was removed
                 self.index = len(self.data) - 1  # reset index to last entry
 
+    @data_changed
+    def duplicate_data(self):
+        """Duplicate current data set."""
+        self.insert_data(deepcopy(self.current))
+        self.current["fname"] = None
+        self.current["ftype"] = None
+
     @property
     def names(self):
         """Return list of all data set names."""
@@ -83,6 +77,10 @@ class Model:
     def current(self):
         """Return current data set."""
         return self.data[self.index]
+
+    @current.setter
+    def current(self, value):
+        self.data[self.index] = value
 
     def __len__(self):
         """Return number of data sets."""
@@ -264,7 +262,6 @@ class Model:
                 "Size on disk": size_disk}
 
     @data_changed
-    @new_or_edit
     def drop_channels(self, drops):
         self.current["raw"] = self.current["raw"].drop_channels(drops)
         self.current["name"] = self.current["name"] + " (channels dropped)"
