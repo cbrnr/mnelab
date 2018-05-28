@@ -55,7 +55,7 @@ def read_settings():
             "state": state}
 
 
-def write_settings(*args, **kwargs):
+def write_settings(**kwargs):
     """Write application settings."""
     settings = QSettings()
     for key, value in kwargs.items():
@@ -99,30 +99,43 @@ class MainWindow(QMainWindow):
         self.recent_menu.triggered.connect(self._load_recent)
         if not self.recent:
             self.recent_menu.setEnabled(False)
-        self.close_file_action = file_menu.addAction("&Close", self.model.remove_data,
+        self.close_file_action = file_menu.addAction("&Close",
+                                                     self.model.remove_data,
                                                      QKeySequence.Close)
         self.close_all_action = file_menu.addAction("Close all",
                                                     self.close_all)
         file_menu.addSeparator()
-        self.import_bad_action = file_menu.addAction("Import bad channels...",
-                                                     lambda: self.import_file(model.import_bads, "Import bad channels", "*.csv"))
-        self.import_anno_action = file_menu.addAction("Import annotations...",
-                                                      lambda: self.import_file(model.import_annotations, "Import annotations", "*.csv"))
+        self.import_bad_action = file_menu.addAction(
+            "Import bad channels...",
+            lambda: self.import_file(model.import_bads, "Import bad channels",
+                                     "*.csv"))
+        self.import_anno_action = file_menu.addAction(
+            "Import annotations...",
+            lambda: self.import_file(model.import_annotations,
+                                     "Import annotations", "*.csv"))
         file_menu.addSeparator()
-        self.export_raw_action = file_menu.addAction("Export &raw...",
-                                                     lambda: self.export_file(model.export_raw, "Export raw", "*.fif"))
-        self.export_bad_action = file_menu.addAction("Export &bad channels...",
-                                                     lambda: self.export_file(model.export_bads, "Export bad channels", "*.csv"))
-        self.export_events_action = file_menu.addAction("Export &events...",
-                                                        lambda: self.export_file(model.export_events, "Export events", "*.csv"))
-        self.export_anno_action = file_menu.addAction("Export &annotations...",
-                                                      lambda: self.export_file(model.export_annotations, "Export annotations", "*.csv"))
+        self.export_raw_action = file_menu.addAction(
+            "Export &raw...",
+            lambda: self.export_file(model.export_raw, "Export raw", "*.fif"))
+        self.export_bad_action = file_menu.addAction(
+            "Export &bad channels...",
+            lambda: self.export_file(model.export_bads, "Export bad channels",
+                                     "*.csv"))
+        self.export_events_action = file_menu.addAction(
+            "Export &events...",
+            lambda: self.export_file(model.export_events, "Export events",
+                                     "*.csv"))
+        self.export_anno_action = file_menu.addAction(
+            "Export &annotations...",
+            lambda: self.export_file(model.export_annotations,
+                                     "Export annotations", "*.csv"))
         file_menu.addSeparator()
         file_menu.addAction("&Quit", self.close, QKeySequence.Quit)
 
         edit_menu = self.menuBar().addMenu("&Edit")
-        self.pick_chans_action = edit_menu.addAction("Pick &channels...",
-                                                     lambda: self.pick_channels(model.drop_channels))
+        self.pick_chans_action = edit_menu.addAction(
+            "Pick &channels...",
+            lambda: self.pick_channels(model.drop_channels))
         self.chan_props_action = edit_menu.addAction("Channel &properties...",
                                                      self.channel_properties)
         self.set_montage_action = edit_menu.addAction("Set &montage...",
