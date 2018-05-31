@@ -265,3 +265,12 @@ class Model:
     def drop_channels(self, drops):
         self.current["raw"] = self.current["raw"].drop_channels(drops)
         self.current["name"] = self.current["name"] + " (channels dropped)"
+
+    @data_changed
+    def set_channel_properties(self, bads=None, names=None, types=None):
+        if bads:
+            self.current["raw"].info["bads"] = bads
+        if names:
+            mne.rename_channels(self.current["raw"].info, names)
+        if types:
+            self.current["raw"].set_channel_types(types)

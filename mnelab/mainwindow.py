@@ -136,8 +136,9 @@ class MainWindow(QMainWindow):
         self.pick_chans_action = edit_menu.addAction(
             "Pick &channels...",
             lambda: self.pick_channels(model.drop_channels))
-        self.chan_props_action = edit_menu.addAction("Channel &properties...",
-                                                     self.channel_properties)
+        self.chan_props_action = edit_menu.addAction(
+            "Channel &properties...",
+            lambda: self.channel_properties(model.set_channel_properties))
         self.set_montage_action = edit_menu.addAction("Set &montage...",
                                                       self.set_montage)
         edit_menu.addSeparator()
@@ -299,7 +300,7 @@ class MainWindow(QMainWindow):
                 f(drops)
                 self.history.append(f"raw.drop({drops})")
 
-    def channel_properties(self):
+    def channel_properties(self, f):
         """Show channel properties dialog."""
         info = self.model.current["raw"].info
         dialog = ChannelPropertiesDialog(self, info)
@@ -319,14 +320,7 @@ class MainWindow(QMainWindow):
                     types[new_label] = new_type
                 if dialog.model.item(i, 3).checkState() == Qt.Checked:
                     bads.append(info["ch_names"][i])
-            info["bads"] = bads
-            self.model.current["raw"].info["bads"] = bads
-            if renamed:
-                mne.rename_channels(info, renamed)
-                mne.rename_channels(self.model.current["raw"].info, renamed)
-            if types:
-                self.model.current["raw"].set_channel_types(types)
-            self.data_changed()
+            f(bads, renamed, types)
 
     def set_montage(self):
         """Set montage."""
