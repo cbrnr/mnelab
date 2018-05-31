@@ -1,18 +1,22 @@
 import sys
 import matplotlib
 from PyQt5.QtWidgets import QApplication
-from mnelab import MainWindow
 import multiprocessing as mp
+
+from mnelab import MainWindow, Model
 
 
 if __name__ == "__main__":
-    mp.set_start_method("spawn")  # required for Linux/macOS with PyQt
+    mp.set_start_method("spawn")  # required for Linux/macOS
     matplotlib.use("Qt5Agg")
     app = QApplication(sys.argv)
     app.setApplicationName("MNELAB")
     app.setOrganizationName("cbrnr")
-    main = MainWindow()
+    model = Model()
+    view = MainWindow(model)
+    model.view = view
     if len(sys.argv) > 1:  # open files from command line arguments
         for f in sys.argv[1:]:
-            main.load_file(f)
+            view.load_file(f)
+    view.show()
     sys.exit(app.exec_())

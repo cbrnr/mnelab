@@ -11,11 +11,11 @@ class RunICADialog(QDialog):
         grid = QGridLayout()
         grid.addWidget(QLabel("Method:"), 0, 0)
         self.method = QComboBox()
-        methods = {"Extended Infomax": "extended-infomax",
+        self.methods = {"Extended Infomax": "extended-infomax",
                    "Infomax": "infomax", "FastICA": "fastica"}
         if have_picard:
-            methods["Picard"] = "picard"
-        self.method.addItems(methods.keys())
+            self.methods["Picard"] = "picard"
+        self.method.addItems(self.methods.keys())
         grid.addWidget(self.method, 0, 1)
         grid.addWidget(QLabel("Number of components:"), 1, 0)
         self.n_components = QSpinBox()
