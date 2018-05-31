@@ -342,13 +342,7 @@ class MainWindow(QMainWindow):
                                      "not match any channel name in the data.")
 
     def plot_raw(self):
-        """Plot raw data."""
-        events = self.model.current["events"]
-        nchan = self.model.current["raw"].info["nchan"]
-        fig = self.model.current["raw"].plot(events=events, n_channels=nchan,
-                                             title=self.model.current["name"],
-                                             show=False)
-        self.model.history.append("raw.plot(n_channels={})".format(nchan))
+        fig = self.model.plot_raw()
         win = fig.canvas.manager.window
         win.setWindowTitle("Raw data")
         win.findChild(QStatusBar).hide()

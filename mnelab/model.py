@@ -279,3 +279,12 @@ class Model:
     def set_montage(self, montage):
         self.current["montage"] = montage
         self.current["raw"].set_montage(montage)
+
+    def plot_raw(self):
+        """Plot raw data."""
+        events = self.current["events"]
+        nchan = self.current["raw"].info["nchan"]
+        fig = self.current["raw"].plot(events=events, n_channels=nchan,
+                                       title=self.current["name"], show=False)
+        self.history.append("raw.plot(n_channels={})".format(nchan))
+        return fig
