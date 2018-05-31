@@ -4,6 +4,7 @@ from functools import wraps
 from copy import deepcopy
 from numpy import savetxt
 import mne
+from mne.filter import filter_data
 
 
 SUPPORTED_FORMATS = "*.bdf *.edf *.fif *.vhdr"
@@ -154,6 +155,12 @@ class Model:
                 f.write(",".join([a[0], str(a[1]), str(a[2])]))
                 f.write("\n")
 
+    def export_ica(self, fname):
+        name, ext = splitext(split(fname)[-1])
+        ext = ext if ext else ".fif"  # automatically add extension
+        fname = join(split(fname)[0], name + ext)
+        self.current["ica"].save(fname)
+
     @data_changed
     def import_bads(self, fname):
         """Import bad channels info from a CSV file."""
@@ -189,6 +196,10 @@ class Model:
                         durations.append(duration)
         annotations = mne.Annotations(onsets, durations, descs)
         self.current["raw"].annotations = annotations
+
+    @data_changed
+    def import_ica(self, fname):
+        self.current["ica"] = mne.preprocessing.read_ica(fname)
 
     def get_info(self):
         """Get basic information on current data set.
@@ -264,7 +275,7 @@ class Model:
     @data_changed
     def drop_channels(self, drops):
         self.current["raw"] = self.current["raw"].drop_channels(drops)
-        self.current["name"] = self.current["name"] + " (channels dropped)"
+        self.current["name"] += " (channels dropped)"
 
     @data_changed
     def set_channel_properties(self, bads=None, names=None, types=None):
@@ -279,3 +290,9 @@ class Model:
     def set_montage(self, montage):
         self.current["montage"] = montage
         self.current["raw"].set_montage(montage)
+
+    @data_changed
+    def filter(self, low, high):
+        self.current["raw"].filter(low, high)
+        self.current["name"] += " ({}-{} Hz)".format(low, high)
+        self.history.append("raw.filter({}, {})".format(low, high))

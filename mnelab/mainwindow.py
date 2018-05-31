@@ -1,5 +1,3 @@
-from os.path import join, splitext
-from os import listdir
 import multiprocessing as mp
 
 import mne
@@ -9,7 +7,6 @@ from PyQt5.QtGui import QKeySequence, QDropEvent
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                              QMessageBox, QListView, QAction, QLabel, QFrame,
                              QStatusBar, QToolBar)
-from mne.filter import filter_data
 from mne.io.pick import channel_type
 
 from .dialogs.filterdialog import FilterDialog
@@ -92,7 +89,10 @@ class MainWindow(QMainWindow):
 
         # initialize menus
         file_menu = self.menuBar().addMenu("&File")
-        file_menu.addAction("&Open...", self.open_file, QKeySequence.Open)
+        file_menu.addAction(
+            "&Open...",
+            lambda: self.open_file(model.load, "Open raw", SUPPORTED_FORMATS),
+            QKeySequence.Open)
         self.recent_menu = file_menu.addMenu("Open recent")
         self.recent_menu.aboutToShow.connect(self._update_recent_menu)
         self.recent_menu.triggered.connect(self._load_recent)
@@ -114,6 +114,11 @@ class MainWindow(QMainWindow):
             "Import annotations...",
             lambda: self.import_file(model.import_annotations,
                                      "Import annotations", "*.csv"))
+        self.import_ica_action = file_menu.addAction(
+            "Import &ICA...",
+            lambda: self.open_file(model.import_ica, "Import ICA",
+                                   "*.fif *.fif.gz")
+        )
         file_menu.addSeparator()
         self.export_raw_action = file_menu.addAction(
             "Export &raw...",
@@ -130,6 +135,10 @@ class MainWindow(QMainWindow):
             "Export &annotations...",
             lambda: self.export_file(model.export_annotations,
                                      "Export annotations", "*.csv"))
+        self.export_ica_action = file_menu.addAction(
+            "Export ICA...",
+            lambda: self.export_file(model.export_ica,
+                                     "Export ICA", "*.fif *.fif.gz"))
         file_menu.addSeparator()
         file_menu.addAction("&Quit", self.close, QKeySequence.Quit)
 
@@ -159,8 +168,6 @@ class MainWindow(QMainWindow):
         self.find_events_action = tools_menu.addAction("Find &events...",
                                                        self.model.find_events)
         self.run_ica_action = tools_menu.addAction("Run &ICA...", self.run_ica)
-        self.import_ica_action = tools_menu.addAction("&Load ICA...",
-                                                      self.load_ica)
 
         view_menu = self.menuBar().addMenu("&View")
         statusbar_action = view_menu.addAction("Statusbar",
@@ -226,20 +233,22 @@ class MainWindow(QMainWindow):
         self.close_all_action.setEnabled(enabled)
         self.export_raw_action.setEnabled(enabled)
         if self.model.data:
-            current = self.model.data[self.model.index]
-            bads = bool(current["raw"].info["bads"])
+            bads = bool(self.model.current["raw"].info["bads"])
             self.export_bad_action.setEnabled(enabled and bads)
-            events = current["events"] is not None
+            events = self.model.current["events"] is not None
             self.export_events_action.setEnabled(enabled and events)
-            annot = current["raw"].annotations is not None
+            annot = self.model.current["raw"].annotations is not None
             self.export_anno_action.setEnabled(enabled and annot)
-            montage = bool(current["montage"])
+            montage = bool(self.model.current["montage"])
             self.plot_montage_action.setEnabled(enabled and montage)
+            ica = bool(self.model.current["ica"])
+            self.export_ica_action.setEnabled(enabled and ica)
         else:
             self.export_bad_action.setEnabled(enabled)
             self.export_events_action.setEnabled(enabled)
             self.export_anno_action.setEnabled(enabled)
             self.plot_montage_action.setEnabled(enabled)
+            self.export_ica_action.setEnabled(enabled)
         self.import_bad_action.setEnabled(enabled)
         self.import_anno_action.setEnabled(enabled)
         self.pick_chans_action.setEnabled(enabled)
@@ -257,12 +266,11 @@ class MainWindow(QMainWindow):
         if len(self.model) > 0:
             self._add_recent(self.model.current["fname"])
 
-    def open_file(self):
+    def open_file(self, f, text, ffilter):
         """Open file."""
-        fname = QFileDialog.getOpenFileName(self, "Open file",
-                                            filter=SUPPORTED_FORMATS)[0]
+        fname = QFileDialog.getOpenFileName(self, text, filter=ffilter)[0]
         if fname:
-            self.model.load(fname)
+            f(fname)
 
     def export_file(self, f, text, ffilter):
         """Export to file."""
@@ -383,13 +391,6 @@ class MainWindow(QMainWindow):
         win.findChild(QToolBar).hide()
         fig.show()
 
-    def load_ica(self):
-        """Load ICA solution from a file."""
-        fname = QFileDialog.getOpenFileName(self, "Load ICA",
-                                            filter="*.fif *.fif.gz")
-        if fname[0]:
-            self.state.ica = mne.preprocessing.read_ica(fname[0])
-
     def run_ica(self):
         """Run ICA calculation."""
         try:
@@ -421,17 +422,9 @@ class MainWindow(QMainWindow):
     def filter_data(self):
         """Filter data."""
         dialog = FilterDialog(self)
-
         if dialog.exec_():
-            low, high = dialog.low, dialog.high
-            tmp = filter_data(self.model.current["raw"]._data,
-                              self.model.current["raw"].info["sfreq"],
-                              l_freq=low, h_freq=high, fir_design="firwin")
-            name = self.model.current["name"] + " ({}-{} Hz)".format(low, high)
-            new = DataSet(raw=mne.io.RawArray(tmp, data.current.raw.info),
-                          name=name, events=data.current.events)
-            self.model.history.append("raw.filter({}, {})".format(low, high))
-            self._update_datasets(new)
+            self.auto_duplicate()
+            self.model.filter(dialog.low, dialog.high)
 
     def set_reference(self):
         """Set reference."""
