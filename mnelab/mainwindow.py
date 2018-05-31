@@ -431,31 +431,10 @@ class MainWindow(QMainWindow):
         dialog = ReferenceDialog(self)
         if dialog.exec_():
             if dialog.average.isChecked():
-                tmp, _ = mne.set_eeg_reference(data.current.raw, None)
-                tmp.apply_proj()
-                name = data.current.name + " (average ref)"
-                new = DataSet(raw=tmp, name=name, reference="Average",
-                              events=data.current.events)
+                self.model.set_reference("average")
             else:
                 ref = [c.strip() for c in dialog.channellist.text().split(",")]
-                refstr = ",".join(ref)
-                if set(ref) - set(data.current.raw.info["ch_names"]):
-                    # add new reference channel(s) to data
-                    try:
-                        tmp = mne.add_reference_channels(data.current.raw,
-                                                         ref)
-                    except RuntimeError:
-                        QMessageBox.critical(self, "Cannot add new channels",
-                                             "Cannot add new channels to "
-                                             "average referenced data.")
-                        return
-                else:
-                    # re-reference to existing channel(s)
-                    tmp, _ = mne.set_eeg_reference(data.current.raw, ref)
-                name = data.current.name + " (ref {})".format(refstr)
-                new = DataSet(raw=tmp, name=name, reference=refstr,
-                              events=data.current.events)
-            self._update_datasets(new)
+                self.model.set_reference(ref)
 
     def show_about(self):
         """Show About dialog."""

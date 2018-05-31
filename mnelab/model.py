@@ -17,6 +17,9 @@ class LabelsNotFoundError(Exception):
 class InvalidAnnotationsError(Exception):
     pass
 
+class AddReferenceError(Exception):
+    pass
+
 
 def data_changed(f):
     """Call self.view.data_changed method after function call."""
@@ -296,3 +299,23 @@ class Model:
         self.current["raw"].filter(low, high)
         self.current["name"] += " ({}-{} Hz)".format(low, high)
         self.history.append("raw.filter({}, {})".format(low, high))
+
+    @data_changed
+    def set_reference(self, ref):
+        self.current["reference"] = ref
+        if ref == "average":
+            self.current["name"] += " (average ref)"
+            self.current["raw"].set_eeg_reference(ref, projection=False)
+        else:
+            self.current["name"] += " (" + ",".join(ref) + ")"
+            if set(ref) - set(self.current["raw"].info["ch_names"]):
+                # add new reference channel(s) to data
+                try:
+                    mne.add_reference_channels(self.current["raw"], ref,
+                                               copy=False)
+                except RuntimeError:
+                    raise AddReferenceError("Cannot add reference channels "
+                                            "to average reference signals.")
+            else:
+                # re-reference to existing channel(s)
+                self.current["raw"].set_eeg_reference(ref, projection=False)
