@@ -92,18 +92,19 @@ class MainWindow(QMainWindow):
 
         # initialize menus
         file_menu = self.menuBar().addMenu("&File")
-        file_menu.addAction("&Open...", lambda: self.open_file(model.load),
-                            QKeySequence.Open)
+        file_menu.addAction("&Open...", self.open_file, QKeySequence.Open)
         self.recent_menu = file_menu.addMenu("Open recent")
         self.recent_menu.aboutToShow.connect(self._update_recent_menu)
         self.recent_menu.triggered.connect(self._load_recent)
         if not self.recent:
             self.recent_menu.setEnabled(False)
-        self.close_file_action = file_menu.addAction("&Close",
-                                                     self.model.remove_data,
-                                                     QKeySequence.Close)
-        self.close_all_action = file_menu.addAction("Close all",
-                                                    self.close_all)
+        self.close_file_action = file_menu.addAction(
+            "&Close",
+            self.model.remove_data,
+            QKeySequence.Close)
+        self.close_all_action = file_menu.addAction(
+            "Close all",
+            self.close_all)
         file_menu.addSeparator()
         self.import_bad_action = file_menu.addAction(
             "Import bad channels...",
@@ -135,10 +136,10 @@ class MainWindow(QMainWindow):
         edit_menu = self.menuBar().addMenu("&Edit")
         self.pick_chans_action = edit_menu.addAction(
             "Pick &channels...",
-            lambda: self.pick_channels(model.drop_channels))
+            self.pick_channels)
         self.chan_props_action = edit_menu.addAction(
             "Channel &properties...",
-            lambda: self.channel_properties(model.set_channel_properties))
+            self.channel_properties)
         self.set_montage_action = edit_menu.addAction("Set &montage...",
                                                       self.set_montage)
         edit_menu.addSeparator()
@@ -256,12 +257,12 @@ class MainWindow(QMainWindow):
         if len(self.model) > 0:
             self._add_recent(self.model.current["fname"])
 
-    def open_file(self, f):
-        """Show open file dialog."""
+    def open_file(self):
+        """Open file."""
         fname = QFileDialog.getOpenFileName(self, "Open file",
                                             filter=SUPPORTED_FORMATS)[0]
         if fname:
-            f(fname)
+            self.model.load(fname)
 
     def export_file(self, f, text, ffilter):
         """Export to file."""
@@ -288,7 +289,7 @@ class MainWindow(QMainWindow):
             while len(self.model) > 0:
                 self.model.remove_data()
 
-    def pick_channels(self, f):
+    def pick_channels(self):
         """Pick channels in current data set."""
         channels = self.model.current["raw"].info["ch_names"]
         dialog = PickChannelsDialog(self, channels, selected=channels)
@@ -297,10 +298,10 @@ class MainWindow(QMainWindow):
             drops = set(channels) - set(picks)
             if drops:
                 self.auto_duplicate()
-                f(drops)
-                self.history.append(f"raw.drop({drops})")
+                self.model.drop_channels(drops)
+                self.model.history.append(f"raw.drop({drops})")
 
-    def channel_properties(self, f):
+    def channel_properties(self):
         """Show channel properties dialog."""
         info = self.model.current["raw"].info
         dialog = ChannelPropertiesDialog(self, info)
@@ -320,7 +321,7 @@ class MainWindow(QMainWindow):
                     types[new_label] = new_type
                 if dialog.model.item(i, 3).checkState() == Qt.Checked:
                     bads.append(info["ch_names"][i])
-            f(bads, renamed, types)
+            self.model.set_channel_properties(bads, renamed, types)
 
     def set_montage(self):
         """Set montage."""
