@@ -274,3 +274,8 @@ class Model:
             mne.rename_channels(self.current["raw"].info, names)
         if types:
             self.current["raw"].set_channel_types(types)
+
+    @data_changed
+    def set_montage(self, montage):
+        self.current["montage"] = montage
+        self.current["raw"].set_montage(montage)

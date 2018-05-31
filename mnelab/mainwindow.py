@@ -325,25 +325,17 @@ class MainWindow(QMainWindow):
 
     def set_montage(self):
         """Set montage."""
-        path = join(mne.__path__[0], "channels", "data", "montages")
-        supported = (".elc", ".txt", ".csd", ".sfp", ".elp", ".hpts", ".loc",
-                     ".locs", ".eloc", ".bvef")
-        files = [splitext(f) for f in listdir(path)]
-        montages = sorted([f for f, ext in files if ext in supported],
-                          key=str.lower)
+        montages = mne.channels.get_builtin_montages()
         # TODO: currently it is not possible to remove an existing montage
         dialog = MontageDialog(self, montages,
                                selected=self.model.current["montage"])
         if dialog.exec_():
             name = dialog.montages.selectedItems()[0].data(0)
             montage = mne.channels.read_montage(name)
-
             ch_names = self.model.current["raw"].info["ch_names"]
             # check if at least one channel name matches a name in the montage
             if set(ch_names) & set(montage.ch_names):
-                self.model.current["montage"] = name
-                self.model.current["raw"].set_montage(montage)
-                self.data_changed()
+                self.model.set_montage(name)
             else:
                 QMessageBox.critical(self, "No matching channel names",
                                      "Channel names defined in the montage do "
