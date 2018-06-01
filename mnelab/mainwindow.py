@@ -16,6 +16,7 @@ from .dialogs.montagedialog import MontageDialog
 from .dialogs.channelpropertiesdialog import ChannelPropertiesDialog
 from .dialogs.runicadialog import RunICADialog
 from .dialogs.calcdialog import CalcDialog
+from .dialogs.eventsdialog import EventsDialog
 from .widgets.infowidget import InfoWidget
 from .model import (SUPPORTED_FORMATS, LabelsNotFoundError,
                     InvalidAnnotationsError)
@@ -158,6 +159,8 @@ class MainWindow(QMainWindow):
         edit_menu.addSeparator()
         self.setref_action = edit_menu.addAction("&Set reference...",
                                                  self.set_reference)
+        edit_menu.addSeparator()
+        self.events_action = edit_menu.addAction("Events...", self.edit_events)
 
         plot_menu = self.menuBar().addMenu("&Plot")
         self.plot_raw_action = plot_menu.addAction("&Raw data", self.plot_raw)
@@ -252,6 +255,7 @@ class MainWindow(QMainWindow):
             self.export_ica_action.setEnabled(enabled and ica)
             self.plot_ica_components_action.setEnabled(enabled and ica and
                                                        montage)
+            self.events_action.setEnabled(enabled and events)
         else:
             self.export_bad_action.setEnabled(enabled)
             self.export_events_action.setEnabled(enabled)
@@ -259,6 +263,7 @@ class MainWindow(QMainWindow):
             self.plot_montage_action.setEnabled(enabled)
             self.export_ica_action.setEnabled(enabled)
             self.plot_ica_components_action.setEnabled(enabled)
+            self.events_action.setEnabled(enabled)
         self.import_bad_action.setEnabled(enabled)
         self.import_events_action.setEnabled(enabled)
         self.import_anno_action.setEnabled(enabled)
@@ -359,6 +364,13 @@ class MainWindow(QMainWindow):
                 QMessageBox.critical(self, "No matching channel names",
                                      "Channel names defined in the montage do "
                                      "not match any channel name in the data.")
+
+    def edit_events(self):
+        pos = self.model.current["events"][:, 0].tolist()
+        desc = self.model.current["events"][:, 2].tolist()
+        dialog = EventsDialog(self, pos, desc)
+        if dialog.exec_():
+            pass
 
     def plot_raw(self):
         """Plot raw data."""
