@@ -16,6 +16,7 @@ class LabelsNotFoundError(Exception):
 class InvalidAnnotationsError(Exception):
     pass
 
+
 class AddReferenceError(Exception):
     pass
 
