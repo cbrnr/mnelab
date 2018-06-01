@@ -2,9 +2,8 @@ from os.path import getsize, join, split, splitext
 from collections import Counter, defaultdict
 from functools import wraps
 from copy import deepcopy
-from numpy import savetxt
+import numpy as np
 import mne
-from mne.filter import filter_data
 
 
 SUPPORTED_FORMATS = "*.bdf *.edf *.fif *.vhdr"
@@ -143,8 +142,8 @@ class Model:
         name, ext = splitext(split(fname)[-1])
         ext = ext if ext else ".csv"  # automatically add extension
         fname = join(split(fname)[0], name + ext)
-        savetxt(fname, self.current["events"][:, [0, 2]], fmt="%d",
-                delimiter=",", header="pos,type", comments="")
+        np.savetxt(fname, self.current["events"][:, [0, 2]], fmt="%d",
+                   delimiter=",", header="pos,type", comments="")
 
     def export_annotations(self, fname):
         """Export annotations to a CSV file."""
@@ -176,6 +175,23 @@ class Model:
                 raise LabelsNotFoundError(msg)
             else:
                 self.current["raw"].info["bads"] = bads
+
+    @data_changed
+    def import_events(self, fname):
+        """Import events from a CSV file."""
+        pos, desc = [], []
+        with open(fname) as f:
+            f.readline()  # skip header
+            for line in f:
+                p, d = [int(l.strip()) for l in line.split(",")]
+                pos.append(p)
+                desc.append(d)
+        events = np.column_stack((pos, desc))
+        events = np.insert(events, 1, 0, axis=1)  # insert zero column
+        if self.current["events"] is not None:
+            events = np.row_stack((self.current["events"], events))
+            events = np.unique(events, axis=0)
+        self.current["events"] = events
 
     @data_changed
     def import_annotations(self, fname):

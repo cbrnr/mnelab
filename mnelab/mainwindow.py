@@ -110,6 +110,10 @@ class MainWindow(QMainWindow):
             "Import bad channels...",
             lambda: self.import_file(model.import_bads, "Import bad channels",
                                      "*.csv"))
+        self.import_events_action = file_menu.addAction(
+            "Import events...",
+            lambda: self.import_file(model.import_events, "Import events",
+                                     "*.csv"))
         self.import_anno_action = file_menu.addAction(
             "Import annotations...",
             lambda: self.import_file(model.import_annotations,
@@ -250,6 +254,7 @@ class MainWindow(QMainWindow):
             self.plot_montage_action.setEnabled(enabled)
             self.export_ica_action.setEnabled(enabled)
         self.import_bad_action.setEnabled(enabled)
+        self.import_events_action.setEnabled(enabled)
         self.import_anno_action.setEnabled(enabled)
         self.pick_chans_action.setEnabled(enabled)
         self.chan_props_action.setEnabled(enabled)
