@@ -165,6 +165,9 @@ class MainWindow(QMainWindow):
                                                    "density...", self.plot_psd)
         self.plot_montage_action = plot_menu.addAction("Current &montage",
                                                        self.plot_montage)
+        plot_menu.addSeparator()
+        self.plot_ica_components_action = plot_menu.addAction(
+            "ICA components...", self.plot_ica_components)
 
         tools_menu = self.menuBar().addMenu("&Tools")
         self.filter_action = tools_menu.addAction("&Filter data...",
@@ -247,12 +250,15 @@ class MainWindow(QMainWindow):
             self.plot_montage_action.setEnabled(enabled and montage)
             ica = bool(self.model.current["ica"])
             self.export_ica_action.setEnabled(enabled and ica)
+            self.plot_ica_components_action.setEnabled(enabled and ica and
+                                                       montage)
         else:
             self.export_bad_action.setEnabled(enabled)
             self.export_events_action.setEnabled(enabled)
             self.export_anno_action.setEnabled(enabled)
             self.plot_montage_action.setEnabled(enabled)
             self.export_ica_action.setEnabled(enabled)
+            self.plot_ica_components_action.setEnabled(enabled)
         self.import_bad_action.setEnabled(enabled)
         self.import_events_action.setEnabled(enabled)
         self.import_anno_action.setEnabled(enabled)
@@ -395,6 +401,9 @@ class MainWindow(QMainWindow):
         win.findChild(QStatusBar).hide()
         win.findChild(QToolBar).hide()
         fig.show()
+
+    def plot_ica_components(self):
+        self.model.current["ica"].plot_components()
 
     def run_ica(self):
         """Run ICA calculation."""
