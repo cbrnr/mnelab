@@ -430,6 +430,7 @@ class MainWindow(QMainWindow):
         """Set reference."""
         dialog = ReferenceDialog(self)
         if dialog.exec_():
+            self.auto_duplicate()
             if dialog.average.isChecked():
                 self.model.set_reference("average")
             else:
