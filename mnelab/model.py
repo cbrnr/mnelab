@@ -278,6 +278,8 @@ class Model:
 
         return {"File name": fname if fname else "-",
                 "File type": ftype if ftype else "-",
+                "Size on disk": size_disk,
+                "Size in memory": f"{raw._data.nbytes / 1024 ** 2:.2f} MB",
                 "Channels": f"{nchan} (" + ", ".join(
                     [" ".join([str(v), k.upper()]) for k, v in chans]) + ")",
                 "Samples": raw.n_times,
@@ -287,9 +289,7 @@ class Model:
                 "Annotations": annots,
                 "Reference": reference if reference else "-",
                 "Montage": montage if montage is not None else "-",
-                "ICA": ica,
-                "Size in memory": f"{raw._data.nbytes / 1024 ** 2:.2f} MB",
-                "Size on disk": size_disk}
+                "ICA": ica}
 
     @data_changed
     def drop_channels(self, drops):
