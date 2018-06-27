@@ -278,9 +278,8 @@ class Model:
 
         return {"File name": fname if fname else "-",
                 "File type": ftype if ftype else "-",
-                "Number of channels": nchan,
-                "Channels": ", ".join(
-                    [" ".join([str(v), k.upper()]) for k, v in chans]),
+                "Channels": f"{nchan} (" + ", ".join(
+                    [" ".join([str(v), k.upper()]) for k, v in chans]) + ")",
                 "Samples": raw.n_times,
                 "Sampling frequency": f"{raw.info['sfreq']:.2f} Hz",
                 "Length": f"{raw.n_times / raw.info['sfreq']:.2f} s",
