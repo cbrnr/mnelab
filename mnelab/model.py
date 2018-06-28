@@ -24,8 +24,8 @@ class AddReferenceError(Exception):
 def data_changed(f):
     """Call self.view.data_changed method after function call."""
     @wraps(f)
-    def wrapper(*args):
-        f(*args)
+    def wrapper(*args, **kwargs):
+        f(*args, **kwargs)
         args[0].view.data_changed()
     return wrapper
 
@@ -116,9 +116,14 @@ class Model:
         self.find_events()
 
     @data_changed
-    def find_events(self):
+    def find_events(self, consecutive=True, initial_event=False,
+                    uint_cast=False, min_duration=0, shortest_event=2):
         """Find events in raw data."""
-        events = mne.find_events(self.current["raw"], consecutive=False)
+        events = mne.find_events(self.current["raw"], consecutive=consecutive,
+                                 initial_event=initial_event,
+                                 uint_cast=uint_cast,
+                                 min_duration=min_duration,
+                                 shortest_event=shortest_event)
         if events.shape[0] > 0:  # if events were found
             self.current["events"] = events
             self.history.append("events = mne.find_events(raw)")

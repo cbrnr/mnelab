@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
 from mne.io.pick import channel_type
 
 from .dialogs.filterdialog import FilterDialog
+from .dialogs.findeventsdialog import FindEventsDialog
 from .dialogs.pickchannelsdialog import PickChannelsDialog
 from .dialogs.referencedialog import ReferenceDialog
 from .dialogs.montagedialog import MontageDialog
@@ -176,7 +177,7 @@ class MainWindow(QMainWindow):
         self.filter_action = tools_menu.addAction("&Filter data...",
                                                   self.filter_data)
         self.find_events_action = tools_menu.addAction("Find &events...",
-                                                       self.model.find_events)
+                                                       self.find_events)
         self.run_ica_action = tools_menu.addAction("Run &ICA...", self.run_ica)
 
         view_menu = self.menuBar().addMenu("&View")
@@ -451,6 +452,20 @@ class MainWindow(QMainWindow):
         if dialog.exec_():
             self.auto_duplicate()
             self.model.filter(dialog.low, dialog.high)
+
+    def find_events(self):
+        dialog = FindEventsDialog(self)
+        if dialog.exec_():
+            consecutive = dialog.consecutive.isChecked()
+            initial_event = dialog.initial_event.isChecked()
+            uint_cast = dialog.uint_cast.isChecked()
+            min_dur = dialog.min_dur
+            shortest_event = dialog.shortest_event
+            self.model.find_events(consecutive=consecutive,
+                                   initial_event=initial_event,
+                                   uint_cast=uint_cast,
+                                   min_duration=min_dur,
+                                   shortest_event=shortest_event)
 
     def set_reference(self):
         """Set reference."""
