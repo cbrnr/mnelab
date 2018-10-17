@@ -406,9 +406,9 @@ class MainWindow(QMainWindow):
         fig.show()
 
     def plot_montage(self):
-        """Plot montage."""
-        montage = mne.channels.read_montage(self.model.current["montage"])
-        fig = montage.plot(show_names=True, show=False)
+        """Plot current montage."""
+        fig = self.model.current["raw"].plot_sensors(show_names=True,
+                                                     show=False)
         win = fig.canvas.manager.window
         win.setWindowTitle("Montage")
         win.findChild(QStatusBar).hide()
