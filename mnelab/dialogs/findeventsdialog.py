@@ -43,13 +43,3 @@ class FindEventsDialog(QDialog):
         vbox.addWidget(buttonbox)
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)
-
-    @property
-    def min_dur(self):
-        min_dur = self.minduredit.text()
-        return int(min_dur) if min_dur else None
-
-    @property
-    def shortest_event(self):
-        shortest_event = self.shortesteventedit.text()
-        return int(shortest_event) if shortest_event else None

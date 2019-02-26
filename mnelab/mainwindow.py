@@ -460,8 +460,8 @@ class MainWindow(QMainWindow):
             consecutive = dialog.consecutive.isChecked()
             initial_event = dialog.initial_event.isChecked()
             uint_cast = dialog.uint_cast.isChecked()
-            min_dur = dialog.min_dur
-            shortest_event = dialog.shortest_event
+            min_dur = dialog.minduredit.value()
+            shortest_event = dialog.shortesteventedit.value()
             self.model.find_events(consecutive=consecutive,
                                    initial_event=initial_event,
                                    uint_cast=uint_cast,
