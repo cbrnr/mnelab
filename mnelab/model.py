@@ -80,7 +80,10 @@ class Model:
     @property
     def current(self):
         """Return current data set."""
-        return self.data[self.index]
+        if self.index > -1:
+            return self.data[self.index]
+        else:
+            return None
 
     @current.setter
     def current(self, value):
