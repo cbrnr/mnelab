@@ -119,8 +119,8 @@ class Model:
         self.find_events()
 
     @data_changed
-    def find_events(self, consecutive=True, initial_event=False,
-                    uint_cast=False, min_duration=0, shortest_event=2):
+    def find_events(self, consecutive=True, initial_event=True,
+                    uint_cast=True, min_duration=0, shortest_event=0):
         """Find events in raw data."""
         events = mne.find_events(self.current["raw"], consecutive=consecutive,
                                  initial_event=initial_event,
