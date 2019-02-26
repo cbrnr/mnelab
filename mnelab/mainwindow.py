@@ -492,7 +492,7 @@ class MainWindow(QMainWindow):
         <p style="font-weight: normal">
         Licensed under the BSD 3-clause license.</p>
         <p style="font-weight: normal">
-        Copyright 2017-2018 by Clemens Brunner.</p>"""
+        Copyright 2017-2019 by Clemens Brunner.</p>"""
         QMessageBox.about(self, "About MNELAB", msg)
 
     def show_about_qt(self):
