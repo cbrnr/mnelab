@@ -1,4 +1,5 @@
 import multiprocessing as mp
+from sys import version_info
 
 import mne
 from PyQt5.QtCore import (pyqtSlot, QStringListModel, QModelIndex, QSettings,
@@ -486,7 +487,8 @@ class MainWindow(QMainWindow):
         interface for
         <a href="https://github.com/mne-tools/mne-python">MNE</a>.</p>
         <p style="font-weight: normal">
-        This program uses MNE version {mne.__version__}.</p>
+        This program uses MNE version {mne.__version__} (Python 
+        {".".join(str(k) for k in version_info[:3])}).</p>
         <p style="font-weight: normal">
         Licensed under the BSD 3-clause license.</p>
         <p style="font-weight: normal">
@@ -587,7 +589,7 @@ class MainWindow(QMainWindow):
         if mime.hasUrls():
             urls = mime.urls()
             for url in urls:
-                self.load_file(url.toLocalFile())
+                self.model.load(url.toLocalFile())
 
     @pyqtSlot(QEvent)
     def closeEvent(self, event):
