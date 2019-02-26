@@ -17,6 +17,6 @@ if __name__ == "__main__":
     model.view = view
     if len(sys.argv) > 1:  # open files from command line arguments
         for f in sys.argv[1:]:
-            view.load_file(f)
+            model.load(f)
     view.show()
     sys.exit(app.exec_())
