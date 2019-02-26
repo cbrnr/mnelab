@@ -35,8 +35,8 @@ def read_settings():
     Returns
     -------
     settings : dict
-        The restored settings values are returned in a dictionary for
-        further processing.
+        The restored settings values are returned in a dictionary for further
+        processing.
     """
     settings = QSettings()
 
