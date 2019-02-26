@@ -1,5 +1,8 @@
 from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
-                             QCheckBox, QLineEdit, QDialogButtonBox)
+                             QCheckBox, QDialogButtonBox, QSpinBox)
+
+
+MAX_INT = 2147483647
 
 
 class FindEventsDialog(QDialog):
@@ -25,11 +28,13 @@ class FindEventsDialog(QDialog):
         grid.addWidget(self.uint_cast, 2, 1)
 
         grid.addWidget(QLabel("Minimum duration:"), 3, 0)
-        self.minduredit = QLineEdit("0")
+        self.minduredit = QSpinBox()
+        self.minduredit.setMaximum(MAX_INT)
         grid.addWidget(self.minduredit, 3, 1)
 
         grid.addWidget(QLabel("Shortest event:"), 4, 0)
-        self.shortesteventedit = QLineEdit("0")
+        self.shortesteventedit = QSpinBox()
+        self.shortesteventedit.setMaximum(MAX_INT)
         grid.addWidget(self.shortesteventedit, 4, 1)
 
         vbox.addLayout(grid)
