@@ -16,20 +16,20 @@ class FindEventsDialog(QDialog):
 
         grid.addWidget(QLabel("Initial Event"), 1, 0)
         self.initial_event = QCheckBox()
-        self.initial_event.setChecked(False)
+        self.initial_event.setChecked(True)
         grid.addWidget(self.initial_event, 1, 1)
 
         grid.addWidget(QLabel("Cast to unsigned integer"), 2, 0)
         self.uint_cast = QCheckBox()
-        self.uint_cast.setChecked(False)
+        self.uint_cast.setChecked(True)
         grid.addWidget(self.uint_cast, 2, 1)
 
         grid.addWidget(QLabel("Minimum duration:"), 3, 0)
-        self.minduredit = QLineEdit()
+        self.minduredit = QLineEdit("0")
         grid.addWidget(self.minduredit, 3, 1)
 
         grid.addWidget(QLabel("Shortest event:"), 4, 0)
-        self.shortesteventedit = QLineEdit()
+        self.shortesteventedit = QLineEdit("0")
         grid.addWidget(self.shortesteventedit, 4, 1)
 
         vbox.addLayout(grid)
