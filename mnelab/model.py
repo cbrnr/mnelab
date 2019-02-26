@@ -75,7 +75,7 @@ class Model:
     @property
     def nbytes(self):
         """Return size (in bytes) of all data sets."""
-        return sum([item["raw"]._data.nbytes for item in self.data])
+        return sum([item["raw"].get_data().nbytes for item in self.data])
 
     @property
     def current(self):
@@ -284,7 +284,7 @@ class Model:
         return {"File name": fname if fname else "-",
                 "File type": ftype if ftype else "-",
                 "Size on disk": size_disk,
-                "Size in memory": f"{raw._data.nbytes / 1024 ** 2:.2f} MB",
+                "Size in memory": f"{raw.get_data().nbytes / 1024**2:.2f} MB",
                 "Channels": f"{nchan} (" + ", ".join(
                     [" ".join([str(v), k.upper()]) for k, v in chans]) + ")",
                 "Samples": raw.n_times,
