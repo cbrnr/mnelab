@@ -3,6 +3,8 @@ from collections import Counter, defaultdict
 from functools import wraps
 from copy import deepcopy
 import numpy as np
+from numpy.core.records import fromarrays
+from scipy.io import savemat
 import mne
 
 
@@ -136,7 +138,36 @@ class Model:
         name, ext = splitext(split(fname)[-1])
         ext = ext if ext else ".fif"  # automatically add extension
         fname = join(split(fname)[0], name + ext)
-        self.current["raw"].save(fname)
+        if ext == ".fif":
+            self.current["raw"].save(fname)
+        elif ext == ".set":
+            self._export_set(fname)
+
+    def _export_set(self, fname):
+        """Export raw to EEGLAB file."""
+        data = self.current["raw"].get_data() * 1e6  # convert to microvolts
+        fs = self.current["raw"].info["sfreq"]
+        times = self.current["raw"].times
+        ch_names = self.current["raw"].info["ch_names"]
+        chanlocs = fromarrays([ch_names], names=["labels"])
+        events = fromarrays([self.current["raw"].annotations.description,
+                             self.current["raw"].annotations.onset * fs + 1,
+                             self.current["raw"].annotations.duration * fs],
+                            names=["type", "latency", "duration"])
+        savemat(fname, dict(EEG=dict(data=data,
+                                     setname=fname,
+                                     nbchan=data.shape[0],
+                                     pnts=data.shape[1],
+                                     trials=1,
+                                     srate=fs,
+                                     xmin=times[0],
+                                     xmax=times[-1],
+                                     chanlocs=chanlocs,
+                                     event=events,
+                                     icawinv=[],
+                                     icasphere=[],
+                                     icaweights=[])),
+                appendmat=False)
 
     def export_bads(self, fname):
         """Export bad channels info to a CSV file."""
