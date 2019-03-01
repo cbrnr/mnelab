@@ -130,7 +130,7 @@ class MainWindow(QMainWindow):
         self.export_raw_action = file_menu.addAction(
             "Export &raw...",
             lambda: self.export_file(model.export_raw, "Export raw",
-                                     "*.fif,*.set"))
+                                     "*.fif *.set"))
         self.export_bad_action = file_menu.addAction(
             "Export &bad channels...",
             lambda: self.export_file(model.export_bads, "Export bad channels",
