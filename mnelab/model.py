@@ -8,7 +8,7 @@ from scipy.io import savemat
 import mne
 
 
-SUPPORTED_FORMATS = "*.bdf *.edf *.fif *.vhdr"
+SUPPORTED_FORMATS = "*.bdf *.edf *.fif *.vhdr *.set"
 
 
 class LabelsNotFoundError(Exception):
@@ -115,6 +115,10 @@ class Model:
             raw = mne.io.read_raw_brainvision(fname, preload=True)
             self.history.append(f"raw = mne.io.read_raw_brainvision('{fname}',"
                                 f" preload=True)")
+        elif ext in [".set"]:
+            raw = mne.io.read_raw_eeglab(fname, preload=True)
+            self.history.append(f"raw = mne.io.read_raw_eeglab('{fname}', "
+                                f"preload=True)")
 
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
                                      ftype=ftype, raw=raw))
