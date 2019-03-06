@@ -122,7 +122,6 @@ class Model:
 
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
                                      ftype=ftype, raw=raw))
-        self.find_events()
 
     @data_changed
     def find_events(self, consecutive=True, initial_event=True,
