@@ -20,8 +20,8 @@ from .dialogs.runicadialog import RunICADialog
 from .dialogs.calcdialog import CalcDialog
 from .dialogs.eventsdialog import EventsDialog
 from .widgets.infowidget import InfoWidget
-from .model import (SUPPORTED_FORMATS, LabelsNotFoundError,
-                    InvalidAnnotationsError)
+from .model import (SUPPORTED_FORMATS, SUPPORTED_EXPORT_FORMATS,
+                    LabelsNotFoundError, InvalidAnnotationsError)
 
 
 __version__ = "0.1.0"
@@ -130,7 +130,7 @@ class MainWindow(QMainWindow):
         self.export_raw_action = file_menu.addAction(
             "Export &raw...",
             lambda: self.export_file(model.export_raw, "Export raw",
-                                     "*.fif *.set"))
+                                     SUPPORTED_EXPORT_FORMATS))
         self.export_bad_action = file_menu.addAction(
             "Export &bad channels...",
             lambda: self.export_file(model.export_bads, "Export bad channels",

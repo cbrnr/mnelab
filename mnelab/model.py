@@ -2,6 +2,7 @@ from os.path import getsize, join, split, splitext
 from collections import Counter, defaultdict
 from functools import wraps
 from copy import deepcopy
+from datetime import datetime
 import numpy as np
 from numpy.core.records import fromarrays
 from scipy.io import savemat
@@ -9,6 +10,14 @@ import mne
 
 
 SUPPORTED_FORMATS = "*.bdf *.edf *.fif *.vhdr *.set"
+SUPPORTED_EXPORT_FORMATS = "*.fif *.set"
+try:
+    import pyedflib
+except ImportError:
+    have_pyedflib = False
+else:
+    have_pyedflib = True
+    SUPPORTED_EXPORT_FORMATS += " *.edf *.bdf"
 
 
 class LabelsNotFoundError(Exception):
@@ -137,7 +146,7 @@ class Model:
             self.history.append("events = mne.find_events(raw)")
 
     def export_raw(self, fname):
-        """Export raw to FIF file."""
+        """Export raw to file."""
         name, ext = splitext(split(fname)[-1])
         ext = ext if ext else ".fif"  # automatically add extension
         fname = join(split(fname)[0], name + ext)
@@ -145,6 +154,8 @@ class Model:
             self.current["raw"].save(fname)
         elif ext == ".set":
             self._export_set(fname)
+        elif ext in (".edf", ".bdf"):
+            self._export_edf(fname)
 
     def _export_set(self, fname):
         """Export raw to EEGLAB file."""
@@ -171,6 +182,47 @@ class Model:
                                      icasphere=[],
                                      icaweights=[])),
                 appendmat=False)
+
+    def _export_edf(self, fname):
+        """Export raw to EDF/BDF file (requires pyEDFlib)."""
+        name, ext = splitext(split(fname)[-1])
+        if ext == ".edf":
+            filetype = pyedflib.FILETYPE_EDFPLUS
+            dmin, dmax = -32768, 32767
+        elif ext == ".bdf":
+            filetype = pyedflib.FILETYPE_BDFPLUS
+            dmin, dmax = -8388608, 8388607
+        data = self.current["raw"].get_data() * 1e6  # convert to microvolts
+        fs = self.current["raw"].info["sfreq"]
+        nchan = self.current["raw"].info["nchan"]
+        ch_names = self.current["raw"].info["ch_names"]
+        meas_date = self.current["raw"].info["meas_date"][0]
+        prefilter = (f"{self.current['raw'].info['highpass']}Hz - "
+                     f"{self.current['raw'].info['lowpass']}")
+        pmin, pmax = data.min(axis=1), data.max(axis=1)
+        f = pyedflib.EdfWriter(fname, nchan, filetype)
+        channel_info = []
+        data_list = []
+        for i in range(nchan):
+            channel_info.append(dict(label=ch_names[i],
+                                     dimension="uV",
+                                     sample_rate=fs,
+                                     physical_min=pmin[i],
+                                     physical_max=pmax[i],
+                                     digital_min=dmin,
+                                     digital_max=dmax,
+                                     transducer="",
+                                     prefilter=prefilter))
+            data_list.append(data[i])
+        f.setTechnician("Exported by MNELAB")
+        f.setSignalHeaders(channel_info)
+        f.setStartdatetime(datetime.utcfromtimestamp(meas_date))
+        # note that currently, only blocks of whole seconds can be written
+        f.writeSamples(data_list)
+        if self.current["raw"].annotations is not None:
+            for ann in self.current["raw"].annotations:
+                f.writeAnnotation(ann["onset"], ann["duration"],
+                                  ann["description"])
 
     def export_bads(self, fname):
         """Export bad channels info to a CSV file."""
