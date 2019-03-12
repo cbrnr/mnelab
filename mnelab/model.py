@@ -133,10 +133,12 @@ class Model:
                                      ftype=ftype, raw=raw))
 
     @data_changed
-    def find_events(self, consecutive=True, initial_event=True,
+    def find_events(self, stim_channel, consecutive=True, initial_event=True,
                     uint_cast=True, min_duration=0, shortest_event=0):
         """Find events in raw data."""
-        events = mne.find_events(self.current["raw"], consecutive=consecutive,
+        events = mne.find_events(self.current["raw"],
+                                 stim_channel=stim_channel,
+                                 consecutive=consecutive,
                                  initial_event=initial_event,
                                  uint_cast=uint_cast,
                                  min_duration=min_duration,

@@ -456,14 +456,24 @@ class MainWindow(QMainWindow):
             self.model.filter(dialog.low, dialog.high)
 
     def find_events(self):
-        dialog = FindEventsDialog(self)
+        info = self.model.current["raw"].info
+
+        # use first stim channel as default in dialog
+        default_stim = 0
+        for i in range(info["nchan"]):
+            if mne.io.pick.channel_type(info, i) == "stim":
+                default_stim = i
+                break
+        dialog = FindEventsDialog(self, info["ch_names"], default_stim)
         if dialog.exec_():
+            stim_channel = dialog.stimchan.currentText()
             consecutive = dialog.consecutive.isChecked()
             initial_event = dialog.initial_event.isChecked()
             uint_cast = dialog.uint_cast.isChecked()
             min_dur = dialog.minduredit.value()
             shortest_event = dialog.shortesteventedit.value()
-            self.model.find_events(consecutive=consecutive,
+            self.model.find_events(stim_channel=stim_channel,
+                                   consecutive=consecutive,
                                    initial_event=initial_event,
                                    uint_cast=uint_cast,
                                    min_duration=min_dur,
