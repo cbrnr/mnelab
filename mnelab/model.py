@@ -361,6 +361,8 @@ class Model:
 
         if raw.annotations is not None:
             annots = len(raw.annotations.description)
+            if annots == 0:
+                annots = "-"
         else:
             annots = "-"
 
