@@ -429,14 +429,27 @@ class MainWindow(QMainWindow):
         else:
             have_picard = True
 
+        try:
+            import sklearn  # required for FastICA
+        except ImportError:
+            have_sklearn = False
+        else:
+            have_sklearn = True
+
         dialog = RunICADialog(self, self.model.current["raw"].info["nchan"],
-                              have_picard)
+                              have_picard, have_sklearn)
 
         if dialog.exec_():
             calc = CalcDialog(self, "Calculating ICA", "Calculating ICA.")
             method = dialog.method.currentText()
             exclude_bad_segments = dialog.exclude_bad_segments.isChecked()
-            ica = mne.preprocessing.ICA(method=dialog.methods[method])
+            fit_params = {}
+            if not dialog.extended.isHidden():
+                fit_params["extended"] = dialog.extended.isChecked()
+            if not dialog.ortho.isHidden():
+                fit_params["ortho"] = dialog.ortho.isChecked()
+            ica = mne.preprocessing.ICA(method=dialog.methods[method],
+                                        fit_params=fit_params)
             pool = mp.Pool(1)
             kwds = {"reject_by_annotation": exclude_bad_segments}
             res = pool.apply_async(func=ica.fit,

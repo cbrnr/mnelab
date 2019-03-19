@@ -4,14 +4,16 @@ from PyQt5.QtCore import Qt, pyqtSlot
 
 
 class RunICADialog(QDialog):
-    def __init__(self, parent, nchan, have_picard=True):
+    def __init__(self, parent, nchan, have_picard=True, have_sklearn=True):
         super().__init__(parent)
         self.setWindowTitle("Run ICA")
         vbox = QVBoxLayout(self)
         grid = QGridLayout()
         grid.addWidget(QLabel("Method:"), 0, 0)
         self.method = QComboBox()
-        self.methods = {"Infomax": "infomax", "FastICA": "fastica"}
+        self.methods = {"Infomax": "infomax"}
+        if have_sklearn:
+            self.methods["FastICA"] = "fastica"
         if have_picard:
             self.methods["Picard"] = "picard"
         self.method.addItems(self.methods.keys())

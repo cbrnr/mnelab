@@ -365,7 +365,9 @@ class Model:
             annots = "-"
 
         if ica is not None:
-            method = ica.method.replace("-", " ").title().replace("ica", "ICA")
+            method = ica.method.title()
+            if method == "Fastica":
+                method = "FastICA"
             ica = f"{method} ({ica.n_components_} components)"
         else:
             ica = "-"
