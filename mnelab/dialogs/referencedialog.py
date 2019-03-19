@@ -23,6 +23,7 @@ class ReferenceDialog(QDialog):
         vbox.addWidget(buttonbox)
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)
+        vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
 
     def toggle(self):
         if self.average.isChecked():

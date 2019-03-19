@@ -20,6 +20,7 @@ class FilterDialog(QDialog):
         vbox.addWidget(buttonbox)
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)
+        vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
 
     @property
     def low(self):

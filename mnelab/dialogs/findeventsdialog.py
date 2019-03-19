@@ -49,3 +49,4 @@ class FindEventsDialog(QDialog):
         vbox.addWidget(buttonbox)
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)
+        vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
