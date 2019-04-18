@@ -505,19 +505,26 @@ class MainWindow(QMainWindow):
 
     def show_about(self):
         """Show About dialog."""
-        msg = f"""<p style="font-weight: bold">MNELAB {__version__}</p>
-        <p style="font-weight: normal">
-        <a href="https://github.com/cbrnr/mnelab">MNELAB</a> - a graphical user
-        interface for
-        <a href="https://github.com/mne-tools/mne-python">MNE</a>.</p>
-        <p style="font-weight: normal">
-        This program uses MNE version {mne.__version__} (Python 
-        {".".join(str(k) for k in version_info[:3])}).</p>
-        <p style="font-weight: normal">
-        Licensed under the BSD 3-clause license.</p>
-        <p style="font-weight: normal">
-        Copyright 2017-2019 by Clemens Brunner.</p>"""
-        QMessageBox.about(self, "About MNELAB", msg)
+        msg_box = QMessageBox()
+        text = ("<h3>MNELAB</h3>"
+                "<nobr><p>MNELAB is a graphical user interface for MNE.</p>"
+                "</nobr>")
+        msg_box.setText(text)
+
+        mnelab_url = "github.com/cbrnr/mnelab"
+        mne_url = "github.com/mne-tools/mne-python"
+
+        text = (f'<nobr><p>This program uses MNE version {mne.__version__} '
+                f'(Python {".".join(str(k) for k in version_info[:3])}).</p>'
+                f'</nobr>'
+                f'<nobr><p>MNELAB repository: '
+                f'<a href=https://{mnelab_url}>{mnelab_url}</a></p></nobr>'
+                f'<nobr><p>MNE repository: '
+                f'<a href=https://{mne_url}>{mne_url}</a></p></nobr>'
+                f'<p>Licensed under the BSD 3-clause license.</p>'
+                f'<p>Copyright 2017-2019 by Clemens Brunner.</p>')
+        msg_box.setInformativeText(text)
+        msg_box.exec_()
 
     def show_about_qt(self):
         """Show About Qt dialog."""
