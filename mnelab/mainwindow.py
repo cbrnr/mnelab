@@ -92,7 +92,7 @@ class MainWindow(QMainWindow):
 
         # initialize menus
         file_menu = self.menuBar().addMenu("&File")
-        file_menu.addAction(
+        self.open_file_action = file_menu.addAction(
             "&Open...",
             lambda: self.open_file(model.load, "Open raw", SUPPORTED_FORMATS),
             QKeySequence.Open)
@@ -188,8 +188,9 @@ class MainWindow(QMainWindow):
         statusbar_action.setCheckable(True)
 
         help_menu = self.menuBar().addMenu("&Help")
-        help_menu.addAction("&About", self.show_about)
-        help_menu.addAction("About &Qt", self.show_about_qt)
+        self.about_action = help_menu.addAction("&About", self.show_about)
+        self.about_qt_action = help_menu.addAction("About &Qt",
+                                                   self.show_about_qt)
 
         # set up data model for sidebar (list of open files)
         self.names = QStringListModel()
