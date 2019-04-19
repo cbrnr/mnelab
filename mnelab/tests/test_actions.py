@@ -1,4 +1,5 @@
 from mnelab import MainWindow, Model
+from PyQt5.QtWidgets import QWidget, QLabel
 
 
 def test_initial_actions():
