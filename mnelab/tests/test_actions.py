@@ -1,12 +1,12 @@
 from mnelab import MainWindow, Model
 
 
-def test_initial_actions(qtbot):
+def test_initial_actions():
     """Test if initial actions are correctly enabled/disabled."""
     model = Model()
     view = MainWindow(model)
     model.view = view
-    qtbot.addWidget(view)
+    # qtbot.addWidget(view)
 
     for name, action in view.actions.items():
         if name in view.always_enabled:
