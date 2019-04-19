@@ -26,8 +26,3 @@ jobs:
       pip install pytest pytest-azurepipelines pytest-faulthandler
       pytest mnelab/tests
     displayName: 'pytest'
-  - task: PublishTestResults@2
-    condition: succeededOrFailed()
-    inputs:
-      testResultsFiles: 'junit-*.xml'
-      testRunTitle: 'Publish test results for Python $(python.version)'
