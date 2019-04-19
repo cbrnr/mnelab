@@ -24,10 +24,10 @@ jobs:
     displayName: 'Install MNELAB'
   - script: |
       pip install pytest pytest-azurepipelines pytest-faulthandler
-      pytest mnelab/tests --junitxml=junit/test-results.xml
+      pytest mnelab/tests
     displayName: 'pytest'
   - task: PublishTestResults@2
     condition: succeededOrFailed()
     inputs:
-      testResultsFiles: '**/test-*.xml'
+      testResultsFiles: 'junit-*.xml'
       testRunTitle: 'Publish test results for Python $(python.version)'
