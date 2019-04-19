@@ -1,7 +1,7 @@
 from mnelab import MainWindow, Model
 
 
-def test_initial_actions():
+def test_initial_actions(qtbot):
     """Test if initial actions are correctly enabled/disabled."""
     assert True
     model = Model()
