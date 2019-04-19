@@ -1,4 +1,4 @@
-PyQt5==5.11
+PyQt5==5.11.3
 numpy
 scipy
 matplotlib
