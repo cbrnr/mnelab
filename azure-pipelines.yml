@@ -23,6 +23,6 @@ jobs:
   - script: python setup.py develop
     displayName: 'Install MNELAB'
   - script: |
-      pip install pytest pytest-azurepipelines pytest-faulthandler pytest-qt
+      pip install pytest pytest-azurepipelines pytest-faulthandler
       pytest mnelab/tests --test-run-title="Python $(python.version)"
     displayName: 'pytest'
