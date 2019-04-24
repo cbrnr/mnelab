@@ -90,9 +90,11 @@ class MainWindow(QMainWindow):
         if settings["state"]:
             self.restoreState(settings["state"])
 
+        self.actions = {}  # contains all actions
+
         # initialize menus
         file_menu = self.menuBar().addMenu("&File")
-        self.open_file_action = file_menu.addAction(
+        self.actions["open_file"] = file_menu.addAction(
             "&Open...",
             lambda: self.open_file(model.load, "Open raw", SUPPORTED_FORMATS),
             QKeySequence.Open)
@@ -101,96 +103,103 @@ class MainWindow(QMainWindow):
         self.recent_menu.triggered.connect(self._load_recent)
         if not self.recent:
             self.recent_menu.setEnabled(False)
-        self.close_file_action = file_menu.addAction(
+        self.actions["close_file"] = file_menu.addAction(
             "&Close",
             self.model.remove_data,
             QKeySequence.Close)
-        self.close_all_action = file_menu.addAction(
+        self.actions["close_all"] = file_menu.addAction(
             "Close all",
             self.close_all)
         file_menu.addSeparator()
-        self.import_bad_action = file_menu.addAction(
+        self.actions["import_bads"] = file_menu.addAction(
             "Import bad channels...",
             lambda: self.import_file(model.import_bads, "Import bad channels",
                                      "*.csv"))
-        self.import_events_action = file_menu.addAction(
+        self.actions["import_events"] = file_menu.addAction(
             "Import events...",
             lambda: self.import_file(model.import_events, "Import events",
                                      "*.csv"))
-        self.import_anno_action = file_menu.addAction(
+        self.actions["import_annotations"] = file_menu.addAction(
             "Import annotations...",
             lambda: self.import_file(model.import_annotations,
                                      "Import annotations", "*.csv"))
-        self.import_ica_action = file_menu.addAction(
+        self.actions["import_ica"] = file_menu.addAction(
             "Import &ICA...",
             lambda: self.open_file(model.import_ica, "Import ICA",
-                                   "*.fif *.fif.gz")
-        )
+                                   "*.fif *.fif.gz"))
         file_menu.addSeparator()
-        self.export_raw_action = file_menu.addAction(
+        self.actions["export_raw"] = file_menu.addAction(
             "Export &raw...",
             lambda: self.export_file(model.export_raw, "Export raw",
                                      SUPPORTED_EXPORT_FORMATS))
-        self.export_bad_action = file_menu.addAction(
+        self.actions["export_bads"] = file_menu.addAction(
             "Export &bad channels...",
             lambda: self.export_file(model.export_bads, "Export bad channels",
                                      "*.csv"))
-        self.export_events_action = file_menu.addAction(
+        self.actions["export_events"] = file_menu.addAction(
             "Export &events...",
             lambda: self.export_file(model.export_events, "Export events",
                                      "*.csv"))
-        self.export_anno_action = file_menu.addAction(
+        self.actions["export_annotations"] = file_menu.addAction(
             "Export &annotations...",
             lambda: self.export_file(model.export_annotations,
                                      "Export annotations", "*.csv"))
-        self.export_ica_action = file_menu.addAction(
+        self.actions["export_ica"] = file_menu.addAction(
             "Export ICA...",
             lambda: self.export_file(model.export_ica,
                                      "Export ICA", "*.fif *.fif.gz"))
         file_menu.addSeparator()
-        file_menu.addAction("&Quit", self.close, QKeySequence.Quit)
+        self.actions["quit"] = file_menu.addAction("&Quit", self.close,
+                                                   QKeySequence.Quit)
 
         edit_menu = self.menuBar().addMenu("&Edit")
-        self.pick_chans_action = edit_menu.addAction(
+        self.actions["pick_chans"] = edit_menu.addAction(
             "Pick &channels...",
             self.pick_channels)
-        self.chan_props_action = edit_menu.addAction(
+        self.actions["chan_props"] = edit_menu.addAction(
             "Channel &properties...",
             self.channel_properties)
-        self.set_montage_action = edit_menu.addAction("Set &montage...",
-                                                      self.set_montage)
+        self.actions["set_montage"] = edit_menu.addAction("Set &montage...",
+                                                          self.set_montage)
         edit_menu.addSeparator()
-        self.setref_action = edit_menu.addAction("&Set reference...",
-                                                 self.set_reference)
+        self.actions["set_ref"] = edit_menu.addAction("&Set reference...",
+                                                      self.set_reference)
         edit_menu.addSeparator()
-        self.events_action = edit_menu.addAction("Events...", self.edit_events)
+        self.actions["events"] = edit_menu.addAction("Events...",
+                                                     self.edit_events)
 
         plot_menu = self.menuBar().addMenu("&Plot")
-        self.plot_raw_action = plot_menu.addAction("&Raw data", self.plot_raw)
-        self.plot_psd_action = plot_menu.addAction("&Power spectral "
-                                                   "density...", self.plot_psd)
-        self.plot_montage_action = plot_menu.addAction("Current &montage",
-                                                       self.plot_montage)
+        self.actions["plot_raw"] = plot_menu.addAction("&Raw data",
+                                                       self.plot_raw)
+        self.actions["plot_psd"] = plot_menu.addAction(
+            "&Power spectral density...", self.plot_psd)
+        self.actions["plot_montage"] = plot_menu.addAction("Current &montage",
+                                                           self.plot_montage)
         plot_menu.addSeparator()
-        self.plot_ica_components_action = plot_menu.addAction(
+        self.actions["plot_ica_components"] = plot_menu.addAction(
             "ICA components...", self.plot_ica_components)
 
         tools_menu = self.menuBar().addMenu("&Tools")
-        self.filter_action = tools_menu.addAction("&Filter data...",
-                                                  self.filter_data)
-        self.find_events_action = tools_menu.addAction("Find &events...",
-                                                       self.find_events)
-        self.run_ica_action = tools_menu.addAction("Run &ICA...", self.run_ica)
+        self.actions["filter"] = tools_menu.addAction("&Filter data...",
+                                                      self.filter_data)
+        self.actions["find_events"] = tools_menu.addAction("Find &events...",
+                                                           self.find_events)
+        self.actions["run_ica"] = tools_menu.addAction("Run &ICA...",
+                                                       self.run_ica)
 
         view_menu = self.menuBar().addMenu("&View")
-        statusbar_action = view_menu.addAction("Statusbar",
-                                               self._toggle_statusbar)
-        statusbar_action.setCheckable(True)
+        self.actions["statusbar"] = view_menu.addAction("Statusbar",
+                                                        self._toggle_statusbar)
+        self.actions["statusbar"].setCheckable(True)
 
         help_menu = self.menuBar().addMenu("&Help")
-        self.about_action = help_menu.addAction("&About", self.show_about)
-        self.about_qt_action = help_menu.addAction("About &Qt",
-                                                   self.show_about_qt)
+        self.actions["about"] = help_menu.addAction("&About", self.show_about)
+        self.actions["about_qt"] = help_menu.addAction("About &Qt",
+                                                       self.show_about_qt)
+
+        # actions that are always enabled
+        self.always_enabled = ["open_file", "about", "about_qt", "quit",
+                               "statusbar"]
 
         # set up data model for sidebar (list of open files)
         self.names = QStringListModel()
@@ -212,10 +221,10 @@ class MainWindow(QMainWindow):
         self.statusBar().addPermanentWidget(self.status_label)
         if settings["statusbar"]:
             self.statusBar().show()
-            statusbar_action.setChecked(True)
+            self.actions["statusbar"].setChecked(True)
         else:
             self.statusBar().hide()
-            statusbar_action.setChecked(False)
+            self.actions["statusbar"].setChecked(False)
 
         self.setAcceptDrops(True)
         self.data_changed()
@@ -243,44 +252,25 @@ class MainWindow(QMainWindow):
             enabled = False
         else:
             enabled = True
-        self.close_file_action.setEnabled(enabled)
-        self.close_all_action.setEnabled(enabled)
-        self.export_raw_action.setEnabled(enabled)
-        if self.model.data:
+
+        for name, action in self.actions.items():  # toggle
+            if name not in self.always_enabled:
+                action.setEnabled(enabled)
+
+        if self.model.data:  # toggle if specific conditions are met
             bads = bool(self.model.current["raw"].info["bads"])
-            self.export_bad_action.setEnabled(enabled and bads)
+            self.actions["export_bads"].setEnabled(enabled and bads)
             events = self.model.current["events"] is not None
-            self.export_events_action.setEnabled(enabled and events)
+            self.actions["export_events"].setEnabled(enabled and events)
             annot = self.model.current["raw"].annotations is not None
-            self.export_anno_action.setEnabled(enabled and annot)
+            self.actions["export_annotations"].setEnabled(enabled and annot)
             montage = bool(self.model.current["montage"])
-            self.plot_montage_action.setEnabled(enabled and montage)
+            self.actions["plot_montage"].setEnabled(enabled and montage)
             ica = bool(self.model.current["ica"])
-            self.export_ica_action.setEnabled(enabled and ica)
-            self.plot_ica_components_action.setEnabled(enabled and ica and
-                                                       montage)
-            self.events_action.setEnabled(enabled and events)
-        else:
-            self.export_bad_action.setEnabled(enabled)
-            self.export_events_action.setEnabled(enabled)
-            self.export_anno_action.setEnabled(enabled)
-            self.plot_montage_action.setEnabled(enabled)
-            self.export_ica_action.setEnabled(enabled)
-            self.plot_ica_components_action.setEnabled(enabled)
-            self.events_action.setEnabled(enabled)
-        self.import_bad_action.setEnabled(enabled)
-        self.import_events_action.setEnabled(enabled)
-        self.import_anno_action.setEnabled(enabled)
-        self.pick_chans_action.setEnabled(enabled)
-        self.chan_props_action.setEnabled(enabled)
-        self.set_montage_action.setEnabled(enabled)
-        self.plot_raw_action.setEnabled(enabled)
-        self.plot_psd_action.setEnabled(enabled)
-        self.filter_action.setEnabled(enabled)
-        self.setref_action.setEnabled(enabled)
-        self.find_events_action.setEnabled(enabled)
-        self.run_ica_action.setEnabled(enabled)
-        self.import_ica_action.setEnabled(enabled)
+            self.actions["export_ica"].setEnabled(enabled and ica)
+            self.actions["plot_ica_components"].setEnabled(enabled and ica and
+                                                           montage)
+            self.actions["events"].setEnabled(enabled and events)
 
         # add to recent files
         if len(self.model) > 0:
