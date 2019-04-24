@@ -3,7 +3,7 @@
 jobs:
 - job: Linux
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'Ubuntu-16.04'
   strategy:
     maxParallel: 2
     matrix:
