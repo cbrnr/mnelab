@@ -496,7 +496,7 @@ class MainWindow(QMainWindow):
 
     def show_about(self):
         """Show About dialog."""
-        msg_box = QMessageBox()
+        msg_box = QMessageBox(self)
         text = ("<h3>MNELAB</h3>"
                 "<nobr><p>MNELAB is a graphical user interface for MNE.</p>"
                 "</nobr>")

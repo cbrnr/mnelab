@@ -3,9 +3,11 @@ from PyQt5.QtCore import pyqtSlot
 
 
 class PickChannelsDialog(QDialog):
-    def __init__(self, parent, channels, selected=[], title="Pick channels"):
+    def __init__(self, parent, channels, selected=None, title="Pick channels"):
         super().__init__(parent)
         self.setWindowTitle(title)
+        if selected is None:
+            selected = []
         self.initial_selection = selected
         vbox = QVBoxLayout(self)
         self.channels = QListWidget()
