@@ -9,7 +9,7 @@ from scipy.io import savemat
 import mne
 
 
-SUPPORTED_FORMATS = "*.bdf *.edf *.fif *.vhdr *.set"
+SUPPORTED_FORMATS = "*.bdf *.edf *.fif *.vhdr *.set *.sef"
 SUPPORTED_EXPORT_FORMATS = "*.fif *.set"
 try:
     import pyedflib
@@ -128,6 +128,13 @@ class Model:
             raw = mne.io.read_raw_eeglab(fname, preload=True)
             self.history.append(f"raw = mne.io.read_raw_eeglab('{fname}', "
                                 f"preload=True)")
+
+        elif ext in [".sef"]:
+            from .utils.read import read_sef
+            raw = read_sef(fname)
+            raw.load_data()
+            self.history.append(f"raw = read_sef'{fname}', "
+                                f"preload=True")
 
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
                                      ftype=ftype, raw=raw))
@@ -276,19 +283,20 @@ class Model:
     @data_changed
     def import_events(self, fname):
         """Import events from a CSV file."""
-        pos, desc = [], []
-        with open(fname) as f:
-            f.readline()  # skip header
-            for line in f:
-                p, d = [int(l.strip()) for l in line.split(",")]
-                pos.append(p)
-                desc.append(d)
-        events = np.column_stack((pos, desc))
-        events = np.insert(events, 1, 0, axis=1)  # insert zero column
-        if self.current["events"] is not None:
-            events = np.row_stack((self.current["events"], events))
-            events = np.unique(events, axis=0)
-        self.current["events"] = events
+
+        if fname.endswith('.csv'):
+            pos, desc = [], []
+            with open(fname) as f:
+                f.readline()  # skip header
+                for line in f:
+                    p, d = [int(l.strip()) for l in line.split(",")]
+                    pos.append(p)
+                    desc.append(d)
+            events = np.column_stack((pos, desc))
+            events = np.insert(events, 1, 0, axis=1)  # insert zero column
+            if self.current["events"] is not None:
+                events = np.row_stack((self.current["events"], events))
+                events = np.unique(events, axis=0)
 
     @data_changed
     def import_annotations(self, fname):
