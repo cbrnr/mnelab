@@ -66,7 +66,6 @@ class MainWindow(QMainWindow):
     """MNELAB main window."""
     def __init__(self, model):
         """Initialize MNELAB main window.
-
         Parameters
         ----------
         model : mnelab.model.Model instance
@@ -349,11 +348,15 @@ class MainWindow(QMainWindow):
                                selected=self.model.current["montage"])
         if dialog.exec_():
             name = dialog.montages.selectedItems()[0].data(0)
-            montage = mne.channels.read_montage(name)
+            if dialog.montage_path == '':
+                montage = mne.channels.read_montage(name)
+            else:
+                from .utils.montage import xyz_to_montage
+                montage = xyz_to_montage(dialog.montage_path, name)
             ch_names = self.model.current["raw"].info["ch_names"]
             # check if at least one channel name matches a name in the montage
             if set(ch_names) & set(montage.ch_names):
-                self.model.set_montage(name)
+                self.model.set_montage(montage)
             else:
                 QMessageBox.critical(self, "No matching channel names",
                                      "Channel names defined in the montage do "
@@ -370,9 +373,9 @@ class MainWindow(QMainWindow):
         """Plot raw data."""
         events = self.model.current["events"]
         nchan = self.model.current["raw"].info["nchan"]
-        fig = self.model.current["raw"].plot(events=events, n_channels=nchan,
+        fig = self.model.current["raw"].plot(events=events,
                                              title=self.model.current["name"],
-                                             show=False)
+                                             show=False, scalings='auto')
         self.model.history.append("raw.plot(n_channels={})".format(nchan))
         win = fig.canvas.manager.window
         win.setWindowTitle("Raw data")

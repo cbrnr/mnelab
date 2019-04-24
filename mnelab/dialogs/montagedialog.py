@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QListWidget,
                              QDialogButtonBox, QPushButton, QStatusBar,
-                             QToolBar)
+                             QToolBar, QFileDialog)
 from PyQt5.QtCore import pyqtSlot, Qt
 
 from mne.channels import read_montage
@@ -20,8 +20,11 @@ class MontageDialog(QDialog):
                     self.montages.item(i).setSelected(True)
         vbox.addWidget(self.montages)
         hbox = QHBoxLayout()
+        self.import_button = QPushButton("Import file")
+        self.import_button.clicked.connect(self.import_montage)
         self.view_button = QPushButton("View")
         self.view_button.clicked.connect(self.view_montage)
+        hbox.addWidget(self.import_button)
         hbox.addWidget(self.view_button)
         hbox.addStretch()
         self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
@@ -32,6 +35,7 @@ class MontageDialog(QDialog):
         self.buttonbox.rejected.connect(self.reject)
         self.montages.itemSelectionChanged.connect(self.toggle_buttons)
         self.toggle_buttons()  # initialize OK and View buttons state
+        self.montage_path = ''
 
     @pyqtSlot()
     def toggle_buttons(self):
@@ -45,7 +49,12 @@ class MontageDialog(QDialog):
             self.view_button.setEnabled(False)
 
     def view_montage(self):
-        montage = read_montage(self.montages.selectedItems()[0].data(0))
+        kind = self.montages.selectedItems()[0].data(0)
+        if self.montage_path == '':
+            montage = read_montage(kind)
+        else:
+            from ..utils.montage import xyz_to_montage
+            montage = xyz_to_montage(self.montage_path, kind)
         fig = montage.plot(show_names=True, show=False)
         win = fig.canvas.manager.window
         win.setWindowModality(Qt.WindowModal)
@@ -53,3 +62,8 @@ class MontageDialog(QDialog):
         win.findChild(QStatusBar).hide()
         win.findChild(QToolBar).hide()
         fig.show()
+
+    def import_montage(self):
+        self.montage_path, _ = QFileDialog.getOpenFileName(
+                                    self, "Choose montage path", '',
+                                    "3D Coordinates (*.xyz)")
