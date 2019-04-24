@@ -37,7 +37,10 @@ setup(
     keywords='EEG MEG MNE GUI electrophysiology',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
     python_requires='>=3.5, <4',
-    install_requires=['numpy', 'scipy', 'matplotlib', 'PyQt5'],
+    install_requires=['mne', 'numpy', 'scipy', 'matplotlib', 'PyQt5'],
+    extras_require={"EDF export": ["pyedflib"],
+                    "PICARD": ["python-picard"],
+                    "FastICA": ["scikit-learn"]},
     entry_points={  # TODO: this won't work yet!
         'gui_scripts': [
             'mnelab=mnelab:main',
