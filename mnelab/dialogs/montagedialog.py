@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QListWidget,
                              QDialogButtonBox, QPushButton, QStatusBar,
-                             QToolBar, QFileDialog)
+                             QToolBar, QFileDialog, QLabel)
 from PyQt5.QtCore import pyqtSlot, Qt
 
 from mne.channels import read_montage
@@ -19,6 +19,8 @@ class MontageDialog(QDialog):
                 if self.montages.item(i).data(0) == selected:
                     self.montages.item(i).setSelected(True)
         vbox.addWidget(self.montages)
+        self.imported = QLabel("No file imported... Using builtin montages")
+        vbox.addWidget(self.imported)
         hbox = QHBoxLayout()
         self.import_button = QPushButton("Import file")
         self.import_button.clicked.connect(self.import_montage)
@@ -67,3 +69,5 @@ class MontageDialog(QDialog):
         self.montage_path, _ = QFileDialog.getOpenFileName(
                                     self, "Choose montage path", '',
                                     "3D Coordinates (*.xyz)")
+        self.imported.setText('File succesfully imported from : \n'
+                              + self.montage_path)
