@@ -14,9 +14,9 @@ jobs:
       Python37:
         python.version: '3.7'
   steps:
-   - script: sudo apt install libxkbcommon-x11-0
-     condition: eq( variables['Agent.OS'], 'Linux' )
-     displayName: 'Install libxkbcommon-x11-0'
+  - script: sudo apt install libxkbcommon-x11-0
+    condition: eq( variables['Agent.OS'], 'Linux' )
+    displayName: 'Install libxkbcommon-x11-0'
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '$(python.version)'
