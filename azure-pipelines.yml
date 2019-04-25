@@ -3,7 +3,7 @@
 jobs:
 - job: Linux
   pool:
-    vmImage: 'Ubuntu-16.04'
+    vmImage: 'macOS-10.14'  # 'ubuntu-16.04'
   strategy:
     maxParallel: 2
     matrix:
@@ -11,9 +11,11 @@ jobs:
         python.version: '3.6'
       Python37:
         python.version: '3.7'
+  variables:
+    QT_DEBUG_PLUGINS: 1
   steps:
-  - script: sudo apt install libxkbcommon-x11-0
-    displayName: 'Install libxkbcommon-x11-0'
+  # - script: sudo apt install libxkbcommon-x11-0
+  #   displayName: 'Install libxkbcommon-x11-0'
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '$(python.version)'
