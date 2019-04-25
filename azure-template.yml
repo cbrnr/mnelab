@@ -1,0 +1,31 @@
+parameters:
+  name: ''
+  vmImage: ''
+
+jobs:
+- job: ${{ parameters.name }}
+  pool:
+    vmImage: ${{ parameters.vmImage }}
+  strategy:
+    maxParallel: 2
+    matrix:
+      Python36:
+        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
+  steps:
+  # - script: sudo apt install libxkbcommon-x11-0
+  #   displayName: 'Install libxkbcommon-x11-0'
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+    displayName: 'Use Python $(python.version)'
+  - script: |
+      python -m pip install --upgrade pip setuptools wheel
+      pip install -r requirements.txt
+      pip install pytest pytest-azurepipelines pytest-faulthandler pytest-qt pytest-xvfb
+    displayName: 'Install dependencies'
+  - script: python setup.py develop
+    displayName: 'Install MNELAB'
+  - script: pytest -s mnelab/tests --test-run-title="Python $(python.version)"
+    displayName: 'pytest'
