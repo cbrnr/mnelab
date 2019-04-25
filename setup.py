@@ -41,9 +41,9 @@ setup(
     extras_require={"EDF export": ["pyedflib"],
                     "PICARD": ["python-picard"],
                     "FastICA": ["scikit-learn"]},
-    entry_points={  # TODO: this won't work yet!
+    entry_points={
         'gui_scripts': [
-            'mnelab=mnelab:main',
+            'mnelab=mnelab.__main__:main',
         ],
     }
 )

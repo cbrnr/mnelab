@@ -6,7 +6,7 @@ import multiprocessing as mp
 from mnelab import MainWindow, Model
 
 
-if __name__ == "__main__":
+def main():
     mp.set_start_method("spawn")  # required for Linux/macOS
     matplotlib.use("Qt5Agg")
     app = QApplication(sys.argv)
@@ -20,3 +20,7 @@ if __name__ == "__main__":
             model.load(f)
     view.show()
     sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    main()
