@@ -9,7 +9,7 @@ from scipy.io import savemat
 import mne
 
 
-SUPPORTED_FORMATS = "*.bdf *.edf *.fif *.vhdr *.set"
+SUPPORTED_FORMATS = "*.bdf *.edf *.gdf *.fif *.vhdr *.set"
 SUPPORTED_EXPORT_FORMATS = "*.fif *.set"
 try:
     import pyedflib
@@ -112,7 +112,7 @@ class Model:
         if ext.lower() not in SUPPORTED_FORMATS:
             raise ValueError(f"File format {ftype} is not supported.")
 
-        if ext.lower() in [".edf", ".bdf"]:
+        if ext.lower() in [".edf", ".bdf", ".gdf"]:
             raw = mne.io.read_raw_edf(fname, preload=True)
             self.history.append(f"raw = mne.io.read_raw_edf('{fname}', "
                                 f"preload=True)")
