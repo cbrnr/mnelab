@@ -443,13 +443,7 @@ class MainWindow(QMainWindow):
             calc = CalcDialog(self, "Calculating ICA", "Calculating ICA.")
             method = dialog.method.currentText()
             exclude_bad_segments = dialog.exclude_bad_segments.isChecked()
-            fit_params = {}
-            if not dialog.extended.isHidden():
-                fit_params["extended"] = dialog.extended.isChecked()
-            if not dialog.ortho.isHidden():
-                fit_params["ortho"] = dialog.ortho.isChecked()
-            ica = mne.preprocessing.ICA(method=dialog.methods[method],
-                                        fit_params=fit_params)
+            ica = mne.preprocessing.ICA(method=dialog.methods[method])
             pool = mp.Pool(1)
             kwds = {"reject_by_annotation": exclude_bad_segments}
             res = pool.apply_async(func=ica.fit,

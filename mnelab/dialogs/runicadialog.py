@@ -25,12 +25,6 @@ class RunICADialog(QDialog):
         self.method.setMinimumContentsLength(min_len)
         grid.addWidget(self.method, 0, 1)
 
-        self.ortho_label = QLabel("Orthogonal:")
-        grid.addWidget(self.ortho_label, 2, 0)
-        self.ortho = QCheckBox()
-        self.ortho.setChecked(False)
-        grid.addWidget(self.ortho, 1, 1)
-
         self.toggle_options()
         self.method.currentIndexChanged.connect(self.toggle_options)
 
@@ -40,7 +34,7 @@ class RunICADialog(QDialog):
         self.n_components.setMaximum(nchan)
         self.n_components.setValue(nchan)
         self.n_components.setAlignment(Qt.AlignRight)
-        grid.addWidget(self.n_components, 2, 1)
+        grid.addWidget(self.n_components, 3, 1)
         grid.addWidget(QLabel("Exclude bad segments:"), 4, 0)
         self.exclude_bad_segments = QCheckBox()
         self.exclude_bad_segments.setChecked(True)
@@ -55,6 +49,8 @@ class RunICADialog(QDialog):
 
     @pyqtSlot()
     def toggle_options(self):
+        return
+'''
         """Toggle extended options.
         """
         if self.method.currentText() == "Picard":
@@ -72,3 +68,4 @@ class RunICADialog(QDialog):
             self.extended.hide()
             self.ortho_label.hide()
             self.ortho.hide()
+'''
