@@ -11,7 +11,7 @@ class RunICADialog(QDialog):
         grid = QGridLayout()
         grid.addWidget(QLabel("Method:"), 0, 0)
         self.method = QComboBox()
-        self.methods = {"Infomax": "infomax"}
+        self.methods = {"Infomax": "infomax", "Extended-infomax": "extended-infomax"}
         if have_sklearn:
             self.methods["FastICA"] = "fastica"
         if have_picard:
@@ -25,17 +25,11 @@ class RunICADialog(QDialog):
         self.method.setMinimumContentsLength(min_len)
         grid.addWidget(self.method, 0, 1)
 
-        self.extended_label = QLabel("Extended:")
-        grid.addWidget(self.extended_label, 1, 0)
-        self.extended = QCheckBox()
-        self.extended.setChecked(True)
-        grid.addWidget(self.extended, 1, 1)
-
         self.ortho_label = QLabel("Orthogonal:")
         grid.addWidget(self.ortho_label, 2, 0)
         self.ortho = QCheckBox()
         self.ortho.setChecked(False)
-        grid.addWidget(self.ortho, 2, 1)
+        grid.addWidget(self.ortho, 1, 1)
 
         self.toggle_options()
         self.method.currentIndexChanged.connect(self.toggle_options)
@@ -46,7 +40,7 @@ class RunICADialog(QDialog):
         self.n_components.setMaximum(nchan)
         self.n_components.setValue(nchan)
         self.n_components.setAlignment(Qt.AlignRight)
-        grid.addWidget(self.n_components, 3, 1)
+        grid.addWidget(self.n_components, 2, 1)
         grid.addWidget(QLabel("Exclude bad segments:"), 4, 0)
         self.exclude_bad_segments = QCheckBox()
         self.exclude_bad_segments.setChecked(True)
