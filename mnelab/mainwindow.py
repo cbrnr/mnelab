@@ -271,6 +271,7 @@ class MainWindow(QMainWindow):
             annot = self.model.current["raw"].annotations is not None
             self.actions["export_annotations"].setEnabled(enabled and annot)
             montage = bool(self.model.current["montage"])
+            self.actions["run_ica"].setEnabled(enabled and montage)
             self.actions["plot_montage"].setEnabled(enabled and montage)
             ica = bool(self.model.current["ica"])
             self.actions["export_ica"].setEnabled(enabled and ica)
