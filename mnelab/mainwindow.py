@@ -179,6 +179,10 @@ class MainWindow(QMainWindow):
         self.actions["plot_ica_components"] = plot_menu.addAction(
             "ICA components...", self.plot_ica_components)
 
+        self.actions["plot_ica_sources"] = plot_menu.addAction(
+            "ICA sources...", self.plot_ica_sources)
+
+
         tools_menu = self.menuBar().addMenu("&Tools")
         self.actions["filter"] = tools_menu.addAction("&Filter data...",
                                                       self.filter_data)
@@ -269,6 +273,8 @@ class MainWindow(QMainWindow):
             ica = bool(self.model.current["ica"])
             self.actions["export_ica"].setEnabled(enabled and ica)
             self.actions["plot_ica_components"].setEnabled(enabled and ica and
+                                                           montage)
+            self.actions["plot_ica_sources"].setEnabled(enabled and ica and
                                                            montage)
             self.actions["events"].setEnabled(enabled and events)
 
@@ -410,6 +416,9 @@ class MainWindow(QMainWindow):
 
     def plot_ica_components(self):
         self.model.current["ica"].plot_components(inst=self.model.current["raw"])
+
+    def plot_ica_sources(self):
+        self.model.current["ica"].plot_sources(inst=self.model.current["raw"])
 
     def run_ica(self):
         """Run ICA calculation."""
