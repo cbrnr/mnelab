@@ -2,6 +2,7 @@ import multiprocessing as mp
 from sys import version_info
 
 import mne
+
 from PyQt5.QtCore import (pyqtSlot, QStringListModel, QModelIndex, QSettings,
                           QEvent, Qt, QObject)
 from PyQt5.QtGui import QKeySequence, QDropEvent
@@ -9,6 +10,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                              QMessageBox, QListView, QAction, QLabel, QFrame,
                              QStatusBar, QToolBar)
 from mne.io.pick import channel_type
+from mne import pick_types
 
 from .dialogs.filterdialog import FilterDialog
 from .dialogs.findeventsdialog import FindEventsDialog
@@ -427,9 +429,7 @@ class MainWindow(QMainWindow):
             import mne.preprocessing.ICA
         except ImportError:
             have_picard = False
-            print("no picardo")
-        except Exception as e:
-            print(e)
+            import mne
         else:
             have_picard = True
 
@@ -439,7 +439,9 @@ class MainWindow(QMainWindow):
             have_sklearn = False
         else:
             have_sklearn = True
-        nchan = self.model.current["raw"].info["nchan"]
+
+        nchan = len(pick_types(self.model.current["raw"].info,
+                                   meg=True, eeg=True, exclude=[]))
         dialog = RunICADialog(self, nchan, have_picard, have_sklearn)
 
         if dialog.exec_():
@@ -458,8 +460,12 @@ class MainWindow(QMainWindow):
                                             random_state=random_state,
                                             max_iter=max_iter)
             else:
-                ica = mne.preprocessing.ICA(method=dialog.methods[method])
-            ica.fit(self.model.current["raw"])
+                max_iter = 500
+                random_state = 42
+                ica = mne.preprocessing.ICA(method=dialog.methods[method],
+                                            random_state=random_state,
+                                            max_iter=max_iter)
+
             pool = mp.Pool(1)
             kwds = {"reject_by_annotation": exclude_bad_segments}
             res = pool.apply_async(func=ica.fit,

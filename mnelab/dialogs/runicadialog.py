@@ -35,7 +35,6 @@ class RunICADialog(QDialog):
         self.groupBox_advancedparameters.setTitle("Advanced parameters")
         self.gridLayout_advanced = QGridLayout(self.groupBox_advancedparameters)
 
-
         self.gridLayout_advanced.addWidget(QLabel("pca components:"),1, 0)
         self.pca_components = QSpinBox()
         self.pca_components.setMinimum(0)
@@ -70,6 +69,7 @@ class RunICADialog(QDialog):
 
 
         self.groupBox_advancedparameters.setCheckable(True)
+        self.groupBox_advancedparameters.setChecked(False)
         self.groupBox_advancedparameters.toggled.connect(self.toggle_advanced_options)
 
         grid.addWidget(self.groupBox_advancedparameters, 2, 0)
