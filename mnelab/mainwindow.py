@@ -22,6 +22,8 @@ from .dialogs.runicadialog import RunICADialog
 from .dialogs.calcdialog import CalcDialog
 from .dialogs.eventsdialog import EventsDialog
 from .widgets.infowidget import InfoWidget
+
+from .utils.ica_utils import plot_correlation_matrix as plot_cormat
 from .model import (SUPPORTED_FORMATS, SUPPORTED_EXPORT_FORMATS,
                     LabelsNotFoundError, InvalidAnnotationsError)
 
@@ -184,6 +186,9 @@ class MainWindow(QMainWindow):
         self.actions["plot_ica_sources"] = plot_menu.addAction(
             "ICA sources...", self.plot_ica_sources)
 
+        self.actions["plot_correlation_matrix"] = plot_menu.addAction(
+            "Correlation matrix...", self.plot_correlation_matrix)
+
 
         tools_menu = self.menuBar().addMenu("&Tools")
         self.actions["filter"] = tools_menu.addAction("&Filter data...",
@@ -279,6 +284,8 @@ class MainWindow(QMainWindow):
                                                            montage)
             self.actions["plot_ica_sources"].setEnabled(enabled and ica and
                                                            montage)
+            self.actions["plot_correlation_matrix"].setEnabled(enabled and ica
+                                                               and montage)
             self.actions["events"].setEnabled(enabled and events)
 
         # add to recent files
@@ -422,6 +429,9 @@ class MainWindow(QMainWindow):
 
     def plot_ica_sources(self):
         self.model.current["ica"].plot_sources(inst=self.model.current["raw"])
+
+    def plot_correlation_matrix(self):
+        plot_cormat(self.model.current["raw"], self.model.current["ica"])
 
     def run_ica(self):
         """Run ICA calculation."""
