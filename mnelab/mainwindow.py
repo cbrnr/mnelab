@@ -424,8 +424,12 @@ class MainWindow(QMainWindow):
         """Run ICA calculation."""
         try:
             import picard
+            import mne.preprocessing.ICA
         except ImportError:
             have_picard = False
+            print("no picardo")
+        except Exception as e:
+            print(e)
         else:
             have_picard = True
 
@@ -435,15 +439,27 @@ class MainWindow(QMainWindow):
             have_sklearn = False
         else:
             have_sklearn = True
-
-        dialog = RunICADialog(self, self.model.current["raw"].info["nchan"],
-                              have_picard, have_sklearn)
+        nchan = self.model.current["raw"].info["nchan"]
+        dialog = RunICADialog(self, nchan, have_picard, have_sklearn)
 
         if dialog.exec_():
             calc = CalcDialog(self, "Calculating ICA", "Calculating ICA.")
             method = dialog.method.currentText()
             exclude_bad_segments = dialog.exclude_bad_segments.isChecked()
-            ica = mne.preprocessing.ICA(method=dialog.methods[method])
+
+            if dialog.groupBox_advancedparameters.isChecked() :
+                max_pca_components = int(dialog.max_pca_components.text())
+                n_pca_components = int(dialog.pca_components.text())
+                random_state = int(dialog.random_seed.text())
+                max_iter = int(dialog.max_iter.text())
+                ica = mne.preprocessing.ICA(method=dialog.methods[method],
+                                            max_pca_components=max_pca_components,
+                                            n_pca_components=n_pca_components,
+                                            random_state=random_state,
+                                            max_iter=max_iter)
+            else:
+                ica = mne.preprocessing.ICA(method=dialog.methods[method])
+            ica.fit(self.model.current["raw"])
             pool = mp.Pool(1)
             kwds = {"reject_by_annotation": exclude_bad_segments}
             res = pool.apply_async(func=ica.fit,
