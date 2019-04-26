@@ -409,7 +409,7 @@ class MainWindow(QMainWindow):
         fig.show()
 
     def plot_ica_components(self):
-        self.model.current["ica"].plot_components()
+        self.model.current["ica"].plot_components(inst=self.model.current["raw"])
 
     def run_ica(self):
         """Run ICA calculation."""
