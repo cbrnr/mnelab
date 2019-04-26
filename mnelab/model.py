@@ -9,7 +9,7 @@ from scipy.io import savemat
 import mne
 
 
-SUPPORTED_FORMATS = "*.bdf *.edf *.gdf *.fif *.vhdr *.set"
+SUPPORTED_FORMATS = "*.bdf *.edf *.gdf *.fif *.vhdr *.set *.xdf"
 SUPPORTED_EXPORT_FORMATS = "*.fif *.set"
 try:
     import pyedflib
@@ -128,6 +128,8 @@ class Model:
             raw = mne.io.read_raw_eeglab(fname, preload=True)
             self.history.append(f"raw = mne.io.read_raw_eeglab('{fname}', "
                                 f"preload=True)")
+        elif ext in ["*.xdf"]:
+            pass
 
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
                                      ftype=ftype, raw=raw))

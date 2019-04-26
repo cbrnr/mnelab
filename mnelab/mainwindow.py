@@ -95,9 +95,7 @@ class MainWindow(QMainWindow):
         # initialize menus
         file_menu = self.menuBar().addMenu("&File")
         self.actions["open_file"] = file_menu.addAction(
-            "&Open...",
-            lambda: self.open_file(model.load, "Open raw", SUPPORTED_FORMATS),
-            QKeySequence.Open)
+            "&Open...", self.open_raw, QKeySequence.Open)
         self.recent_menu = file_menu.addMenu("Open recent")
         self.recent_menu.aboutToShow.connect(self._update_recent_menu)
         self.recent_menu.triggered.connect(self._load_recent)
@@ -275,6 +273,13 @@ class MainWindow(QMainWindow):
         # add to recent files
         if len(self.model) > 0:
             self._add_recent(self.model.current["fname"])
+
+    def open_raw(self):
+        """Open raw file."""
+        fname = QFileDialog.getOpenFileName(self, "Open raw",
+                                            filter=SUPPORTED_FORMATS)[0]
+        if fname:
+            self.model.load(fname)
 
     def open_file(self, f, text, ffilter):
         """Open file."""
