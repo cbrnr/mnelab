@@ -268,6 +268,7 @@ class MainWindow(QMainWindow):
             self.actions["export_annotations"].setEnabled(enabled and annot)
             montage = bool(self.model.current["montage"])
             self.actions["plot_montage"].setEnabled(enabled and montage)
+            self.actions["interpolate_bads"].setEnabled(enabled and montage)
             ica = bool(self.model.current["ica"])
             self.actions["export_ica"].setEnabled(enabled and ica)
             self.actions["plot_ica_components"].setEnabled(enabled and ica and
