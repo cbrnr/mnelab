@@ -1,4 +1,4 @@
-def xyz_to_montage(path, kind):
+def xyz_to_montage(path, kind=''):
     """Reads and convert xyz positions to a mne montage type"""
     from mne.channels import Montage
     import numpy as np

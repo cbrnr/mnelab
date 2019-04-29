@@ -36,14 +36,15 @@ class MontageDialog(QDialog):
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
         self.montages.itemSelectionChanged.connect(self.toggle_buttons)
-        self.toggle_buttons()  # initialize OK and View buttons state
+        self.is_imported = False
         self.montage_path = ''
+        self.toggle_buttons()  # initialize OK and View buttons state
 
     @pyqtSlot()
     def toggle_buttons(self):
         """Toggle OK and View buttons.
         """
-        if self.montages.selectedItems():
+        if self.montages.selectedItems() or self.is_imported:
             self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(True)
             self.view_button.setEnabled(True)
         else:
@@ -51,12 +52,12 @@ class MontageDialog(QDialog):
             self.view_button.setEnabled(False)
 
     def view_montage(self):
-        kind = self.montages.selectedItems()[0].data(0)
         if self.montage_path == '':
+            kind = self.montages.selectedItems()[0].data(0)
             montage = read_montage(kind)
         else:
             from ..utils.montage import xyz_to_montage
-            montage = xyz_to_montage(self.montage_path, kind)
+            montage = xyz_to_montage(self.montage_path)
         fig = montage.plot(show_names=True, show=False)
         win = fig.canvas.manager.window
         win.setWindowModality(Qt.WindowModal)
@@ -71,3 +72,5 @@ class MontageDialog(QDialog):
                                     "3D Coordinates (*.xyz)")
         self.imported.setText('File succesfully imported from : \n'
                               + self.montage_path)
+        self.is_imported = True
+        self.toggle_buttons()
