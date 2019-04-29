@@ -22,8 +22,6 @@ from .dialogs.eventsdialog import EventsDialog
 from .widgets.infowidget import InfoWidget
 from .model import (SUPPORTED_FORMATS, SUPPORTED_EXPORT_FORMATS,
                     LabelsNotFoundError, InvalidAnnotationsError)
-from .utils.montage import eeg_to_montage
-
 
 __version__ = "0.1.0"
 
@@ -492,12 +490,8 @@ class MainWindow(QMainWindow):
 
     def interpolate_bads(self):
         """Interpolate bad channels"""
-        if eeg_to_montage(self.model.current['raw']) is not None:
-            self.auto_duplicate()
-            self.model.current['raw'].interpolate_bads(reset_bads=True)
-            self.model.current["name"] += " (Interpolated)"
-        else:
-            print('Montage first please')
+        self.auto_duplicate()
+        self.model.interpolate_bads()
 
     def set_reference(self):
         """Set reference."""

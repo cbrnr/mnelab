@@ -7,7 +7,7 @@ import numpy as np
 from numpy.core.records import fromarrays
 from scipy.io import savemat
 import mne
-
+from .utils.montage import eeg_to_montage
 
 
 SUPPORTED_FORMATS = "*.bdf *.edf *.fif *.vhdr *.set *.sef"
@@ -428,6 +428,14 @@ class Model:
         self.current["raw"].filter(low, high)
         self.current["name"] += " ({}-{} Hz)".format(low, high)
         self.history.append("raw.filter({}, {})".format(low, high))
+
+    @data_changed
+    def interpolate_bads(self):
+        if eeg_to_montage(self.current['raw']) is not None:
+            self.current['raw'].interpolate_bads(reset_bads=True)
+            self.current["name"] += " (Interpolated)"
+        else:
+            print('Montage first please')
 
     @data_changed
     def set_reference(self, ref):
