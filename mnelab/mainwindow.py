@@ -197,6 +197,8 @@ class MainWindow(QMainWindow):
                                                            self.find_events)
         self.actions["run_ica"] = tools_menu.addAction("Run &ICA...",
                                                        self.run_ica)
+        self.actions["apply_ica"] = tools_menu.addAction("Apply &ICA...",
+                                                       self.apply_ica)
 
         view_menu = self.menuBar().addMenu("&View")
         self.actions["statusbar"] = view_menu.addAction("Statusbar",
@@ -286,6 +288,7 @@ class MainWindow(QMainWindow):
                                                            montage)
             self.actions["plot_correlation_matrix"].setEnabled(enabled and ica
                                                                and montage)
+            self.actions["apply_ica"].setEnabled(enabled and ica and montage)
             self.actions["events"].setEnabled(enabled and events)
 
         # add to recent files
@@ -461,19 +464,23 @@ class MainWindow(QMainWindow):
             exclude_bad_segments = dialog.exclude_bad_segments.isChecked()
 
             if dialog.groupBox_advancedparameters.isChecked() :
+                n_components = int(dialog.n_components.text())
                 max_pca_components = int(dialog.max_pca_components.text())
                 n_pca_components = int(dialog.pca_components.text())
                 random_state = int(dialog.random_seed.text())
                 max_iter = int(dialog.max_iter.text())
                 ica = mne.preprocessing.ICA(method=dialog.methods[method],
+                                            n_components=n_components,
                                             max_pca_components=max_pca_components,
                                             n_pca_components=n_pca_components,
                                             random_state=random_state,
                                             max_iter=max_iter)
             else:
+                n_components = int(dialog.n_components.text())
                 max_iter = 500
                 random_state = 42
                 ica = mne.preprocessing.ICA(method=dialog.methods[method],
+                                            n_components=n_components,
                                             random_state=random_state,
                                             max_iter=max_iter)
 
@@ -487,6 +494,11 @@ class MainWindow(QMainWindow):
             else:
                 self.model.current["ica"] = res.get(timeout=1)
                 self.data_changed()
+
+    def apply_ica(self):
+        """Set reference."""
+        self.auto_duplicate()
+        self.model.apply_ica()
 
     def filter_data(self):
         """Filter data."""

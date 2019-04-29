@@ -130,7 +130,7 @@ class Model:
                                 f"preload=True)")
 
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
-                                     ftype=ftype, raw=raw))
+                                     ftype=ftype, raw=raw, isApplied=False))
 
     @data_changed
     def find_events(self, stim_channel, consecutive=True, initial_event=True,
@@ -389,7 +389,7 @@ class Model:
                 "Annotations": annots,
                 "Reference": reference if reference else "-",
                 "Montage": montage if montage is not None else "-",
-                "ICA": ica}
+                "ICA": ica + " applied = " + str(self.current["isApplied"])}
 
     @data_changed
     def drop_channels(self, drops):
@@ -415,6 +415,16 @@ class Model:
         self.current["raw"].filter(low, high)
         self.current["name"] += " ({}-{} Hz)".format(low, high)
         self.history.append("raw.filter({}, {})".format(low, high))
+
+
+    @data_changed
+    def apply_ica(self):
+        print(self.current["ica"].ch_names)
+        print(self.current["raw"].info["ch_names"])
+        self.current["ica"].apply(self.current["raw"])
+        self.current["isApplied"] = True
+        self.current["name"] += " applied_ica"
+
 
     @data_changed
     def set_reference(self, ref):
