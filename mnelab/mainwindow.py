@@ -492,8 +492,8 @@ class MainWindow(QMainWindow):
             if not calc.exec_():
                 pool.terminate()
             else:
+                self.auto_duplicate()
                 self.model.current["ica"] = res.get(timeout=1)
-                self.data_changed()
 
     def apply_ica(self):
         """Set reference."""
