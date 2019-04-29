@@ -9,6 +9,7 @@ from scipy.io import savemat
 import mne
 
 
+
 SUPPORTED_FORMATS = "*.bdf *.edf *.fif *.vhdr *.set *.sef"
 SUPPORTED_EXPORT_FORMATS = "*.fif *.set"
 try:
@@ -109,6 +110,7 @@ class Model:
         """Load data set from file."""
         name, ext = splitext(split(fname)[-1])
         ftype = ext[1:].upper()
+        montage = None
         if ext.lower() not in SUPPORTED_FORMATS:
             raise ValueError(f"File format {ftype} is not supported.")
 
@@ -117,7 +119,10 @@ class Model:
             self.history.append(f"raw = mne.io.read_raw_edf('{fname}', "
                                 f"preload=True)")
         elif ext in [".fif"]:
+            from .utils.montage import eeg_to_montage
+
             raw = mne.io.read_raw_fif(fname, preload=True)
+            montage = eeg_to_montage(raw)
             self.history.append(f"raw = mne.io.read_raw_fif('{fname}', "
                                 f"preload=True)")
         elif ext in [".vhdr"]:
@@ -137,7 +142,7 @@ class Model:
                                 f"preload=True")
 
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
-                                     ftype=ftype, raw=raw))
+                                     ftype=ftype, raw=raw, montage=montage))
 
     @data_changed
     def find_events(self, stim_channel, consecutive=True, initial_event=True,

@@ -22,7 +22,7 @@ def eeg_to_montage(eeg):
     if not isnan(pos).all():
         selection = [i for i in range(eeg.info['nchan'])]
         montage = Montage(pos, eeg.info['ch_names'],
-                          selection=selection, kind='custom')
+                          selection=selection, kind='')
         return montage
     else:
         return None
