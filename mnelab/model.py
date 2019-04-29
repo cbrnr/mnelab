@@ -120,7 +120,6 @@ class Model:
                                 f"preload=True)")
         elif ext in [".fif"]:
             from .utils.montage import eeg_to_montage
-
             raw = mne.io.read_raw_fif(fname, preload=True)
             montage = eeg_to_montage(raw)
             self.history.append(f"raw = mne.io.read_raw_fif('{fname}', "
@@ -302,6 +301,29 @@ class Model:
             if self.current["events"] is not None:
                 events = np.row_stack((self.current["events"], events))
                 events = np.unique(events, axis=0)
+            self.current["events"] = events
+
+        if fname.endswith('.mrk'):
+            beg, end, desc = [], [], []
+            desc_str = []
+            with open(fname) as f:
+                f.readline()
+                for line in f:
+                    line = line.replace(' ', '')
+                    line = line.replace('"', '')
+                    line = line.replace('\n', '')
+                    b, e, d = tuple(line.split("\t"))
+                    beg.append(int(b))
+                    end.append(int(e))
+                    if d not in desc_str:
+                        desc_str.append(d)
+                    desc.append(desc_str.index(d))
+            events = np.column_stack((beg, desc))
+            events = np.insert(events, 1, 0, axis=1)
+            if self.current["events"] is not None:
+                events = np.row_stack((self.current["events"], events))
+                events = np.unique(events, axis=0)
+            self.current["events"] = events
 
     @data_changed
     def import_annotations(self, fname):
