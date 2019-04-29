@@ -419,8 +419,6 @@ class Model:
 
     @data_changed
     def apply_ica(self):
-        print(self.current["ica"].ch_names)
-        print(self.current["raw"].info["ch_names"])
         self.current["ica"].apply(self.current["raw"])
         self.current["isApplied"] = True
         self.current["name"] += " applied_ica"

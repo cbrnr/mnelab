@@ -14,6 +14,7 @@ from matplotlib.gridspec import GridSpec
 
 def plot_correlation_matrix(raw, ica):
     "Plot correlation_matrix"
+    raw = raw.copy()
     ch_names = raw.info["ch_names"]
     path = os.path.join('.', 'mnelab','ica_templates', 'template-ica.fif')
     ica_template = mne.preprocessing.read_ica(path)

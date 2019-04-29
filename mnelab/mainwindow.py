@@ -434,6 +434,7 @@ class MainWindow(QMainWindow):
         self.model.current["ica"].plot_sources(inst=self.model.current["raw"])
 
     def plot_correlation_matrix(self):
+        print(self.model.current["raw"].info["ch_names"])
         plot_cormat(self.model.current["raw"], self.model.current["ica"])
 
     def run_ica(self):
