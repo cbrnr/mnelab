@@ -24,6 +24,7 @@ def plot_correlation_matrix(raw, ica):
     df = compute_correlation(templates, components_ics)
     raw.rename_channels(tolow)
     raw.reorder_channels(common)
+    ch_names = raw.info["ch_names"]
     pos = _find_topomap_coords(raw.info, picks=[i for i in range(len(ch_names)) if ch_names[i].lower() in common])
     quality = len(common) / len(ch_names)
     plot_correlation(df, templates, pos, quality)
