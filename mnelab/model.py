@@ -460,6 +460,17 @@ class Model:
             print('Montage first please')
 
     @data_changed
+    def add_events(self):
+        from mne import Annotations
+        events = self.current['events']
+        onsets = events[:, 0] / self.current['raw'].info['sfreq']
+        durations = np.zeros(events.shape[0])
+        desc = np.array([str(e) for e in events[:, 1]])
+        annot = Annotations(onsets, durations, desc)
+        self.current['raw'].set_annotations(annot)
+        self.current["name"] += " (events added)"
+
+    @data_changed
     def set_reference(self, ref):
         self.current["reference"] = ref
         if ref == "average":

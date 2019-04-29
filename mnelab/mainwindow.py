@@ -187,6 +187,9 @@ class MainWindow(QMainWindow):
         self.actions["interpolate_bads"] = tools_menu.addAction(
             "Interpolate bad channels...", self.interpolate_bads)
 
+        self.actions["add_events"] = tools_menu.addAction(
+            "Setup events as stimulation channels...", self.add_events)
+
         view_menu = self.menuBar().addMenu("&View")
         self.actions["statusbar"] = view_menu.addAction("Statusbar",
                                                         self._toggle_statusbar)
@@ -492,6 +495,11 @@ class MainWindow(QMainWindow):
         """Interpolate bad channels"""
         self.auto_duplicate()
         self.model.interpolate_bads()
+
+    def add_events(self):
+        """Setup the events in the data as a STIM channel"""
+        self.auto_duplicate()
+        self.model.add_events()
 
     def set_reference(self):
         """Set reference."""
