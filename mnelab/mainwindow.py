@@ -2,6 +2,7 @@ import multiprocessing as mp
 from sys import version_info
 
 import mne
+
 from PyQt5.QtCore import (pyqtSlot, QStringListModel, QModelIndex, QSettings,
                           QEvent, Qt, QObject)
 from PyQt5.QtGui import QKeySequence, QDropEvent
@@ -9,6 +10,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                              QMessageBox, QListView, QAction, QLabel, QFrame,
                              QStatusBar, QToolBar)
 from mne.io.pick import channel_type
+from mne import pick_types
 
 from .dialogs.filterdialog import FilterDialog
 from .dialogs.findeventsdialog import FindEventsDialog
@@ -20,6 +22,8 @@ from .dialogs.runicadialog import RunICADialog
 from .dialogs.calcdialog import CalcDialog
 from .dialogs.eventsdialog import EventsDialog
 from .widgets.infowidget import InfoWidget
+
+from .utils.ica_utils import plot_correlation_matrix as plot_cormat
 from .model import (SUPPORTED_FORMATS, SUPPORTED_EXPORT_FORMATS,
                     LabelsNotFoundError, InvalidAnnotationsError)
 
@@ -177,6 +181,13 @@ class MainWindow(QMainWindow):
         self.actions["plot_ica_components"] = plot_menu.addAction(
             "ICA components...", self.plot_ica_components)
 
+        self.actions["plot_ica_sources"] = plot_menu.addAction(
+            "ICA sources...", self.plot_ica_sources)
+
+        self.actions["plot_correlation_matrix"] = plot_menu.addAction(
+            "Correlation matrix...", self.plot_correlation_matrix)
+
+
         tools_menu = self.menuBar().addMenu("&Tools")
         self.actions["filter"] = tools_menu.addAction("&Filter data...",
                                                       self.filter_data)
@@ -184,6 +195,10 @@ class MainWindow(QMainWindow):
                                                            self.find_events)
         self.actions["run_ica"] = tools_menu.addAction("Run &ICA...",
                                                        self.run_ica)
+        
+        self.actions["apply_ica"] = tools_menu.addAction("Apply &ICA...",
+                                                       self.apply_ica)
+        
         self.actions["interpolate_bads"] = tools_menu.addAction(
             "Interpolate bad channels...", self.interpolate_bads)
 
@@ -265,12 +280,18 @@ class MainWindow(QMainWindow):
             annot = self.model.current["raw"].annotations is not None
             self.actions["export_annotations"].setEnabled(enabled and annot)
             montage = bool(self.model.current["montage"])
+            self.actions["run_ica"].setEnabled(enabled and montage)
             self.actions["plot_montage"].setEnabled(enabled and montage)
             self.actions["interpolate_bads"].setEnabled(enabled and montage)
             ica = bool(self.model.current["ica"])
             self.actions["export_ica"].setEnabled(enabled and ica)
             self.actions["plot_ica_components"].setEnabled(enabled and ica and
                                                            montage)
+            self.actions["plot_ica_sources"].setEnabled(enabled and ica and
+                                                           montage)
+            self.actions["plot_correlation_matrix"].setEnabled(enabled and ica
+                                                               and montage)
+            self.actions["apply_ica"].setEnabled(enabled and ica and montage)
             self.actions["events"].setEnabled(enabled and events)
 
         # add to recent files
@@ -377,7 +398,8 @@ class MainWindow(QMainWindow):
         nchan = self.model.current["raw"].info["nchan"]
         fig = self.model.current["raw"].plot(events=events,
                                              title=self.model.current["name"],
-                                             show=False, scalings='auto')
+                                             scalings="auto",show=False)
+        
         self.model.history.append("raw.plot(n_channels={})".format(nchan))
         win = fig.canvas.manager.window
         win.setWindowTitle("Raw data")
@@ -414,14 +436,22 @@ class MainWindow(QMainWindow):
         fig.show()
 
     def plot_ica_components(self):
-        self.model.current["ica"].plot_components()
+        self.model.current["ica"].plot_components(inst=self.model.current["raw"])
+
+    def plot_ica_sources(self):
+        self.model.current["ica"].plot_sources(inst=self.model.current["raw"])
+
+    def plot_correlation_matrix(self):
+        plot_cormat(self.model.current["raw"], self.model.current["ica"])
 
     def run_ica(self):
         """Run ICA calculation."""
         try:
             import picard
+            import mne.preprocessing.ICA
         except ImportError:
             have_picard = False
+            import mne
         else:
             have_picard = True
 
@@ -432,20 +462,36 @@ class MainWindow(QMainWindow):
         else:
             have_sklearn = True
 
-        dialog = RunICADialog(self, self.model.current["raw"].info["nchan"],
-                              have_picard, have_sklearn)
+        nchan = len(pick_types(self.model.current["raw"].info,
+                                   meg=True, eeg=True, exclude=[]))
+        dialog = RunICADialog(self, nchan, have_picard, have_sklearn)
 
         if dialog.exec_():
             calc = CalcDialog(self, "Calculating ICA", "Calculating ICA.")
             method = dialog.method.currentText()
             exclude_bad_segments = dialog.exclude_bad_segments.isChecked()
-            fit_params = {}
-            if not dialog.extended.isHidden():
-                fit_params["extended"] = dialog.extended.isChecked()
-            if not dialog.ortho.isHidden():
-                fit_params["ortho"] = dialog.ortho.isChecked()
-            ica = mne.preprocessing.ICA(method=dialog.methods[method],
-                                        fit_params=fit_params)
+
+            if dialog.groupBox_advancedparameters.isChecked() :
+                n_components = int(dialog.n_components.text())
+                max_pca_components = int(dialog.max_pca_components.text())
+                n_pca_components = int(dialog.pca_components.text())
+                random_state = int(dialog.random_seed.text())
+                max_iter = int(dialog.max_iter.text())
+                ica = mne.preprocessing.ICA(method=dialog.methods[method],
+                                            n_components=n_components,
+                                            max_pca_components=max_pca_components,
+                                            n_pca_components=n_pca_components,
+                                            random_state=random_state,
+                                            max_iter=max_iter)
+            else:
+                n_components = int(dialog.n_components.text())
+                max_iter = 500
+                random_state = 42
+                ica = mne.preprocessing.ICA(method=dialog.methods[method],
+                                            n_components=n_components,
+                                            random_state=random_state,
+                                            max_iter=max_iter)
+
             pool = mp.Pool(1)
             kwds = {"reject_by_annotation": exclude_bad_segments}
             res = pool.apply_async(func=ica.fit,
@@ -454,8 +500,13 @@ class MainWindow(QMainWindow):
             if not calc.exec_():
                 pool.terminate()
             else:
+                self.auto_duplicate()
                 self.model.current["ica"] = res.get(timeout=1)
-                self.data_changed()
+
+    def apply_ica(self):
+        """Set reference."""
+        self.auto_duplicate()
+        self.model.apply_ica()
 
     def filter_data(self):
         """Filter data."""
