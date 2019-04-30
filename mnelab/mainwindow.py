@@ -27,7 +27,6 @@ from .utils.ica_utils import plot_correlation_matrix as plot_cormat
 from .model import (SUPPORTED_FORMATS, SUPPORTED_EXPORT_FORMATS,
                     LabelsNotFoundError, InvalidAnnotationsError)
 
-
 __version__ = "0.1.0"
 
 MAX_RECENT = 6  # maximum number of recent files
@@ -70,7 +69,6 @@ class MainWindow(QMainWindow):
     """MNELAB main window."""
     def __init__(self, model):
         """Initialize MNELAB main window.
-
         Parameters
         ----------
         model : mnelab.model.Model instance
@@ -197,8 +195,12 @@ class MainWindow(QMainWindow):
                                                            self.find_events)
         self.actions["run_ica"] = tools_menu.addAction("Run &ICA...",
                                                        self.run_ica)
+        
         self.actions["apply_ica"] = tools_menu.addAction("Apply &ICA...",
                                                        self.apply_ica)
+        
+        self.actions["interpolate_bads"] = tools_menu.addAction(
+            "Interpolate bad channels...", self.interpolate_bads)
 
         view_menu = self.menuBar().addMenu("&View")
         self.actions["statusbar"] = view_menu.addAction("Statusbar",
@@ -280,6 +282,7 @@ class MainWindow(QMainWindow):
             montage = bool(self.model.current["montage"])
             self.actions["run_ica"].setEnabled(enabled and montage)
             self.actions["plot_montage"].setEnabled(enabled and montage)
+            self.actions["interpolate_bads"].setEnabled(enabled and montage)
             ica = bool(self.model.current["ica"])
             self.actions["export_ica"].setEnabled(enabled and ica)
             self.actions["plot_ica_components"].setEnabled(enabled and ica and
@@ -367,12 +370,16 @@ class MainWindow(QMainWindow):
         dialog = MontageDialog(self, montages,
                                selected=self.model.current["montage"])
         if dialog.exec_():
-            name = dialog.montages.selectedItems()[0].data(0)
-            montage = mne.channels.read_montage(name)
+            if dialog.montage_path == '':
+                name = dialog.montages.selectedItems()[0].data(0)
+                montage = mne.channels.read_montage(name)
+            else:
+                from .utils.montage import xyz_to_montage
+                montage = xyz_to_montage(dialog.montage_path)
             ch_names = self.model.current["raw"].info["ch_names"]
             # check if at least one channel name matches a name in the montage
             if set(ch_names) & set(montage.ch_names):
-                self.model.set_montage(name)
+                self.model.set_montage(montage)
             else:
                 QMessageBox.critical(self, "No matching channel names",
                                      "Channel names defined in the montage do "
@@ -392,6 +399,7 @@ class MainWindow(QMainWindow):
         fig = self.model.current["raw"].plot(events=events,
                                              title=self.model.current["name"],
                                              scalings="auto",show=False)
+        
         self.model.history.append("raw.plot(n_channels={})".format(nchan))
         win = fig.canvas.manager.window
         win.setWindowTitle("Raw data")
@@ -530,6 +538,11 @@ class MainWindow(QMainWindow):
                                    uint_cast=uint_cast,
                                    min_duration=min_dur,
                                    shortest_event=shortest_event)
+
+    def interpolate_bads(self):
+        """Interpolate bad channels"""
+        self.auto_duplicate()
+        self.model.interpolate_bads()
 
     def set_reference(self):
         """Set reference."""
