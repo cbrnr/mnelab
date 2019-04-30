@@ -128,7 +128,7 @@ class Model:
             raw = mne.io.read_raw_eeglab(fname, preload=True)
             self.history.append(f"raw = mne.io.read_raw_eeglab('{fname}', "
                                 f"preload=True)")
-        elif ext in ["*.xdf"]:
+        elif ext in [".xdf"]:
             pass
 
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,

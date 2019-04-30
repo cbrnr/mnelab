@@ -1,5 +1,6 @@
 import multiprocessing as mp
 from sys import version_info
+from os.path import split, splitext
 
 import mne
 from PyQt5.QtCore import (pyqtSlot, QStringListModel, QModelIndex, QSettings,
@@ -19,9 +20,11 @@ from .dialogs.channelpropertiesdialog import ChannelPropertiesDialog
 from .dialogs.runicadialog import RunICADialog
 from .dialogs.calcdialog import CalcDialog
 from .dialogs.eventsdialog import EventsDialog
+from .dialogs.xdfstreamsdialog import XDFStreamsDialog
 from .widgets.infowidget import InfoWidget
 from .model import (SUPPORTED_FORMATS, SUPPORTED_EXPORT_FORMATS,
                     LabelsNotFoundError, InvalidAnnotationsError)
+from .utils.xdf import parse_xdf, parse_chunks
 
 
 __version__ = "0.1.0"
@@ -279,7 +282,33 @@ class MainWindow(QMainWindow):
         fname = QFileDialog.getOpenFileName(self, "Open raw",
                                             filter=SUPPORTED_FORMATS)[0]
         if fname:
-            self.model.load(fname)
+            name, ext = splitext(split(fname)[-1])
+            ftype = ext[1:].upper()
+            if ext.lower() not in SUPPORTED_FORMATS:
+                raise ValueError(f"File format {ftype} is not supported.")
+
+            if ext.lower() == ".xdf":
+                streams = parse_chunks(parse_xdf(fname))
+                rows, disabled = [], []
+                for idx, s in enumerate(streams):
+                    rows.append([s["stream_id"], s["name"], s["type"],
+                                 s["channel_count"], s["channel_format"],
+                                 s["nominal_srate"]])
+                    if s["nominal_srate"] == 0:  # disable marker streams
+                        disabled.append(idx)
+
+                dialog = XDFStreamsDialog(self, rows, disabled=disabled)
+                if dialog.exec_():
+                    # TODO: load selected stream of XDF file
+                    row = dialog.view.selectionModel().selectedRows()[0].row()
+                    print(dialog.model.data(dialog.model.index(row, 0)),
+                          dialog.model.data(dialog.model.index(row, 1)),
+                          dialog.model.data(dialog.model.index(row, 2)),
+                          dialog.model.data(dialog.model.index(row, 3)),
+                          dialog.model.data(dialog.model.index(row, 4)),
+                          dialog.model.data(dialog.model.index(row, 5)))
+            else:  # all other file formats
+                self.model.load(fname)
 
     def open_file(self, f, text, ffilter):
         """Open file."""
