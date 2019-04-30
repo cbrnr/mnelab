@@ -7,7 +7,7 @@ from matplotlib.backends.backend_qt5agg \
     import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
 from math import floor
-from app.ui.raw_psd_UI import Ui_RawPSDWindow
+from .ui.raw_psd_UI import Ui_RawPSDWindow
 
 
 class RawPSDWindow(QDialog):
@@ -80,8 +80,8 @@ class RawPSDWindow(QDialog):
     def plot_psd(self):
         """Plot the correct type of PSD
         """
-        from app.error import show_error
-        from backend.viz_raw import \
+        from .error import show_error
+        from ..backend.viz_raw import \
             _plot_topomap, _plot_matrix, _plot_all_psd
 
         if self.plotType == 'Topomap':
@@ -120,7 +120,7 @@ class RawPSDWindow(QDialog):
     def value_changed(self):
         """ Get called if a value is changed
         """
-        from backend.util import get_index_freq
+        from ..backend.util import get_index_freq
 
         try:
             fmin = float(self.ui.fmin.text())
@@ -150,7 +150,7 @@ class RawPSDWindow(QDialog):
     def onclick(self, click):
         """Get coordinates on the canvas and plot the corresponding PSD
         """
-        from backend.viz_raw import _plot_single_psd
+        from ..backend.viz_raw import _plot_single_psd
 
         if self.plotType == 'Matrix':
             channel_picked = click.ydata - 1
@@ -169,8 +169,8 @@ class RawPSDWindow(QDialog):
         """Get the line on click and plot a tooltip with the name of
         the channel
         """
-        from backend.util import _annot
-        from backend.viz_raw import _plot_single_psd
+        from ..backend.util import _annot
+        from ..backend.viz_raw import _plot_single_psd
 
         if self.plotType == 'All PSD':
             _annot(self, click, self.annot)

@@ -22,6 +22,7 @@ from .dialogs.runicadialog import RunICADialog
 from .dialogs.calcdialog import CalcDialog
 from .dialogs.eventsdialog import EventsDialog
 from .widgets.infowidget import InfoWidget
+from .dialogs.timefreqdialog import TimeFreqDialog
 
 from .utils.ica_utils import plot_correlation_matrix as plot_cormat
 from .model import (SUPPORTED_FORMATS, SUPPORTED_EXPORT_FORMATS,
@@ -195,10 +196,10 @@ class MainWindow(QMainWindow):
                                                            self.find_events)
         self.actions["run_ica"] = tools_menu.addAction("Run &ICA...",
                                                        self.run_ica)
-        
+
         self.actions["apply_ica"] = tools_menu.addAction("Apply &ICA...",
                                                        self.apply_ica)
-        
+
         self.actions["interpolate_bads"] = tools_menu.addAction(
             "Interpolate bad channels...", self.interpolate_bads)
 
@@ -399,7 +400,7 @@ class MainWindow(QMainWindow):
         fig = self.model.current["raw"].plot(events=events,
                                              title=self.model.current["name"],
                                              scalings="auto",show=False)
-        
+
         self.model.history.append("raw.plot(n_channels={})".format(nchan))
         win = fig.canvas.manager.window
         win.setWindowTitle("Raw data")
@@ -418,12 +419,9 @@ class MainWindow(QMainWindow):
 
     def plot_psd(self):
         """Plot power spectral density (PSD)."""
-        fig = self.model.current["raw"].plot_psd(average=False,
-                                                 spatial_colors=False,
-                                                 show=False)
-        win = fig.canvas.manager.window
-        win.setWindowTitle("Power spectral density")
-        fig.show()
+        raw = self.model.current["raw"]
+        dialog = TimeFreqDialog(self, raw)
+        dialog.show()
 
     def plot_montage(self):
         """Plot current montage."""

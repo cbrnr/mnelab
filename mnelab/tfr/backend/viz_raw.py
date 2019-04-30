@@ -93,7 +93,7 @@ def _plot_all_psd(win):
 def _plot_single_psd(win, channel_picked):
     """Plot one single PSD
     """
-    from backend.viz_util import \
+    from .viz_util import \
         _prepare_single_psd_plot, _plot_legend_topomap, _set_psd_window
 
     fig, ax1, ax2 = _prepare_single_psd_plot(win)

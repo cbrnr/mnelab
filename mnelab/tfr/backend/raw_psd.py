@@ -45,11 +45,12 @@ class RawPSD:
     def __init__(self, raw, fmin=0, fmax=1500,
                  tmin=None, tmax=None,
                  method='multitaper', picks=None,
-                 montage=None, **kwargs):
+                 **kwargs):
         """
         Computes the PSD of the raw file with the correct method, multitaper
         or welch.
         """
+        from .util import eeg_to_montage
 
         self.fmin, self.fmax = fmin, fmax
         self.tmin, self.tmax = tmin, tmax
@@ -72,6 +73,7 @@ class RawPSD:
             except Exception as e:
                 print(e)
 
+        montage = eeg_to_montage(raw)
         if montage is not None:
             # First we create variable head_pos for a correct plotting
             self.pos = montage.get_pos2d()

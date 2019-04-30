@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 def _plot_time_freq(self):
     """Plot the time-frequency representation
     """
-    from backend.viz_util import _plot_legend_topomap
+    from .viz_util import _plot_legend_topomap
     self.ui.figure.clear()
     gs = self.ui.figure.add_gridspec(10, 30)
     ax = self.ui.figure.add_subplot(gs[:, :25])

@@ -7,7 +7,7 @@ from matplotlib.backends.backend_qt5agg \
     import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
 
-from app.ui.avg_epochs_tfr_UI import Ui_AvgTFRWindow
+from .ui.avg_epochs_tfr_UI import Ui_AvgTFRWindow
 
 
 class AvgTFRWindow(QDialog):
@@ -184,7 +184,7 @@ class AvgTFRWindow(QDialog):
     def plot(self):
         """Plot the correct representation
         """
-        from backend.viz_tfr import \
+        from ..backend.viz_tfr import \
             _plot_time_freq, _plot_freq_ch, _plot_time_ch, _plot_topomap_tfr
 
         if self.plotType == 'Time-Frequency plot':

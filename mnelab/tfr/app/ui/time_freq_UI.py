@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'time_freq.ui'
+# Form implementation generated from reading ui file 'time_freq_mnelab.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_TimeFreq(object):
     def setupUi(self, MenuWindow):
         MenuWindow.setObjectName("MenuWindow")
-        MenuWindow.resize(407, 540)
+        MenuWindow.resize(465, 645)
         font = QtGui.QFont()
         font.setPointSize(10)
         font.setBold(False)
@@ -46,28 +46,6 @@ class Ui_TimeFreq(object):
         self.verticalGroupBox.setObjectName("verticalGroupBox")
         self.dataLayout_2 = QtWidgets.QVBoxLayout(self.verticalGroupBox)
         self.dataLayout_2.setObjectName("dataLayout_2")
-        self.choosePathLayout = QtWidgets.QHBoxLayout()
-        self.choosePathLayout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
-        self.choosePathLayout.setSpacing(10)
-        self.choosePathLayout.setObjectName("choosePathLayout")
-        self.pathButton = QtWidgets.QPushButton(self.verticalGroupBox)
-        self.pathButton.setMinimumSize(QtCore.QSize(50, 25))
-        self.pathButton.setMaximumSize(QtCore.QSize(130, 25))
-        self.pathButton.setFlat(False)
-        self.pathButton.setObjectName("pathButton")
-        self.choosePathLayout.addWidget(self.pathButton)
-        self.pathLine = QtWidgets.QLineEdit(self.verticalGroupBox)
-        self.pathLine.setMinimumSize(QtCore.QSize(50, 25))
-        self.pathLine.setMaximumSize(QtCore.QSize(16777215, 25))
-        self.pathLine.setFrame(True)
-        self.pathLine.setReadOnly(True)
-        self.pathLine.setClearButtonEnabled(False)
-        self.pathLine.setObjectName("pathLine")
-        self.choosePathLayout.addWidget(self.pathLine)
-        self.dataLayout_2.addLayout(self.choosePathLayout)
-        self.dataFilesBox = QtWidgets.QComboBox(self.verticalGroupBox)
-        self.dataFilesBox.setObjectName("dataFilesBox")
-        self.dataLayout_2.addWidget(self.dataFilesBox)
         self.groupBox = QtWidgets.QGroupBox(self.verticalGroupBox)
         self.groupBox.setMinimumSize(QtCore.QSize(0, 150))
         self.groupBox.setObjectName("groupBox")
@@ -280,7 +258,6 @@ class Ui_TimeFreq(object):
         _translate = QtCore.QCoreApplication.translate
         MenuWindow.setWindowTitle(_translate("MenuWindow", "PSD Frequency Visualizer"))
         self.verticalGroupBox.setTitle(_translate("MenuWindow", "Data"))
-        self.pathButton.setText(_translate("MenuWindow", "Path"))
         self.groupBox.setTitle(_translate("MenuWindow", "Informations"))
         self.plotButton.setText(_translate("MenuWindow", "Preview Data"))
         self.channelButton.setText(_translate("MenuWindow", "Select Channels"))

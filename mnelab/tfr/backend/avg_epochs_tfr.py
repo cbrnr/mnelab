@@ -23,7 +23,7 @@ class AvgEpochsTFR:
         Initialize the class with an instance of EpochsTFR corresponding
         to the method
         """
-        from backend.util import eeg_to_montage
+        from .util import eeg_to_montage
 
         self.cmap = 'jet'
         self.info = epochs.info

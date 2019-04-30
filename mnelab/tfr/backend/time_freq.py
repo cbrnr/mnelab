@@ -1,4 +1,4 @@
-from app.error import show_error
+from ..app.error import show_error
 
 # Miscellaneous functions for reading, saving and initializing parameters
 # =====================================================================
@@ -110,7 +110,7 @@ def _init_picks(self):
 def _init_nfft(self):
     """Init the n_fft parameter
     """
-    from backend.util import int_
+    from .util import int_
 
     n_fft = int_(self.params.get('n_fft', None))
     if n_fft is None:
@@ -125,8 +125,8 @@ def _init_nfft(self):
 def _init_epochs_psd(self):
     """Initialize the instance of EpochsPSD
     """
-    from backend.epochs_psd import EpochsPSD
-    from backend.util import float_, int_
+    from .epochs_psd import EpochsPSD
+    from .util import float_, int_
 
     if self.ui.psdMethod.currentText() == 'welch':
         n_fft = _init_nfft(self)
@@ -160,8 +160,8 @@ def _init_epochs_psd(self):
 def _init_raw_psd(self):
     """Initialize the instance of RawPSD
     """
-    from backend.raw_psd import RawPSD
-    from backend.util import float_, int_
+    from .raw_psd import RawPSD
+    from .util import float_, int_
 
     if self.ui.psdMethod.currentText() == 'welch':
         n_fft = _init_nfft(self)
@@ -206,7 +206,7 @@ def _open_epochs_psd_visualizer(self):
 def _open_raw_psd_visualizer(self):
     """Open PSD Visualizer for raw type data
     """
-    from app.raw_psd import RawPSDWindow
+    from ..app.raw_psd import RawPSDWindow
 
     _init_raw_psd(self)
     psdVisualizer = RawPSDWindow(self.psd, parent=self)
@@ -218,8 +218,8 @@ def _open_raw_psd_visualizer(self):
 def _init_avg_tfr(self):
     """Init tfr from parameters
     """
-    from backend.avg_epochs_tfr import AvgEpochsTFR
-    from backend.util import float_, int_
+    from .avg_epochs_tfr import AvgEpochsTFR
+    from .util import float_, int_
     from numpy import arange
 
     fmin = float_(self.params['fmin'])
@@ -244,7 +244,7 @@ def _init_avg_tfr(self):
 def _init_ncycles(self, freqs):
     """Init the n_cycles parameter
     """
-    from backend.util import float_
+    from .util import float_
 
     # Handling of the time window parameter for multitaper and morlet method
     n_cycles = 0
@@ -265,7 +265,7 @@ def _init_ncycles(self, freqs):
 def _open_tfr_visualizer(self):
     """Open TFR Visualizer
     """
-    from app.avg_epochs_tfr import AvgTFRWindow
+    from ..app.avg_epochs_tfr import AvgTFRWindow
     try:
         _init_avg_tfr(self)
         psdVisualizer = AvgTFRWindow(self.avgTFR, parent=self)

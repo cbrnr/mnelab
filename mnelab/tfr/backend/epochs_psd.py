@@ -51,11 +51,12 @@ class EpochsPSD:
     def __init__(self, epochs, fmin=0, fmax=1500,
                  tmin=None, tmax=None,
                  method='multitaper', picks=None,
-                 montage=None, **kwargs):
+                 **kwargs):
         """
         Computes the PSD of the epochs with the correct method multitaper or
         welch
         """
+        from .util import eeg_to_montage
 
         self.fmin, self.fmax = fmin, fmax
         self.tmin, self.tmax = tmin, tmax
@@ -78,6 +79,7 @@ class EpochsPSD:
             except Exception as e:
                 print(e)
 
+        montage = eeg_to_montage(epochs)
         if montage is not None:
             # First we create variable head_pos for a correct plotting
             self.pos = montage.get_pos2d()

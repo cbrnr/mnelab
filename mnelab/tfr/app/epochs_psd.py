@@ -8,7 +8,7 @@ from matplotlib.backends.backend_qt5agg \
 import matplotlib.pyplot as plt
 from math import floor
 
-from app.ui.epochs_psd_UI import Ui_EpochsPSDWindow
+from .ui.epochs_psd_UI import Ui_EpochsPSDWindow
 
 
 class EpochsPSDWindow(QDialog):
@@ -91,7 +91,7 @@ class EpochsPSDWindow(QDialog):
     def plot_psd(self):
         """Plot the correct type of PSD
         """
-        from backend.viz_epochs import \
+        from ..backend.viz_epochs import \
             _plot_topomaps, _plot_matrix, _plot_all_psd
 
         if self.plotType == 'Topomap':
@@ -99,7 +99,7 @@ class EpochsPSDWindow(QDialog):
                 _plot_topomaps(self)
             except ValueError:
                 # If no topomap is initialized, error is displayed
-                from app.error import show_error
+                from .error import show_error
                 show_error(
                     'No coordinates for topomap have been initialized :(')
                 self.ui.selectPlotType.setCurrentIndex(0)
@@ -122,7 +122,7 @@ class EpochsPSDWindow(QDialog):
     def value_changed(self):
         """ Get called if a value is changed
         """
-        from backend.util import get_index_freq
+        from ..backend.util import get_index_freq
 
         try:
             fmin = float(self.ui.fmin.text())
@@ -162,7 +162,7 @@ class EpochsPSDWindow(QDialog):
     def onclick(self, click):
         """Get coordinates on the canvas and plot the corresponding PSD
         """
-        from backend.viz_epochs import _plot_single_avg_psd, _plot_single_psd
+        from ..backend.viz_epochs import _plot_single_avg_psd, _plot_single_psd
 
         if self.plotType == 'Matrix':
             # Handle clicks on Matrix
@@ -203,8 +203,8 @@ class EpochsPSDWindow(QDialog):
         """Get the line on click and plot a tooltip with the name of
         the channel
         """
-        from backend.util import _annot
-        from backend.viz_epochs import _plot_single_avg_psd, _plot_single_psd
+        from ..backend.util import _annot
+        from ..backend.viz_epochs import _plot_single_avg_psd, _plot_single_psd
 
         if self.plotType == 'All PSD':
             # Handle click on all PSD plots
