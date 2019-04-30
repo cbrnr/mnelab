@@ -24,6 +24,20 @@ def parse_xdf(fname):
     return chunks
 
 
+def parse_chunks(chunks):
+    """Parse chunks and extract information on individual streams."""
+    streams = []
+    for chunk in chunks:
+        if chunk["tag"] == 2:  # stream header chunk
+            streams.append(dict(stream_id=chunk["stream_id"],
+                                name=chunk.get("name"),  # optional
+                                type=chunk.get("type"),  # optional
+                                channel_count=int(chunk["channel_count"]),
+                                channel_format=chunk["channel_format"],
+                                nominal_srate=int(chunk["nominal_srate"])))
+    return streams
+
+
 def _read_chunks(f):
     """Read and yield XDF chunks.
 
@@ -52,7 +66,7 @@ def _read_chunks(f):
             chunk["nbytes"] = struct.unpack("<Q", f.read(8))[0]
         chunk["tag"] = struct.unpack('<H', f.read(2))[0]
         if chunk["tag"] in [2, 3, 4, 6]:
-            chunk["streamid"] = struct.unpack("<I", f.read(4))[0]
+            chunk["stream_id"] = struct.unpack("<I", f.read(4))[0]
             if chunk["tag"] == 2:  # parse StreamHeader chunk
                 xml = ET.fromstring(f.read(chunk["nbytes"] - 6).decode())
                 chunk = {**chunk, **_parse_streamheader(xml)}
