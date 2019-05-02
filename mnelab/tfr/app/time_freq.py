@@ -15,13 +15,16 @@ class TimeFreqDialog(QMainWindow):
         self.ui.retranslateUi(self)
         self.setup_ui()
         self.data = data
+        if len(data.get_data().shape) == 2:
+            self.type = 'raw'
+        else:
+            self.type = 'epochs'
         self.set_informations()
 
     # Setup functions for UI
     # ========================================================================
     def setup_ui(self):
         self.filePaths = ['']
-        self.type = 'raw'
         self.selected_ch = []
         self.selected_events = []
         self.events, self.event_id = None, None
