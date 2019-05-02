@@ -23,6 +23,7 @@ from .dialogs.calcdialog import CalcDialog
 from .dialogs.eventsdialog import EventsDialog
 from .widgets.infowidget import InfoWidget
 from .dialogs.timefreqdialog import TimeFreqDialog
+from .dialogs.epochingdialog import EpochingDialog
 
 from .utils.ica_utils import plot_correlation_matrix as plot_cormat
 from .model import (SUPPORTED_FORMATS, SUPPORTED_EXPORT_FORMATS,
@@ -131,9 +132,9 @@ class MainWindow(QMainWindow):
             lambda: self.open_file(model.import_ica, "Import ICA",
                                    "*.fif *.fif.gz"))
         file_menu.addSeparator()
-        self.actions["export_raw"] = file_menu.addAction(
-            "Export &raw...",
-            lambda: self.export_file(model.export_raw, "Export raw",
+        self.actions["export_data"] = file_menu.addAction(
+            "Export data...",
+            lambda: self.export_file(model.export_data, "Export",
                                      SUPPORTED_EXPORT_FORMATS))
         self.actions["export_bads"] = file_menu.addAction(
             "Export &bad channels...",
@@ -172,7 +173,7 @@ class MainWindow(QMainWindow):
                                                      self.edit_events)
 
         plot_menu = self.menuBar().addMenu("&Plot")
-        self.actions["plot_raw"] = plot_menu.addAction("&Raw data",
+        self.actions["plot_raw"] = plot_menu.addAction("&Data",
                                                        self.plot_raw)
         self.actions["plot_psd"] = plot_menu.addAction(
             "&Power spectral density...", self.plot_psd)
@@ -180,31 +181,33 @@ class MainWindow(QMainWindow):
                                                            self.plot_montage)
         plot_menu.addSeparator()
         self.actions["plot_ica_components"] = plot_menu.addAction(
-            "ICA components...", self.plot_ica_components)
+            "ICA &components...", self.plot_ica_components)
 
         self.actions["plot_ica_sources"] = plot_menu.addAction(
-            "ICA sources...", self.plot_ica_sources)
+            "&ICA sources...", self.plot_ica_sources)
 
         self.actions["plot_correlation_matrix"] = plot_menu.addAction(
             "Correlation matrix...", self.plot_correlation_matrix)
-
 
         tools_menu = self.menuBar().addMenu("&Tools")
         self.actions["filter"] = tools_menu.addAction("&Filter data...",
                                                       self.filter_data)
         self.actions["find_events"] = tools_menu.addAction("Find &events...",
                                                            self.find_events)
+        tools_menu.addSeparator()
         self.actions["run_ica"] = tools_menu.addAction("Run &ICA...",
                                                        self.run_ica)
 
         self.actions["apply_ica"] = tools_menu.addAction("Apply &ICA...",
-                                                       self.apply_ica)
-
+                                                         self.apply_ica)
+        tools_menu.addSeparator()
         self.actions["interpolate_bads"] = tools_menu.addAction(
             "Interpolate bad channels...", self.interpolate_bads)
-
+        tools_menu.addSeparator()
         self.actions["add_events"] = tools_menu.addAction(
-            "Setup events as stimulation channels...", self.add_events)
+            "Setup events as annotation...", self.add_events)
+        self.actions["epoch_data"] = tools_menu.addAction(
+            "Cut data into epochs...", self.epoch_data)
 
         view_menu = self.menuBar().addMenu("&View")
         self.actions["statusbar"] = view_menu.addAction("Statusbar",
@@ -280,11 +283,17 @@ class MainWindow(QMainWindow):
             if self.model.current["raw"]:
                 bads = bool(self.model.current["raw"].info["bads"])
                 annot = self.model.current["raw"].annotations is not None
+                events = self.model.current["events"] is not None
+                self.actions["import_annotations"].setEnabled(True)
+                self.actions["import_events"].setEnabled(True)
             else:
                 bads = bool(self.model.current["epochs"].info["bads"])
                 annot = False
+                events = False
+                self.actions["find_events"].setEnabled(False)
+                self.actions["import_annotations"].setEnabled(False)
+                self.actions["import_events"].setEnabled(False)
             self.actions["export_bads"].setEnabled(enabled and bads)
-            events = self.model.current["events"] is not None
             self.actions["export_events"].setEnabled(enabled and events)
             self.actions["export_annotations"].setEnabled(enabled and annot)
             montage = bool(self.model.current["montage"])
@@ -296,11 +305,13 @@ class MainWindow(QMainWindow):
             self.actions["plot_ica_components"].setEnabled(enabled and ica and
                                                            montage)
             self.actions["plot_ica_sources"].setEnabled(enabled and ica and
-                                                           montage)
+                                                        montage)
             self.actions["plot_correlation_matrix"].setEnabled(enabled and ica
                                                                and montage)
             self.actions["apply_ica"].setEnabled(enabled and ica and montage)
             self.actions["events"].setEnabled(enabled and events)
+            self.actions["epoch_data"].setEnabled(enabled and events)
+            self.actions["add_events"].setEnabled(enabled and events)
 
         # add to recent files
         if len(self.model) > 0:
@@ -390,7 +401,10 @@ class MainWindow(QMainWindow):
             else:
                 from .utils.montage import xyz_to_montage
                 montage = xyz_to_montage(dialog.montage_path)
-            ch_names = self.model.current["raw"].info["ch_names"]
+            if self.model.current["raw"]:
+                ch_names = self.model.current["raw"].info["ch_names"]
+            else:
+                ch_names = self.model.current["epochs"].info["ch_names"]
             # check if at least one channel name matches a name in the montage
             if set(ch_names) & set(montage.ch_names):
                 self.model.set_montage(montage)
@@ -575,9 +589,24 @@ class MainWindow(QMainWindow):
         self.model.interpolate_bads()
 
     def add_events(self):
-        """Setup the events in the data as a STIM channel"""
+        """Setup the events in the data as a STIM channel."""
         self.auto_duplicate()
         self.model.add_events()
+
+    def epoch_data(self):
+        """Cut raw data into epochs."""
+        dialog = EpochingDialog(self, self.model.current["events"],
+                                self.model.current["raw"])
+        if dialog.exec_():
+            selected = [int(item.text()) for item
+                        in dialog.labels.selectedItems()]
+            try:
+                tmin = float(dialog.tmin.text())
+                tmax = float(dialog.tmax.text())
+                self.auto_duplicate()
+                self.model.epoch_data(selected, tmin, tmax)
+            except ValueError:
+                print("Invalid values")
 
     def set_reference(self):
         """Set reference."""
