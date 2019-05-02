@@ -316,6 +316,29 @@ class Model:
             if self.current["events"] is not None:
                 events = np.row_stack((self.current["events"], events))
                 events = np.unique(events, axis=0)
+            self.current["events"] = events
+
+        if fname.endswith('.mrk'):
+            beg, end, desc = [], [], []
+            desc_str = []
+            with open(fname) as f:
+                f.readline()
+                for line in f:
+                    line = line.replace(' ', '')
+                    line = line.replace('"', '')
+                    line = line.replace('\n', '')
+                    b, e, d = tuple(line.split("\t"))
+                    beg.append(int(b))
+                    end.append(int(e))
+                    if d not in desc_str:
+                        desc_str.append(d)
+                    desc.append(desc_str.index(d))
+            events = np.column_stack((beg, desc))
+            events = np.insert(events, 1, 0, axis=1)
+            if self.current["events"] is not None:
+                events = np.row_stack((self.current["events"], events))
+                events = np.unique(events, axis=0)
+            self.current["events"] = events
 
     @data_changed
     def import_annotations(self, fname):
@@ -499,6 +522,17 @@ class Model:
             if eeg_to_montage(self.current["epochs"]) is not None:
                 self.current["epochs"].interpolate_bads(reset_bads=True)
                 self.current["name"] += " (Interpolated)"
+
+    @data_changed
+    def add_events(self):
+        from mne import Annotations
+        events = self.current['events']
+        onsets = events[:, 0] / self.current['raw'].info['sfreq']
+        durations = np.zeros(events.shape[0])
+        desc = np.array([str(e) for e in events[:, 1]])
+        annot = Annotations(onsets, durations, desc)
+        self.current['raw'].set_annotations(annot)
+        self.current["name"] += " (events added)"
 
     @data_changed
     def set_reference(self, ref):

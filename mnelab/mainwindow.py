@@ -121,7 +121,7 @@ class MainWindow(QMainWindow):
         self.actions["import_events"] = file_menu.addAction(
             "Import events...",
             lambda: self.import_file(model.import_events, "Import events",
-                                     "*.csv"))
+                                     "*.csv *.mrk"))
         self.actions["import_annotations"] = file_menu.addAction(
             "Import annotations...",
             lambda: self.import_file(model.import_annotations,
@@ -202,6 +202,9 @@ class MainWindow(QMainWindow):
 
         self.actions["interpolate_bads"] = tools_menu.addAction(
             "Interpolate bad channels...", self.interpolate_bads)
+
+        self.actions["add_events"] = tools_menu.addAction(
+            "Setup events as stimulation channels...", self.add_events)
 
         view_menu = self.menuBar().addMenu("&View")
         self.actions["statusbar"] = view_menu.addAction("Statusbar",
@@ -570,6 +573,11 @@ class MainWindow(QMainWindow):
         """Interpolate bad channels."""
         self.auto_duplicate()
         self.model.interpolate_bads()
+
+    def add_events(self):
+        """Setup the events in the data as a STIM channel"""
+        self.auto_duplicate()
+        self.model.add_events()
 
     def set_reference(self):
         """Set reference."""
