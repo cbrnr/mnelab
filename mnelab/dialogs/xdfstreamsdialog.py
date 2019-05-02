@@ -7,7 +7,7 @@ from PyQt5.QtCore import Qt
 class XDFStreamsDialog(QDialog):
     def __init__(self, parent, rows, selected=None, disabled=None):
         super().__init__(parent)
-        self.setWindowTitle("XDF Streams")
+        self.setWindowTitle("Select XDF Stream")
 
         self.model = QStandardItemModel()
         self.model.setHorizontalHeaderLabels(["ID", "Name", "Type", "Channels",
@@ -32,9 +32,10 @@ class XDFStreamsDialog(QDialog):
         self.view.setShowGrid(False)
         self.view.setSelectionMode(QAbstractItemView.SingleSelection)
         self.view.setSelectionBehavior(QAbstractItemView.SelectRows)
+        if selected is not None:
+            self.view.selectRow(selected)
         self.view.setSortingEnabled(True)
         self.view.sortByColumn(0, Qt.AscendingOrder)
-        self.view.selectRow(selected if selected is not None else 0)
 
         vbox = QVBoxLayout(self)
         vbox.addWidget(self.view)

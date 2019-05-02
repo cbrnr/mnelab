@@ -297,7 +297,13 @@ class MainWindow(QMainWindow):
                     if s["nominal_srate"] == 0:  # disable marker streams
                         disabled.append(idx)
 
-                dialog = XDFStreamsDialog(self, rows, disabled=disabled)
+                enabled = list(set(range(len(rows))) - set(disabled))
+                if enabled:
+                    selected = enabled[0]
+                else:
+                    selected = None
+                dialog = XDFStreamsDialog(self, rows, selected=selected,
+                                          disabled=disabled)
                 if dialog.exec_():
                     # TODO: load selected stream of XDF file
                     row = dialog.view.selectionModel().selectedRows()[0].row()
