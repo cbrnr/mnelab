@@ -325,9 +325,12 @@ class MainWindow(QMainWindow):
 
     def export_file(self, f, text, ffilter):
         """Export to file."""
-        fname = QFileDialog.getSaveFileName(self, text, filter=ffilter)[0]
+        # BUG on windows fname = QFileDialog.getSaveFileName(self, text, filter=ffilter)[0]
+        fname = QFileDialog.getSaveFileName(self, text)[0]
+        print(fname)
         if fname:
             f(fname)
+            print(fname)
 
     def import_file(self, f, text, ffilter):
         """Import file."""
