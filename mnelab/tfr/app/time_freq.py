@@ -5,7 +5,7 @@ from PyQt5.QtGui import *
 from .ui.time_freq_UI import Ui_TimeFreq
 
 
-class TimeFreqDialog(QMainWindow):
+class TimeFreqDialog(QDialog):
     """Main Window for time-frequency
     """
     def __init__(self, parent=None, data=None):
