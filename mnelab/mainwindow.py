@@ -132,9 +132,9 @@ class MainWindow(QMainWindow):
             lambda: self.open_file(model.import_ica, "Import ICA",
                                    "*.fif *.fif.gz"))
         file_menu.addSeparator()
-        self.actions["export_raw"] = file_menu.addAction(
-            "Export &raw...",
-            lambda: self.export_file(model.export_raw, "Export raw",
+        self.actions["export_data"] = file_menu.addAction(
+            "Export data...",
+            lambda: self.export_file(model.export_data, "Export",
                                      SUPPORTED_EXPORT_FORMATS))
         self.actions["export_bads"] = file_menu.addAction(
             "Export &bad channels...",
@@ -173,7 +173,7 @@ class MainWindow(QMainWindow):
                                                      self.edit_events)
 
         plot_menu = self.menuBar().addMenu("&Plot")
-        self.actions["plot_raw"] = plot_menu.addAction("&Raw data",
+        self.actions["plot_raw"] = plot_menu.addAction("&Data",
                                                        self.plot_raw)
         self.actions["plot_psd"] = plot_menu.addAction(
             "&Power spectral density...", self.plot_psd)
@@ -181,10 +181,10 @@ class MainWindow(QMainWindow):
                                                            self.plot_montage)
         plot_menu.addSeparator()
         self.actions["plot_ica_components"] = plot_menu.addAction(
-            "ICA components...", self.plot_ica_components)
+            "ICA &components...", self.plot_ica_components)
 
         self.actions["plot_ica_sources"] = plot_menu.addAction(
-            "ICA sources...", self.plot_ica_sources)
+            "&ICA sources...", self.plot_ica_sources)
 
         self.actions["plot_correlation_matrix"] = plot_menu.addAction(
             "Correlation matrix...", self.plot_correlation_matrix)
@@ -205,7 +205,7 @@ class MainWindow(QMainWindow):
             "Interpolate bad channels...", self.interpolate_bads)
         tools_menu.addSeparator()
         self.actions["add_events"] = tools_menu.addAction(
-            "Setup events as stimulation channels...", self.add_events)
+            "Setup events as annotation...", self.add_events)
         self.actions["epoch_data"] = tools_menu.addAction(
             "Cut data into epochs...", self.epoch_data)
 
@@ -306,6 +306,8 @@ class MainWindow(QMainWindow):
                                                                and montage)
             self.actions["apply_ica"].setEnabled(enabled and ica and montage)
             self.actions["events"].setEnabled(enabled and events)
+            self.actions["epoch_data"].setEnabled(enabled and events)
+            self.actions["add_events"].setEnabled(enabled and events)
 
         # add to recent files
         if len(self.model) > 0:

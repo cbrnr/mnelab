@@ -173,17 +173,23 @@ class Model:
             self.current["events"] = events
             self.history.append("events = mne.find_events(raw)")
 
-    def export_raw(self, fname):
+    def export_data(self, fname):
         """Export raw to file."""
         name, ext = splitext(split(fname)[-1])
         ext = ext if ext else ".fif"  # automatically add extension
         fname = join(split(fname)[0], name + ext)
-        if ext == ".fif":
-            self.current["raw"].save(fname)
-        elif ext == ".set":
-            self._export_set(fname)
-        elif ext in (".edf", ".bdf"):
-            self._export_edf(fname)
+        if self.current["raw"]:
+            if ext == ".fif":
+                self.current["raw"].save(fname)
+            elif ext == ".set":
+                self._export_set(fname)
+            elif ext in (".edf", ".bdf"):
+                self._export_edf(fname)
+
+        elif self.current["epochs"]:
+            if ext == ".fif":
+                self.current["epochs"].save(fname)
+
 
     def _export_set(self, fname):
         """Export raw to EEGLAB file."""
