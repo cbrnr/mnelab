@@ -343,25 +343,45 @@ class Model:
     @data_changed
     def import_annotations(self, fname):
         """Import annotations from a CSV file."""
-        descs, onsets, durations = [], [], []
-        fs = self.current["raw"].info["sfreq"]
-        with open(fname) as f:
-            f.readline()  # skip header
-            for line in f:
-                ann = line.split(",")
-                if len(ann) == 3:  # type, onset, duration
-                    onset = float(ann[1].strip())
-                    duration = float(ann[2].strip())
-                    if onset > self.current["raw"].n_times / fs:
-                        msg = ("One or more annotations are outside of the "
-                               "data range.")
-                        raise InvalidAnnotationsError(msg)
-                    else:
-                        descs.append(ann[0].strip())
-                        onsets.append(onset)
-                        durations.append(duration)
-        annotations = mne.Annotations(onsets, durations, descs)
-        self.current["raw"].annotations = annotations
+        if fname.endswith('.csv'):
+            descs, onsets, durations = [], [], []
+            fs = self.current["raw"].info["sfreq"]
+            with open(fname) as f:
+                f.readline()  # skip header
+                for line in f:
+                    ann = line.split(",")
+                    if len(ann) == 3:  # type, onset, duration
+                        onset = float(ann[1].strip())
+                        duration = float(ann[2].strip())
+                        if onset > self.current["raw"].n_times / fs:
+                            msg = ("One or more annotations are outside of the "
+                                   "data range.")
+                            raise InvalidAnnotationsError(msg)
+                        else:
+                            descs.append(ann[0].strip())
+                            onsets.append(onset)
+                            durations.append(duration)
+            annotations = mne.Annotations(onsets, durations, descs)
+            self.current["raw"].annotations = annotations
+
+        if fname.endswith('.mrk'):
+            beg, end, desc = [], [], []
+            fs = self.current["raw"].info["sfreq"]
+            with open(fname) as f:
+                f.readline()
+                for line in f:
+                    line = line.replace(' ', '')
+                    line = line.replace('"', '')
+                    line = line.replace('\n', '')
+                    b, e, d = tuple(line.split("\t"))
+                    beg.append(int(b))
+                    end.append(int(e))
+                    desc.append(d)
+            beg, end = np.array(beg), np.array(end)
+            onsets = beg / fs
+            durations = (end - beg) / fs
+            annotations = mne.Annotations(onsets, durations, desc)
+            self.current["raw"].annotations = annotations
 
     @data_changed
     def import_ica(self, fname):
