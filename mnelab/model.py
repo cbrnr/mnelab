@@ -535,6 +535,14 @@ class Model:
         self.current["name"] += " (events added)"
 
     @data_changed
+    def epoch_data(self, selected, tmin, tmax):
+        epochs = mne.Epochs(self.current["raw"], self.current["events"],
+                            event_id=selected, tmin=tmin, tmax=tmax)
+        self.current["raw"] = None
+        self.current["epochs"] = epochs
+        self.current["name"] += " (epoched)"
+
+    @data_changed
     def set_reference(self, ref):
         self.current["reference"] = ref
         if ref == "average":
