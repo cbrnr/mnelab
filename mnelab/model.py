@@ -190,7 +190,6 @@ class Model:
             if ext == ".fif":
                 self.current["epochs"].save(fname)
 
-
     def _export_set(self, fname):
         """Export raw to EEGLAB file."""
         data = self.current["raw"].get_data() * 1e6  # convert to microvolts

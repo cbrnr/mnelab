@@ -284,11 +284,15 @@ class MainWindow(QMainWindow):
                 bads = bool(self.model.current["raw"].info["bads"])
                 annot = self.model.current["raw"].annotations is not None
                 events = self.model.current["events"] is not None
+                self.actions["import_annotations"].setEnabled(True)
+                self.actions["import_events"].setEnabled(True)
             else:
                 bads = bool(self.model.current["epochs"].info["bads"])
                 annot = False
                 events = False
                 self.actions["find_events"].setEnabled(False)
+                self.actions["import_annotations"].setEnabled(False)
+                self.actions["import_events"].setEnabled(False)
             self.actions["export_bads"].setEnabled(enabled and bads)
             self.actions["export_events"].setEnabled(enabled and events)
             self.actions["export_annotations"].setEnabled(enabled and annot)
