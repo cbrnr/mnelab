@@ -195,7 +195,7 @@ def _init_raw_psd(self):
 def _open_epochs_psd_visualizer(self):
     """Open PSD visualizer for epochs data
     """
-    from app.epochs_psd import EpochsPSDWindow
+    from ..app.epochs_psd import EpochsPSDWindow
 
     _init_epochs_psd(self)
     psdVisualizer = EpochsPSDWindow(self.psd, parent=self)

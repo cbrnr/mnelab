@@ -274,11 +274,15 @@ class MainWindow(QMainWindow):
                 action.setEnabled(enabled)
 
         if self.model.data:  # toggle if specific conditions are met
-            bads = bool(self.model.current["raw"].info["bads"])
+            if self.model.current["raw"]:
+                bads = bool(self.model.current["raw"].info["bads"])
+                annot = self.model.current["raw"].annotations is not None
+            else:
+                bads = bool(self.model.current["epochs"].info["bads"])
+                annot = False
             self.actions["export_bads"].setEnabled(enabled and bads)
             events = self.model.current["events"] is not None
             self.actions["export_events"].setEnabled(enabled and events)
-            annot = self.model.current["raw"].annotations is not None
             self.actions["export_annotations"].setEnabled(enabled and annot)
             montage = bool(self.model.current["montage"])
             self.actions["run_ica"].setEnabled(enabled and montage)
@@ -332,7 +336,10 @@ class MainWindow(QMainWindow):
 
     def pick_channels(self):
         """Pick channels in current data set."""
-        channels = self.model.current["raw"].info["ch_names"]
+        if self.model.current["raw"]:
+            channels = self.model.current["raw"].info["ch_names"]
+        else:
+            channels = self.model.current["epochs"].info["ch_names"]
         dialog = PickChannelsDialog(self, channels, selected=channels)
         if dialog.exec_():
             picks = [item.data(0) for item in dialog.channels.selectedItems()]
@@ -344,7 +351,10 @@ class MainWindow(QMainWindow):
 
     def channel_properties(self):
         """Show channel properties dialog."""
-        info = self.model.current["raw"].info
+        if self.model.current["raw"]:
+            info = self.model.current["raw"].info
+        else:
+            info = self.model.current["epochs"].info
         dialog = ChannelPropertiesDialog(self, info)
         if dialog.exec_():
             dialog.model.sort(0)
@@ -394,16 +404,23 @@ class MainWindow(QMainWindow):
             pass
 
     def plot_raw(self):
-        """Plot raw data."""
+        """Plot data."""
         events = self.model.current["events"]
-        nchan = self.model.current["raw"].info["nchan"]
-        fig = self.model.current["raw"].plot(events=events,
-                                             title=self.model.current["name"],
-                                             scalings="auto",show=False)
-
-        self.model.history.append("raw.plot(n_channels={})".format(nchan))
+        if self.model.current["raw"]:
+            nchan = self.model.current["raw"].info["nchan"]
+            fig = self.model.current["raw"].plot(
+                events=events, title=self.model.current["name"],
+                scalings="auto", show=False)
+            self.model.history.append("raw.plot(n_channels={})".format(nchan))
+        else:
+            nchan = self.model.current["epochs"].info["nchan"]
+            fig = self.model.current["epochs"].plot(
+                title=self.model.current["name"],
+                scalings="auto", show=False)
+            self.model.history.append(
+                "epochs.plot(n_channels={})".format(nchan))
         win = fig.canvas.manager.window
-        win.setWindowTitle("Raw data")
+        win.setWindowTitle("Data")
         win.findChild(QStatusBar).hide()
         win.installEventFilter(self)  # detect if the figure is closed
 
@@ -419,14 +436,23 @@ class MainWindow(QMainWindow):
 
     def plot_psd(self):
         """Plot power spectral density (PSD)."""
-        raw = self.model.current["raw"]
-        dialog = TimeFreqDialog(self, raw)
-        dialog.show()
+        if self.model.current["raw"]:
+            raw = self.model.current["raw"]
+            dialog = TimeFreqDialog(self, raw)
+            dialog.show()
+        else:
+            epochs = self.model.current["epochs"]
+            dialog = TimeFreqDialog(self, epochs)
+            dialog.show()
 
     def plot_montage(self):
         """Plot current montage."""
-        fig = self.model.current["raw"].plot_sensors(show_names=True,
-                                                     show=False)
+        if self.model.current["raw"]:
+            fig = self.model.current["raw"].plot_sensors(show_names=True,
+                                                         show=False)
+        else:
+            fig = self.model.current["epochs"].plot_sensors(show_names=True,
+                                                            show=False)
         win = fig.canvas.manager.window
         win.setWindowTitle("Montage")
         win.findChild(QStatusBar).hide()
@@ -434,7 +460,8 @@ class MainWindow(QMainWindow):
         fig.show()
 
     def plot_ica_components(self):
-        self.model.current["ica"].plot_components(inst=self.model.current["raw"])
+        self.model.current["ica"].plot_components(
+            inst=self.model.current["raw"])
 
     def plot_ica_sources(self):
         self.model.current["ica"].plot_sources(inst=self.model.current["raw"])
@@ -461,7 +488,7 @@ class MainWindow(QMainWindow):
             have_sklearn = True
 
         nchan = len(pick_types(self.model.current["raw"].info,
-                                   meg=True, eeg=True, exclude=[]))
+                               meg=True, eeg=True, exclude=[]))
         dialog = RunICADialog(self, nchan, have_picard, have_sklearn)
 
         if dialog.exec_():
@@ -469,18 +496,19 @@ class MainWindow(QMainWindow):
             method = dialog.method.currentText()
             exclude_bad_segments = dialog.exclude_bad_segments.isChecked()
 
-            if dialog.groupBox_advancedparameters.isChecked() :
+            if dialog.groupBox_advancedparameters.isChecked():
                 n_components = int(dialog.n_components.text())
                 max_pca_components = int(dialog.max_pca_components.text())
                 n_pca_components = int(dialog.pca_components.text())
                 random_state = int(dialog.random_seed.text())
                 max_iter = int(dialog.max_iter.text())
-                ica = mne.preprocessing.ICA(method=dialog.methods[method],
-                                            n_components=n_components,
-                                            max_pca_components=max_pca_components,
-                                            n_pca_components=n_pca_components,
-                                            random_state=random_state,
-                                            max_iter=max_iter)
+                ica = mne.preprocessing.ICA(
+                    method=dialog.methods[method],
+                    n_components=n_components,
+                    max_pca_components=max_pca_components,
+                    n_pca_components=n_pca_components,
+                    random_state=random_state,
+                    max_iter=max_iter)
             else:
                 n_components = int(dialog.n_components.text())
                 max_iter = 500
@@ -539,7 +567,7 @@ class MainWindow(QMainWindow):
                                    shortest_event=shortest_event)
 
     def interpolate_bads(self):
-        """Interpolate bad channels"""
+        """Interpolate bad channels."""
         self.auto_duplicate()
         self.model.interpolate_bads()
 
