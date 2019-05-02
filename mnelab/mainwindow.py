@@ -283,11 +283,13 @@ class MainWindow(QMainWindow):
             if self.model.current["raw"]:
                 bads = bool(self.model.current["raw"].info["bads"])
                 annot = self.model.current["raw"].annotations is not None
+                events = self.model.current["events"] is not None
             else:
                 bads = bool(self.model.current["epochs"].info["bads"])
                 annot = False
+                events = False
+                self.actions["find_events"].setEnabled(False)
             self.actions["export_bads"].setEnabled(enabled and bads)
-            events = self.model.current["events"] is not None
             self.actions["export_events"].setEnabled(enabled and events)
             self.actions["export_annotations"].setEnabled(enabled and annot)
             montage = bool(self.model.current["montage"])
@@ -393,7 +395,10 @@ class MainWindow(QMainWindow):
             else:
                 from .utils.montage import xyz_to_montage
                 montage = xyz_to_montage(dialog.montage_path)
-            ch_names = self.model.current["raw"].info["ch_names"]
+            if self.model.current["raw"]:
+                ch_names = self.model.current["raw"].info["ch_names"]
+            else:
+                ch_names = self.model.current["epochs"].info["ch_names"]
             # check if at least one channel name matches a name in the montage
             if set(ch_names) & set(montage.ch_names):
                 self.model.set_montage(montage)
@@ -589,10 +594,13 @@ class MainWindow(QMainWindow):
         if dialog.exec_():
             selected = [int(item.text()) for item
                         in dialog.labels.selectedItems()]
-            tmin = float(dialog.tmin.text())
-            tmax = float(dialog.tmax.text())
-            self.auto_duplicate()
-            self.model.epoch_data(selected, tmin, tmax)
+            try:
+                tmin = float(dialog.tmin.text())
+                tmax = float(dialog.tmax.text())
+                self.auto_duplicate()
+                self.model.epoch_data(selected, tmin, tmax)
+            except ValueError:
+                print("Invalid values")
 
     def set_reference(self):
         """Set reference."""
