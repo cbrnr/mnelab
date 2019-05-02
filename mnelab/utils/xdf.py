@@ -1,5 +1,59 @@
 import struct
 import xml.etree.ElementTree as ET
+import numpy as np
+import mne
+
+
+def read_raw_xdf(fname, stream_id):
+    """Read XDF file.
+
+    Parameters
+    ----------
+    fname : str
+        Name of the XDF file.
+    stream_id : int
+        ID (number) of the stream to load.
+
+    Returns
+    -------
+    raw : mne.io.Raw
+        XDF file data.
+    """
+    from pyxdf import load_xdf
+
+    streams, header = load_xdf(fname)
+    for stream in streams:
+        if stream["info"]["stream_id"] == stream_id:
+            break  # stream found
+
+    n_chans = int(stream["info"]["channel_count"][0])
+    fs = float(stream["info"]["nominal_srate"][0])
+    labels, types, units = [], [], []
+    if stream["info"]["desc"]:
+        for ch in stream["info"]["desc"][0]["channels"][0]["channel"]:
+            labels.append(str(ch["label"][0]))
+            if ch["type"]:
+                types.append(ch["type"][0])
+            if ch["unit"]:
+                units.append(ch["unit"][0])
+    if not labels:
+        labels = [str(n) for n in range(n_chans)]
+    if not units:
+        units = ["NA" for _ in range(n_chans)]
+    info = mne.create_info(ch_names=labels, sfreq=fs, ch_types="eeg")
+    # convert from microvolts to volts if necessary
+    scale = np.array([1e-6 if u == "microvolts" else 1 for u in units])
+    raw = mne.io.RawArray((stream["time_series"] * scale).T, info)
+
+    # first_samp = stream["time_stamps"][0]
+    # markers = _find_stream_by_type(streams, stream_type="Markers")
+    # if markers is not None:
+    #     onsets = markers["time_stamps"] - first_samp
+    #     descriptions = markers["time_series"]
+    #     annotations = mne.Annotations(onsets, [0] * len(onsets), descriptions)
+    #     raw.set_annotations(annotations)
+
+    return raw
 
 
 def parse_xdf(fname):

@@ -305,14 +305,9 @@ class MainWindow(QMainWindow):
                 dialog = XDFStreamsDialog(self, rows, selected=selected,
                                           disabled=disabled)
                 if dialog.exec_():
-                    # TODO: load selected stream of XDF file
                     row = dialog.view.selectionModel().selectedRows()[0].row()
-                    print(dialog.model.data(dialog.model.index(row, 0)),
-                          dialog.model.data(dialog.model.index(row, 1)),
-                          dialog.model.data(dialog.model.index(row, 2)),
-                          dialog.model.data(dialog.model.index(row, 3)),
-                          dialog.model.data(dialog.model.index(row, 4)),
-                          dialog.model.data(dialog.model.index(row, 5)))
+                    stream_id = dialog.model.data(dialog.model.index(row, 0))
+                    self.model.load(fname, stream_id=stream_id)
             else:  # all other file formats
                 self.model.load(fname)
 
