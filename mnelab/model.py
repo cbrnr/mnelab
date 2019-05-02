@@ -12,6 +12,16 @@ from .utils.montage import eeg_to_montage
 
 SUPPORTED_FORMATS = "*.bdf *.edf *.fif *.vhdr *.set *.sef"
 SUPPORTED_EXPORT_FORMATS = "*.fif *.set"
+
+try:
+    import philistine
+except ImportError:
+    have_philistine = False
+else:
+    have_philistine = True
+    SUPPORTED_EXPORT_FORMATS += "*.vhdr"
+
+
 try:
     import pyedflib
 except ImportError:
@@ -185,6 +195,8 @@ class Model:
                 self._export_set(fname)
             elif ext in (".edf", ".bdf"):
                 self._export_edf(fname)
+            elif ext ==".vhdr":
+                philistine.mne.write_raw_brainvision(self.current["raw"], fname)
 
         elif self.current["epochs"]:
             if ext == ".fif":
