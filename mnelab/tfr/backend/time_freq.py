@@ -88,23 +88,6 @@ def _read_parameters(self, tfr=False):
     self.params = dic
 
 
-# ---------------------------------------------------------------------
-def _init_picks(self):
-    """Init list with picks
-    """
-    try:
-        picked_ch = [self.data.info['ch_names'].index(name)
-                     for name in self.selected_ch]
-        if len(picked_ch) == 0:
-            return None
-        else:
-            return picked_ch
-    except Exception as e:
-        print(e)
-        print('Please initialize the EEG data before '
-              + 'proceeding.')
-
-
 # PSD - Init the parameters and open the app functions
 # ---------------------------------------------------------------------
 def _init_nfft(self):
@@ -139,9 +122,7 @@ def _init_epochs_psd(self):
             method='welch',
             n_fft=n_fft,
             n_per_seg=int_(self.params.get('n_per_seg', n_fft)),
-            n_overlap=int_(self.params.get('n_overlap', 0)),
-            picks=_init_picks(self),
-            montage=self.montage)
+            n_overlap=int_(self.params.get('n_overlap', 0)))
 
     if self.ui.psdMethod.currentText() == 'multitaper':
         self.psd = EpochsPSD(
@@ -151,9 +132,7 @@ def _init_epochs_psd(self):
             tmin=float_(self.params['tmin']),
             tmax=float_(self.params['tmax']),
             method='multitaper',
-            bandwidth=float_(self.params.get('bandwidth', 4)),
-            picks=_init_picks(self),
-            montage=self.montage)
+            bandwidth=float_(self.params.get('bandwidth', 4)))
 
 
 # ---------------------------------------------------------------------
@@ -174,9 +153,7 @@ def _init_raw_psd(self):
             method='welch',
             n_fft=n_fft,
             n_per_seg=int_(self.params.get('n_per_seg', n_fft)),
-            n_overlap=int_(self.params.get('n_overlap', 0)),
-            picks=_init_picks(self),
-            montage=self.montage)
+            n_overlap=int_(self.params.get('n_overlap', 0)))
 
     if self.ui.psdMethod.currentText() == 'multitaper':
         self.psd = RawPSD(
@@ -186,9 +163,7 @@ def _init_raw_psd(self):
             tmin=float_(self.params['tmin']),
             tmax=float_(self.params['tmax']),
             method='multitaper',
-            bandwidth=float_(self.params.get('bandwidth', 4)),
-            picks=_init_picks(self),
-            montage=self.montage)
+            bandwidth=float_(self.params.get('bandwidth', 4)))
 
 
 # ---------------------------------------------------------------------
@@ -229,15 +204,12 @@ def _init_avg_tfr(self):
     n_cycles = _init_ncycles(self, freqs)
     n_fft = int_(self.params.get('n_fft', None))
 
-    picks = _init_picks(self)
-
     self.avgTFR = AvgEpochsTFR(
         self.data, freqs, n_cycles,
         method=self.ui.tfrMethodBox.currentText(),
         time_bandwidth=float_(self.params.get('time_bandwidth', 4)),
         width=float_(self.params.get('width', 1)),
-        n_fft=n_fft,
-        picks=picks)
+        n_fft=n_fft)
 
 
 # ---------------------------------------------------------------------
