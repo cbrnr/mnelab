@@ -1,3 +1,4 @@
+import csv
 from os.path import getsize, join, split, splitext
 from collections import Counter, defaultdict
 from functools import wraps
@@ -306,15 +307,21 @@ class Model:
     @data_changed
     def import_bads(self, fname):
         """Import bad channels info from a CSV file."""
-        with open(fname) as f:
-            bads = f.read().replace(" ", "").strip().split(",")
-            unknown = set(bads) - set(self.current["raw"].info["ch_names"])
-            if unknown:
-                msg = ("The following imported channel labels are not " +
-                       "present in the data: " + ",".join(unknown))
-                raise LabelsNotFoundError(msg)
-            else:
-                self.current["raw"].info["bads"] = bads
+        bads=[]
+        with open(fname) as csv_file:
+            csv_reader = csv.reader(csv_file, delimiter=',')
+            for row in csv_reader:
+                bads.append(str(row[0]))
+                print(row)
+        unknown = set(bads) - set(self.current["raw"].info["ch_names"])
+        known = set(bads) - set(unknown)
+        if unknown:
+            msg = ("The following imported channel labels are not " +
+                   "present in the data: " + ",".join(unknown))
+            self.current["raw"].info["bads"] += known
+            raise LabelsNotFoundError(msg)
+        else:
+            self.current["raw"].info["bads"] = bads
 
     @data_changed
     def import_events(self, fname):
