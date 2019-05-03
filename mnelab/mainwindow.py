@@ -24,6 +24,8 @@ from .dialogs.eventsdialog import EventsDialog
 from .widgets.infowidget import InfoWidget
 from .dialogs.timefreqdialog import TimeFreqDialog
 from .dialogs.epochingdialog import EpochingDialog
+from .dialogs.epochingdialog import EpochingDialog
+from .dialogs.navepochsdialog import NavEpochsDialog
 
 from .utils.ica_utils import plot_correlation_matrix as plot_cormat
 from .model import (SUPPORTED_FORMATS, SUPPORTED_EXPORT_FORMATS,
@@ -173,12 +175,15 @@ class MainWindow(QMainWindow):
                                                      self.edit_events)
 
         plot_menu = self.menuBar().addMenu("&Plot")
-        self.actions["plot_raw"] = plot_menu.addAction("&Data",
+        self.actions["plot_raw"] = plot_menu.addAction("&Data...",
                                                        self.plot_raw)
-        self.actions["plot_psd"] = plot_menu.addAction(
-            "&Power spectral density...", self.plot_psd)
+        self.actions["plot_image"] = plot_menu.addAction("&data as &Image...",
+                                                         self.plot_image)
         self.actions["plot_montage"] = plot_menu.addAction("Current &montage",
                                                            self.plot_montage)
+        plot_menu.addSeparator()
+        self.actions["plot_psd"] = plot_menu.addAction(
+            "&Power spectral density...", self.plot_psd)
         plot_menu.addSeparator()
         self.actions["plot_ica_components"] = plot_menu.addAction(
             "ICA &components...", self.plot_ica_components)
@@ -206,8 +211,11 @@ class MainWindow(QMainWindow):
         tools_menu.addSeparator()
         self.actions["add_events"] = tools_menu.addAction(
             "Setup events as annotation...", self.add_events)
+        tools_menu.addSeparator()
         self.actions["epoch_data"] = tools_menu.addAction(
             "Cut data into epochs...", self.epoch_data)
+        self.actions["evoke_data"] = tools_menu.addAction(
+            "Evoke epoched data...", self.evoke_data)
 
         view_menu = self.menuBar().addMenu("&View")
         self.actions["statusbar"] = view_menu.addAction("Statusbar",
@@ -286,13 +294,21 @@ class MainWindow(QMainWindow):
                 events = self.model.current["events"] is not None
                 self.actions["import_annotations"].setEnabled(True)
                 self.actions["import_events"].setEnabled(True)
+                self.actions["evoke_data"].setEnabled(False)
+                self.actions["plot_image"].setEnabled(False)
             else:
-                bads = bool(self.model.current["epochs"].info["bads"])
                 annot = False
                 events = False
                 self.actions["find_events"].setEnabled(False)
                 self.actions["import_annotations"].setEnabled(False)
                 self.actions["import_events"].setEnabled(False)
+                self.actions["plot_image"].setEnabled(True)
+                if self.model.current["epochs"]:
+                    bads = bool(self.model.current["epochs"].info["bads"])
+                    self.actions["evoke_data"].setEnabled(True)
+                else:
+                    bads = bool(self.model.current["evoked"].info["bads"])
+                    self.actions["evoke_data"].setEnabled(False)
             self.actions["export_bads"].setEnabled(enabled and bads)
             self.actions["export_events"].setEnabled(enabled and events)
             self.actions["export_annotations"].setEnabled(enabled and annot)
@@ -325,7 +341,8 @@ class MainWindow(QMainWindow):
 
     def export_file(self, f, text, ffilter):
         """Export to file."""
-        # BUG on windows fname = QFileDialog.getSaveFileName(self, text, filter=ffilter)[0]
+        # BUG on windows fname = QFileDialog.getSaveFileName(self,
+        # text, filter=ffilter)[0]
         fname = QFileDialog.getSaveFileName(self, text)[0]
         print(fname)
         if fname:
@@ -355,8 +372,10 @@ class MainWindow(QMainWindow):
         """Pick channels in current data set."""
         if self.model.current["raw"]:
             channels = self.model.current["raw"].info["ch_names"]
-        else:
+        elif self.model.current["epochs"]:
             channels = self.model.current["epochs"].info["ch_names"]
+        else:
+            channels = self.model.current["evoked"].info["ch_names"]
         dialog = PickChannelsDialog(self, channels, selected=channels)
         if dialog.exec_():
             picks = [item.data(0) for item in dialog.channels.selectedItems()]
@@ -364,14 +383,16 @@ class MainWindow(QMainWindow):
             if drops:
                 self.auto_duplicate()
                 self.model.drop_channels(drops)
-                self.model.history.append(f"raw.drop({drops})")
+                self.model.history.append(f"data.drop({drops})")
 
     def channel_properties(self):
         """Show channel properties dialog."""
         if self.model.current["raw"]:
             info = self.model.current["raw"].info
-        else:
+        elif self.model.current["epochs"]:
             info = self.model.current["epochs"].info
+        else:
+            info = self.model.current["evoked"].info
         dialog = ChannelPropertiesDialog(self, info)
         if dialog.exec_():
             dialog.model.sort(0)
@@ -432,11 +453,16 @@ class MainWindow(QMainWindow):
                 events=events, title=self.model.current["name"],
                 scalings="auto", show=False)
             self.model.history.append("raw.plot(n_channels={})".format(nchan))
-        else:
+        elif self.model.current["epochs"]:
             nchan = self.model.current["epochs"].info["nchan"]
             fig = self.model.current["epochs"].plot(
                 title=self.model.current["name"],
                 scalings="auto", show=False)
+            self.model.history.append(
+                "epochs.plot(n_channels={})".format(nchan))
+        elif self.model.current["evoked"]:
+            nchan = self.model.current["evoked"].info["nchan"]
+            fig = self.model.current["evoked"].plot(show=False, gfp=True)
             self.model.history.append(
                 "epochs.plot(n_channels={})".format(nchan))
         win = fig.canvas.manager.window
@@ -453,6 +479,20 @@ class MainWindow(QMainWindow):
             key_events.func.keywords["params"]["close_key"] = None
 
         fig.show()
+
+    def plot_image(self):
+        if self.model.current["epochs"]:
+            figs = self.model.current["epochs"].plot_image(show=False)
+            dialog = NavEpochsDialog(self, figs)
+            dialog.exec_()
+        elif self.model.current["evoked"]:
+            fig = self.model.current["evoked"].plot_image(show=False)
+            self.model.history.append("evoked.plot_image()")
+            win = fig.canvas.manager.window
+            win.setWindowTitle("Data as Image")
+            win.findChild(QStatusBar).hide()
+            win.installEventFilter(self)  # detect if the figure is closed
+            fig.show()
 
     def plot_psd(self):
         """Plot power spectral density (PSD)."""
@@ -610,6 +650,10 @@ class MainWindow(QMainWindow):
                 self.model.epoch_data(selected, tmin, tmax)
             except ValueError:
                 print("Invalid values")
+
+    def evoke_data(self):
+        self.auto_duplicate()
+        self.model.evoke_data()
 
     def set_reference(self):
         """Set reference."""

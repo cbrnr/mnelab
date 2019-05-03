@@ -102,8 +102,10 @@ class Model:
         for item in self.data:
             if item["raw"]:
                 sum += item["raw"].get_data().nbytes
-            else:
+            elif item["epochs"]:
                 sum += item["epochs"].get_data().nbytes
+            elif item["evoked"]:
+                sum += item["evoked"].data.nbytes
         return sum
 
     @property
@@ -144,10 +146,18 @@ class Model:
                                     f"preload=True)")
             except ValueError:
                 raw = None
-                epochs = mne.read_epochs(fname, preload=True)
-                montage = eeg_to_montage(epochs)
-                self.history.append(f"epochs = mne.read_epochs('{fname}', "
-                                    f"preload=True)")
+                try:
+                    epochs = mne.read_epochs(fname, preload=True)
+                    evoked = None
+                    montage = eeg_to_montage(epochs)
+                    self.history.append(f"epochs = mne.read_epochs('{fname}', "
+                                        f"preload=True)")
+                except ValueError:
+                    evoked = mne.read_evokeds(fname)
+                    epochs = None
+                    montage = eeg_to_montage(evoked)
+                    self.history.append(
+                        f"evoked = mne.read_evokeds('{fname}')")
 
         elif ext in [".vhdr"]:
             raw = mne.io.read_raw_brainvision(fname, preload=True)
@@ -196,8 +206,9 @@ class Model:
                 self._export_set(fname)
             elif ext in (".edf", ".bdf"):
                 self._export_edf(fname)
-            elif ext ==".vhdr":
-                philistine.mne.write_raw_brainvision(self.current["raw"], fname)
+            elif ext == ".vhdr":
+                philistine.mne.write_raw_brainvision(
+                    self.current["raw"], fname)
 
         elif self.current["epochs"]:
             if ext == ".fif":
@@ -307,7 +318,7 @@ class Model:
     @data_changed
     def import_bads(self, fname):
         """Import bad channels info from a CSV file."""
-        bads=[]
+        bads = []
         with open(fname) as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
             for row in csv_reader:
@@ -378,8 +389,8 @@ class Model:
                         onset = float(ann[1].strip())
                         duration = float(ann[2].strip())
                         if onset > self.current["raw"].n_times / fs:
-                            msg = ("One or more annotations are outside of the "
-                                   "data range.")
+                            msg = ("One or more annotations are outside "
+                                   "of the data range.")
                             raise InvalidAnnotationsError(msg)
                         else:
                             descs.append(ann[0].strip())
@@ -421,6 +432,7 @@ class Model:
         """
         raw = self.current["raw"]
         epochs = self.current["epochs"]
+        evoked = self.current["evoked"]
         fname = self.current["fname"]
         ftype = self.current["ftype"]
         reference = self.current["reference"]
@@ -428,7 +440,12 @@ class Model:
         montage = self.current["montage"]
         ica = self.current["ica"]
 
-        data = raw if raw else epochs
+        if raw is not None:
+            data = raw
+        elif epochs is not None:
+            data = epochs
+        elif evoked is not None:
+            data = evoked
         if data.info["bads"]:
             nbads = len(data.info["bads"])
             nchan = f"{data.info['nchan']} ({nbads} bad)"
@@ -445,7 +462,7 @@ class Model:
 
         size_disk = f"{getsize(fname) / 1024 ** 2:.2f} MB" if fname else "-"
 
-        if raw:  # Raw informations
+        if raw is not None:  # Raw informations
             if events is not None:
                 nevents = events.shape[0]
                 unique = [str(e) for e in sorted(set(events[:, 2]))]
@@ -457,7 +474,6 @@ class Model:
                     events = f"{nevents} ({', '.join(unique)})"
             else:
                 events = "-"
-
             if raw.annotations is not None:
                 annots = len(raw.annotations.description)
                 if annots == 0:
@@ -491,7 +507,7 @@ class Model:
                 "ICA": ica + " applied = " + str(self.current["isApplied"])
             }
 
-        else:  # Epochs informations
+        elif epochs:  # Epochs informations
             return {
                 "File name": fname if fname else "-",
                 "File type": ftype if ftype else "-",
@@ -503,14 +519,40 @@ class Model:
                     [" ".join([str(v), k.upper()]) for k, v in chans]) + ")",
                 "Samples": len(epochs.times),
                 "Sampling frequency": f"{epochs.info['sfreq']:.2f} Hz",
+                "Number of Epochs": str(epochs.get_data().shape[0]),
                 "Length": f"{epochs.times[-1] - epochs.times[0]:.2f} s",
+                "Reference": reference if reference else "-",
+                "Montage": montage if montage is not None else "-",
+            }
+
+        elif evoked:
+            return {
+                "File name": fname if fname else "-",
+                "File type": ftype if ftype else "-",
+                "Size on disk": size_disk,
+                "Size in memory":
+                    f"{evoked.data.nbytes / 1024**2:.2f} MB",
+                "Data type": "MNE Evoked",
+                "Channels": f"{nchan} (" + ", ".join(
+                    [" ".join([str(v), k.upper()]) for k, v in chans]) + ")",
+                "Samples": len(evoked.times),
+                "Sampling frequency": f"{evoked.info['sfreq']:.2f} Hz",
+                "Length": f"{evoked.times[-1] - evoked.times[0]:.2f} s",
                 "Reference": reference if reference else "-",
                 "Montage": montage if montage is not None else "-",
             }
 
     @data_changed
     def drop_channels(self, drops):
-        self.current["raw"] = self.current["raw"].drop_channels(list(drops))
+        if self.current["raw"]:
+            self.current["raw"] = (self.current["raw"]
+                                   .drop_channels(list(drops)))
+        elif self.current["epochs"]:
+            self.current["epochs"] = (self.current["epochs"]
+                                      .drop_channels(list(drops)))
+        else:
+            self.current["evoked"] = (self.current["evoked"]
+                                      .drop_channels(list(drops)))
         self.current["name"] += " (channels dropped)"
 
     @data_changed
@@ -581,10 +623,19 @@ class Model:
     @data_changed
     def epoch_data(self, selected, tmin, tmax):
         epochs = mne.Epochs(self.current["raw"], self.current["events"],
-                            event_id=selected, tmin=tmin, tmax=tmax)
+                            event_id=selected, tmin=tmin, tmax=tmax,
+                            preload=True)
         self.current["raw"] = None
         self.current["epochs"] = epochs
         self.current["name"] += " (epoched)"
+
+    @data_changed
+    def evoke_data(self):
+        evoked = self.current["epochs"].average()
+        self.current["raw"] = None
+        self.current["epochs"] = None
+        self.current["evoked"] = evoked
+        self.current["name"] += " (evoked)"
 
     @data_changed
     def set_reference(self, ref):
