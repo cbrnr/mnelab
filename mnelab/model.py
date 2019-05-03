@@ -587,9 +587,12 @@ class Model:
         if self.current["raw"]:
             self.current["raw"].filter(low, high)
             self.history.append("raw.filter({}, {})".format(low, high))
-        else:
+        elif self.current["epochs"]:
             self.current["epochs"].filter(low, high)
             self.history.append("epochs.filter({}, {})".format(low, high))
+        elif self.current["evoked"]:
+            self.current["evoked"].filter(low, high)
+            self.history.append("evoked.filter({}, {})".format(low, high))
         self.current["name"] += " ({}-{} Hz)".format(low, high)
 
     @data_changed
