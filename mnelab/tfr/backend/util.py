@@ -36,32 +36,6 @@ def int_(value):
 
 
 # ---------------------------------------------------------------------
-def init_info_string(eeg_data):
-    """Init a string with informations about data
-    """
-    sfreq = eeg_data.info['sfreq']
-    n_channels = eeg_data.info['nchan']
-    infos1 = (('<li><b>Sampling Frequency:</b> {}Hz'
-               + '<li><b>Number of Channels:</b> {}')
-              .format(sfreq, n_channels))
-    if len(eeg_data.get_data().shape) == 2:
-        n_times = eeg_data.n_times
-        infos2 = '<li><b>Time points:</b> {}</li>'.format(n_times)
-        infos3 = ('<li><b>Duration of the signal:</b> {0:.2f}s </li>'
-                  .format((n_times / sfreq)))
-
-    else:
-        times = eeg_data.times
-        infos2 = ('<li><b>Time points per Epoch:</b> {} </li>'
-                  .format(len(times)))
-        infos3 = ('<li><b>Duration of the signal:</b> {0:.2f}s </li>'
-                  .format(times[-1] - times[0]))
-
-    infos = infos1 + infos2 + infos3
-    return '<ul>' + infos + '</ul>'
-
-
-# ---------------------------------------------------------------------
 def get_index_freq(freqs, fmin, fmax):
     """Get the indices of the freq between fmin and fmax in freqs
     """

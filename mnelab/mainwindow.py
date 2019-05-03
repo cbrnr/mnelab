@@ -504,9 +504,13 @@ class MainWindow(QMainWindow):
             raw = self.model.current["raw"]
             dialog = TimeFreqDialog(self, raw)
             dialog.exec()
-        else:
+        elif self.model.current["epochs"]:
             epochs = self.model.current["epochs"]
             dialog = TimeFreqDialog(self, epochs)
+            dialog.exec()
+        elif self.model.current["evoked"]:
+            evoked = self.model.current["evoked"]
+            dialog = TimeFreqDialog(self, evoked)
             dialog.exec()
 
     def plot_montage(self):

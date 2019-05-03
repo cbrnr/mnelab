@@ -101,6 +101,8 @@ def _init_nfft(self):
             n_fft = min(self.data.n_times, 2048)
         if self.type == 'epochs':
             n_fft = min(len(self.data.times), 2048)
+        if self.type == 'evoked':
+            n_fft = min(len(self.data.times), 2048)
     return n_fft
 
 

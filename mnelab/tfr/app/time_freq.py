@@ -15,10 +15,13 @@ class TimeFreqDialog(QDialog):
         self.ui.retranslateUi(self)
         self.setup_ui()
         self.data = data
-        if len(data.get_data().shape) == 2:
-            self.type = 'raw'
-        else:
-            self.type = 'epochs'
+        try:
+            if len(data.get_data().shape) == 3:
+                self.type = 'epochs'
+            else:
+                self.type = 'raw'
+        except AttributeError:
+            self.type = 'evoked'
 
     # Setup functions for UI
     # ========================================================================
@@ -81,18 +84,18 @@ class TimeFreqDialog(QDialog):
             print('Cannot find/read Parameters.\n'
                   + 'Please verify the path and extension')
         else:
-            try:
-                if self.type == 'epochs':
-                    from ..backend.time_freq import _open_epochs_psd_visualizer
-                    _open_epochs_psd_visualizer(self)
-                elif self.type == 'raw':
-                    from ..backend.time_freq import _open_raw_psd_visualizer
-                    _open_raw_psd_visualizer(self)
-                else:
-                    print('Please initialize the EEG data '
-                          + 'before proceeding.')
-            except Exception as e:
-                print(e)
+            #try:
+            if self.type == 'epochs':
+                from ..backend.time_freq import _open_epochs_psd_visualizer
+                _open_epochs_psd_visualizer(self)
+            elif self.type == 'raw' or self.type == 'evoked':
+                from ..backend.time_freq import _open_raw_psd_visualizer
+                _open_raw_psd_visualizer(self)
+            else:
+                print('Please initialize the EEG data '
+                      + 'before proceeding.')
+            #except Exception as e:
+            #    print(e)
 
     # Open TFR Visualizer
     # ========================================================================
