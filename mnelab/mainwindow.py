@@ -482,8 +482,8 @@ class MainWindow(QMainWindow):
 
     def plot_image(self):
         if self.model.current["epochs"]:
-            figs = self.model.current["epochs"].plot_image(show=False)
-            dialog = NavEpochsDialog(self, figs)
+            epochs = self.model.current["epochs"]
+            dialog = NavEpochsDialog(None, epochs)
             dialog.exec_()
         elif self.model.current["evoked"]:
             fig = self.model.current["evoked"].plot_image(show=False)
