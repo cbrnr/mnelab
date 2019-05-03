@@ -578,9 +578,12 @@ class Model:
         if self.current["raw"]:
             self.current["raw"].set_montage(montage)
             self.history.append("raw.set_montage()")
-        else:
+        elif self.current["epochs"]:
             self.current["epochs"].set_montage(montage)
             self.history.append("epochs.set_montage()")
+        elif self.current["evoked"]:
+            self.current["evoked"].set_montage(montage)
+            self.history.append("evoked.set_montage()")
 
     @data_changed
     def filter(self, low, high):

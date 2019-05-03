@@ -431,8 +431,10 @@ class MainWindow(QMainWindow):
                 montage = xyz_to_montage(dialog.montage_path)
             if self.model.current["raw"]:
                 ch_names = self.model.current["raw"].info["ch_names"]
-            else:
+            elif self.model.current["epochs"]:
                 ch_names = self.model.current["epochs"].info["ch_names"]
+            elif self.model.current["evoked"]:
+                ch_names = self.model.current["evoked"].info["ch_names"]
             # check if at least one channel name matches a name in the montage
             if set(ch_names) & set(montage.ch_names):
                 self.model.set_montage(montage)
