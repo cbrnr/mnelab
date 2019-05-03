@@ -503,11 +503,11 @@ class MainWindow(QMainWindow):
         if self.model.current["raw"]:
             raw = self.model.current["raw"]
             dialog = TimeFreqDialog(self, raw)
-            dialog.show()
+            dialog.exec()
         else:
             epochs = self.model.current["epochs"]
             dialog = TimeFreqDialog(self, epochs)
-            dialog.show()
+            dialog.exec()
 
     def plot_montage(self):
         """Plot current montage."""
