@@ -508,7 +508,7 @@ class MainWindow(QMainWindow):
             have_sklearn = True
 
         nchan = len(pick_types(self.model.current["raw"].info,
-                               meg=True, eeg=True, exclude=[]))
+                               meg=True, eeg=True, exclude='bads'))
         dialog = RunICADialog(self, nchan, have_picard, have_sklearn)
 
         if dialog.exec_():
