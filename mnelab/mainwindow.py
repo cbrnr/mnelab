@@ -26,6 +26,8 @@ from .dialogs.timefreqdialog import TimeFreqDialog
 from .dialogs.epochingdialog import EpochingDialog
 from .dialogs.epochingdialog import EpochingDialog
 from .dialogs.navepochsdialog import NavEpochsDialog
+from .dialogs.resampledialog import ResampleDialog
+
 
 from .utils.ica_utils import plot_correlation_matrix as plot_cormat
 from .model import (SUPPORTED_FORMATS, SUPPORTED_EXPORT_FORMATS,
@@ -197,6 +199,8 @@ class MainWindow(QMainWindow):
         tools_menu = self.menuBar().addMenu("&Tools")
         self.actions["filter"] = tools_menu.addAction("&Filter data...",
                                                       self.filter_data)
+        self.actions["resample"] = tools_menu.addAction("&Downsample...",
+                                                        self.resample)
         self.actions["find_events"] = tools_menu.addAction("Find &events...",
                                                            self.find_events)
         tools_menu.addSeparator()
@@ -594,6 +598,21 @@ class MainWindow(QMainWindow):
         """Set reference."""
         self.auto_duplicate()
         self.model.apply_ica()
+
+    def resample(self):
+        """Resample data."""
+        dialog = ResampleDialog(self)
+        if dialog.exec_():
+            self.auto_duplicate()
+            sfreq = dialog.sfreq
+            if self.model.current['raw']:
+                self.model.current['raw'].resample(sfreq)
+            elif self.model.current['epochs']:
+                self.model.current['epochs'].resample(sfreq)
+            elif self.model.current['evoked']:
+                self.model.current['evoked'].resample(sfreq)
+            self.model.current["name"] += " (resampled)"
+            self.data_changed()
 
     def filter_data(self):
         """Filter data."""

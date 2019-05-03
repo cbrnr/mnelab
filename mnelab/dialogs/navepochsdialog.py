@@ -21,7 +21,6 @@ class NavEpochsDialog(QDialog):
         self.layout = QHBoxLayout(self)
         self.layout.addWidget(self.channels)
         self.fig = plt.figure(figsize=(10, 10))
-        print(self.fig)
         self.canvas = FigureCanvas(self.fig)
         self.layout.addWidget(self.canvas)
         self.channels.item(0).setSelected(True)
