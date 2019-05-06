@@ -293,6 +293,7 @@ class MainWindow(QMainWindow):
 
         if self.model.data:  # toggle if specific conditions are met
             if self.model.current["raw"]:
+                raw = True
                 bads = bool(self.model.current["raw"].info["bads"])
                 annot = self.model.current["raw"].annotations is not None
                 events = self.model.current["events"] is not None
@@ -301,6 +302,7 @@ class MainWindow(QMainWindow):
                 self.actions["evoke_data"].setEnabled(False)
                 self.actions["plot_image"].setEnabled(False)
             else:
+                raw = False
                 annot = False
                 events = False
                 self.actions["find_events"].setEnabled(False)
@@ -322,13 +324,15 @@ class MainWindow(QMainWindow):
             self.actions["interpolate_bads"].setEnabled(enabled and montage)
             ica = bool(self.model.current["ica"])
             self.actions["export_ica"].setEnabled(enabled and ica)
-            self.actions["plot_ica_components"].setEnabled(enabled and ica and
-                                                           montage)
-            self.actions["plot_ica_sources"].setEnabled(enabled and ica and
-                                                        montage)
-            self.actions["plot_correlation_matrix"].setEnabled(enabled and ica
-                                                               and montage)
-            self.actions["apply_ica"].setEnabled(enabled and ica and montage)
+            self.actions["plot_ica_components"].setEnabled(enabled and ica
+                                                           and montage)
+            self.actions["plot_ica_sources"].setEnabled(enabled and ica
+                                                        and montage)
+            self.actions["plot_correlation_matrix"].setEnabled(
+                enabled and ica and events and montage)
+            self.actions["run_ica"].setEnabled(enabled and montage and raw)
+            self.actions["apply_ica"].setEnabled(enabled and ica
+                                                 and montage and raw)
             self.actions["events"].setEnabled(enabled and events)
             self.actions["epoch_data"].setEnabled(enabled and events)
             self.actions["add_events"].setEnabled(enabled and events)

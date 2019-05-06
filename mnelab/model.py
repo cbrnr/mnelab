@@ -56,9 +56,9 @@ def data_changed(f):
 class Model:
     """Data model for MNELAB."""
     def __init__(self):
-        self.view = None  # current view
-        self.data = []  # list of data sets
-        self.index = -1  # index of currently active data set
+        self.view = None   # current view
+        self.data = []     # list of data sets
+        self.index = -1    # index of currently active data set
         self.history = []  # command history
 
     @data_changed
