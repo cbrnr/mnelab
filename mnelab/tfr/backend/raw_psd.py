@@ -52,6 +52,7 @@ class RawPSD:
         """
         from .util import eeg_to_montage
 
+        raw = raw.copy().pick_types(meg=True, eeg=True)
         self.fmin, self.fmax = fmin, fmax
         self.tmin, self.tmax = tmin, tmax
         self.info = raw.info

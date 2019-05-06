@@ -58,6 +58,7 @@ class EpochsPSD:
         """
         from .util import eeg_to_montage
 
+        epochs = epochs.copy().pick_types(meg=True, eeg=True)
         self.fmin, self.fmax = fmin, fmax
         self.tmin, self.tmax = tmin, tmax
         self.info = epochs.info
