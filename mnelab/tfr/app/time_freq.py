@@ -61,8 +61,8 @@ class TimeFreqDialog(QDialog):
         """Open TFR Visualizer for epochs
         """
         try:
-            from ..backend.time_freq import _read_parameters_tfr
-            _read_parameters_tfr(self)
+            from ..backend.time_freq import _read_tfr_parameters
+            _read_tfr_parameters(self)
 
         except (AttributeError, FileNotFoundError, OSError):
             print('Cannot find/read file.\n'

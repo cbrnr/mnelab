@@ -23,6 +23,7 @@ from .dialogs.calcdialog import CalcDialog
 from .dialogs.eventsdialog import EventsDialog
 from .widgets.infowidget import InfoWidget
 from .dialogs.timefreqdialog import TimeFreqDialog
+from .dialogs.psddialog import PSDDialog
 from .dialogs.epochingdialog import EpochingDialog
 from .dialogs.epochingdialog import EpochingDialog
 from .dialogs.navepochsdialog import NavEpochsDialog
@@ -186,6 +187,8 @@ class MainWindow(QMainWindow):
         plot_menu.addSeparator()
         self.actions["plot_psd"] = plot_menu.addAction(
             "&Power spectral density...", self.plot_psd)
+        self.actions["plot_tfr"] = plot_menu.addAction(
+            "&Time-Frequency...", self.plot_tfr)
         plot_menu.addSeparator()
         self.actions["plot_ica_components"] = plot_menu.addAction(
             "ICA &components...", self.plot_ica_components)
@@ -301,6 +304,7 @@ class MainWindow(QMainWindow):
                 self.actions["import_events"].setEnabled(True)
                 self.actions["evoke_data"].setEnabled(False)
                 self.actions["plot_image"].setEnabled(False)
+                self.actions["plot_tfr"].setEnabled(False)
             else:
                 raw = False
                 annot = False
@@ -508,9 +512,20 @@ class MainWindow(QMainWindow):
         """Plot power spectral density (PSD)."""
         if self.model.current["raw"]:
             raw = self.model.current["raw"]
-            dialog = TimeFreqDialog(self, raw)
+            dialog = PSDDialog(self, raw)
             dialog.exec()
         elif self.model.current["epochs"]:
+            epochs = self.model.current["epochs"]
+            dialog = PSDDialog(self, epochs)
+            dialog.exec()
+        elif self.model.current["evoked"]:
+            evoked = self.model.current["evoked"]
+            dialog = PSDDialog(self, evoked)
+            dialog.exec()
+
+    def plot_tfr(self):
+        """Plot Time-Frequency."""
+        if self.model.current["epochs"]:
             epochs = self.model.current["epochs"]
             dialog = TimeFreqDialog(self, epochs)
             dialog.exec()
