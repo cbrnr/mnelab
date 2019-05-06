@@ -1,3 +1,5 @@
+from PyQt5.QtWidgets import (QLineEdit, QLabel)
+
 from ..app.error import show_error
 
 # Miscellaneous functions for reading, saving and initializing parameters
@@ -16,17 +18,65 @@ def _init_psd_parameters(self):
 
 
 # ---------------------------------------------------------------------
+def clear_layout(layout):
+    """Clear layout."""
+    for i in reversed(range(layout.count())):
+        layout.itemAt(i).widget().setParent(None)
+
+
+# ---------------------------------------------------------------------
 def _init_tfr_parameters(self):
     """Set the parameters in the parameters text slot
     """
-    text = 'fmin=5\nfmax=100'
+    clear_layout(self.ui.labels)
+    clear_layout(self.ui.lines)
+    self.ui.labels.addWidget(QLabel('Fmax (Hz)'))
+    self.ui.labels.addWidget(QLabel('Fmin (Hz)'))
+    self.fmin = QLineEdit()
+    self.fmax = QLineEdit()
+    self.ui.lines.addWidget(self.fmin)
+    self.ui.lines.addWidget(self.fmax)
+
+    if self.data.info['highpass'] is not None:
+        self.fmax.setText(str(self.data.info['highpass']))
+    else:
+        self.fmax.setText(str(self.data.info['sfreq'] / 2))
+
+    if self.data.info['lowpass'] is not None:
+        self.fmin.setText(str(self.data.info['lowpass']))
+    else:
+        self.fmin.setText('0')
+
     if self.ui.tfrMethodBox.currentText() == 'multitaper':
-        text = text + '\nfreq_step=1\ntime_window=0.5\ntime_bandwidth=4'
+        self.ui.labels.addWidget(QLabel('Frequency Step (Hz)'))
+        self.ui.labels.addWidget(QLabel('Time Window (s)'))
+        self.ui.labels.addWidget(QLabel('Time Bandwidth (s.Hz)'))
+        self.fstep = QLineEdit()
+        self.time_window, self.time_bandwidth = QLineEdit(), QLineEdit()
+        self.ui.lines.addWidget(self.fstep)
+        self.ui.lines.addWidget(self.time_window)
+        self.ui.lines.addWidget(self.time_bandwidth)
+        self.fstep.setText('1')
+        self.time_window.setText('0.5')
+        self.time_bandwidth.setText('4')
     if self.ui.tfrMethodBox.currentText() == 'morlet':
-        text = text + '\nfreq_step=1\ntime_window=0.5'
+        self.ui.labels.addWidget(QLabel('Frequency Step (Hz)'))
+        self.ui.labels.addWidget(QLabel('Time Window (s)'))
+        self.fstep = QLineEdit()
+        self.time_window = QLineEdit()
+        self.ui.lines.addWidget(self.fstep)
+        self.ui.lines.addWidget(self.time_window)
+        self.fstep.setText('1')
+        self.time_window.setText('0.5')
     if self.ui.tfrMethodBox.currentText() == 'stockwell':
-        text = text + '\nwidth=1\nn_fft=Default'
-    self.ui.tfrParametersText.setText(text)
+        self.ui.labels.addWidget(QLabel('Width'))
+        self.ui.labels.addWidget(QLabel('FFT points'))
+        self.width = QLineEdit()
+        self.n_fft = QLineEdit()
+        self.ui.lines.addWidget(self.width)
+        self.ui.lines.addWidget(self.n_fft)
+        self.width.setText('1')
+        self.n_fft.setText(str(min(len(self.data.times), 2048)))
 
 
 # ---------------------------------------------------------------------
@@ -66,26 +116,27 @@ def _save_matrix(self):
 
 
 # ---------------------------------------------------------------------
-def _read_parameters(self, tfr=False):
+def _read_parameters_tfr(self):
     """Read parameters from txt file and sets it up in params"""
-    if tfr:
-        text = self.ui.tfrParametersText.toPlainText()
-    else:
-        text = self.ui.psdParametersText.toPlainText()
-    params = text.replace(' ', '').split('\n')
-    dic = {}
-    try:
-        for param in params:
-            param, val = param.replace(' ', '').split('=')
-            if val == 'Default' or val == 'None':
-                dic[param] = None
-            else:
-                dic[param] = val
 
-    except ValueError:
-        show_error('Format of parameters must be '
-                   + 'param_id = values')
-    self.params = dic
+    try:
+        self.params = {}
+        self.params['fmin'] = float(self.fmin.text())
+        self.params['fmax'] = float(self.fmax.text())
+        if self.ui.tfrMethodBox.currentText() == 'multitaper':
+            self.params['fstep'] = float(self.fstep.text())
+            self.params['time_window'] = float(self.time_window().text())
+            self.params['time_bandwidth'] = float(self.time_bandwidth.text())
+        if self.ui.tfrMethodBox.currentText() == 'morlet':
+            self.params['fstep'] = float(self.fstep.text())
+            self.params['time_window'] = float(self.time_window().text())
+        if self.ui.tfrMethodBox.currentText() == 'stockwell':
+            self.params['width'] = float(self.width.text())
+            self.params['n_fft'] = float(self.n_fft.text())
+        print(self.params)
+
+    except Exception as e:  # Print exception for parameters
+        print(e)
 
 
 # PSD - Init the parameters and open the app functions
