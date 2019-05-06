@@ -244,7 +244,7 @@ class Model:
         ch_names = self.current["raw"].info["ch_names"]
         meas_date = self.current["raw"].info["meas_date"][0]
         prefilter = (f"{self.current['raw'].info['highpass']}Hz - "
-                     f"{self.current['raw'].info['lowpass']}")
+                     f"{self.curset_montagerent['raw'].info['lowpass']}")
         pmin, pmax = data.min(axis=1), data.max(axis=1)
         f = pyedflib.EdfWriter(fname, nchan, filetype)
         channel_info = []
@@ -311,17 +311,17 @@ class Model:
         print(fname)
         if  fname[-4:] == ".csv":
             with open(fname) as csv_file:
-                bads = csv_file.readline().split(",")
+                bads = csv_file.readline().rstrip('\n').split(",")
         elif fname[-4:] == ".txt":
             with open(fname) as txtfile:
-                bads = txtfile.readline().split(" ")
-
+                bads = txtfile.readline().rstrip('\n').split(" ")
         unknown = set(bads) - set(self.current["raw"].info["ch_names"])
         known = set(bads) - set(unknown)
         if unknown:
             msg = ("The following imported channel labels are not " +
                    "present in the data: " + ",".join(unknown))
             self.current["raw"].info["bads"] += known
+            self.view.data_changed()
             raise LabelsNotFoundError(msg)
         else:
             self.current["raw"].info["bads"] += bads
