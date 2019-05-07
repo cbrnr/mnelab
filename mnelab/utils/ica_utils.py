@@ -12,20 +12,25 @@ from mne.viz.topomap import _plot_topomap
 from mne.channels.layout import _find_topomap_coords
 from matplotlib.gridspec import GridSpec
 
+
 def plot_correlation_matrix(raw, ica):
-    "Plot correlation_matrix"
+    "Plot correlation_matrix."
     raw = raw.copy()
     ch_names = raw.info["ch_names"]
-    path = os.path.join('.', 'mnelab','ica_templates', 'template-ica.fif')
+    path = os.path.join('.', 'mnelab', 'ica_templates', 'template-ica.fif')
     ica_template = mne.preprocessing.read_ica(path)
     common = find_common_channels(ica_template, ica)
-    components_template, components_ics = extract_common_components(ica_template, ica)
+    components_template, components_ics = extract_common_components(
+                                              ica_template, ica)
     templates = components_template[[0, 7]]
     df = compute_correlation(templates, components_ics)
     raw.rename_channels(tolow)
+    print(common)
     raw.reorder_channels(common)
     ch_names = raw.info["ch_names"]
-    pos = _find_topomap_coords(raw.info, picks=[i for i in range(len(ch_names)) if ch_names[i].lower() in common])
+    pos = _find_topomap_coords(
+                raw.info, picks=[i for i in range(len(ch_names))
+                                 if ch_names[i].lower() in common])
     quality = len(common) / len(ch_names)
     plot_correlation(df, templates, pos, quality)
     return()
@@ -117,7 +122,9 @@ def plot_overlay(raw, ica):
         ax.set_xlim(0, np.around(10/duration)*duration)
         ax.set_xlabel("time(s)")
         ax.set_yticklabels([])
-        ax.set_title("""Global field power before (red) and after (black) source rejection""")
+        ax.set_title(
+            """Global field power before (red) and after (black)"""
+            """ source rejection""")
         ax.legend(loc=8, ncol=2, bbox_to_anchor=(0., 0., 1, 1))
         plt.show(fig)
     return()
