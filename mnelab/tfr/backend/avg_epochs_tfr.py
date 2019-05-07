@@ -26,6 +26,7 @@ class AvgEpochsTFR:
         from .util import eeg_to_montage
 
         self.cmap = 'jet'
+        epochs = epochs.copy().pick_types(meg=True, eeg=True)
         self.info = epochs.info
 
         if picks is not None:

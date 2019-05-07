@@ -74,7 +74,11 @@ class TimeFreqDialog(QDialog):
                     self.data.load_data()
                 except AttributeError:
                     pass
-                _open_tfr_visualizer(self)
+
+                try:
+                    _open_tfr_visualizer(self)
+                except Exception as e:
+                    print(e)
 
             except Exception as e:
                 print(e)

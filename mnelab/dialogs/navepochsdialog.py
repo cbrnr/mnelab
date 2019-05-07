@@ -13,7 +13,7 @@ class NavEpochsDialog(QDialog):
     def __init__(self, parent, epochs):
         super().__init__(parent)
         self.resize(1000, 800)
-        self.epochs = epochs
+        self.epochs = epochs.copy().pick_types(eeg=True, meg=True)
         channels = self.epochs.info['ch_names']
         self.channels = QListWidget()
         self.channels.insertItems(0, channels)
