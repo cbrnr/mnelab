@@ -123,7 +123,7 @@ class MainWindow(QMainWindow):
         self.actions["import_bads"] = file_menu.addAction(
             "Import bad channels...",
             lambda: self.import_file(model.import_bads, "Import bad channels",
-                                     "*.csv *.mrk"))
+                                     "*.csv *.mrk *.txt"))
         self.actions["import_events"] = file_menu.addAction(
             "Import events...",
             lambda: self.import_file(model.import_events, "Import events",
@@ -356,10 +356,8 @@ class MainWindow(QMainWindow):
         # BUG on windows fname = QFileDialog.getSaveFileName(self,
         # text, filter=ffilter)[0]
         fname = QFileDialog.getSaveFileName(self, text)[0]
-        print(fname)
         if fname:
             f(fname)
-            print(fname)
 
     def import_file(self, f, text, ffilter):
         """Import file."""
@@ -577,7 +575,7 @@ class MainWindow(QMainWindow):
             have_sklearn = True
 
         nchan = len(pick_types(self.model.current["raw"].info,
-                               meg=True, eeg=True, exclude=[]))
+                               meg=True, eeg=True, exclude='bads'))
         dialog = RunICADialog(self, nchan, have_picard, have_sklearn)
 
         if dialog.exec_():
