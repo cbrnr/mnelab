@@ -29,6 +29,7 @@ from .dialogs.epochingdialog import EpochingDialog
 from .dialogs.epochingdialog import EpochingDialog
 from .dialogs.navepochsdialog import NavEpochsDialog
 from .dialogs.resampledialog import ResampleDialog
+from .dialogs.evokedstatesdialog import EvokedStatesDialog
 
 
 from .utils.ica_utils import plot_correlation_matrix as plot_cormat
@@ -181,8 +182,10 @@ class MainWindow(QMainWindow):
         plot_menu = self.menuBar().addMenu("&Plot")
         self.actions["plot_raw"] = plot_menu.addAction("&Data...",
                                                        self.plot_raw)
-        self.actions["plot_image"] = plot_menu.addAction("&data as &Image...",
+        self.actions["plot_image"] = plot_menu.addAction("Data as &Image...",
                                                          self.plot_image)
+        self.actions["plot_states"] = plot_menu.addAction("Plot &States...",
+                                                          self.plot_states)
         self.actions["plot_montage"] = plot_menu.addAction("Current &montage",
                                                            self.plot_montage)
         plot_menu.addSeparator()
@@ -298,6 +301,7 @@ class MainWindow(QMainWindow):
         if self.model.data:  # toggle if specific conditions are met
             if self.model.current["raw"]:
                 raw = True
+                evoked = False
                 bads = bool(self.model.current["raw"].info["bads"])
                 annot = self.model.current["raw"].annotations is not None
                 events = self.model.current["events"] is not None
@@ -315,9 +319,11 @@ class MainWindow(QMainWindow):
                 self.actions["import_events"].setEnabled(False)
                 self.actions["plot_image"].setEnabled(True)
                 if self.model.current["epochs"]:
+                    evoked = False
                     bads = bool(self.model.current["epochs"].info["bads"])
                     self.actions["evoke_data"].setEnabled(True)
                 else:
+                    evoked = True
                     bads = bool(self.model.current["evoked"].info["bads"])
                     self.actions["evoke_data"].setEnabled(False)
             self.actions["export_bads"].setEnabled(enabled and bads)
@@ -341,6 +347,7 @@ class MainWindow(QMainWindow):
             self.actions["events"].setEnabled(enabled and events)
             self.actions["epoch_data"].setEnabled(enabled and events)
             self.actions["add_events"].setEnabled(enabled and events)
+            self.actions["plot_states"].setEnabled(montage and evoked)
 
         # add to recent files
         if len(self.model) > 0:
@@ -507,6 +514,11 @@ class MainWindow(QMainWindow):
             win.findChild(QStatusBar).hide()
             win.installEventFilter(self)  # detect if the figure is closed
             fig.show()
+
+    def plot_states(self):
+        if self.model.current["evoked"]:
+            dialog = EvokedStatesDialog(None, self.model.current["evoked"])
+            dialog.exec_()
 
     def plot_psd(self):
         """Plot power spectral density (PSD)."""
