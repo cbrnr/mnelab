@@ -70,7 +70,11 @@ class TimeFreqDialog(QDialog):
         else:
             try:
                 from ..backend.time_freq import _open_tfr_visualizer
-                self.data.load_data()
+                try:
+                    self.data.load_data()
+                except AttributeError:
+                    pass
                 _open_tfr_visualizer(self)
+
             except Exception as e:
                 print(e)

@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_TimeFreq(object):
     def setupUi(self, TimeFreq):
         TimeFreq.setObjectName("TimeFreq")
-        TimeFreq.resize(360, 204)
+        TimeFreq.resize(500, 200)
         self.verticalLayout = QtWidgets.QVBoxLayout(TimeFreq)
         self.verticalLayout.setObjectName("verticalLayout")
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout()

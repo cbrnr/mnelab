@@ -27,8 +27,8 @@ def _init_psd_parameters(self):
     self.tmax = QLineEdit()
     self.ui.lines.addWidget(self.fmin)
     self.ui.lines.addWidget(self.fmax)
-    self.ui.lines.addWidget(self.tmax)
     self.ui.lines.addWidget(self.tmin)
+    self.ui.lines.addWidget(self.tmax)
 
     if self.data.info['lowpass'] is not None:
         self.fmax.setText(str(self.data.info['lowpass']))
@@ -39,8 +39,8 @@ def _init_psd_parameters(self):
         self.fmin.setText(str(self.data.info['highpass']))
     else:
         self.fmin.setText('0')
-    self.tmin.setText(str(self.data.times[0]))
-    self.tmax.setText(str(self.data.times[-1]))
+    self.tmin.setText('{0:.2}'.format(self.data.times[0]))
+    self.tmax.setText('{0:.2}'.format(self.data.times[-1]))
 
     if self.ui.psdMethod.currentText() == 'welch':
         self.ui.labels.addWidget(QLabel('FFT points'))
@@ -169,7 +169,6 @@ def _read_psd_parameters(self):
             self.params['n_fft'] = int(self.n_fft.text())
             self.params['n_per_seg'] = int(self.n_per_seg.text())
             self.params['n_overlap'] = int(self.n_overlap.text())
-        print(self.params)
 
     except Exception as e:  # Print exception for parameters
         print(e)
@@ -203,9 +202,9 @@ def _init_epochs_psd(self):
     """Initialize the instance of EpochsPSD
     """
     from .epochs_psd import EpochsPSD
-    from .util import float_, int_
 
     if self.ui.psdMethod.currentText() == 'welch':
+        n_fft = self.params['n_fft']
         self.psd = EpochsPSD(
             self.data,
             fmin=self.params['fmin'],
@@ -214,18 +213,18 @@ def _init_epochs_psd(self):
             tmax=self.params['tmax'],
             method='welch',
             n_fft=n_fft,
-            n_per_seg=self.params.get('n_per_seg', 2048),
-            n_overlap=self.params.get('n_overlap', 2048))
+            n_per_seg=self.params.get('n_per_seg', n_fft),
+            n_overlap=self.params.get('n_overlap', 0))
 
     if self.ui.psdMethod.currentText() == 'multitaper':
         self.psd = EpochsPSD(
             self.data,
-            fmin=float_(self.params['fmin']),
-            fmax=float_(self.params['fmax']),
-            tmin=float_(self.params['tmin']),
-            tmax=float_(self.params['tmax']),
+            fmin=self.params['fmin'],
+            fmax=self.params['fmax'],
+            tmin=self.params['tmin'],
+            tmax=self.params['tmax'],
             method='multitaper',
-            bandwidth=float_(self.params.get('bandwidth', 4)))
+            bandwidth=self.params.get('bandwidth', 4))
 
 
 # ---------------------------------------------------------------------
@@ -234,7 +233,6 @@ def _init_raw_psd(self):
     """
     from .raw_psd import RawPSD
 
-    print(self.params)
     if self.ui.psdMethod.currentText() == 'welch':
         self.psd = RawPSD(
             self.data,
@@ -276,7 +274,6 @@ def _open_raw_psd_visualizer(self):
     from ..app.raw_psd import RawPSDWindow
 
     _init_raw_psd(self)
-    print(self.psd.freqs)
 
     psdVisualizer = RawPSDWindow(self.psd, parent=self)
     psdVisualizer.show()

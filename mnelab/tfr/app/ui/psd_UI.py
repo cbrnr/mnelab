@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_PSD(object):
     def setupUi(self, TimeFreq):
         TimeFreq.setObjectName("TimeFreq")
-        TimeFreq.resize(400, 300)
+        TimeFreq.resize(500, 200)
         self.verticalLayout = QtWidgets.QVBoxLayout(TimeFreq)
         self.verticalLayout.setObjectName("verticalLayout")
         self.verticalWidget = QtWidgets.QWidget(TimeFreq)
@@ -57,6 +57,8 @@ class Ui_PSD(object):
         self.lines = QtWidgets.QVBoxLayout()
         self.lines.setObjectName("lines")
         self.horizontalLayout_2.addLayout(self.lines)
+        self.horizontalLayout_2.setStretch(0, 1)
+        self.horizontalLayout_2.setStretch(1, 1)
         self.tabLayout1.addLayout(self.horizontalLayout_2)
         self.horizontalLayout_5 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_5.setSpacing(4)
