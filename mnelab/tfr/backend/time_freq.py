@@ -208,14 +208,14 @@ def _init_epochs_psd(self):
     if self.ui.psdMethod.currentText() == 'welch':
         self.psd = EpochsPSD(
             self.data,
-            fmin=float_(self.params['fmin']),
-            fmax=float_(self.params['fmax']),
-            tmin=float_(self.params['tmin']),
-            tmax=float_(self.params['tmax']),
+            fmin=self.params['fmin'],
+            fmax=self.params['fmax'],
+            tmin=self.params['tmin'],
+            tmax=self.params['tmax'],
             method='welch',
             n_fft=n_fft,
-            n_per_seg=int_(self.params.get('n_per_seg', 2048)),
-            n_overlap=int_(self.params.get('n_overlap', 2048)))
+            n_per_seg=self.params.get('n_per_seg', 2048),
+            n_overlap=self.params.get('n_overlap', 2048))
 
     if self.ui.psdMethod.currentText() == 'multitaper':
         self.psd = EpochsPSD(
@@ -280,3 +280,48 @@ def _open_raw_psd_visualizer(self):
 
     psdVisualizer = RawPSDWindow(self.psd, parent=self)
     psdVisualizer.show()
+
+
+# ---------------------------------------------------------------------
+def _init_avg_tfr(self):
+    """Init tfr from parameters
+    """
+    from .avg_epochs_tfr import AvgEpochsTFR
+    from .util import float_, int_
+    from numpy import arange
+
+    fmin = self.params['fmin']
+    fmax = self.params['fmax']
+    step = self.params.get('freq_step', 1)
+    freqs = arange(fmin, fmax, step)
+    time_window = self.params.get('time_window', 0.5)
+    n_cycles = time_window * freqs
+    n_fft = self.params.get('n_fft', None)
+
+    self.avgTFR = AvgEpochsTFR(
+        self.data, freqs, n_cycles,
+        method=self.ui.tfrMethodBox.currentText(),
+        time_bandwidth=self.params.get('time_bandwidth', 4),
+        width=self.params.get('width', 1),
+        n_fft=n_fft)
+
+
+# ---------------------------------------------------------------------
+def _open_tfr_visualizer(self):
+    """Open TFR Visualizer
+    """
+    from ..app.avg_epochs_tfr import AvgTFRWindow
+    try:
+        _init_avg_tfr(self)
+        psdVisualizer = AvgTFRWindow(self.avgTFR, parent=self)
+        psdVisualizer.show()
+
+    except AttributeError:
+        print('Please initialize the EEG data before'
+              + ' proceeding.')
+
+    except ValueError:
+        print('Time-Window or n_cycles is too high for'
+              + 'the length of the signal.\n'
+              + 'Please use a smaller Time-Window'
+              + ' or less cycles.')
