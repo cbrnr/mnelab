@@ -6,7 +6,7 @@ from .ui.time_freq_UI import Ui_TimeFreq
 
 
 class TimeFreqDialog(QDialog):
-    """Main Window for time-frequency
+    """Main Window for time-frequency.
     """
     def __init__(self, parent=None, data=None):
         super(TimeFreqDialog, self).__init__(parent)
@@ -30,7 +30,7 @@ class TimeFreqDialog(QDialog):
 
     # ---------------------------------------------------------------------
     def setup_boxes(self):
-        """Setup the boxes with names
+        """Setup the boxes with names.
         """
         self.ui.tfrMethodBox.addItem('stockwell')
         self.ui.tfrMethodBox.addItem('morlet')
@@ -38,7 +38,7 @@ class TimeFreqDialog(QDialog):
 
     # ---------------------------------------------------------------------
     def set_bindings(self):
-        """Set the bindings
+        """Set the bindings.
         """
         (self.ui.tfrMethodBox.currentIndexChanged
          .connect(self.init_parameters))
@@ -49,7 +49,7 @@ class TimeFreqDialog(QDialog):
     # Parameters initialization
     # ========================================================================
     def init_parameters(self):
-        """Init the parameters in the text editor
+        """Init the parameters in the text editor.
         """
         from ..backend.time_freq import _init_tfr_parameters
 
@@ -58,7 +58,7 @@ class TimeFreqDialog(QDialog):
     # Open TFR Visualizer
     # ========================================================================
     def open_tfr_visualizer(self):
-        """Open TFR Visualizer for epochs
+        """Open TFR Visualizer for epochs.
         """
         try:
             from ..backend.time_freq import _read_tfr_parameters

@@ -2,6 +2,7 @@ import multiprocessing as mp
 from sys import version_info
 
 import mne
+import matplotlib.pyplot as plt
 
 from PyQt5.QtCore import (pyqtSlot, QStringListModel, QModelIndex, QSettings,
                           QEvent, Qt, QObject)
@@ -473,6 +474,7 @@ class MainWindow(QMainWindow):
             self.model.history.append(
                 "epochs.plot(n_channels={})".format(nchan))
         elif self.model.current["evoked"]:
+            plt.close('all')
             nchan = self.model.current["evoked"].info["nchan"]
             fig = self.model.current["evoked"].plot(show=False, gfp=True)
             self.model.history.append(

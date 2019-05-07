@@ -263,7 +263,7 @@ def _open_epochs_psd_visualizer(self):
     from ..app.epochs_psd import EpochsPSDWindow
 
     _init_epochs_psd(self)
-    psdVisualizer = EpochsPSDWindow(self.psd, parent=self)
+    psdVisualizer = EpochsPSDWindow(self.psd, parent=None)
     psdVisualizer.exec_()
 
 
@@ -275,7 +275,7 @@ def _open_raw_psd_visualizer(self):
 
     _init_raw_psd(self)
 
-    psdVisualizer = RawPSDWindow(self.psd, parent=self)
+    psdVisualizer = RawPSDWindow(self.psd, parent=None)
     psdVisualizer.exec_()
 
 
@@ -310,7 +310,7 @@ def _open_tfr_visualizer(self):
     from ..app.avg_epochs_tfr import AvgTFRWindow
     try:
         _init_avg_tfr(self)
-        psdVisualizer = AvgTFRWindow(self.avgTFR, parent=self)
+        psdVisualizer = AvgTFRWindow(self.avgTFR, parent=None)
         psdVisualizer.exec_()
 
     except AttributeError:
