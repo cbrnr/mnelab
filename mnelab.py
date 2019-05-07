@@ -11,7 +11,7 @@ if __name__ == "__main__":
     matplotlib.use("Qt5Agg")
     app = QApplication(sys.argv)
     app.setApplicationName("MNELAB")
-    app.setOrganizationName("cbrnr")
+    app.setOrganizationName("cbrnr - FCBG")
     model = Model()
     view = MainWindow(model)
     model.view = view

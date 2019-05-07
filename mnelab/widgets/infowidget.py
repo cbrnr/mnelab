@@ -31,6 +31,7 @@ class InfoWidget(QWidget):
         """
         self.clear()
         if values:
+            print(values)
             for row, (key, value) in enumerate(values.items()):
                 left = QLabel(str(key) + ":")
                 right = QLabel(str(value))

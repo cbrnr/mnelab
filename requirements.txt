@@ -3,3 +3,7 @@ numpy
 scipy
 matplotlib
 mne
+pandas
+sklearn
+seaborn
+philistine
