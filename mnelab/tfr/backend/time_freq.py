@@ -31,16 +31,16 @@ def _init_psd_parameters(self):
     self.ui.lines.addWidget(self.tmax)
 
     if self.data.info['lowpass'] is not None:
-        self.fmax.setText(str(self.data.info['lowpass']))
+        self.fmax.setText('{:2.1f}'.format(self.data.info['lowpass']))
     else:
-        self.fmax.setText(str(self.data.info['sfreq'] / 2))
+        self.fmax.setText('{:2.1f}'.format(self.data.info['sfreq'] / 2))
 
     if self.data.info['highpass'] is not None:
-        self.fmin.setText(str(self.data.info['highpass']))
+        self.fmin.setText('{:2.1f}'.format(self.data.info['highpass']))
     else:
         self.fmin.setText('0')
-    self.tmin.setText('{0:.2}'.format(self.data.times[0]))
-    self.tmax.setText('{0:.2}'.format(self.data.times[-1]))
+    self.tmin.setText('{:2.1f}'.format(self.data.times[0]))
+    self.tmax.setText('{:2.1f}'.format(self.data.times[-1]))
 
     if self.ui.psdMethod.currentText() == 'welch':
         self.ui.labels.addWidget(QLabel('FFT points'))
@@ -76,12 +76,12 @@ def _init_tfr_parameters(self):
     self.ui.lines.addWidget(self.fmax)
 
     if self.data.info['lowpass'] is not None:
-        self.fmax.setText(str(self.data.info['lowpass']))
+        self.fmax.setText('{:2.1f}'.format(self.data.info['lowpass']))
     else:
-        self.fmax.setText(str(self.data.info['sfreq'] / 2))
+        self.fmax.setText('{:2.1f}'.format(self.data.info['sfreq'] / 2))
 
     if self.data.info['highpass'] is not None:
-        self.fmin.setText(str(self.data.info['highpass']))
+        self.fmin.setText('{:2.1f}'.format(self.data.info['highpass']))
     else:
         self.fmin.setText('0')
 
