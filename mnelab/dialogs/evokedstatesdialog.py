@@ -17,7 +17,7 @@ from matplotlib.backends.backend_qt5agg \
 class EvokedStatesDialog(QDialog):
     def __init__(self, parent, evoked):
         super().__init__(parent)
-        self.resize(1200, 1000)
+        self.resize(1200, 700)
         self.evoked = evoked.copy().pick_types(eeg=True, meg=True)
         times = self.evoked.times
         n_times = len(times)
@@ -36,28 +36,35 @@ class EvokedStatesDialog(QDialog):
             self.button = QPushButton('Plot')
             self.button.clicked.connect(self.plot)
             self.layout.addWidget(self.button)
-            # Init canvas
-            times = self.times.text().replace(' ', '').split(',')
-            fig = self.evoked.plot_joint(
-                times=times, title="Evoked States Plot", show=False)
-            self.canvas = FigureCanvas(fig)
-            self.toolbar = NavigationToolbar(self.canvas, self)
-            self.layout.addWidget(self.toolbar)
-            self.layout.addWidget(self.canvas)
-            self.canvas.draw()
+            self.to_delete = []
+            self.plot()
 
     def plot(self):
-        self.layout.removeWidget(self.canvas)
-        self.layout.removeWidget(self.toolbar)
+        """Erase and plot the new figures."""
+        for widget in self.to_delete:
+            widget.close()
+        self.to_delete = []
         times = self.times.text().replace(' ', '').split(',')
         try:
-            fig = self.evoked.plot_joint(
-                times=times, title="Evoked States Plot", show=False)
+            plt.close('all')
+            figs = self.evoked.plot_joint(times=times, show=False)
         except Exception as e:
-            fig = plt.figure()
+            figs = plt.figure()
             print(e)
-        self.canvas = FigureCanvas(fig)
-        self.toolbar = NavigationToolbar(self.canvas, self)
-        self.layout.addWidget(self.toolbar)
-        self.layout.addWidget(self.canvas)
-        self.canvas.draw()
+
+        if type(figs) == list:
+            self.resize(1200, 200 + len(figs)*300)
+            for fig in figs:
+                canvas = FigureCanvas(fig)
+                toolbar = NavigationToolbar(canvas, self)
+                self.layout.addWidget(toolbar)
+                self.layout.addWidget(canvas)
+                self.to_delete.append(toolbar)
+                self.to_delete.append(canvas)
+        else:
+            canvas = FigureCanvas(figs)
+            toolbar = NavigationToolbar(canvas, self)
+            self.layout.addWidget(toolbar)
+            self.layout.addWidget(canvas)
+            self.to_delete.append(toolbar)
+            self.to_delete.append(canvas)
