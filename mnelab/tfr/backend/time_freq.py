@@ -96,7 +96,7 @@ def _init_tfr_parameters(self):
         self.time_bandwidth = QLineEdit()
         self.cycles = QLineEdit()
         self.ui.lines.addWidget(self.fstep)
-        self.ui.lines.addWidget(cycles)
+        self.ui.lines.addWidget(self.cycles)
         self.ui.lines.addWidget(self.time_bandwidth)
         self.fstep.setText('1')
         self.tfr_param.setText('0.5')
@@ -193,8 +193,10 @@ def _read_tfr_parameters(self):
             self.params['fstep'] = float(self.fstep.text())
             if self.tfr_param.currentText == 'Time Window (s)':
                 self.params['time_window'] = float(self.cycles.text())
+                self.params['n_cycles'] = None
             else:
                 self.params['n_cycles'] = float(self.cycles.text())
+                self.params['time_window'] = None
             self.params['time_bandwidth'] = float(self.time_bandwidth.text())
         if self.ui.tfrMethodBox.currentText() == 'morlet':
             self.params['fstep'] = float(self.fstep.text())
@@ -207,6 +209,8 @@ def _read_tfr_parameters(self):
         if self.ui.tfrMethodBox.currentText() == 'stockwell':
             self.params['width'] = float(self.width.text())
             self.params['n_fft'] = int(self.n_fft.text())
+            self.params['time_window'] = None
+            self.params['n_cycles'] = None
 
     except Exception as e:  # Print exception for parameters
         print(e)

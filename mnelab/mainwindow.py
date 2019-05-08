@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                              QStatusBar, QToolBar)
 from mne.io.pick import channel_type
 from mne import pick_types
+import matplotlib.pyplot as plt
 
 from .dialogs.filterdialog import FilterDialog
 from .dialogs.findeventsdialog import FindEventsDialog
@@ -574,13 +575,21 @@ class MainWindow(QMainWindow):
         fig.show()
 
     def plot_ica_components(self):
-        self.model.current["ica"].plot_components(
-            inst=self.model.current["raw"])
+        plt.close('all')
+        fig = self.model.current["ica"].plot_components(
+                inst=self.model.current["raw"])
 
     def plot_ica_sources(self):
-        self.model.current["ica"].plot_sources(inst=self.model.current["raw"])
+        plt.close('all')
+        fig = (self.model.current["ica"]
+               .plot_sources(inst=self.model.current["raw"]))
+        win = fig.canvas.manager.window
+        win.setWindowTitle("ICA Sources")
+        win.findChild(QStatusBar).hide()
+        win.installEventFilter(self)  # detect if the figure is closed
 
     def plot_correlation_matrix(self):
+        plt.close('all')
         plot_cormat(self.model.current["raw"], self.model.current["ica"])
 
     def run_ica(self):
