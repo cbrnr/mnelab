@@ -501,7 +501,11 @@ class MainWindow(QMainWindow):
         except KeyError:
             pass
         else:  # this requires MNE >=0.15
-            key_events.func.keywords["params"]["close_key"] = None
+            # This line causes bug... I don't know why exactly
+            # AttributeError: '_StrongRef' object has no attribute 'func'
+            #
+            # key_events.func.keywords["params"]["close_key"] = None
+            pass
 
         fig.show()
 
