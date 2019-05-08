@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import (QLineEdit, QLabel)
+from PyQt5.QtWidgets import (QLineEdit, QLabel, QComboBox)
 
 from ..app.error import show_error
 
@@ -68,8 +68,8 @@ def _init_tfr_parameters(self):
     """
     clear_layout(self.ui.labels)
     clear_layout(self.ui.lines)
-    self.ui.labels.addWidget(QLabel('Fmax (Hz)'))
     self.ui.labels.addWidget(QLabel('Fmin (Hz)'))
+    self.ui.labels.addWidget(QLabel('Fmax (Hz)'))
     self.fmin = QLineEdit()
     self.fmax = QLineEdit()
     self.ui.lines.addWidget(self.fmin)
@@ -87,25 +87,32 @@ def _init_tfr_parameters(self):
 
     if self.ui.tfrMethodBox.currentText() == 'multitaper':
         self.ui.labels.addWidget(QLabel('Frequency Step (Hz)'))
-        self.ui.labels.addWidget(QLabel('Time Window (s)'))
+        self.tfr_param = QComboBox()
+        self.tfr_param.addItem('Time Window (s)')
+        self.tfr_param.addItem('Number of cycles')
+        self.ui.labels.addWidget(self.tfr_param)
         self.ui.labels.addWidget(QLabel('Time Bandwidth (s.Hz)'))
         self.fstep = QLineEdit()
-        self.time_window, self.time_bandwidth = QLineEdit(), QLineEdit()
+        self.time_bandwidth = QLineEdit()
+        self.cycles = QLineEdit()
         self.ui.lines.addWidget(self.fstep)
-        self.ui.lines.addWidget(self.time_window)
+        self.ui.lines.addWidget(cycles)
         self.ui.lines.addWidget(self.time_bandwidth)
         self.fstep.setText('1')
-        self.time_window.setText('0.5')
+        self.tfr_param.setText('0.5')
         self.time_bandwidth.setText('4')
     if self.ui.tfrMethodBox.currentText() == 'morlet':
         self.ui.labels.addWidget(QLabel('Frequency Step (Hz)'))
-        self.ui.labels.addWidget(QLabel('Time Window (s)'))
+        self.tfr_param = QComboBox()
+        self.tfr_param.addItem('Time Window (s)')
+        self.tfr_param.addItem('Number of cycles')
+        self.ui.labels.addWidget(self.tfr_param)
         self.fstep = QLineEdit()
-        self.time_window = QLineEdit()
+        self.cycles = QLineEdit()
         self.ui.lines.addWidget(self.fstep)
-        self.ui.lines.addWidget(self.time_window)
+        self.ui.lines.addWidget(self.cycles)
         self.fstep.setText('1')
-        self.time_window.setText('0.5')
+        self.cycles.setText('0.5')
     if self.ui.tfrMethodBox.currentText() == 'stockwell':
         self.ui.labels.addWidget(QLabel('Width'))
         self.ui.labels.addWidget(QLabel('FFT points'))
@@ -184,11 +191,19 @@ def _read_tfr_parameters(self):
         self.params['fmax'] = float(self.fmax.text())
         if self.ui.tfrMethodBox.currentText() == 'multitaper':
             self.params['fstep'] = float(self.fstep.text())
-            self.params['time_window'] = float(self.time_window.text())
+            if self.tfr_param.currentText == 'Time Window (s)':
+                self.params['time_window'] = float(self.cycles.text())
+            else:
+                self.params['n_cycles'] = float(self.cycles.text())
             self.params['time_bandwidth'] = float(self.time_bandwidth.text())
         if self.ui.tfrMethodBox.currentText() == 'morlet':
             self.params['fstep'] = float(self.fstep.text())
-            self.params['time_window'] = float(self.time_window.text())
+            if self.tfr_param.currentText == 'Time Window (s)':
+                self.params['time_window'] = float(self.cycles.text())
+                self.params['n_cycles'] = None
+            else:
+                self.params['n_cycles'] = float(self.cycles.text())
+                self.params['time_window'] = None
         if self.ui.tfrMethodBox.currentText() == 'stockwell':
             self.params['width'] = float(self.width.text())
             self.params['n_fft'] = int(self.n_fft.text())
@@ -295,8 +310,10 @@ def _init_avg_tfr(self):
     fmax = self.params['fmax']
     step = self.params.get('freq_step', 1)
     freqs = arange(fmin, fmax, step)
-    time_window = self.params.get('time_window', 0.5)
-    n_cycles = time_window * freqs
+    if self.params['time_window']:
+        n_cycles = self.params['time_window'] * freqs
+    else:
+        n_cycles = self.params['n_cycles']
     n_fft = self.params.get('n_fft', None)
 
     self.avgTFR = AvgEpochsTFR(
