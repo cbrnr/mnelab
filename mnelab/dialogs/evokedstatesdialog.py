@@ -2,7 +2,7 @@ from matplotlib.backends.backend_qt5agg \
     import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg \
     import NavigationToolbar2QT as NavigationToolbar
-from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QLineEdit,
+from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QLineEdit, QHBoxLayout,
                              QLabel, QDialogButtonBox, QPushButton)
 from PyQt5.QtCore import pyqtSlot, Qt, QSize
 
@@ -28,10 +28,12 @@ class EvokedStatesDialog(QDialog):
             self.times = QLineEdit()
             self.times.setText(",".join(times))
             self.layout = QVBoxLayout(self)
-            self.layout.addWidget(self.times)
+            hbox = QHBoxLayout(self)
+            hbox.addWidget(self.times)
             self.button = QPushButton('Plot')
             self.button.clicked.connect(self.plot)
-            self.layout.addWidget(self.button)
+            hbox.addWidget(self.button)
+            self.layout.addLayout(hbox)
             self.to_delete = []
             self.plot()
 
@@ -53,11 +55,12 @@ class EvokedStatesDialog(QDialog):
             for fig in figs:
                 canvas = FigureCanvas(fig)
                 toolbar = NavigationToolbar(canvas, self)
-                toolbar.setMaximumHeight(20)
-                self.layout.addWidget(toolbar)
-                self.layout.addWidget(canvas)
-                self.to_delete.append(toolbar)
-                self.to_delete.append(canvas)
+                toolbar.setOrientation(Qt.Vertical)
+                layout = QHBoxLayout()
+                layout.addWidget(toolbar)
+                layout.addWidget(canvas)
+                self.layout.addLayout(layout)
+                self.to_delete.append(layout)
         else:
             self.layout.addWidget(self.label)
             canvas = FigureCanvas(figs)
