@@ -229,7 +229,7 @@ class MainWindow(QMainWindow):
         self.actions["epoch_data"] = tools_menu.addAction(
             "Cut data into epochs...", self.epoch_data)
         self.actions["evoke_data"] = tools_menu.addAction(
-            "Evoke epoched data...", self.evoke_data)
+            "Average epochs...", self.evoke_data)
 
         view_menu = self.menuBar().addMenu("&View")
         self.actions["statusbar"] = view_menu.addAction("Statusbar",
