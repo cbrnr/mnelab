@@ -8,11 +8,10 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-
 class Ui_AvgTFRWindow(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(1680, 1050)
+        Dialog.resize(1308, 1000)
         font = QtGui.QFont()
         font.setPointSize(10)
         Dialog.setFont(font)
@@ -96,6 +95,9 @@ class Ui_AvgTFRWindow(object):
         self.mainSlider.setOrientation(QtCore.Qt.Horizontal)
         self.mainSlider.setObjectName("mainSlider")
         self.horizontalLayout.addWidget(self.mainSlider)
+        self.channelName = QtWidgets.QLineEdit(self.frame)
+        self.channelName.setObjectName("channelName")
+        self.horizontalLayout.addWidget(self.channelName)
         self.horizontalLayout.setStretch(0, 1)
         self.horizontalLayout.setStretch(1, 2)
         self.bottomLayout.addLayout(self.horizontalLayout)

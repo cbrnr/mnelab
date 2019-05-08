@@ -73,7 +73,7 @@ class AvgTFRWindow(QDialog):
         self.ui.tSlider.setMinimum(1)
         self.ui.tSlider.setValue(0)
         self.ui.tSlider.setTickInterval(1)
-        self.update_slider()
+        self.update_widgets()
 
     # ---------------------------------------------------------------------
     def set_bindings(self):
@@ -85,9 +85,10 @@ class AvgTFRWindow(QDialog):
         self.ui.tmax.editingFinished.connect(self.value_changed)
         self.ui.fmin.editingFinished.connect(self.value_changed)
         self.ui.fmax.editingFinished.connect(self.value_changed)
+        self.ui.channelName.editingFinished.connect(self.name_changed)
         self.ui.fSlider.valueChanged.connect(self.slider_freq_changed)
         self.ui.tSlider.valueChanged.connect(self.slider_time_changed)
-        self.ui.displayBox.currentIndexChanged.connect(self.update_slider)
+        self.ui.displayBox.currentIndexChanged.connect(self.update_widgets)
         self.ui.mainSlider.valueChanged.connect(self.value_changed)
         self.ui.log.stateChanged.connect(self.value_changed)
 
@@ -97,6 +98,8 @@ class AvgTFRWindow(QDialog):
         """Gets called when scaling is changed
         """
         self.index = self.ui.mainSlider.value()
+        self.ui.channelName.setText(
+            self.avg.info['ch_names'][self.avg.picks[self.index]])
         self.log = self.ui.log.checkState()
         try:
             self.fmax = float(self.ui.fmax.text())
@@ -137,6 +140,17 @@ class AvgTFRWindow(QDialog):
             self.vmin = None
         self.plot()
 
+    def name_changed(self):
+        """Get called when name is changed."""
+        if self.plotType == 'Time-Frequency plot':
+            try:
+                name = self.ui.channelName.text()
+                names = [self.avg.info['ch_names'][i] for i in self.avg.picks]
+                self.index = names.index(name)
+                self.ui.mainSlider.setValue(self.index)
+            except Exception as e:
+                self.index = self.ui.mainSlider.value()
+
     # ---------------------------------------------------------------------
     def slider_freq_changed(self):
         """Change the values of frequency and time for topomap when
@@ -152,7 +166,7 @@ class AvgTFRWindow(QDialog):
     # ---------------------------------------------------------------------
     def slider_time_changed(self):
         """Change the values of time and time for topomap when
-        the slider is moved
+        the slider is moved.
         """
         time_index = self.ui.tSlider.value()
         tmin, tmax = (self.avg.tfr.times[time_index - 1],
@@ -162,20 +176,34 @@ class AvgTFRWindow(QDialog):
         self.value_changed()
 
     # ---------------------------------------------------------------------
-    def update_slider(self):
-        """Update Maximum of the slider
-        """
+    def update_widgets(self):
+        """Update the widgets."""
         self.plotType = self.ui.displayBox.currentText()
         self.ui.mainSlider.setValue(0)
         if self.plotType == 'Time-Frequency plot':
+            self.ui.channelName.show()
+            self.ui.channelName.setText(
+                self.avg.info['ch_names'][self.avg.picks[self.index]])
+            self.ui.topoFrame.setEnabled(False)
+            self.ui.mainSlider.setEnabled(True)
             self.ui.mainSlider.setMaximum(self.avg.tfr.data.shape[0] - 1)
             self.ui.mainLabel.setText('Channels')
         if self.plotType == 'Channel-Frequency plot':
+            self.ui.channelName.hide()
+            self.ui.topoFrame.setEnabled(False)
+            self.ui.mainSlider.setEnabled(True)
             self.ui.mainSlider.setMaximum(self.avg.tfr.data.shape[2] - 1)
             self.ui.mainLabel.setText('Times')
         if self.plotType == 'Channel-Time plot':
+            self.ui.channelName.hide()
+            self.ui.topoFrame.setEnabled(False)
+            self.ui.mainSlider.setEnabled(True)
             self.ui.mainSlider.setMaximum(self.avg.tfr.data.shape[1] - 1)
             self.ui.mainLabel.setText('Frequencies')
+        if self.plotType == 'Topomap plot':
+            self.ui.channelName.hide()
+            self.ui.topoFrame.setEnabled(True)
+            self.ui.mainSlider.setEnabled(False)
         self.ui.mainSlider.setTickInterval(1)
         self.value_changed()
 
