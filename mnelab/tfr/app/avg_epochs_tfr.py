@@ -157,8 +157,8 @@ class AvgTFRWindow(QDialog):
         the slider is moved
         """
         freq_index = self.ui.fSlider.value()
-        fmin, fmax = (self.avg.tfr.freqs[freq_index - 1],
-                      self.avg.tfr.freqs[freq_index + 1])
+        fmin, fmax = (self.avg.tfr.freqs[freq_index],
+                      self.avg.tfr.freqs[freq_index])
         self.ui.fmin.setText(str(fmin))
         self.ui.fmax.setText(str(fmax))
         self.value_changed()
@@ -169,8 +169,8 @@ class AvgTFRWindow(QDialog):
         the slider is moved.
         """
         time_index = self.ui.tSlider.value()
-        tmin, tmax = (self.avg.tfr.times[time_index - 1],
-                      self.avg.tfr.times[time_index + 1])
+        tmin, tmax = (self.avg.tfr.times[time_index],
+                      self.avg.tfr.times[time_index])
         self.ui.tmin.setText(str(tmin))
         self.ui.tmax.setText(str(tmax))
         self.value_changed()
