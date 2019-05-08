@@ -30,6 +30,7 @@ from .dialogs.epochingdialog import EpochingDialog
 from .dialogs.navepochsdialog import NavEpochsDialog
 from .dialogs.resampledialog import ResampleDialog
 from .dialogs.evokedstatesdialog import EvokedStatesDialog
+from .dialogs.evokedtopodialog import EvokedTopoDialog
 
 
 from .utils.ica_utils import plot_correlation_matrix as plot_cormat
@@ -186,6 +187,8 @@ class MainWindow(QMainWindow):
                                                          self.plot_image)
         self.actions["plot_states"] = plot_menu.addAction("Plot &States...",
                                                           self.plot_states)
+        self.actions["plot_topomaps"] = plot_menu.addAction(
+            "Plot &Topomaps...", self.plot_topomaps)
         self.actions["plot_montage"] = plot_menu.addAction("Current &montage",
                                                            self.plot_montage)
         plot_menu.addSeparator()
@@ -348,6 +351,7 @@ class MainWindow(QMainWindow):
             self.actions["epoch_data"].setEnabled(enabled and events)
             self.actions["add_events"].setEnabled(enabled and events)
             self.actions["plot_states"].setEnabled(montage and evoked)
+            self.actions["plot_topomaps"].setEnabled(montage and evoked)
 
         # add to recent files
         if len(self.model) > 0:
@@ -518,6 +522,11 @@ class MainWindow(QMainWindow):
     def plot_states(self):
         if self.model.current["evoked"]:
             dialog = EvokedStatesDialog(None, self.model.current["evoked"])
+            dialog.exec_()
+
+    def plot_topomaps(self):
+        if self.model.current["evoked"]:
+            dialog = EvokedTopoDialog(None, self.model.current["evoked"])
             dialog.exec_()
 
     def plot_psd(self):
