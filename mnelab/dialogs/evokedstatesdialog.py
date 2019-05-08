@@ -17,7 +17,7 @@ from matplotlib.backends.backend_qt5agg \
 class EvokedStatesDialog(QDialog):
     def __init__(self, parent, evoked):
         super().__init__(parent)
-        self.resize(1200, 700)
+        self.resize(800, 500)
         self.evoked = evoked.copy().pick_types(eeg=True, meg=True)
         times = self.evoked.times
         n_times = len(times)
@@ -27,11 +27,7 @@ class EvokedStatesDialog(QDialog):
                      ' {:2.1f}'.format(times[int(3*n_times / 4)])]
             self.times = QLineEdit()
             self.times.setText(",".join(times))
-            self.label = QLabel('Enter all the times (in s) '
-                                'separated by a comma...')
-            self.label.setMaximumSize(QSize(1000, 25))
             self.layout = QVBoxLayout(self)
-            self.layout.addWidget(self.label)
             self.layout.addWidget(self.times)
             self.button = QPushButton('Plot')
             self.button.clicked.connect(self.plot)
@@ -53,15 +49,17 @@ class EvokedStatesDialog(QDialog):
             print(e)
 
         if type(figs) == list:
-            self.resize(1200, 200 + len(figs)*300)
+            self.resize(800, 200 + len(figs)*300)
             for fig in figs:
                 canvas = FigureCanvas(fig)
                 toolbar = NavigationToolbar(canvas, self)
+                toolbar.setMaximumHeight(20)
                 self.layout.addWidget(toolbar)
                 self.layout.addWidget(canvas)
                 self.to_delete.append(toolbar)
                 self.to_delete.append(canvas)
         else:
+            self.layout.addWidget(self.label)
             canvas = FigureCanvas(figs)
             toolbar = NavigationToolbar(canvas, self)
             self.layout.addWidget(toolbar)

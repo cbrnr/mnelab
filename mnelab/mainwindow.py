@@ -488,7 +488,8 @@ class MainWindow(QMainWindow):
         elif self.model.current["evoked"]:
             plt.close('all')
             nchan = self.model.current["evoked"].info["nchan"]
-            fig = self.model.current["evoked"].plot(show=False, gfp=True)
+            fig = self.model.current["evoked"].plot(show=False, gfp=True,
+                                                    spatial_colors=True)
             self.model.history.append(
                 "epochs.plot(n_channels={})".format(nchan))
         win = fig.canvas.manager.window
@@ -565,8 +566,11 @@ class MainWindow(QMainWindow):
         if self.model.current["raw"]:
             fig = self.model.current["raw"].plot_sensors(show_names=True,
                                                          show=False)
-        else:
+        elif self.model.current["epochs"]:
             fig = self.model.current["epochs"].plot_sensors(show_names=True,
+                                                            show=False)
+        elif self.model.current["evoked"]:
+            fig = self.model.current["evoked"].plot_sensors(show_names=True,
                                                             show=False)
         win = fig.canvas.manager.window
         win.setWindowTitle("Montage")
