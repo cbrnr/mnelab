@@ -334,7 +334,8 @@ class MainWindow(QMainWindow):
             self.actions["export_events"].setEnabled(enabled and events)
             self.actions["export_annotations"].setEnabled(enabled and annot)
             montage = bool(self.model.current["montage"])
-            self.actions["run_ica"].setEnabled(enabled and montage)
+            self.actions["run_ica"].setEnabled(enabled and montage
+                                               and not evoked)
             self.actions["plot_montage"].setEnabled(enabled and montage)
             self.actions["interpolate_bads"].setEnabled(enabled and montage)
             ica = bool(self.model.current["ica"])
@@ -345,9 +346,8 @@ class MainWindow(QMainWindow):
                                                         and montage)
             self.actions["plot_correlation_matrix"].setEnabled(
                 enabled and ica and events and montage)
-            self.actions["run_ica"].setEnabled(enabled and montage and raw)
             self.actions["apply_ica"].setEnabled(enabled and ica
-                                                 and montage and raw)
+                                                 and montage)
             self.actions["events"].setEnabled(enabled and events)
             self.actions["epoch_data"].setEnabled(enabled and events)
             self.actions["add_events"].setEnabled(enabled and events)
@@ -580,13 +580,21 @@ class MainWindow(QMainWindow):
 
     def plot_ica_components(self):
         plt.close('all')
-        fig = self.model.current["ica"].plot_components(
-                inst=self.model.current["raw"])
+        if self.model.current["raw"]:
+            fig = self.model.current["ica"].plot_components(
+                    inst=self.model.current["raw"])
+        elif self.model.current["epochs"]:
+            fig = self.model.current["ica"].plot_components(
+                    inst=self.model.current["epochs"])
 
     def plot_ica_sources(self):
         plt.close('all')
-        fig = (self.model.current["ica"]
-               .plot_sources(inst=self.model.current["raw"]))
+        if self.model.current["raw"]:
+            fig = (self.model.current["ica"]
+                   .plot_sources(inst=self.model.current["raw"]))
+        elif self.model.current["epochs"]:
+            fig = (self.model.current["ica"]
+                   .plot_sources(inst=self.model.current["epochs"]))
         win = fig.canvas.manager.window
         win.setWindowTitle("ICA Sources")
         win.findChild(QStatusBar).hide()
@@ -594,7 +602,11 @@ class MainWindow(QMainWindow):
 
     def plot_correlation_matrix(self):
         plt.close('all')
-        plot_cormat(self.model.current["raw"], self.model.current["ica"])
+        if self.model.current["raw"]:
+            plot_cormat(self.model.current["raw"], self.model.current["ica"])
+        elif self.model.current["epochs"]:
+            plot_cormat(self.model.current["epochs"],
+                        self.model.current["ica"])
 
     def run_ica(self):
         """Run ICA calculation."""
@@ -613,8 +625,11 @@ class MainWindow(QMainWindow):
             have_sklearn = False
         else:
             have_sklearn = True
-
-        nchan = len(pick_types(self.model.current["raw"].info,
+        if self.model.current["raw"]:
+            data = self.model.current["raw"]
+        elif self.model.current["epochs"]:
+            data = self.model.current["epochs"]
+        nchan = len(pick_types(data.info,
                                meg=True, eeg=True, exclude='bads'))
         dialog = RunICADialog(self, nchan, have_picard, have_sklearn)
 
@@ -648,7 +663,7 @@ class MainWindow(QMainWindow):
             pool = mp.Pool(1)
             kwds = {"reject_by_annotation": exclude_bad_segments}
             res = pool.apply_async(func=ica.fit,
-                                   args=(self.model.current["raw"],),
+                                   args=(data,),
                                    kwds=kwds, callback=lambda x: calc.accept())
             if not calc.exec_():
                 pool.terminate()

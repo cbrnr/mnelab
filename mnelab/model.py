@@ -470,6 +470,14 @@ class Model:
 
         size_disk = f"{getsize(fname) / 1024 ** 2:.2f} MB" if fname else "-"
 
+        if ica is not None:
+            method = ica.method.title()
+            if method == "Fastica":
+                method = "FastICA"
+            ica = f"{method} ({ica.n_components_} components)"
+        else:
+            ica = "-"
+
         if raw is not None:  # Raw informations
             if events is not None:
                 nevents = events.shape[0]
@@ -488,14 +496,6 @@ class Model:
                     annots = "-"
             else:
                 annots = "-"
-
-            if ica is not None:
-                method = ica.method.title()
-                if method == "Fastica":
-                    method = "FastICA"
-                ica = f"{method} ({ica.n_components_} components)"
-            else:
-                ica = "-"
 
             return {
                 "File name": fname if fname else "-",
@@ -531,6 +531,7 @@ class Model:
                 "Length": f"{epochs.times[-1] - epochs.times[0]:.2f} s",
                 "Reference": reference if reference else "-",
                 "Montage": montage if montage is not None else "-",
+                "ICA": ica + " applied = " + str(self.current["isApplied"])
             }
 
         elif evoked:
@@ -608,7 +609,12 @@ class Model:
 
     @data_changed
     def apply_ica(self):
-        self.current["ica"].apply(self.current["raw"])
+        if self.current["raw"]:
+            self.current["ica"].apply(self.current["raw"])
+        if self.current["epochs"]:
+            self.current["ica"].apply(self.current["epochs"])
+        if self.current["evoked"]:
+            self.current["ica"].apply(self.current["evoked"])
         self.current["isApplied"] = True
         self.current["name"] += " applied_ica"
 
