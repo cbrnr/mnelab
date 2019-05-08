@@ -18,7 +18,8 @@ class AvgEpochsTFR:
     """
     # ------------------------------------------------------------------------
     def __init__(self, epochs, freqs, n_cycles, method='multitaper',
-                 time_bandwidth=4., n_fft=512, width=1, picks=None):
+                 time_bandwidth=4., n_fft=512, width=1, picks=None,
+                 type='eeg'):
         """
         Initialize the class with an instance of EpochsTFR corresponding
         to the method
@@ -26,7 +27,12 @@ class AvgEpochsTFR:
         from .util import eeg_to_montage
 
         self.cmap = 'jet'
-        epochs = epochs.copy().pick_types(meg=True, eeg=True)
+        if type == 'eeg':
+            epochs = epochs.copy().pick_types(meg=False, eeg=True)
+        if type == 'mag':
+            epochs = epochs.copy().pick_types(meg='mag')
+        if type == 'grad':
+            epochs = epochs.copy().pick_types(meg='grad')
         self.info = epochs.info
 
         if picks is not None:

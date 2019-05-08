@@ -318,9 +318,9 @@ class Model:
     @data_changed
     def import_bads(self, fname):
         """Import bad channels info from a CSV file."""
-        bads=[]
+        bads = []
         print(fname)
-        if  fname[-4:] == ".csv":
+        if fname[-4:] == ".csv":
             with open(fname) as csv_file:
                 bads = csv_file.readline().rstrip('\n').split(",")
         elif fname[-4:] == ".txt":
@@ -336,8 +336,6 @@ class Model:
             raise LabelsNotFoundError(msg)
         else:
             self.current["raw"].info["bads"] += bads
-
-
 
     @data_changed
     def import_events(self, fname):

@@ -49,7 +49,7 @@ class EpochsPSD:
                                   channel
     """
     def __init__(self, epochs, fmin=0, fmax=1500,
-                 tmin=None, tmax=None,
+                 tmin=None, tmax=None, type='eeg',
                  method='multitaper', picks=None,
                  **kwargs):
         """
@@ -58,7 +58,12 @@ class EpochsPSD:
         """
         from .util import eeg_to_montage
 
-        epochs = epochs.copy().pick_types(meg=True, eeg=True)
+        if type == 'eeg':
+            epochs = epochs.copy().pick_types(meg=False, eeg=True)
+        if type == 'mag':
+            epochs = epochs.copy().pick_types(meg='mag')
+        if type == 'grad':
+            epochs = epochs.copy().pick_types(meg='grad')
         self.fmin, self.fmax = fmin, fmax
         self.tmin, self.tmax = tmin, tmax
         self.info = epochs.info

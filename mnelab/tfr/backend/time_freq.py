@@ -214,7 +214,8 @@ def _init_epochs_psd(self):
             method='welch',
             n_fft=n_fft,
             n_per_seg=self.params.get('n_per_seg', n_fft),
-            n_overlap=self.params.get('n_overlap', 0))
+            n_overlap=self.params.get('n_overlap', 0),
+            type=self.ui.typeBox.currentText())
 
     if self.ui.psdMethod.currentText() == 'multitaper':
         self.psd = EpochsPSD(
@@ -224,7 +225,8 @@ def _init_epochs_psd(self):
             tmin=self.params['tmin'],
             tmax=self.params['tmax'],
             method='multitaper',
-            bandwidth=self.params.get('bandwidth', 4))
+            bandwidth=self.params.get('bandwidth', 4),
+            type=self.ui.typeBox.currentText())
 
 
 # ---------------------------------------------------------------------
@@ -243,7 +245,8 @@ def _init_raw_psd(self):
             method='welch',
             n_fft=self.params.get('n_fft', 2048),
             n_per_seg=self.params.get('n_per_seg', 2048),
-            n_overlap=self.params.get('n_overlap', 0))
+            n_overlap=self.params.get('n_overlap', 0),
+            type=self.ui.typeBox.currentText())
 
     if self.ui.psdMethod.currentText() == 'multitaper':
         self.psd = RawPSD(
@@ -253,7 +256,8 @@ def _init_raw_psd(self):
             tmin=self.params['tmin'],
             tmax=self.params['tmax'],
             method='multitaper',
-            bandwidth=self.params.get('bandwidth', 4))
+            bandwidth=self.params.get('bandwidth', 4),
+            type=self.ui.typeBox.currentText())
 
 
 # ---------------------------------------------------------------------
@@ -300,7 +304,7 @@ def _init_avg_tfr(self):
         method=self.ui.tfrMethodBox.currentText(),
         time_bandwidth=self.params.get('time_bandwidth', 4),
         width=self.params.get('width', 1),
-        n_fft=n_fft)
+        n_fft=n_fft, type=self.ui.typeBox.currentText())
 
 
 # ---------------------------------------------------------------------
