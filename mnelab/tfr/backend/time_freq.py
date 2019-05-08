@@ -99,7 +99,7 @@ def _init_tfr_parameters(self):
         self.ui.lines.addWidget(self.cycles)
         self.ui.lines.addWidget(self.time_bandwidth)
         self.fstep.setText('1')
-        self.tfr_param.setText('0.5')
+        self.cycles.setText('0.5')
         self.time_bandwidth.setText('4')
     if self.ui.tfrMethodBox.currentText() == 'morlet':
         self.ui.labels.addWidget(QLabel('Frequency Step (Hz)'))
