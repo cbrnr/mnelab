@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                              QStatusBar, QToolBar)
 from mne.io.pick import channel_type
 from mne import pick_types
-import matplotlib.pyplot as plt
+from collections import Counter
 
 from .dialogs.filterdialog import FilterDialog
 from .dialogs.findeventsdialog import FindEventsDialog
@@ -564,15 +564,26 @@ class MainWindow(QMainWindow):
     def plot_montage(self):
         """Plot current montage."""
         if self.model.current["raw"]:
-            fig = self.model.current["raw"].plot_sensors(show_names=True,
-                                                         show=False)
+            data = self.model.current["raw"]
         elif self.model.current["epochs"]:
-            fig = self.model.current["epochs"].plot_sensors(show_names=True,
-                                                            show=False)
+            data = self.model.current["epochs"]
         elif self.model.current["evoked"]:
-            fig = self.model.current["evoked"].plot_sensors(show_names=True,
-                                                            show=False)
+            data = self.model.current["evoked"]
+        chans = Counter([mne.io.pick.channel_type(data.info, i)
+                         for i in range(data.info["nchan"])])
+        fig = plt.figure()
+        types = []
+        for type in chans.keys():
+            if type in ['eeg', 'mag', 'grad']:
+                types.append(type)
+
+        for i, type in enumerate(types):
+            ax = fig.add_subplot(1, len(types), i + 1)
+            ax.set_title(type + '({} channels)'.format(chans[type]))
+            data.plot_sensors(show_names=True, show=False,
+                              ch_type=type, axes=ax, title='')
         win = fig.canvas.manager.window
+        win.resize(len(types) * 600, 600)
         win.setWindowTitle("Montage")
         win.findChild(QStatusBar).hide()
         win.findChild(QToolBar).hide()
