@@ -1,6 +1,8 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
+from collections import Counter
+import mne
 
 from .ui.psd_UI import Ui_PSD
 
@@ -36,6 +38,14 @@ class PSDDialog(QDialog):
         """
         self.ui.psdMethod.addItem('welch')
         self.ui.psdMethod.addItem('multitaper')
+        chans = Counter([mne.io.pick.channel_type(self.data.info, i)
+                         for i in range(self.data.info["nchan"])])
+        if chans['eeg']:
+            self.ui.typeBox.addItem('eeg')
+        if chans['mag']:
+            self.ui.typeBox.addItem('mag')
+        if chans['grad']:
+            self.ui.typeBox.addItem('grad')
 
     # ---------------------------------------------------------------------
     def set_bindings(self):

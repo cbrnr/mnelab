@@ -14,6 +14,9 @@ class FilterDialog(QDialog):
         grid.addWidget(QLabel("High cutoff frequency (Hz):"), 1, 0)
         self.highedit = QLineEdit()
         grid.addWidget(self.highedit, 1, 1)
+        grid.addWidget(QLabel("Notch filter frequencies (Hz):"), 2, 0)
+        self.notchedit = QLineEdit()
+        grid.addWidget(self.notchedit, 2, 1)
         vbox.addLayout(grid)
         buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
                                      QDialogButtonBox.Cancel)
@@ -31,3 +34,11 @@ class FilterDialog(QDialog):
     def high(self):
         high = self.highedit.text()
         return float(high) if high else None
+
+    @property
+    def notch_freqs(self):
+        freqs = self.notchedit.text().split(',')
+        try:
+            return [float(freq) for freq in freqs]
+        except ValueError:
+            return None

@@ -2,6 +2,7 @@ import multiprocessing as mp
 from sys import version_info
 
 import mne
+import matplotlib.pyplot as plt
 
 from PyQt5.QtCore import (pyqtSlot, QStringListModel, QModelIndex, QSettings,
                           QEvent, Qt, QObject)
@@ -11,6 +12,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                              QStatusBar, QToolBar)
 from mne.io.pick import channel_type
 from mne import pick_types
+from collections import Counter
 
 from .dialogs.filterdialog import FilterDialog
 from .dialogs.findeventsdialog import FindEventsDialog
@@ -28,6 +30,8 @@ from .dialogs.epochingdialog import EpochingDialog
 from .dialogs.epochingdialog import EpochingDialog
 from .dialogs.navepochsdialog import NavEpochsDialog
 from .dialogs.resampledialog import ResampleDialog
+from .dialogs.evokedstatesdialog import EvokedStatesDialog
+from .dialogs.evokedtopodialog import EvokedTopoDialog
 
 
 from .utils.ica_utils import plot_correlation_matrix as plot_cormat
@@ -180,8 +184,12 @@ class MainWindow(QMainWindow):
         plot_menu = self.menuBar().addMenu("&Plot")
         self.actions["plot_raw"] = plot_menu.addAction("&Data...",
                                                        self.plot_raw)
-        self.actions["plot_image"] = plot_menu.addAction("&data as &Image...",
+        self.actions["plot_image"] = plot_menu.addAction("Data as &Image...",
                                                          self.plot_image)
+        self.actions["plot_states"] = plot_menu.addAction("Plot &States...",
+                                                          self.plot_states)
+        self.actions["plot_topomaps"] = plot_menu.addAction(
+            "Plot &Topomaps...", self.plot_topomaps)
         self.actions["plot_montage"] = plot_menu.addAction("Current &montage",
                                                            self.plot_montage)
         plot_menu.addSeparator()
@@ -222,7 +230,7 @@ class MainWindow(QMainWindow):
         self.actions["epoch_data"] = tools_menu.addAction(
             "Cut data into epochs...", self.epoch_data)
         self.actions["evoke_data"] = tools_menu.addAction(
-            "Evoke epoched data...", self.evoke_data)
+            "Average epochs...", self.evoke_data)
 
         view_menu = self.menuBar().addMenu("&View")
         self.actions["statusbar"] = view_menu.addAction("Statusbar",
@@ -297,6 +305,7 @@ class MainWindow(QMainWindow):
         if self.model.data:  # toggle if specific conditions are met
             if self.model.current["raw"]:
                 raw = True
+                evoked = False
                 bads = bool(self.model.current["raw"].info["bads"])
                 annot = self.model.current["raw"].annotations is not None
                 events = self.model.current["events"] is not None
@@ -314,16 +323,19 @@ class MainWindow(QMainWindow):
                 self.actions["import_events"].setEnabled(False)
                 self.actions["plot_image"].setEnabled(True)
                 if self.model.current["epochs"]:
+                    evoked = False
                     bads = bool(self.model.current["epochs"].info["bads"])
                     self.actions["evoke_data"].setEnabled(True)
                 else:
+                    evoked = True
                     bads = bool(self.model.current["evoked"].info["bads"])
                     self.actions["evoke_data"].setEnabled(False)
             self.actions["export_bads"].setEnabled(enabled and bads)
             self.actions["export_events"].setEnabled(enabled and events)
             self.actions["export_annotations"].setEnabled(enabled and annot)
             montage = bool(self.model.current["montage"])
-            self.actions["run_ica"].setEnabled(enabled and montage)
+            self.actions["run_ica"].setEnabled(enabled and montage
+                                               and not evoked)
             self.actions["plot_montage"].setEnabled(enabled and montage)
             self.actions["interpolate_bads"].setEnabled(enabled and montage)
             ica = bool(self.model.current["ica"])
@@ -334,12 +346,13 @@ class MainWindow(QMainWindow):
                                                         and montage)
             self.actions["plot_correlation_matrix"].setEnabled(
                 enabled and ica and events and montage)
-            self.actions["run_ica"].setEnabled(enabled and montage and raw)
             self.actions["apply_ica"].setEnabled(enabled and ica
-                                                 and montage and raw)
+                                                 and montage)
             self.actions["events"].setEnabled(enabled and events)
             self.actions["epoch_data"].setEnabled(enabled and events)
             self.actions["add_events"].setEnabled(enabled and events)
+            self.actions["plot_states"].setEnabled(montage and evoked)
+            self.actions["plot_topomaps"].setEnabled(montage and evoked)
 
         # add to recent files
         if len(self.model) > 0:
@@ -473,8 +486,10 @@ class MainWindow(QMainWindow):
             self.model.history.append(
                 "epochs.plot(n_channels={})".format(nchan))
         elif self.model.current["evoked"]:
+            plt.close('all')
             nchan = self.model.current["evoked"].info["nchan"]
-            fig = self.model.current["evoked"].plot(show=False, gfp=True)
+            fig = self.model.current["evoked"].plot(show=False, gfp=True,
+                                                    spatial_colors=True)
             self.model.history.append(
                 "epochs.plot(n_channels={})".format(nchan))
         win = fig.canvas.manager.window
@@ -488,7 +503,11 @@ class MainWindow(QMainWindow):
         except KeyError:
             pass
         else:  # this requires MNE >=0.15
-            key_events.func.keywords["params"]["close_key"] = None
+            # This line causes bug... I don't know why exactly
+            # AttributeError: '_StrongRef' object has no attribute 'func'
+            #
+            # key_events.func.keywords["params"]["close_key"] = None
+            pass
 
         fig.show()
 
@@ -505,6 +524,16 @@ class MainWindow(QMainWindow):
             win.findChild(QStatusBar).hide()
             win.installEventFilter(self)  # detect if the figure is closed
             fig.show()
+
+    def plot_states(self):
+        if self.model.current["evoked"]:
+            dialog = EvokedStatesDialog(None, self.model.current["evoked"])
+            dialog.exec_()
+
+    def plot_topomaps(self):
+        if self.model.current["evoked"]:
+            dialog = EvokedTopoDialog(None, self.model.current["evoked"])
+            dialog.exec_()
 
     def plot_psd(self):
         """Plot power spectral density (PSD)."""
@@ -535,26 +564,60 @@ class MainWindow(QMainWindow):
     def plot_montage(self):
         """Plot current montage."""
         if self.model.current["raw"]:
-            fig = self.model.current["raw"].plot_sensors(show_names=True,
-                                                         show=False)
-        else:
-            fig = self.model.current["epochs"].plot_sensors(show_names=True,
-                                                            show=False)
+            data = self.model.current["raw"]
+        elif self.model.current["epochs"]:
+            data = self.model.current["epochs"]
+        elif self.model.current["evoked"]:
+            data = self.model.current["evoked"]
+        chans = Counter([mne.io.pick.channel_type(data.info, i)
+                         for i in range(data.info["nchan"])])
+        fig = plt.figure()
+        types = []
+        for type in chans.keys():
+            if type in ['eeg', 'mag', 'grad']:
+                types.append(type)
+
+        for i, type in enumerate(types):
+            ax = fig.add_subplot(1, len(types), i + 1)
+            ax.set_title(type + '({} channels)'.format(chans[type]))
+            data.plot_sensors(show_names=True, show=False,
+                              ch_type=type, axes=ax, title='')
         win = fig.canvas.manager.window
+        win.resize(len(types) * 600, 600)
         win.setWindowTitle("Montage")
         win.findChild(QStatusBar).hide()
         win.findChild(QToolBar).hide()
         fig.show()
 
     def plot_ica_components(self):
-        self.model.current["ica"].plot_components(
-            inst=self.model.current["raw"])
+        plt.close('all')
+        if self.model.current["raw"]:
+            fig = self.model.current["ica"].plot_components(
+                    inst=self.model.current["raw"])
+        elif self.model.current["epochs"]:
+            fig = self.model.current["ica"].plot_components(
+                    inst=self.model.current["epochs"])
 
     def plot_ica_sources(self):
-        self.model.current["ica"].plot_sources(inst=self.model.current["raw"])
+        plt.close('all')
+        if self.model.current["raw"]:
+            fig = (self.model.current["ica"]
+                   .plot_sources(inst=self.model.current["raw"]))
+        elif self.model.current["epochs"]:
+            fig = (self.model.current["ica"]
+                   .plot_sources(inst=self.model.current["epochs"]))
+        win = fig.canvas.manager.window
+        win.setWindowTitle("ICA Sources")
+        win.findChild(QStatusBar).hide()
+        win.installEventFilter(self)  # detect if the figure is closed
 
     def plot_correlation_matrix(self):
-        plot_cormat(self.model.current["raw"], self.model.current["ica"])
+        plt.close('all')
+        if self.model.current["raw"]:
+            plot_cormat(self.model.current["raw"], self.model.current["ica"])
+        elif self.model.current["epochs"]:
+            plot_cormat(self.model.current["epochs"],
+                        self.model.current["ica"])
 
     def run_ica(self):
         """Run ICA calculation."""
@@ -573,8 +636,11 @@ class MainWindow(QMainWindow):
             have_sklearn = False
         else:
             have_sklearn = True
-
-        nchan = len(pick_types(self.model.current["raw"].info,
+        if self.model.current["raw"]:
+            data = self.model.current["raw"]
+        elif self.model.current["epochs"]:
+            data = self.model.current["epochs"]
+        nchan = len(pick_types(data.info,
                                meg=True, eeg=True, exclude='bads'))
         dialog = RunICADialog(self, nchan, have_picard, have_sklearn)
 
@@ -608,7 +674,7 @@ class MainWindow(QMainWindow):
             pool = mp.Pool(1)
             kwds = {"reject_by_annotation": exclude_bad_segments}
             res = pool.apply_async(func=ica.fit,
-                                   args=(self.model.current["raw"],),
+                                   args=(data,),
                                    kwds=kwds, callback=lambda x: calc.accept())
             if not calc.exec_():
                 pool.terminate()
@@ -642,7 +708,7 @@ class MainWindow(QMainWindow):
         dialog = FilterDialog(self)
         if dialog.exec_():
             self.auto_duplicate()
-            self.model.filter(dialog.low, dialog.high)
+            self.model.filter(dialog.low, dialog.high, dialog.notch_freqs)
 
     def find_events(self):
         info = self.model.current["raw"].info

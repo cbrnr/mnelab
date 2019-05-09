@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import (QLineEdit, QLabel)
+from PyQt5.QtWidgets import (QLineEdit, QLabel, QComboBox)
 
 from ..app.error import show_error
 
@@ -31,16 +31,16 @@ def _init_psd_parameters(self):
     self.ui.lines.addWidget(self.tmax)
 
     if self.data.info['lowpass'] is not None:
-        self.fmax.setText(str(self.data.info['lowpass']))
+        self.fmax.setText('{:2.1f}'.format(self.data.info['lowpass']))
     else:
-        self.fmax.setText(str(self.data.info['sfreq'] / 2))
+        self.fmax.setText('{:2.1f}'.format(self.data.info['sfreq'] / 2))
 
     if self.data.info['highpass'] is not None:
-        self.fmin.setText(str(self.data.info['highpass']))
+        self.fmin.setText('{:2.1f}'.format(self.data.info['highpass']))
     else:
         self.fmin.setText('0')
-    self.tmin.setText('{0:.2}'.format(self.data.times[0]))
-    self.tmax.setText('{0:.2}'.format(self.data.times[-1]))
+    self.tmin.setText('{:2.1f}'.format(self.data.times[0]))
+    self.tmax.setText('{:2.1f}'.format(self.data.times[-1]))
 
     if self.ui.psdMethod.currentText() == 'welch':
         self.ui.labels.addWidget(QLabel('FFT points'))
@@ -68,44 +68,51 @@ def _init_tfr_parameters(self):
     """
     clear_layout(self.ui.labels)
     clear_layout(self.ui.lines)
-    self.ui.labels.addWidget(QLabel('Fmax (Hz)'))
     self.ui.labels.addWidget(QLabel('Fmin (Hz)'))
+    self.ui.labels.addWidget(QLabel('Fmax (Hz)'))
     self.fmin = QLineEdit()
     self.fmax = QLineEdit()
     self.ui.lines.addWidget(self.fmin)
     self.ui.lines.addWidget(self.fmax)
 
     if self.data.info['lowpass'] is not None:
-        self.fmax.setText(str(self.data.info['lowpass']))
+        self.fmax.setText('{:2.1f}'.format(self.data.info['lowpass']))
     else:
-        self.fmax.setText(str(self.data.info['sfreq'] / 2))
+        self.fmax.setText('{:2.1f}'.format(self.data.info['sfreq'] / 2))
 
     if self.data.info['highpass'] is not None:
-        self.fmin.setText(str(self.data.info['highpass']))
+        self.fmin.setText('{:2.1f}'.format(self.data.info['highpass']))
     else:
         self.fmin.setText('0')
 
     if self.ui.tfrMethodBox.currentText() == 'multitaper':
         self.ui.labels.addWidget(QLabel('Frequency Step (Hz)'))
-        self.ui.labels.addWidget(QLabel('Time Window (s)'))
+        self.tfr_param = QComboBox()
+        self.tfr_param.addItem('Time Window (s)')
+        self.tfr_param.addItem('Number of cycles')
+        self.ui.labels.addWidget(self.tfr_param)
         self.ui.labels.addWidget(QLabel('Time Bandwidth (s.Hz)'))
         self.fstep = QLineEdit()
-        self.time_window, self.time_bandwidth = QLineEdit(), QLineEdit()
+        self.time_bandwidth = QLineEdit()
+        self.cycles = QLineEdit()
         self.ui.lines.addWidget(self.fstep)
-        self.ui.lines.addWidget(self.time_window)
+        self.ui.lines.addWidget(self.cycles)
         self.ui.lines.addWidget(self.time_bandwidth)
         self.fstep.setText('1')
-        self.time_window.setText('0.5')
+        self.cycles.setText('0.5')
         self.time_bandwidth.setText('4')
     if self.ui.tfrMethodBox.currentText() == 'morlet':
         self.ui.labels.addWidget(QLabel('Frequency Step (Hz)'))
-        self.ui.labels.addWidget(QLabel('Time Window (s)'))
+        self.tfr_param = QComboBox()
+        self.tfr_param.addItem('Time Window (s)')
+        self.tfr_param.addItem('Number of cycles')
+        self.ui.labels.addWidget(self.tfr_param)
         self.fstep = QLineEdit()
-        self.time_window = QLineEdit()
+        self.cycles = QLineEdit()
         self.ui.lines.addWidget(self.fstep)
-        self.ui.lines.addWidget(self.time_window)
+        self.ui.lines.addWidget(self.cycles)
         self.fstep.setText('1')
-        self.time_window.setText('0.5')
+        self.cycles.setText('0.5')
     if self.ui.tfrMethodBox.currentText() == 'stockwell':
         self.ui.labels.addWidget(QLabel('Width'))
         self.ui.labels.addWidget(QLabel('FFT points'))
@@ -184,14 +191,26 @@ def _read_tfr_parameters(self):
         self.params['fmax'] = float(self.fmax.text())
         if self.ui.tfrMethodBox.currentText() == 'multitaper':
             self.params['fstep'] = float(self.fstep.text())
-            self.params['time_window'] = float(self.time_window.text())
+            if self.tfr_param.currentText == 'Time Window (s)':
+                self.params['time_window'] = float(self.cycles.text())
+                self.params['n_cycles'] = None
+            else:
+                self.params['n_cycles'] = float(self.cycles.text())
+                self.params['time_window'] = None
             self.params['time_bandwidth'] = float(self.time_bandwidth.text())
         if self.ui.tfrMethodBox.currentText() == 'morlet':
             self.params['fstep'] = float(self.fstep.text())
-            self.params['time_window'] = float(self.time_window.text())
+            if self.tfr_param.currentText == 'Time Window (s)':
+                self.params['time_window'] = float(self.cycles.text())
+                self.params['n_cycles'] = None
+            else:
+                self.params['n_cycles'] = float(self.cycles.text())
+                self.params['time_window'] = None
         if self.ui.tfrMethodBox.currentText() == 'stockwell':
             self.params['width'] = float(self.width.text())
             self.params['n_fft'] = int(self.n_fft.text())
+            self.params['time_window'] = None
+            self.params['n_cycles'] = None
 
     except Exception as e:  # Print exception for parameters
         print(e)
@@ -214,7 +233,8 @@ def _init_epochs_psd(self):
             method='welch',
             n_fft=n_fft,
             n_per_seg=self.params.get('n_per_seg', n_fft),
-            n_overlap=self.params.get('n_overlap', 0))
+            n_overlap=self.params.get('n_overlap', 0),
+            type=self.ui.typeBox.currentText())
 
     if self.ui.psdMethod.currentText() == 'multitaper':
         self.psd = EpochsPSD(
@@ -224,7 +244,8 @@ def _init_epochs_psd(self):
             tmin=self.params['tmin'],
             tmax=self.params['tmax'],
             method='multitaper',
-            bandwidth=self.params.get('bandwidth', 4))
+            bandwidth=self.params.get('bandwidth', 4),
+            type=self.ui.typeBox.currentText())
 
 
 # ---------------------------------------------------------------------
@@ -243,7 +264,8 @@ def _init_raw_psd(self):
             method='welch',
             n_fft=self.params.get('n_fft', 2048),
             n_per_seg=self.params.get('n_per_seg', 2048),
-            n_overlap=self.params.get('n_overlap', 0))
+            n_overlap=self.params.get('n_overlap', 0),
+            type=self.ui.typeBox.currentText())
 
     if self.ui.psdMethod.currentText() == 'multitaper':
         self.psd = RawPSD(
@@ -253,7 +275,8 @@ def _init_raw_psd(self):
             tmin=self.params['tmin'],
             tmax=self.params['tmax'],
             method='multitaper',
-            bandwidth=self.params.get('bandwidth', 4))
+            bandwidth=self.params.get('bandwidth', 4),
+            type=self.ui.typeBox.currentText())
 
 
 # ---------------------------------------------------------------------
@@ -291,8 +314,10 @@ def _init_avg_tfr(self):
     fmax = self.params['fmax']
     step = self.params.get('freq_step', 1)
     freqs = arange(fmin, fmax, step)
-    time_window = self.params.get('time_window', 0.5)
-    n_cycles = time_window * freqs
+    if self.params['time_window'] is not None:
+        n_cycles = self.params['time_window'] * freqs
+    else:
+        n_cycles = self.params['n_cycles']
     n_fft = self.params.get('n_fft', None)
 
     self.avgTFR = AvgEpochsTFR(
@@ -300,7 +325,7 @@ def _init_avg_tfr(self):
         method=self.ui.tfrMethodBox.currentText(),
         time_bandwidth=self.params.get('time_bandwidth', 4),
         width=self.params.get('width', 1),
-        n_fft=n_fft)
+        n_fft=n_fft, type=self.ui.typeBox.currentText())
 
 
 # ---------------------------------------------------------------------
@@ -313,12 +338,5 @@ def _open_tfr_visualizer(self):
         psdVisualizer = AvgTFRWindow(self.avgTFR, parent=self)
         psdVisualizer.exec_()
 
-    except AttributeError:
-        print('Please initialize the EEG data before'
-              + ' proceeding.')
-
-    except ValueError:
-        print('Time-Window or n_cycles is too high for'
-              + 'the length of the signal.\n'
-              + 'Please use a smaller Time-Window'
-              + ' or less cycles.')
+    except Exception as e:
+        print(e)

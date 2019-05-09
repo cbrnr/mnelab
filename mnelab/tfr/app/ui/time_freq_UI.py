@@ -36,6 +36,19 @@ class Ui_TimeFreq(object):
         self.horizontalLayout_3.setStretch(0, 1)
         self.horizontalLayout_3.setStretch(1, 1)
         self.verticalLayout.addLayout(self.horizontalLayout_3)
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.label = QtWidgets.QLabel(TimeFreq)
+        font = QtGui.QFont()
+        font.setItalic(True)
+        self.label.setFont(font)
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
+        self.label.setObjectName("label")
+        self.horizontalLayout_2.addWidget(self.label)
+        self.typeBox = QtWidgets.QComboBox(TimeFreq)
+        self.typeBox.setObjectName("typeBox")
+        self.horizontalLayout_2.addWidget(self.typeBox)
+        self.verticalLayout.addLayout(self.horizontalLayout_2)
         self.line = QtWidgets.QFrame(TimeFreq)
         self.line.setFrameShape(QtWidgets.QFrame.HLine)
         self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
@@ -66,7 +79,7 @@ class Ui_TimeFreq(object):
 
     def retranslateUi(self, TimeFreq):
         _translate = QtCore.QCoreApplication.translate
-        TimeFreq.setWindowTitle(_translate("TimeFreq",
-                                           "Time-Frequency Visualizer"))
+        TimeFreq.setWindowTitle(_translate("TimeFreq", "Time-Frequency"))
         self.methodLabel_3.setText(_translate("TimeFreq", "Method"))
+        self.label.setText(_translate("TimeFreq", "Type"))
         self.tfrButton.setText(_translate("TimeFreq", "Open Interactive TFR Window"))

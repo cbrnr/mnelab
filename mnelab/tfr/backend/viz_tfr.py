@@ -81,9 +81,11 @@ def _plot_topomap_tfr(self):
     try:
         self.ui.figure.clear()
         ax = self.ui.figure.add_subplot(1, 1, 1)
+        tmin, tmax = _find_values(self.avg.tfr.times, self.tmin, self.tmax)
+        fmin, fmax = _find_values(self.avg.tfr.freqs, self.fmin, self.fmax)
         fig = self.avg.tfr.plot_topomap(
-            tmin=self.tmin, tmax=self.tmax,
-            fmin=self.fmin, fmax=self.fmax,
+            tmin=tmin, tmax=tmax,
+            fmin=fmin, fmax=fmax,
             vmin=self.vmin, vmax=self.vmax,
             axes=ax, mode='logratio',
             cmap=self.avg.cmap, show=False,
@@ -97,3 +99,16 @@ def _plot_topomap_tfr(self):
 
     except ValueError:
         print("Error with the parameters")
+
+
+def _find_values(array, min, max):
+    """Helper function that return two extremum values, to be sure that
+    at least one value in array exist between returned values.
+    """
+    array = array.copy().tolist()
+    for i in range(len(array)):
+        if min < array[i] < max:
+            return min, max
+        if max <= array[i] and 0 < i < len(array) - 1:
+            return array[i - 1], array[i + 1]
+    return array[0], array[-1]

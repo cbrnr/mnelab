@@ -43,7 +43,7 @@ class RawPSD:
     """
     # --------------------------------------------------------------------------
     def __init__(self, raw, fmin=0, fmax=1500,
-                 tmin=None, tmax=None,
+                 tmin=None, tmax=None, type='eeg',
                  method='multitaper', picks=None,
                  **kwargs):
         """
@@ -52,7 +52,12 @@ class RawPSD:
         """
         from .util import eeg_to_montage
 
-        raw = raw.copy().pick_types(meg=True, eeg=True)
+        if type == 'eeg':
+            raw = raw.copy().pick_types(meg=False, eeg=True)
+        if type == 'mag':
+            raw = raw.copy().pick_types(meg='mag')
+        if type == 'grad':
+            raw = raw.copy().pick_types(meg='grad')
         self.fmin, self.fmax = fmin, fmax
         self.tmin, self.tmax = tmin, tmax
         self.info = raw.info

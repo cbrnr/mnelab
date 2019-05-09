@@ -8,6 +8,7 @@ import numpy as np
 from numpy.core.records import fromarrays
 from scipy.io import savemat
 import mne
+import matplotlib.pyplot as plt
 from .utils.montage import eeg_to_montage
 
 
@@ -132,48 +133,54 @@ class Model:
         montage = None
         epochs = None
         if ext.lower() not in SUPPORTED_FORMATS:
-            raise ValueError(f"File format {ftype} is not supported.")
+            raise ValueError("File format {} is not supported.".format(ftype))
 
         if ext.lower() in [".edf", ".bdf"]:
             raw = mne.io.read_raw_edf(fname, preload=True)
-            self.history.append(f"raw = mne.io.read_raw_edf('{fname}', "
-                                f"preload=True)")
+            self.history.append(
+                "raw = mne.io.read_raw_edf('{}')".format(fname),
+                "preload=True)")
         elif ext in [".fif"]:
             try:
                 raw = mne.io.read_raw_fif(fname, preload=True)
                 montage = eeg_to_montage(raw)
-                self.history.append(f"raw = mne.io.read_raw_fif('{fname}', "
-                                    f"preload=True)")
+                self.history.append(
+                    "raw = mne.io.read_raw_fif('{}', ".format(fname)
+                    + "preload=True)")
             except ValueError:
                 raw = None
                 try:
                     epochs = mne.read_epochs(fname, preload=True)
                     evoked = None
                     montage = eeg_to_montage(epochs)
-                    self.history.append(f"epochs = mne.read_epochs('{fname}', "
-                                        f"preload=True)")
+                    self.history.append(
+                        "epochs = mne.read_epochs('{}', ".format(fname)
+                        + "preload=True)")
                 except ValueError:
                     evoked = mne.read_evokeds(fname)
                     epochs = None
                     montage = eeg_to_montage(evoked)
                     self.history.append(
-                        f"evoked = mne.read_evokeds('{fname}')")
+                        "evoked = mne.read_evokeds('{}')".format(fname))
 
         elif ext in [".vhdr"]:
             raw = mne.io.read_raw_brainvision(fname, preload=True)
-            self.history.append(f"raw = mne.io.read_raw_brainvision('{fname}',"
-                                f" preload=True)")
+            self.history.append(
+                "raw = mne.io.read_raw_brainvision('{}',".format(fname),
+                " preload=True)")
         elif ext in [".set"]:
             raw = mne.io.read_raw_eeglab(fname, preload=True)
-            self.history.append(f"raw = mne.io.read_raw_eeglab('{fname}', "
-                                f"preload=True)")
+            self.history.append(
+                "raw = mne.io.read_raw_eeglab('{}', ".format(fname),
+                "preload=True)")
 
         elif ext in [".sef"]:
             from .utils.read import read_sef
             raw = read_sef(fname)
             raw.load_data()
-            self.history.append(f"raw = read_sef'{fname}', "
-                                f"preload=True")
+            self.history.append(
+                "raw = read_sef'{}', ".format(fname),
+                "preload=True")
 
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
                                      ftype=ftype, raw=raw, epochs=epochs,
@@ -213,6 +220,10 @@ class Model:
         elif self.current["epochs"]:
             if ext == ".fif":
                 self.current["epochs"].save(fname)
+
+        elif self.current["evoked"]:
+            if ext == ".fif":
+                self.current["evoked"].save(fname)
 
     def _export_set(self, fname):
         """Export raw to EEGLAB file."""
@@ -254,8 +265,9 @@ class Model:
         nchan = self.current["raw"].info["nchan"]
         ch_names = self.current["raw"].info["ch_names"]
         meas_date = self.current["raw"].info["meas_date"][0]
-        prefilter = (f"{self.current['raw'].info['highpass']}Hz - "
-                     f"{self.curset_montagerent['raw'].info['lowpass']}")
+        prefilter = (
+            "{}}Hz - ".format(self.current['raw'].info['highpass']),
+            "{}".format(self.curset_montagerent['raw'].info['lowpass']))
         pmin, pmax = data.min(axis=1), data.max(axis=1)
         f = pyedflib.EdfWriter(fname, nchan, filetype)
         channel_info = []
@@ -318,9 +330,8 @@ class Model:
     @data_changed
     def import_bads(self, fname):
         """Import bad channels info from a CSV file."""
-        bads=[]
-        print(fname)
-        if  fname[-4:] == ".csv":
+        bads = []
+        if fname[-4:] == ".csv":
             with open(fname) as csv_file:
                 bads = csv_file.readline().rstrip('\n').split(",")
         elif fname[-4:] == ".txt":
@@ -336,8 +347,6 @@ class Model:
             raise LabelsNotFoundError(msg)
         else:
             self.current["raw"].info["bads"] += bads
-
-
 
     @data_changed
     def import_events(self, fname):
@@ -467,6 +476,14 @@ class Model:
 
         size_disk = f"{getsize(fname) / 1024 ** 2:.2f} MB" if fname else "-"
 
+        if ica is not None:
+            method = ica.method.title()
+            if method == "Fastica":
+                method = "FastICA"
+            ica = f"{method} ({ica.n_components_} components)"
+        else:
+            ica = "-"
+
         if raw is not None:  # Raw informations
             if events is not None:
                 nevents = events.shape[0]
@@ -486,25 +503,18 @@ class Model:
             else:
                 annots = "-"
 
-            if ica is not None:
-                method = ica.method.title()
-                if method == "Fastica":
-                    method = "FastICA"
-                ica = f"{method} ({ica.n_components_} components)"
-            else:
-                ica = "-"
-
             return {
                 "File name": fname if fname else "-",
                 "File type": ftype if ftype else "-",
                 "Size on disk": size_disk,
-                "Size in memory": f"{raw.get_data().nbytes / 1024**2:.2f} MB",
+                "Size in memory": "{:.2f} MB".format(
+                    raw.get_data().nbytes / 1024**2),
                 "Data type": "MNE Raw",
-                "Channels": f"{nchan} (" + ", ".join(
+                "Channels": "{} (".format(nchan) + ", ".join(
                     [" ".join([str(v), k.upper()]) for k, v in chans]) + ")",
                 "Samples": raw.n_times,
-                "Sampling frequency": f"{raw.info['sfreq']:.2f} Hz",
-                "Length": f"{raw.n_times / raw.info['sfreq']:.2f} s",
+                "Sampling frequency": "{:.2f} Hz".format(raw.info['sfreq']),
+                "Length": "{:.2f} s".format(raw.n_times / raw.info['sfreq']),
                 "Events": events,
                 "Annotations": annots,
                 "Reference": reference if reference else "-",
@@ -517,17 +527,19 @@ class Model:
                 "File name": fname if fname else "-",
                 "File type": ftype if ftype else "-",
                 "Size on disk": size_disk,
-                "Size in memory":
-                    f"{epochs.get_data().nbytes / 1024**2:.2f} MB",
+                "Size in memory": "{:.2f} MB".format(
+                    epochs.get_data().nbytes / 1024**2),
                 "Data type": "MNE Epochs",
-                "Channels": f"{nchan} (" + ", ".join(
+                "Channels": "{} (".format(nchan) + ", ".join(
                     [" ".join([str(v), k.upper()]) for k, v in chans]) + ")",
                 "Samples": len(epochs.times),
-                "Sampling frequency": f"{epochs.info['sfreq']:.2f} Hz",
+                "Sampling frequency": "{:.2f} Hz".format(epochs.info['sfreq']),
                 "Number of Epochs": str(epochs.get_data().shape[0]),
-                "Length": f"{epochs.times[-1] - epochs.times[0]:.2f} s",
+                "Length": "{:.2f} s".format(
+                    epochs.times[-1] - epochs.times[0]),
                 "Reference": reference if reference else "-",
                 "Montage": montage if montage is not None else "-",
+                "ICA": ica + " applied = " + str(self.current["isApplied"])
             }
 
         elif evoked:
@@ -535,14 +547,15 @@ class Model:
                 "File name": fname if fname else "-",
                 "File type": ftype if ftype else "-",
                 "Size on disk": size_disk,
-                "Size in memory":
-                    f"{evoked.data.nbytes / 1024**2:.2f} MB",
+                "Size in memory": "{:.2f} MB".format(
+                    evoked.data.nbytes / 1024**2),
                 "Data type": "MNE Evoked",
-                "Channels": f"{nchan} (" + ", ".join(
+                "Channels": "{} (".format(nchan) + ", ".join(
                     [" ".join([str(v), k.upper()]) for k, v in chans]) + ")",
                 "Samples": len(evoked.times),
-                "Sampling frequency": f"{evoked.info['sfreq']:.2f} Hz",
-                "Length": f"{evoked.times[-1] - evoked.times[0]:.2f} s",
+                "Sampling frequency": "{:.2f} Hz".format(evoked.info['sfreq']),
+                "Length": "{:.2f} s".format(
+                    evoked.times[-1] - evoked.times[0]),
                 "Reference": reference if reference else "-",
                 "Montage": montage if montage is not None else "-",
             }
@@ -591,21 +604,37 @@ class Model:
             self.history.append("evoked.set_montage()")
 
     @data_changed
-    def filter(self, low, high):
+    def filter(self, low, high, notch_freqs):
         if self.current["raw"]:
-            self.current["raw"].filter(low, high)
-            self.history.append("raw.filter({}, {})".format(low, high))
+            data = self.current["raw"]
+            str = 'raw'
         elif self.current["epochs"]:
-            self.current["epochs"].filter(low, high)
-            self.history.append("epochs.filter({}, {})".format(low, high))
+            data = self.current["epochs"]
+            str = 'epochs'
         elif self.current["evoked"]:
-            self.current["evoked"].filter(low, high)
-            self.history.append("evoked.filter({}, {})".format(low, high))
-        self.current["name"] += " ({}-{} Hz)".format(low, high)
+            data = self.current["evoked"]
+            str = 'evoked'
+
+        data.filter(low, high)
+        self.history.append(str + ".filter({}, {})".format(low, high))
+        self.current["name"] += " (Filter {}-{})".format(low, high)
+        if notch_freqs is not None:
+            try:
+                data.notch_filter(notch_freqs)
+                self.history.append(
+                    str + ".notch_filter({})".format(notch_freqs))
+                self.current["name"] += " (Notch {})".format(notch_freqs)
+            except Exception as e:
+                print(e)
 
     @data_changed
     def apply_ica(self):
-        self.current["ica"].apply(self.current["raw"])
+        if self.current["raw"]:
+            self.current["ica"].apply(self.current["raw"])
+        if self.current["epochs"]:
+            self.current["ica"].apply(self.current["epochs"])
+        if self.current["evoked"]:
+            self.current["ica"].apply(self.current["evoked"])
         self.current["isApplied"] = True
         self.current["name"] += " applied_ica"
 
