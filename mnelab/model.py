@@ -596,23 +596,28 @@ class Model:
 
     @data_changed
     def filter(self, low, high, notch_freqs):
-        if self.current["raw"]:
-            self.current["raw"].filter(low, high)
-            self.current["raw"].notch_filter(notch_freqs)
-            self.history.append("raw.filter({}, {})".format(low, high))
-            self.history.append("raw.notch_filter({})".format(notch_freqs))
-        elif self.current["epochs"]:
-            self.current["epochs"].filter(low, high)
-            self.current["epochs"].notch_filter(notch_freqs)
-            self.history.append("epochs.filter({}, {})".format(low, high))
-            self.history.append("epochs.notch_filter({})".format(notch_freqs))
-        elif self.current["evoked"]:
-            self.current["evoked"].filter(low, high)
-            self.current["evoked"].notch_filter(notch_freqs)
-            self.history.append("evoked.filter({}, {})".format(low, high))
-            self.history.append("evoked.notch_filter({})".format(notch_freqs))
-        self.current["name"] += " ({}-{} Hz) (Notch {} Hz)".format(
-            low, high, notch_freqs)
+        try:
+            if self.current["raw"]:
+                self.current["raw"].filter(low, high)
+                self.current["raw"].notch_filter(notch_freqs)
+                self.history.append("raw.filter({}, {})".format(low, high))
+                self.history.append("raw.notch_filter({})".format(notch_freqs))
+            elif self.current["epochs"]:
+                self.current["epochs"].filter(low, high)
+                self.current["epochs"].notch_filter(notch_freqs)
+                self.history.append("epochs.filter({}, {})".format(low, high))
+                self.history.append(
+                    "epochs.notch_filter({})".format(notch_freqs))
+            elif self.current["evoked"]:
+                self.current["evoked"].filter(low, high)
+                self.current["evoked"].notch_filter(notch_freqs)
+                self.history.append("evoked.filter({}, {})".format(low, high))
+                self.history.append(
+                    "evoked.notch_filter({})".format(notch_freqs))
+            self.current["name"] += " ({}-{} Hz) (Notch {} Hz)".format(
+                low, high, notch_freqs)
+        except Exception as e:
+            print(e)
 
     @data_changed
     def apply_ica(self):
