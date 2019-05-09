@@ -14,6 +14,15 @@ from matplotlib.backends.backend_qt5agg \
     import NavigationToolbar2QT as NavigationToolbar
 
 
+def clear_layout(layout):
+    while layout.count():
+        child = layout.takeAt(0)
+        if child.widget() is not None:
+            child.widget().deleteLater()
+        elif child.layout() is not None:
+            clearLayout(child.layout())
+
+
 class EvokedStatesDialog(QDialog):
     def __init__(self, parent, evoked):
         super().__init__(parent)
@@ -39,8 +48,8 @@ class EvokedStatesDialog(QDialog):
 
     def plot(self):
         """Erase and plot the new figures."""
-        for widget in self.to_delete:
-            widget.close()
+        for layout in self.to_delete:
+            clear_layout(layout)
         self.to_delete = []
         times = self.times.text().replace(' ', '').split(',')
         try:

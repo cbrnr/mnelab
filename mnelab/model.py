@@ -331,7 +331,6 @@ class Model:
     def import_bads(self, fname):
         """Import bad channels info from a CSV file."""
         bads = []
-        print(fname)
         if fname[-4:] == ".csv":
             with open(fname) as csv_file:
                 bads = csv_file.readline().rstrip('\n').split(",")
