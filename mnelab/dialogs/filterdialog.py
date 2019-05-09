@@ -38,4 +38,7 @@ class FilterDialog(QDialog):
     @property
     def notch_freqs(self):
         freqs = self.notchedit.text().split(',')
-        return [float(freq) for freq in freqs]
+        try:
+            return [float(freq) for freq in freqs]
+        except ValueError:
+            return None
