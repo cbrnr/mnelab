@@ -98,14 +98,14 @@ class AvgEpochsTFR:
 
         if method == 'multitaper':
             from mne.time_frequency import tfr_multitaper
-            self.tfr, _ = tfr_multitaper(epochs, freqs, n_cycles,
-                                         time_bandwidth=time_bandwidth,
-                                         picks=self.picks)
+            self.tfr = tfr_multitaper(epochs, freqs, n_cycles,
+                                      time_bandwidth=time_bandwidth,
+                                      picks=self.picks, return_itc=False)
 
         if method == 'morlet':
             from mne.time_frequency import tfr_morlet
-            self.tfr, _ = tfr_morlet(epochs, freqs, n_cycles,
-                                     picks=self.picks)
+            self.tfr = tfr_morlet(epochs, freqs, n_cycles,
+                                  picks=self.picks, return_itc=False)
 
         if method == 'stockwell':
             from mne.time_frequency import tfr_stockwell

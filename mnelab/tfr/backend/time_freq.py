@@ -314,7 +314,7 @@ def _init_avg_tfr(self):
     fmax = self.params['fmax']
     step = self.params.get('freq_step', 1)
     freqs = arange(fmin, fmax, step)
-    if self.params['time_window']:
+    if self.params['time_window'] is not None:
         n_cycles = self.params['time_window'] * freqs
     else:
         n_cycles = self.params['n_cycles']
@@ -338,12 +338,5 @@ def _open_tfr_visualizer(self):
         psdVisualizer = AvgTFRWindow(self.avgTFR, parent=self)
         psdVisualizer.exec_()
 
-    except AttributeError:
-        print('Please initialize the EEG data before'
-              + ' proceeding.')
-
-    except ValueError:
-        print('Time-Window or n_cycles is too high for'
-              + 'the length of the signal.\n'
-              + 'Please use a smaller Time-Window'
-              + ' or less cycles.')
+    except Exception as e:
+        print(e)
