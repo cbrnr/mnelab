@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
                              QLineEdit, QDialogButtonBox)
+from ..utils.information import show_info
 
 
 class ResampleDialog(QDialog):
@@ -20,4 +21,9 @@ class ResampleDialog(QDialog):
     @property
     def sfreq(self):
         sfreq = self.sfreqedit.text()
-        return float(sfreq) if sfreq else None
+        try:
+            return float(sfreq) if sfreq else None
+        except Exception as e:
+            show_info('Sampling frequency value was not correctly read.',
+                      info=str(e))
+            return None

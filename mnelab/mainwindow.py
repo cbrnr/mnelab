@@ -694,23 +694,25 @@ class MainWindow(QMainWindow):
         """Resample data."""
         dialog = ResampleDialog(self)
         if dialog.exec_():
-            self.auto_duplicate()
             sfreq = dialog.sfreq
-            if self.model.current['raw']:
-                self.model.current['raw'].resample(sfreq)
-            elif self.model.current['epochs']:
-                self.model.current['epochs'].resample(sfreq)
-            elif self.model.current['evoked']:
-                self.model.current['evoked'].resample(sfreq)
-            self.model.current["name"] += " (resampled)"
-            self.data_changed()
+            if sfreq is not None:
+                self.auto_duplicate()
+                if self.model.current['raw']:
+                    self.model.current['raw'].resample(sfreq)
+                elif self.model.current['epochs']:
+                    self.model.current['epochs'].resample(sfreq)
+                elif self.model.current['evoked']:
+                    self.model.current['evoked'].resample(sfreq)
+                self.model.current["name"] += " (resampled)"
+                self.data_changed()
 
     def filter_data(self):
         """Filter data."""
         dialog = FilterDialog(self)
         if dialog.exec_():
-            self.auto_duplicate()
-            self.model.filter(dialog.low, dialog.high, dialog.notch_freqs)
+            if dialog.low or dialog.high or dialog.notch_freqs:
+                self.auto_duplicate()
+                self.model.filter(dialog.low, dialog.high, dialog.notch_freqs)
 
     def find_events(self):
         info = self.model.current["raw"].info
@@ -762,6 +764,7 @@ class MainWindow(QMainWindow):
                 show_error('Unable to compute epochs...', info=str(e))
 
     def evoke_data(self):
+        """Compute the mean of epochs."""
         self.auto_duplicate()
         self.model.evoke_data()
 
