@@ -14,6 +14,8 @@ from mne.io.pick import channel_type
 from mne import pick_types
 from collections import Counter
 
+
+from .utils.error import show_error
 from .dialogs.filterdialog import FilterDialog
 from .dialogs.findeventsdialog import FindEventsDialog
 from .dialogs.pickchannelsdialog import PickChannelsDialog
@@ -756,8 +758,8 @@ class MainWindow(QMainWindow):
                 tmax = float(dialog.tmax.text())
                 self.auto_duplicate()
                 self.model.epoch_data(selected, tmin, tmax)
-            except ValueError:
-                print("Invalid values")
+            except ValueError as e:
+                show_error('Unable to compute epochs...', info=str(e))
 
     def evoke_data(self):
         self.auto_duplicate()

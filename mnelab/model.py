@@ -10,6 +10,7 @@ from scipy.io import savemat
 import mne
 import matplotlib.pyplot as plt
 from .utils.montage import eeg_to_montage
+from .utils.error import show_error
 
 
 SUPPORTED_FORMATS = "*.bdf *.edf *.fif *.vhdr *.set *.sef"
@@ -625,7 +626,7 @@ class Model:
                     str + ".notch_filter({})".format(notch_freqs))
                 self.current["name"] += " (Notch {})".format(notch_freqs)
             except Exception as e:
-                print(e)
+                show_error(str(e))
 
     @data_changed
     def apply_ica(self):
@@ -684,15 +685,24 @@ class Model:
             self.current["name"] += " (average ref)"
             if self.current["raw"]:
                 self.current["raw"].set_eeg_reference(ref, projection=False)
-            else:
+            elif self.current["epochs"]:
                 self.current["epochs"].set_eeg_reference(ref, projection=False)
+            elif self.current["evoked"]:
+                self.current["evoked"].set_eeg_reference(ref, projection=False)
         else:
             self.current["name"] += " (" + ",".join(ref) + ")"
             if set(ref) - set(self.current["raw"].info["ch_names"]):
                 # add new reference channel(s) to data
                 try:
-                    mne.add_reference_channels(self.current["raw"], ref,
-                                               copy=False)
+                    if self.current["raw"]:
+                        mne.add_reference_channels(self.current["raw"], ref,
+                                                   copy=False)
+                    elif self.current["epochs"]:
+                        mne.add_reference_channels(self.current["epochs"], ref,
+                                                   copy=False)
+                    elif self.current["evoked"]:
+                        mne.add_reference_channels(self.current["evoked"], ref,
+                                                   copy=False)
                 except RuntimeError:
                     raise AddReferenceError("Cannot add reference channels "
                                             "to average reference signals.")
