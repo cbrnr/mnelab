@@ -266,6 +266,7 @@ def plot_properties_with_timeseries(inst, ica, picks):
     N_PLOT_CHANNELS = 5 if N_CHANNELS >= 5 else N_CHANNELS
     current_idx = {'index': picks}
     scalings = _compute_scalings('auto',inst)
+    linewidth=0.4
     # Data scalings
     eeg_scale = scalings['eeg']
     # Source _compute
@@ -282,7 +283,7 @@ def plot_properties_with_timeseries(inst, ica, picks):
     # PLOT
     x = np.linspace(0,len(S), len(S)) / SFREQ
     ax_source = fig.add_subplot(gs01[0, :])
-    ax_source.plot(x, S, color="r")
+    ax_source.plot(x, S, color="r", linewidth=linewidth)
     ax_source.set_ylabel("source " + str(picks))
     if x[-1] >= 10:
         ax_source.set_xlim(0, 10)
@@ -299,14 +300,14 @@ def plot_properties_with_timeseries(inst, ica, picks):
     plt.setp(ax.get_xticklabels(), visible=False)
     ax.set_ylabel(CH_NAMES[0])
     ax.set_ylim(-eeg_scale, eeg_scale)
-    line, = ax.plot(x,DATA[0])
+    line, = ax.plot(x,DATA[0], linewidth=linewidth)
     LINES.append(line)
     AXES.append(ax)
     for k in range(1,N_PLOT_CHANNELS):
         ax = fig.add_subplot(gs01[k+1, :], sharex=ax_source, sharey=AXES[0])
         plt.setp(ax.get_xticklabels(), visible=False)
         ax.set_ylabel(CH_NAMES[k])
-        line, = ax.plot(x,DATA[k])
+        line, = ax.plot(x,DATA[k], linewidth=linewidth)
         LINES.append(line)
         AXES.append(ax)
 

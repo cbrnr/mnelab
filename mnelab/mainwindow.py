@@ -598,8 +598,8 @@ class MainWindow(QMainWindow):
             fig = plot_ica_components_with_timeseries(self.model.current["ica"],
                                              inst=self.model.current["raw"])
         elif self.model.current["epochs"]:
-            fig = plot_ica_components_with_timeseries(self.model.current["ica"],
-                                             inst=self.model.current["epochs"])
+            fig = (self.model.current["ica"]
+                    .plot_components(inst=self.model.current["epochs"]))
 
     def plot_ica_sources(self):
         plt.close('all')
