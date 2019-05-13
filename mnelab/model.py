@@ -348,6 +348,7 @@ class Model:
             raise LabelsNotFoundError(msg)
         else:
             self.current["raw"].info["bads"] += bads
+        bads = list(set(bads))
 
     @data_changed
     def import_events(self, fname):
