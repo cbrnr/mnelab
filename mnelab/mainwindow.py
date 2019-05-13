@@ -37,6 +37,7 @@ from .dialogs.evokedtopodialog import EvokedTopoDialog
 
 
 from .utils.ica_utils import plot_correlation_matrix as plot_cormat
+from .utils.ica_utils import plot_ica_components_with_timeseries
 from .model import (SUPPORTED_FORMATS, SUPPORTED_EXPORT_FORMATS,
                     LabelsNotFoundError, InvalidAnnotationsError)
 
@@ -201,7 +202,7 @@ class MainWindow(QMainWindow):
             "&Time-Frequency...", self.plot_tfr)
         plot_menu.addSeparator()
         self.actions["plot_ica_components"] = plot_menu.addAction(
-            "ICA &components...", self.plot_ica_components)
+            "ICA &components...", self.plot_ica_components_with_timeseries)
 
         self.actions["plot_ica_sources"] = plot_menu.addAction(
             "&ICA sources...", self.plot_ica_sources)
@@ -591,14 +592,14 @@ class MainWindow(QMainWindow):
         win.findChild(QToolBar).hide()
         fig.show()
 
-    def plot_ica_components(self):
+    def plot_ica_components_with_timeseries(self):
         plt.close('all')
         if self.model.current["raw"]:
-            fig = self.model.current["ica"].plot_components(
-                    inst=self.model.current["raw"])
+            fig = plot_ica_components_with_timeseries(self.model.current["ica"],
+                                             inst=self.model.current["raw"])
         elif self.model.current["epochs"]:
-            fig = self.model.current["ica"].plot_components(
-                    inst=self.model.current["epochs"])
+            fig = plot_ica_components_with_timeseries(self.model.current["ica"],
+                                             inst=self.model.current["epochs"])
 
     def plot_ica_sources(self):
         plt.close('all')

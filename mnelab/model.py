@@ -340,6 +340,7 @@ class Model:
                 bads = txtfile.readline().rstrip('\n').split(" ")
         unknown = set(bads) - set(self.current["raw"].info["ch_names"])
         known = set(bads) - set(unknown)
+
         if unknown:
             msg = ("The following imported channel labels are not " +
                    "present in the data: " + ",".join(unknown))
@@ -348,7 +349,7 @@ class Model:
             raise LabelsNotFoundError(msg)
         else:
             self.current["raw"].info["bads"] += bads
-        bads = list(set(bads))
+        self.current["raw"].info["bads"] = list(set(self.current["raw"].info["bads"]))
 
     @data_changed
     def import_events(self, fname):
