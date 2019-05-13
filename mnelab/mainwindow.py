@@ -651,7 +651,7 @@ class MainWindow(QMainWindow):
             calc = CalcDialog(self, "Calculating ICA", "Calculating ICA.")
             method = dialog.method.currentText()
             exclude_bad_segments = dialog.exclude_bad_segments.isChecked()
-
+            decim = int(dialog.decim.text())
             if dialog.groupBox_advancedparameters.isChecked():
                 n_components = int(dialog.n_components.text())
                 max_pca_components = int(dialog.max_pca_components.text())
@@ -675,7 +675,7 @@ class MainWindow(QMainWindow):
                                             max_iter=max_iter)
 
             pool = mp.Pool(1)
-            kwds = {"reject_by_annotation": exclude_bad_segments}
+            kwds = {"reject_by_annotation": exclude_bad_segments, "decim": decim}
             res = pool.apply_async(func=ica.fit,
                                    args=(data,),
                                    kwds=kwds, callback=lambda x: calc.accept())

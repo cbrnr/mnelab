@@ -74,8 +74,15 @@ class RunICADialog(QDialog):
 
         grid.addWidget(self.groupBox_advancedparameters, 2, 0)
 
+        grid.addWidget(QLabel("decim:"),3, 0)
+        self.decim = QSpinBox()
+        self.decim.setMinimum(0)
+        self.decim.setMaximum(9999)
+        self.decim.setValue(1)
+        self.decim.setAlignment(Qt.AlignRight)
+        grid.addWidget(self.decim)
 
-        grid.addWidget(QLabel("Exclude bad segments:"), 3, 0)
+        grid.addWidget(QLabel("Exclude bad segments:"), 4, 0)
         self.exclude_bad_segments = QCheckBox()
         self.exclude_bad_segments.setChecked(True)
         grid.addWidget(self.exclude_bad_segments)
