@@ -57,9 +57,6 @@ class PSDDialog(QDialog):
         (self.ui.psdButton.clicked
          .connect(self.open_psd_visualizer))
 
-        (self.ui.savePsdButton.clicked
-         .connect(self.choose_save_path))
-
     # Parameters initialization
     # ========================================================================
     def init_parameters(self):
@@ -94,28 +91,3 @@ class PSDDialog(QDialog):
                           + 'before proceeding.')
             except Exception as e:
                 print(e)
-
-    # Saving
-    # ========================================================================
-    def choose_save_path(self):
-        """Open window for choosing save path
-        """
-        if len(self.filePaths) == 1:
-            self.savepath, _ = QFileDialog.getSaveFileName(self)
-        else:
-            self.savepath = QFileDialog.getExistingDirectory(self)
-
-        try:
-            self.read_parameters()
-        except (AttributeError, FileNotFoundError, OSError):
-            print('Cannot find/read file:(\n'
-                  + 'Please verify the path and extension')
-        else:
-            self.save_matrix()
-
-    # ---------------------------------------------------------------------
-    def save_matrix(self):
-        """Save the matrix containing the PSD
-        """
-        from ..backend.time_freq import _save_matrix
-        _save_matrix(self)

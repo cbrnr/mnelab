@@ -10,6 +10,7 @@ from scipy.io import savemat
 import mne
 import matplotlib.pyplot as plt
 from .utils.montage import eeg_to_montage
+from .utils.error import show_error
 
 
 SUPPORTED_FORMATS = "*.bdf *.edf *.fif *.vhdr *.set *.sef"
@@ -327,6 +328,18 @@ class Model:
         fname = join(split(fname)[0], name + ext)
         self.current["ica"].save(fname)
 
+    def export_psd(self, fname):
+        name, ext = splitext(split(fname)[-1])
+        ext = ext if ext else ".hdf"  # automatically add extension
+        fname = join(split(fname)[0], name + ext)
+        self.current["psd"].save_hdf5(fname)
+
+    def export_tfr(self, fname):
+        name, ext = splitext(split(fname)[-1])
+        ext = ext if ext else ".hdf"  # automatically add extension
+        fname = join(split(fname)[0], name + ext)
+        self.current["tfr"].save(fname)
+
     @data_changed
     def import_bads(self, fname):
         """Import bad channels info from a CSV file."""
@@ -453,6 +466,8 @@ class Model:
         events = self.current["events"]
         montage = self.current["montage"]
         ica = self.current["ica"]
+        tfr = self.current["tfr"]
+        psd = self.current["psd"]
 
         if raw is not None:
             data = raw
@@ -519,7 +534,8 @@ class Model:
                 "Annotations": annots,
                 "Reference": reference if reference else "-",
                 "Montage": montage if montage is not None else "-",
-                "ICA": ica + " applied = " + str(self.current["isApplied"])
+                "ICA": ica + " applied = " + str(self.current["isApplied"]),
+                "Power Spectrum Density": str(self.current["psd"] is not None)
             }
 
         elif epochs:  # Epochs informations
@@ -539,7 +555,9 @@ class Model:
                     epochs.times[-1] - epochs.times[0]),
                 "Reference": reference if reference else "-",
                 "Montage": montage if montage is not None else "-",
-                "ICA": ica + " applied = " + str(self.current["isApplied"])
+                "ICA": ica + " applied = " + str(self.current["isApplied"]),
+                "Time-Frequency": str(self.current["tfr"] is not None),
+                "Power Spectrum Density": str(self.current["psd"] is not None)
             }
 
         elif evoked:
@@ -558,6 +576,8 @@ class Model:
                     evoked.times[-1] - evoked.times[0]),
                 "Reference": reference if reference else "-",
                 "Montage": montage if montage is not None else "-",
+                "Time-Frequency": str(self.current["tfr"] is not None),
+                "Power Spectrum Density": str(self.current["psd"] is not None)
             }
 
     @data_changed
@@ -625,7 +645,7 @@ class Model:
                     str + ".notch_filter({})".format(notch_freqs))
                 self.current["name"] += " (Notch {})".format(notch_freqs)
             except Exception as e:
-                print(e)
+                show_error(str(e))
 
     @data_changed
     def apply_ica(self):
@@ -684,15 +704,24 @@ class Model:
             self.current["name"] += " (average ref)"
             if self.current["raw"]:
                 self.current["raw"].set_eeg_reference(ref, projection=False)
-            else:
+            elif self.current["epochs"]:
                 self.current["epochs"].set_eeg_reference(ref, projection=False)
+            elif self.current["evoked"]:
+                self.current["evoked"].set_eeg_reference(ref, projection=False)
         else:
             self.current["name"] += " (" + ",".join(ref) + ")"
             if set(ref) - set(self.current["raw"].info["ch_names"]):
                 # add new reference channel(s) to data
                 try:
-                    mne.add_reference_channels(self.current["raw"], ref,
-                                               copy=False)
+                    if self.current["raw"]:
+                        mne.add_reference_channels(self.current["raw"], ref,
+                                                   copy=False)
+                    elif self.current["epochs"]:
+                        mne.add_reference_channels(self.current["epochs"], ref,
+                                                   copy=False)
+                    elif self.current["evoked"]:
+                        mne.add_reference_channels(self.current["evoked"], ref,
+                                                   copy=False)
                 except RuntimeError:
                     raise AddReferenceError("Cannot add reference channels "
                                             "to average reference signals.")

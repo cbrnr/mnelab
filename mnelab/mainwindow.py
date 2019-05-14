@@ -14,6 +14,8 @@ from mne.io.pick import channel_type
 from mne import pick_types
 from collections import Counter
 
+
+from .utils.error import show_error
 from .dialogs.filterdialog import FilterDialog
 from .dialogs.findeventsdialog import FindEventsDialog
 from .dialogs.pickchannelsdialog import PickChannelsDialog
@@ -161,6 +163,14 @@ class MainWindow(QMainWindow):
             "Export ICA...",
             lambda: self.export_file(model.export_ica,
                                      "Export ICA", "*.fif *.fif.gz"))
+        self.actions["export_psd"] = file_menu.addAction(
+            "Export Power Spectrum Density...",
+            lambda: self.export_file(model.export_psd,
+                                     "Export Power Spectrum Density", "*.hdf"))
+        self.actions["export_tfr"] = file_menu.addAction(
+            "Export Time-Frequency...",
+            lambda: self.export_file(model.export_tfr,
+                                     "Export Time-Frequency", "*.hdf"))
         file_menu.addSeparator()
         self.actions["quit"] = file_menu.addAction("&Quit", self.close,
                                                    QKeySequence.Quit)
@@ -353,6 +363,10 @@ class MainWindow(QMainWindow):
             self.actions["add_events"].setEnabled(enabled and events)
             self.actions["plot_states"].setEnabled(montage and evoked)
             self.actions["plot_topomaps"].setEnabled(montage and evoked)
+            self.actions["export_tfr"].setEnabled(
+                self.model.current["tfr"] is not None)
+            self.actions["export_psd"].setEnabled(
+                self.model.current["psd"] is not None)
 
         # add to recent files
         if len(self.model) > 0:
@@ -550,16 +564,32 @@ class MainWindow(QMainWindow):
             dialog = PSDDialog(self, evoked)
             dialog.exec()
 
+        try:
+            self.model.current["psd"] = dialog.psd
+            self.data_changed()
+        except Exception as e:
+            self.model.current["psd"] = None
+            self.data_changed()
+            print(e)
+
     def plot_tfr(self):
         """Plot Time-Frequency."""
         if self.model.current["epochs"]:
             epochs = self.model.current["epochs"]
             dialog = TimeFreqDialog(self, epochs)
-            dialog.exec()
+            dialog.exec_()
         elif self.model.current["evoked"]:
             evoked = self.model.current["evoked"]
             dialog = TimeFreqDialog(self, evoked)
-            dialog.exec()
+            dialog.exec_()
+
+        try:
+            self.model.current["tfr"] = dialog.avgTFR.tfr
+            self.data_changed()
+        except Exception as e:
+            self.model.current["tfr"] = None
+            self.data_changed()
+            print(e)
 
     def plot_montage(self):
         """Plot current montage."""
@@ -692,23 +722,25 @@ class MainWindow(QMainWindow):
         """Resample data."""
         dialog = ResampleDialog(self)
         if dialog.exec_():
-            self.auto_duplicate()
             sfreq = dialog.sfreq
-            if self.model.current['raw']:
-                self.model.current['raw'].resample(sfreq)
-            elif self.model.current['epochs']:
-                self.model.current['epochs'].resample(sfreq)
-            elif self.model.current['evoked']:
-                self.model.current['evoked'].resample(sfreq)
-            self.model.current["name"] += " (resampled)"
-            self.data_changed()
+            if sfreq is not None:
+                self.auto_duplicate()
+                if self.model.current['raw']:
+                    self.model.current['raw'].resample(sfreq)
+                elif self.model.current['epochs']:
+                    self.model.current['epochs'].resample(sfreq)
+                elif self.model.current['evoked']:
+                    self.model.current['evoked'].resample(sfreq)
+                self.model.current["name"] += " (resampled)"
+                self.data_changed()
 
     def filter_data(self):
         """Filter data."""
         dialog = FilterDialog(self)
         if dialog.exec_():
-            self.auto_duplicate()
-            self.model.filter(dialog.low, dialog.high, dialog.notch_freqs)
+            if dialog.low or dialog.high or dialog.notch_freqs:
+                self.auto_duplicate()
+                self.model.filter(dialog.low, dialog.high, dialog.notch_freqs)
 
     def find_events(self):
         info = self.model.current["raw"].info
@@ -756,10 +788,11 @@ class MainWindow(QMainWindow):
                 tmax = float(dialog.tmax.text())
                 self.auto_duplicate()
                 self.model.epoch_data(selected, tmin, tmax)
-            except ValueError:
-                print("Invalid values")
+            except ValueError as e:
+                show_error('Unable to compute epochs...', info=str(e))
 
     def evoke_data(self):
+        """Compute the mean of epochs."""
         self.auto_duplicate()
         self.model.evoke_data()
 

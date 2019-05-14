@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
                              QLineEdit, QDialogButtonBox)
+from ..utils.information import show_info
 
 
 class FilterDialog(QDialog):
@@ -28,17 +29,31 @@ class FilterDialog(QDialog):
     @property
     def low(self):
         low = self.lowedit.text()
-        return float(low) if low else None
+        try:
+            return float(low) if low else None
+        except ValueError as e:
+            show_info('Low filter value was not correctly read.',
+                      info=str(e))
+            return None
 
     @property
     def high(self):
         high = self.highedit.text()
-        return float(high) if high else None
+        try:
+            return float(high) if high else None
+        except ValueError as e:
+            show_info('High filter value was not correctly read.',
+                      info=str(e))
+            return None
 
     @property
     def notch_freqs(self):
+        if self.notchedit.text() == '':
+            return None
         freqs = self.notchedit.text().split(',')
         try:
             return [float(freq) for freq in freqs]
-        except ValueError:
+        except ValueError as e:
+            show_info('Notch filter value was not correctly read.',
+                      info=str(e))
             return None
