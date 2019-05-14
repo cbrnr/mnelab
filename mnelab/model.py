@@ -328,6 +328,12 @@ class Model:
         fname = join(split(fname)[0], name + ext)
         self.current["ica"].save(fname)
 
+    def export_psd(self, fname):
+        name, ext = splitext(split(fname)[-1])
+        ext = ext if ext else ".hdf"  # automatically add extension
+        fname = join(split(fname)[0], name + ext)
+        self.current["psd"].save_hdf5(fname)
+
     def export_tfr(self, fname):
         name, ext = splitext(split(fname)[-1])
         ext = ext if ext else ".hdf"  # automatically add extension
