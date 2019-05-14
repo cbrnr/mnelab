@@ -163,6 +163,10 @@ class MainWindow(QMainWindow):
             "Export ICA...",
             lambda: self.export_file(model.export_ica,
                                      "Export ICA", "*.fif *.fif.gz"))
+        self.actions["export_tfr"] = file_menu.addAction(
+            "Export Time-Frequency...",
+            lambda: self.export_file(model.export_tfr,
+                                     "Export Time-Frequency", "*.hdf"))
         file_menu.addSeparator()
         self.actions["quit"] = file_menu.addAction("&Quit", self.close,
                                                    QKeySequence.Quit)
@@ -355,6 +359,8 @@ class MainWindow(QMainWindow):
             self.actions["add_events"].setEnabled(enabled and events)
             self.actions["plot_states"].setEnabled(montage and evoked)
             self.actions["plot_topomaps"].setEnabled(montage and evoked)
+            self.actions["export_tfr"].setEnabled(
+                self.model.current["tfr"] is not None)
 
         # add to recent files
         if len(self.model) > 0:
@@ -557,11 +563,19 @@ class MainWindow(QMainWindow):
         if self.model.current["epochs"]:
             epochs = self.model.current["epochs"]
             dialog = TimeFreqDialog(self, epochs)
-            dialog.exec()
+            dialog.exec_()
         elif self.model.current["evoked"]:
             evoked = self.model.current["evoked"]
             dialog = TimeFreqDialog(self, evoked)
-            dialog.exec()
+            dialog.exec_()
+
+        try:
+            self.model.current["tfr"] = dialog.avgTFR.tfr
+            self.data_changed()
+        except Exception as e:
+            self.model.current["tfr"] = None
+            self.data_changed()
+            print(e)
 
     def plot_montage(self):
         """Plot current montage."""
