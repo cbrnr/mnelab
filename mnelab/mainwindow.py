@@ -566,12 +566,12 @@ class MainWindow(QMainWindow):
             dialog.exec()
 
         try:
-            self.model.current["psd"] = dialog.psd
-            self.data_changed()
+            psd = dialog.psd
         except Exception as e:
-            self.model.current["psd"] = None
+            psd = None
+        if psd is not None:
+            self.model.current["psd"] = psd
             self.data_changed()
-            print(e)
 
     def plot_tfr(self):
         """Plot Time-Frequency."""
@@ -585,12 +585,13 @@ class MainWindow(QMainWindow):
             dialog.exec_()
 
         try:
-            self.model.current["tfr"] = dialog.avgTFR.tfr
+            tfr = dialog.avgTFR.tfr
             self.data_changed()
         except Exception as e:
-            self.model.current["tfr"] = None
+            tfr = None
+        if tfr is not None:
+            self.model.current["tfr"] = tfr
             self.data_changed()
-            print(e)
 
     def plot_montage(self):
         """Plot current montage."""
