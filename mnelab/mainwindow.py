@@ -248,6 +248,10 @@ class MainWindow(QMainWindow):
                                                         self._toggle_statusbar)
         self.actions["statusbar"].setCheckable(True)
 
+        batch_menu = self.menuBar().addMenu("&Batch")
+        self.actions["open_batch"] = batch_menu.addAction(
+            "Open &Batch processing window", self.open_batch)
+
         help_menu = self.menuBar().addMenu("&Help")
         self.actions["about"] = help_menu.addAction("&About", self.show_about)
         self.actions["about_qt"] = help_menu.addAction("About &Qt",
@@ -808,6 +812,10 @@ class MainWindow(QMainWindow):
             else:
                 ref = [c.strip() for c in dialog.channellist.text().split(",")]
                 self.model.set_reference(ref)
+
+    def open_batch(self):
+        """Open batch processing dialog."""
+        return
 
     def show_about(self):
         """Show About dialog."""
