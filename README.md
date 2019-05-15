@@ -23,6 +23,7 @@ Optional dependencies provide additional features if installed:
 - [scikit-learn]() (ICA computation via FastICA)
 - [python-picard](https://pierreablin.github.io/picard/) (ICA computation via PICARD)
 - [pyEDFlib](https://github.com/holgern/pyedflib) (export raw to EDF/BDF)
+- [philistine](https://pypi.org/project/philistine/#description) (export raw to VHDR)
 
 In general, it is recommended to always use the latest package versions.
 
@@ -36,6 +37,7 @@ MNELAB comes with the following features that are not available in MNE:
 - Export raw to EDF/BDF (requires [pyEDFlib](https://github.com/holgern/pyedflib))
 - Export raw to EEGLAB SET
 - Import Cartool format (.sef, .vhdr)
+- Export to brainvision format (.vhdr)
 
 ### Installation
 A package on [PyPI](https://pypi.python.org/pypi) will be available soon. Meanwhile, to use MNELAB first install all dependencies (e.g. via `pip` or `conda`) and then [download the source code](https://github.com/cbrnr/mnelab/archive/master.zip). Unpack it into a folder of your choice and run `python3 mnelab.py` in this folder (if this does not work try `python mnelab.py`, just make sure to use Python 3).

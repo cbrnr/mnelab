@@ -330,3 +330,11 @@ class RawPSD:
         data = np.reshape(data, n_channels * num_freq_frames, order='F')
         data.tofile(f)
         f.close()
+
+    # ------------------------------------------------------------------------
+    def save_hdf5(self, path):
+        """Save data as hdf5 file."""
+        from mne.externals.h5io import write_hdf5
+        out = dict(freqs=self.freqs, data=self.data,
+                   info=self.info, method=self.method)
+        write_hdf5(path, out, title='mnepython')

@@ -164,6 +164,14 @@ class MainWindow(QMainWindow):
             "Export ICA...",
             lambda: self.export_file(model.export_ica,
                                      "Export ICA", "*.fif *.fif.gz"))
+        self.actions["export_psd"] = file_menu.addAction(
+            "Export Power Spectrum Density...",
+            lambda: self.export_file(model.export_psd,
+                                     "Export Power Spectrum Density", "*.hdf"))
+        self.actions["export_tfr"] = file_menu.addAction(
+            "Export Time-Frequency...",
+            lambda: self.export_file(model.export_tfr,
+                                     "Export Time-Frequency", "*.hdf"))
         file_menu.addSeparator()
         self.actions["quit"] = file_menu.addAction("&Quit", self.close,
                                                    QKeySequence.Quit)
@@ -356,6 +364,10 @@ class MainWindow(QMainWindow):
             self.actions["add_events"].setEnabled(enabled and events)
             self.actions["plot_states"].setEnabled(montage and evoked)
             self.actions["plot_topomaps"].setEnabled(montage and evoked)
+            self.actions["export_tfr"].setEnabled(
+                self.model.current["tfr"] is not None)
+            self.actions["export_psd"].setEnabled(
+                self.model.current["psd"] is not None)
 
         # add to recent files
         if len(self.model) > 0:
@@ -553,16 +565,32 @@ class MainWindow(QMainWindow):
             dialog = PSDDialog(self, evoked)
             dialog.exec()
 
+        try:
+            self.model.current["psd"] = dialog.psd
+            self.data_changed()
+        except Exception as e:
+            self.model.current["psd"] = None
+            self.data_changed()
+            print(e)
+
     def plot_tfr(self):
         """Plot Time-Frequency."""
         if self.model.current["epochs"]:
             epochs = self.model.current["epochs"]
             dialog = TimeFreqDialog(self, epochs)
-            dialog.exec()
+            dialog.exec_()
         elif self.model.current["evoked"]:
             evoked = self.model.current["evoked"]
             dialog = TimeFreqDialog(self, evoked)
-            dialog.exec()
+            dialog.exec_()
+
+        try:
+            self.model.current["tfr"] = dialog.avgTFR.tfr
+            self.data_changed()
+        except Exception as e:
+            self.model.current["tfr"] = None
+            self.data_changed()
+            print(e)
 
     def plot_montage(self):
         """Plot current montage."""

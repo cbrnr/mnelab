@@ -328,6 +328,18 @@ class Model:
         fname = join(split(fname)[0], name + ext)
         self.current["ica"].save(fname)
 
+    def export_psd(self, fname):
+        name, ext = splitext(split(fname)[-1])
+        ext = ext if ext else ".hdf"  # automatically add extension
+        fname = join(split(fname)[0], name + ext)
+        self.current["psd"].save_hdf5(fname)
+
+    def export_tfr(self, fname):
+        name, ext = splitext(split(fname)[-1])
+        ext = ext if ext else ".hdf"  # automatically add extension
+        fname = join(split(fname)[0], name + ext)
+        self.current["tfr"].save(fname)
+
     @data_changed
     def import_bads(self, fname):
         """Import bad channels info from a CSV file."""
@@ -456,6 +468,8 @@ class Model:
         events = self.current["events"]
         montage = self.current["montage"]
         ica = self.current["ica"]
+        tfr = self.current["tfr"]
+        psd = self.current["psd"]
 
         if raw is not None:
             data = raw
@@ -522,7 +536,8 @@ class Model:
                 "Annotations": annots,
                 "Reference": reference if reference else "-",
                 "Montage": montage if montage is not None else "-",
-                "ICA": ica + " applied = " + str(self.current["isApplied"])
+                "ICA": ica + " applied = " + str(self.current["isApplied"]),
+                "Power Spectrum Density": str(self.current["psd"] is not None)
             }
 
         elif epochs:  # Epochs informations
@@ -542,7 +557,9 @@ class Model:
                     epochs.times[-1] - epochs.times[0]),
                 "Reference": reference if reference else "-",
                 "Montage": montage if montage is not None else "-",
-                "ICA": ica + " applied = " + str(self.current["isApplied"])
+                "ICA": ica + " applied = " + str(self.current["isApplied"]),
+                "Time-Frequency": str(self.current["tfr"] is not None),
+                "Power Spectrum Density": str(self.current["psd"] is not None)
             }
 
         elif evoked:
@@ -561,6 +578,8 @@ class Model:
                     evoked.times[-1] - evoked.times[0]),
                 "Reference": reference if reference else "-",
                 "Montage": montage if montage is not None else "-",
+                "Time-Frequency": str(self.current["tfr"] is not None),
+                "Power Spectrum Density": str(self.current["psd"] is not None)
             }
 
     @data_changed
