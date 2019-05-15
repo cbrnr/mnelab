@@ -95,7 +95,7 @@ class BatchDialog(QDialog):
                 try:
                     name, format = os.path.splitext(os.path.basename(fname))
                     save_name = os.path.join(self.savePath,
-                                             name + '_tfr.hdf')
+                                             name + '_tfr.h5')
                     avgTfr = init_avg_tfr(data, self.tfr_params)
                     avgTfr.tfr.save(save_name)
                 except Exception as e:
@@ -105,17 +105,17 @@ class BatchDialog(QDialog):
 
             # Computing PSD
             if self.ui.psdBox.isChecked():
-                #try:
-                name, format = os.path.splitext(os.path.basename(fname))
-                save_name = os.path.join(self.savePath,
-                                         name + '_psd.hdf')
-                if type == 'raw' or type == 'evoked':
-                    psd = init_raw_psd(data, self.psd_params)
-                    psd.save_hdf5(save_name)
-                elif type == 'epochs':
-                    psd = init_epochs_psd(data, self.psd_params)
-                    psd.save_hdf5(save_name)
-                #except Exception as e:
-                    # print(name, (" PSD computing "
-                    #              + "encountered a problem..."))
-                    # print(e)
+                try:
+                    name, format = os.path.splitext(os.path.basename(fname))
+                    save_name = os.path.join(self.savePath,
+                                             name + '_psd.h5')
+                    if type == 'raw' or type == 'evoked':
+                        psd = init_raw_psd(data, self.psd_params)
+                        psd.save_hdf5(save_name)
+                    elif type == 'epochs':
+                        psd = init_epochs_psd(data, self.psd_params)
+                        psd.save_hdf5(save_name)
+                except Exception as e:
+                    print(name, (" PSD computing "
+                                 + "encountered a problem..."))
+                    print(e)
