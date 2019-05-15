@@ -1,3 +1,4 @@
+from os.path import splitext, split
 from numpy import arange
 import mne
 from ...tfr.backend.avg_epochs_tfr import AvgEpochsTFR
@@ -109,7 +110,7 @@ def init_epochs_psd(data, tfr_params):
 def init_raw_psd(data, tfr_params):
     """Initialize the instance of RawPSD."""
 
-    if tfr_params['method'] == 'multitaper':
+    if tfr_params['method'] == 'welch':
         return RawPSD(
             data,
             fmin=tfr_params['fmin'],
@@ -121,7 +122,7 @@ def init_raw_psd(data, tfr_params):
             n_per_seg=tfr_params.get('n_per_seg', 2048),
             n_overlap=tfr_params.get('n_overlap', 0))
 
-    if tfr_params['method'] == 'welch':
+    if tfr_params['method'] == 'multitaper':
         return RawPSD(
             data,
             fmin=tfr_params['fmin'],

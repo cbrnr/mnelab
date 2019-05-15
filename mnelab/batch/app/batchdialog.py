@@ -1,4 +1,5 @@
 import os
+import time
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -34,13 +35,14 @@ class BatchDialog(QDialog):
         fnames, _ = QFileDialog.getOpenFileNames(
             self, "Select files for batch processing...",
             "", "*.fif")
-        self.ui.directory.setText(os.path.dirname(fnames[0]))
-        if self.savePath == '':
-            self.set_save_path(os.path.dirname(fnames[0]))
-        names = [os.path.basename(fname) for fname in fnames]
-        self.ui.listWidget.clear()
-        self.ui.listWidget.insertItems(0, names)
-        self.fnames = fnames
+        if len(fnames) != 0:
+            self.ui.directory.setText(os.path.dirname(fnames[0]))
+            if self.savePath == '':
+                self.set_save_path(os.path.dirname(fnames[0]))
+            names = [os.path.basename(fname) for fname in fnames]
+            self.ui.listWidget.clear()
+            self.ui.listWidget.insertItems(0, names)
+            self.fnames = fnames
 
     def set_save_path(self, path):
         self.savePath = path
@@ -65,8 +67,11 @@ class BatchDialog(QDialog):
 
     def batch_process(self):
         """Starts batch processing."""
+        self.ui.progress.setMaximum(len(self.fnames))
+        self.ui.progress.setValue(0)
 
-        for fname in self.fnames:
+        for index, fname in enumerate(self.fnames):
+            self.ui.progress.setValue(index)
             data, type = _read(fname)
             ending = ''
 
@@ -88,7 +93,7 @@ class BatchDialog(QDialog):
                 name, format = os.path.splitext(os.path.basename(fname))
                 save_name = os.path.join(self.savePath,
                                          name + ending + format)
-                data.save(save_name)
+                data.save(save_name, overwrite=True)
 
             # Computing tfr
             if self.ui.tfrBox.isChecked():
@@ -111,11 +116,15 @@ class BatchDialog(QDialog):
                                              name + '_psd.h5')
                     if type == 'raw' or type == 'evoked':
                         psd = init_raw_psd(data, self.psd_params)
-                        psd.save_hdf5(save_name)
+                        psd.save_hdf5(save_name, overwrite=True)
                     elif type == 'epochs':
                         psd = init_epochs_psd(data, self.psd_params)
-                        psd.save_hdf5(save_name)
+                        psd.save_hdf5(save_name, overwrite=True)
                 except Exception as e:
                     print(name, (" PSD computing "
                                  + "encountered a problem..."))
                     print(e)
+
+        self.ui.progress.setValue(len(self.fnames))
+        time.sleep(2)
+        self.ui.progress.setValue(0)

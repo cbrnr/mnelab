@@ -164,4 +164,4 @@ class AvgEpochsTFR:
         extent = [self.tfr.times[0], self.tfr.times[-1],
                   .5,                len(self.picks)+.5]
         return ax.imshow(data, extent=extent, aspect='auto',
-origin='lower', vmax=vmax, vmin=vmin, cmap=self.cmap)
+                         origin='lower', vmax=vmax, vmin=vmin, cmap=self.cmap)
