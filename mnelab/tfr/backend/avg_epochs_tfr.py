@@ -2,12 +2,10 @@ class AvgEpochsTFR:
     """
     This class contains the PSD of a set of Epochs. It stores the data of
     the psds of each epoch. The psds are calculated with the Library mne.
-
     Attributes:
     ============
     picks       (array[int])   : Contains the picked channels
     tfr         (EpochsTFR)    : Contains the EpochsTFR data computed by mne
-
 
     Methods:
     ============
@@ -19,7 +17,7 @@ class AvgEpochsTFR:
     # ------------------------------------------------------------------------
     def __init__(self, epochs, freqs, n_cycles, method='multitaper',
                  time_bandwidth=4., n_fft=512, width=1, picks=None,
-                 type='eeg'):
+                 type='all'):
         """
         Initialize the class with an instance of EpochsTFR corresponding
         to the method
@@ -29,10 +27,12 @@ class AvgEpochsTFR:
         self.cmap = 'jet'
         if type == 'eeg':
             epochs = epochs.copy().pick_types(meg=False, eeg=True)
-        if type == 'mag':
+        elif type == 'mag':
             epochs = epochs.copy().pick_types(meg='mag')
-        if type == 'grad':
+        elif type == 'grad':
             epochs = epochs.copy().pick_types(meg='grad')
+        else:
+            epochs = epochs.copy()
         self.info = epochs.info
 
         if picks is not None:
@@ -164,4 +164,4 @@ class AvgEpochsTFR:
         extent = [self.tfr.times[0], self.tfr.times[-1],
                   .5,                len(self.picks)+.5]
         return ax.imshow(data, extent=extent, aspect='auto',
-                         origin='lower', vmax=vmax, vmin=vmin, cmap=self.cmap)
+origin='lower', vmax=vmax, vmin=vmin, cmap=self.cmap)

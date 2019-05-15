@@ -34,7 +34,7 @@ from .dialogs.navepochsdialog import NavEpochsDialog
 from .dialogs.resampledialog import ResampleDialog
 from .dialogs.evokedstatesdialog import EvokedStatesDialog
 from .dialogs.evokedtopodialog import EvokedTopoDialog
-
+from .dialogs.batchdialog import BatchDialog
 
 from .utils.ica_utils import plot_correlation_matrix as plot_cormat
 from .utils.ica_utils import plot_ica_components_with_timeseries
@@ -259,7 +259,7 @@ class MainWindow(QMainWindow):
 
         # actions that are always enabled
         self.always_enabled = ["open_file", "about", "about_qt", "quit",
-                               "statusbar"]
+                               "statusbar", "open_batch"]
 
         # set up data model for sidebar (list of open files)
         self.names = QStringListModel()
@@ -815,7 +815,8 @@ class MainWindow(QMainWindow):
 
     def open_batch(self):
         """Open batch processing dialog."""
-        return
+        dialog = BatchDialog(self)
+        dialog.exec_()
 
     def show_about(self):
         """Show About dialog."""

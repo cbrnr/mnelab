@@ -43,7 +43,7 @@ class RawPSD:
     """
     # --------------------------------------------------------------------------
     def __init__(self, raw, fmin=0, fmax=1500,
-                 tmin=None, tmax=None, type='eeg',
+                 tmin=None, tmax=None, type='all',
                  method='multitaper', picks=None,
                  **kwargs):
         """

@@ -49,7 +49,7 @@ class EpochsPSD:
                                   channel
     """
     def __init__(self, epochs, fmin=0, fmax=1500,
-                 tmin=None, tmax=None, type='eeg',
+                 tmin=None, tmax=None, type='all',
                  method='multitaper', picks=None,
                  **kwargs):
         """
@@ -449,6 +449,6 @@ class EpochsPSD:
         """Save data as hdf5 file."""
         from mne.externals.h5io import write_hdf5
         out = dict(freqs=self.freqs, data=self.data,
-                   avg_data=np.mean(self.data, axis=0),
+                   avg_data=mean(self.data, axis=0),
                    info=self.info, method=self.method)
         write_hdf5(path, out, title='mnepython')
