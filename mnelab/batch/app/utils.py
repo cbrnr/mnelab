@@ -1,8 +1,10 @@
+from os.path import splitext, split
 from numpy import arange
 import mne
 from ...tfr.backend.avg_epochs_tfr import AvgEpochsTFR
 from ...tfr.backend.epochs_psd import EpochsPSD
 from ...tfr.backend.raw_psd import RawPSD
+from ...utils.read import read_sef
 
 
 class ReadFileError(Exception):
@@ -11,27 +13,46 @@ class ReadFileError(Exception):
 
 def _read(fname):
     """Custom function for reading file in batch processing."""
+    name, ext = splitext(split(fname)[-1])
 
-    # Try raw
-    try:
-        raw = mne.io.read_raw_fif(fname, preload=True)
+    if ext in ['.fif']:
+        # Try raw
+        try:
+            raw = mne.io.read_raw_fif(fname, preload=True)
+            return raw, 'raw'
+        except Exception as e:
+            pass
+
+        # Try epochs
+        try:
+            epochs = mne.read_epochs(fname, preload=True)
+            return epochs, 'epochs'
+        except Exception as e:
+            pass
+
+        # Try evoked
+        try:
+            evoked = mne.read_evokeds(fname, preload=True)
+            return evoked, 'evoked'
+        except Exception as e:
+            pass
+
+    elif ext.lower() in [".edf", ".bdf"]:
+        raw = mne.io.read_raw_edf(fname, preload=True)
         return raw, 'raw'
-    except Exception as e:
-        pass
 
-    # Try epochs
-    try:
-        epochs = mne.read_epochs(fname, preload=True)
-        return epochs, 'epochs'
-    except Exception as e:
-        pass
+    elif ext in [".vhdr"]:
+        raw = mne.io.read_raw_brainvision(fname, preload=True)
+        return raw, 'raw'
 
-    # Try evoked
-    try:
-        evoked = mne.read_evokeds(fname, preload=True)
-        return evoked, 'evoked'
-    except Exception as e:
-        pass
+    elif ext in [".set"]:
+        raw = mne.io.read_raw_eeglab(fname, preload=True)
+        return raw, 'raw'
+
+    elif ext in [".sef"]:
+        raw = read_sef(fname)
+        raw.load_data()
+        return raw, 'raw'
 
     raise ReadFileError()
 
@@ -89,7 +110,7 @@ def init_epochs_psd(data, tfr_params):
 def init_raw_psd(data, tfr_params):
     """Initialize the instance of RawPSD."""
 
-    if tfr_params['method'] == 'multitaper':
+    if tfr_params['method'] == 'welch':
         return RawPSD(
             data,
             fmin=tfr_params['fmin'],
@@ -101,7 +122,7 @@ def init_raw_psd(data, tfr_params):
             n_per_seg=tfr_params.get('n_per_seg', 2048),
             n_overlap=tfr_params.get('n_overlap', 0))
 
-    if tfr_params['method'] == 'welch':
+    if tfr_params['method'] == 'multitaper':
         return RawPSD(
             data,
             fmin=tfr_params['fmin'],
