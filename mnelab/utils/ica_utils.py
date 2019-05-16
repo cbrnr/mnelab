@@ -221,7 +221,7 @@ def plot_correlation(df, match_templates, pos, quality, head_pos=None):
                       vmin=temp.min(), vmax=temp.max(), outlines="head")
     ax_colorbar = fig.add_subplot(gs[5, :])
     ax_matrix = fig.add_subplot(gs[7:11, :])
-    sns.heatmap(dfp, linewidths=0.1, annot=False, ax=ax_matrix, cmap="YlGnBu",
+    sns.heatmap(dfp, linewidths=0.1, annot=False, ax=ax_matrix, cmap="jet",
                 vmin=0, vmax=1, square=False, cbar_ax=ax_colorbar,
                 cbar_kws={"orientation": 'horizontal'})
     ax_matrix.set_ylabel('')

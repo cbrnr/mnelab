@@ -626,7 +626,6 @@ class MainWindow(QMainWindow):
         fig.show()
 
     def plot_ica_components_with_timeseries(self):
-        plt.close('all')
         if self.model.current["raw"]:
             fig = plot_ica_components_with_timeseries(self.model.current["ica"],
                                              inst=self.model.current["raw"])
@@ -635,7 +634,6 @@ class MainWindow(QMainWindow):
                     .plot_components(inst=self.model.current["epochs"]))
 
     def plot_ica_sources(self):
-        plt.close('all')
         if self.model.current["raw"]:
             fig = (self.model.current["ica"]
                    .plot_sources(inst=self.model.current["raw"]))
@@ -648,7 +646,6 @@ class MainWindow(QMainWindow):
         win.installEventFilter(self)  # detect if the figure is closed
 
     def plot_correlation_matrix(self):
-        plt.close('all')
         if self.model.current["raw"]:
             plot_cormat(self.model.current["raw"], self.model.current["ica"])
         elif self.model.current["epochs"]:
