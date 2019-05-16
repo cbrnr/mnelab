@@ -16,7 +16,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 import matplotlib.pyplot as plt
-from matplotlib.widgets import Slider, Button
+from matplotlib.widgets import Slider, Button, CheckButtons
 from matplotlib.gridspec import GridSpec
 import matplotlib.patches as patches
 import scipy.signal
@@ -52,7 +52,6 @@ def plot_correlation_matrix(raw, ica):
     templates = components_template[[0, 7]]
     df = compute_correlation(templates, components_ics)
     raw.rename_channels(tolow)
-    print(common)
     raw.reorder_channels(common)
     ch_names = raw.info["ch_names"]
     pos = _find_topomap_coords(
@@ -246,12 +245,16 @@ def plot_properties_with_timeseries(inst, ica, picks):
 
     #DATA
     DATA = inst.get_data()
+    # Create data without the ica comp
+    DATA_proc = ica.apply(inst.copy(),exclude=[picks]).get_data()
+
     if type(inst) == mne.io.fiff.raw.Raw:
         S = ica.get_sources(inst=inst).get_data()[picks]
 
     elif type(inst) == mne.epochs.EpochsFIF:
         n_epochs = len(DATA)
         DATA = DATA.reshape(len(DATA[0]), len(DATA[0][0])* n_epochs)
+        DATA_proc = DATA_proc.reshape(len(DATA[0]), len(DATA[0][0])* n_epochs)
         # Epochs
         tmin = inst.tmin
         offset = 0
@@ -263,22 +266,28 @@ def plot_properties_with_timeseries(inst, ica, picks):
 
 
     # Plot config
-    N_PLOT_CHANNELS = 5 if N_CHANNELS >= 5 else N_CHANNELS
+    N_PLOT_CHANNELS = 4 #5 if N_CHANNELS >= 5 else N_CHANNELS
     current_idx = {'index': picks}
     scalings = _compute_scalings('auto',inst)
-    linewidth=0.4
+    linewidth=0.5
+
     # Data scalings
     eeg_scale = scalings['eeg']
+
     # Source _compute
     source_scale = np.percentile(S.ravel(), [0.5, 99.5])
     source_scale = np.max(np.abs(source_scale))
+
     # Plot grid
     fig = plt.figure(figsize=(12, 6))
     gs = GridSpec(1, 4)
     gs00 = gs[0].subgridspec(3, 1)
     gs01 = gs[1:3].subgridspec(N_PLOT_CHANNELS+1, 1)
-    gs02 = gs[3].subgridspec(2, 1)
+    gs02 = gs[3].subgridspec(9, 1)
 
+    # checkbutton
+    ax_show_checkbutton = fig.add_subplot(gs02[8,:])
+    show_checkbutton = CheckButtons(ax_show_checkbutton, ["Show EEG without source"], [True])
 
     # PLOT
     x = np.linspace(0,len(S), len(S)) / SFREQ
@@ -294,27 +303,33 @@ def plot_properties_with_timeseries(inst, ica, picks):
     plt.setp(ax_source.get_xticklabels(), visible=False)
 
     # EEG
-    LINES = []
+    LINES_eeg = []
+    LINES_eeg_proc = []
     AXES = []
+
     ax = fig.add_subplot(gs01[1, :], sharex=ax_source)
     plt.setp(ax.get_xticklabels(), visible=False)
     ax.set_ylabel(CH_NAMES[0])
     ax.set_ylim(-eeg_scale, eeg_scale)
-    line, = ax.plot(x,DATA[0], linewidth=linewidth)
-    LINES.append(line)
+    line_eeg, = ax.plot(x,DATA[0], linewidth=linewidth)
+    line_eeg_proc, = ax.plot(x,DATA_proc[0], linewidth=linewidth)
+
+    LINES_eeg.append(line_eeg)
+    LINES_eeg_proc.append(line_eeg_proc)
     AXES.append(ax)
+
     for k in range(1,N_PLOT_CHANNELS):
         ax = fig.add_subplot(gs01[k+1, :], sharex=ax_source, sharey=AXES[0])
         plt.setp(ax.get_xticklabels(), visible=False)
         ax.set_ylabel(CH_NAMES[k])
-        line, = ax.plot(x,DATA[k], linewidth=linewidth)
-        LINES.append(line)
+        line_eeg, = ax.plot(x,DATA[k], linewidth=linewidth)
+        line_eeg_proc, = ax.plot(x,DATA_proc[k], linewidth=linewidth)
+        LINES_eeg.append(line_eeg)
+        LINES_eeg_proc.append(line_eeg_proc)
         AXES.append(ax)
-
 
     all_axes = AXES.copy()
     all_axes.append(ax_source)
-
     if type(inst) == mne.io.fiff.raw.Raw:
         # Annotationpsd_args
         annot = inst.annotations
@@ -344,28 +359,33 @@ def plot_properties_with_timeseries(inst, ica, picks):
 
     #Matplotlib events
     def scroll_channels_mouse(event):
+        ''' scroll channels when using mouse wheel'''
         if current_idx['index'] < N_CHANNELS - N_PLOT_CHANNELS and event.button == 'down':
             current_idx['index'] +=1
         if current_idx['index']>0 and event.button == 'up':
             current_idx['index'] -=1
-        for l,line in enumerate(LINES):
-            line.set_ydata(DATA[current_idx['index'] + l])
+        for l in range(0, N_PLOT_CHANNELS):
+            LINES_eeg[l].set_ydata(DATA[current_idx['index'] + l])
+            LINES_eeg_proc[l].set_ydata(DATA_proc[current_idx['index'] + l])
             AXES[l].set_ylabel(CH_NAMES[current_idx['index'] + l])
         fig.canvas.draw()
         fig.canvas.flush_events()
 
     def scroll_channels_keyboard(event):
+        ''' scroll channels when using keyboard arroys'''
         if current_idx['index'] < N_CHANNELS - N_PLOT_CHANNELS and event.key == 'down':
             current_idx['index'] +=1
         if current_idx['index']>0 and event.key == 'up':
             current_idx['index'] -=1
-        for l,line in enumerate(LINES):
-            line.set_ydata(DATA[current_idx['index'] + l])
+        for l in range(0, N_PLOT_CHANNELS):
+            LINES_eeg[l].set_ydata(DATA[current_idx['index'] + l])
+            LINES_eeg_proc[l].set_ydata(DATA_proc[current_idx['index'] + l])
             AXES[l].set_ylabel(CH_NAMES[current_idx['index'] + l])
         fig.canvas.draw()
         fig.canvas.flush_events()
 
     def scroll_time(event):
+        ''' scroll time when using keyboard arroys'''
         current_lim = ax_source.get_xlim()
         pad = abs((current_lim[1] - current_lim[0])/4.)
         if event.key =='right':
@@ -381,28 +401,41 @@ def plot_properties_with_timeseries(inst, ica, picks):
         fig.canvas.draw()
         fig.canvas.flush_events()
 
+    def set_dataproc_visible(event):
+        '''Show eeg without source'''
+        status = show_checkbutton.get_status()
+        if status[0] is True:
+            for line in LINES_eeg_proc:
+                line.set_visible(True)
+        else:
+            for line in LINES_eeg_proc:
+                line.set_visible(False)
+        fig.canvas.draw()
+        fig.canvas.flush_events()
+
     # Disconnect defaults events
     try:
         matplotlib.rcParams['keymap.back'].remove('left')
         matplotlib.rcParams['keymap.forward'].remove('right')
     except ValueError:
         pass
+
     # connect events
     fig.canvas.mpl_connect('scroll_event', lambda event: scroll_channels_mouse(event))
     fig.canvas.mpl_connect('key_release_event', lambda event: scroll_time(event))
     fig.canvas.mpl_connect('key_release_event', lambda event: scroll_channels_keyboard(event))
+    show_checkbutton.on_clicked(set_dataproc_visible)
 
     # Properties
-    topomap_axis = fig.add_subplot(gs02[0, :])
+    topomap_axis = fig.add_subplot(gs02[0:4, :])
     image_axis = fig.add_subplot(gs00[0, :])
     erp_axis = fig.add_subplot(gs00[2, :])
-    spectrum_axis = fig.add_subplot(gs02[1, :])
+    spectrum_axis = fig.add_subplot(gs02[4:7, :])
     variance_axis = fig.add_subplot(gs00[1, :])
     ica.plot_properties(inst, picks=current_idx['index'],
                         axes=[topomap_axis, image_axis, erp_axis, spectrum_axis, variance_axis],
                         dB=True, plot_std=True, topomap_args=None, image_args=None,
                         psd_args=None, figsize=None, show=False)
-
     # Set layout
     plt.tight_layout()
     plt.show()
@@ -524,3 +557,14 @@ def plot_ica_components_with_timeseries(ica, picks=None, ch_type=None, res=64,
 
 def tolow(s):
     return(s.lower())
+
+
+if __name__ == '__main__':
+    from pathlib import Path
+    data_folder = "/home/ferat/Desktop/data/32_0_0_artifacted-raw.fif"
+    raw = mne.io.read_raw_fif(data_folder, preload=True)
+    raw.set_montage("standard_1020")
+    ica = mne.preprocessing.ICA(method='fastica', n_components=12)
+    ica.fit(raw)
+    plot_properties_with_timeseries(raw, ica, 0)
+    print(ica.exclude)
