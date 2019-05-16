@@ -215,9 +215,15 @@ class Model:
             elif ext in (".edf", ".bdf"):
                 self._export_edf(fname)
             elif ext == ".vhdr":
-                philistine.mne.write_raw_brainvision(
-                    self.current["raw"], fname)
-
+                if self.current["raw"].info["bads"] != []:
+                    self.export_bads(join(split(fname)[0], name + "_bads.csv"))
+                    raw_to_save = self.current["raw"].copy()
+                    raw_to_save.info["bads"] = []
+                    philistine.mne.write_raw_brainvision(
+                        raw_to_save, fname)
+                else:
+                    philistine.mne.write_raw_brainvision(
+                        self.current["raw"], fname)
         elif self.current["epochs"]:
             if ext == ".fif":
                 self.current["epochs"].save(fname)
