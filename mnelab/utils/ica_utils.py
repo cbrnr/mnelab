@@ -120,7 +120,7 @@ def plot_overlay(raw, ica):
         times = epochs.times
         tmin = epochs.tmin
         # Figure
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(num="ICA Overlay")
         duration = times[-1] - times[0]
         offset = 0
         if tmin < 0:
@@ -209,7 +209,7 @@ def compute_correlation(match_templates, ics):
 
 def plot_correlation(df, match_templates, pos, quality, head_pos=None):
     dfp = df.pivot("Templates_names", "Ics_names", "correlation")
-    fig = plt.figure()
+    fig = plt.figure(num= "ICA Correlation")
     gs = GridSpec(11, len(match_templates))
     axes = []
     for t, temp in enumerate(match_templates):
@@ -279,7 +279,8 @@ def plot_properties_with_timeseries(inst, ica, picks):
     source_scale = np.max(np.abs(source_scale))
 
     # Plot grid
-    fig = plt.figure(figsize=(12, 6))
+    fig = plt.figure(figsize=(12, 6),
+                     num="ICA Component " + str(picks) + " properties")
     gs = GridSpec(1, 4)
     gs00 = gs[0].subgridspec(3, 1)
     gs01 = gs[1:3].subgridspec(N_PLOT_CHANNELS+1, 1)
