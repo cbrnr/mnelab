@@ -37,7 +37,7 @@ from mne.defaults import _handle_default
 from mne.io.meas_info import Info
 from mne.externals.six import string_types
 from mne.viz.topomap import (_prepare_topo_plot, _check_outlines, plot_topomap,
-                            _hide_frame, plot_ica_components)
+                            _hide_frame, plot_ica_components, _plot_topomap)
 
 
 def plot_correlation_matrix(raw, ica):
@@ -63,10 +63,12 @@ def plot_correlation_matrix(raw, ica):
 
 
 def compute_gfp_raw(raw):
+    '''Compute global field power for RAW'''
     return(np.mean(raw.get_data()**2, axis=0)**0.5)
 
 
 def compute_gfp_epoch(epochs):
+    '''Compute global field power for epochs'''
     return(np.mean(epochs.get_data()**2, axis=1)**0.5)
 
 
@@ -266,7 +268,7 @@ def plot_properties_with_timeseries(inst, ica, picks):
 
 
     # Plot config
-    N_PLOT_CHANNELS = 4 #5 if N_CHANNELS >= 5 else N_CHANNELS
+    N_PLOT_CHANNELS = 4 if N_CHANNELS >= 4 else N_CHANNELS
     current_idx = {'index': picks}
     scalings = _compute_scalings('auto',inst)
     linewidth=0.5
@@ -288,7 +290,8 @@ def plot_properties_with_timeseries(inst, ica, picks):
 
     # checkbutton
     ax_show_checkbutton = fig.add_subplot(gs02[8,:])
-    show_checkbutton = CheckButtons(ax_show_checkbutton, ["Show EEG without source"], [True])
+    show_checkbutton = CheckButtons(ax_show_checkbutton,
+                                    ["Show EEG without source"], [True])
 
     # PLOT
     x = np.linspace(0,len(S), len(S)) / SFREQ
@@ -422,9 +425,12 @@ def plot_properties_with_timeseries(inst, ica, picks):
         pass
 
     # connect events
-    fig.canvas.mpl_connect('scroll_event', lambda event: scroll_channels_mouse(event))
-    fig.canvas.mpl_connect('key_release_event', lambda event: scroll_time(event))
-    fig.canvas.mpl_connect('key_release_event', lambda event: scroll_channels_keyboard(event))
+    fig.canvas.mpl_connect('scroll_event',
+                            lambda event: scroll_channels_mouse(event))
+    fig.canvas.mpl_connect('key_release_event',
+                            lambda event: scroll_time(event))
+    fig.canvas.mpl_connect('key_release_event',
+                            lambda event: scroll_channels_keyboard(event))
     show_checkbutton.on_clicked(set_dataproc_visible)
 
     # Properties
@@ -434,9 +440,10 @@ def plot_properties_with_timeseries(inst, ica, picks):
     spectrum_axis = fig.add_subplot(gs02[4:7, :])
     variance_axis = fig.add_subplot(gs00[1, :])
     ica.plot_properties(inst, picks=current_idx['index'],
-                        axes=[topomap_axis, image_axis, erp_axis, spectrum_axis, variance_axis],
-                        dB=True, plot_std=True, topomap_args=None, image_args=None,
-                        psd_args=None, figsize=None, show=False)
+        axes=[topomap_axis, image_axis, erp_axis, spectrum_axis, variance_axis],
+        dB=True, plot_std=True, topomap_args=None, image_args=None,
+        psd_args=None, figsize=None, show=False)
+
     # Set layout
     plt.tight_layout()
     plt.show()
