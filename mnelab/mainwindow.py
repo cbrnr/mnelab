@@ -360,7 +360,7 @@ class MainWindow(QMainWindow):
             self.actions["plot_ica_sources"].setEnabled(enabled and ica
                                                         and montage)
             self.actions["plot_correlation_matrix"].setEnabled(
-                enabled and ica and events and montage)
+                enabled and ica and montage)
             self.actions["apply_ica"].setEnabled(enabled and ica
                                                  and montage)
             self.actions["events"].setEnabled(enabled and events)
