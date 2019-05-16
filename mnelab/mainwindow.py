@@ -627,12 +627,26 @@ class MainWindow(QMainWindow):
 
     def plot_ica_components_with_timeseries(self):
         if self.model.current["raw"]:
-            fig = plot_ica_components_with_timeseries(self.model.current["ica"],
+            try:
+                fig = plot_ica_components_with_timeseries(
+                                             self.model.current["ica"],
                                              inst=self.model.current["raw"])
-        elif self.model.current["epochs"]:
-            fig = (self.model.current["ica"]
-                    .plot_components(inst=self.model.current["epochs"]))
+            except Exception as e:
+                QMessageBox.critical(self, "Unexpected error ", str(e))
 
+        elif self.model.current["epochs"]:
+            try:
+                fig = plot_ica_components_with_timeseries(
+                            self.model.current["ica"],
+                            inst=self.model.current["epochs"])
+            except Exception as e:
+                try:
+                    fig = self.model.current["ica"].plot_ica_components(
+                                            inst=self.model.current["epochs"])
+                except Exception as e:
+                    QMessageBox.critical(self, "Unexpected error ", str(e))
+
+                 
     def plot_ica_sources(self):
         if self.model.current["raw"]:
             fig = (self.model.current["ica"]
@@ -647,10 +661,24 @@ class MainWindow(QMainWindow):
 
     def plot_correlation_matrix(self):
         if self.model.current["raw"]:
-            plot_cormat(self.model.current["raw"], self.model.current["ica"])
+            try:
+                plot_cormat(self.model.current["raw"], self.model.current["ica"])
+            except ValueError as e:
+                QMessageBox.critical(self,
+                 "Can't compute correlation with template ", str(e))
+            except Exception as e:
+                QMessageBox.critical(self,
+                 "Unexpected error ", str(e))
         elif self.model.current["epochs"]:
-            plot_cormat(self.model.current["epochs"],
-                        self.model.current["ica"])
+            try:
+                plot_cormat(self.model.current["epochs"],
+                            self.model.current["ica"])
+            except ValueError as e:
+                QMessageBox.critical(self,
+                 "Can't compute correlation with template ", str(e))
+            except Exception as e:
+                QMessageBox.critical(self,
+                 "Unexpected error ", str(e))
 
     def run_ica(self):
         """Run ICA calculation."""

@@ -250,13 +250,15 @@ def plot_properties_with_timeseries(inst, ica, picks):
     # Create data without the ica comp
     DATA_proc = ica.apply(inst.copy(),exclude=[picks]).get_data()
 
+    print(type(inst))
     if type(inst) == mne.io.fiff.raw.Raw:
         S = ica.get_sources(inst=inst).get_data()[picks]
 
     elif type(inst) == mne.epochs.EpochsFIF:
         n_epochs = len(DATA)
-        DATA = DATA.reshape(len(DATA[0]), len(DATA[0][0])* n_epochs)
-        DATA_proc = DATA_proc.reshape(len(DATA[0]), len(DATA[0][0])* n_epochs)
+        shape = (len(DATA[0]), len(DATA[0][0])* n_epochs)
+        DATA = DATA.reshape(shape[0], shape[1])
+        DATA_proc = DATA_proc.reshape(shape[0], shape[1])
         # Epochs
         tmin = inst.tmin
         offset = 0
