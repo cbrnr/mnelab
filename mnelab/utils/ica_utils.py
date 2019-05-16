@@ -557,14 +557,3 @@ def plot_ica_components_with_timeseries(ica, picks=None, ch_type=None, res=64,
 
 def tolow(s):
     return(s.lower())
-
-
-if __name__ == '__main__':
-    from pathlib import Path
-    data_folder = "/home/ferat/Desktop/data/32_0_0_artifacted-raw.fif"
-    raw = mne.io.read_raw_fif(data_folder, preload=True)
-    raw.set_montage("standard_1020")
-    ica = mne.preprocessing.ICA(method='fastica', n_components=12)
-    ica.fit(raw)
-    plot_properties_with_timeseries(raw, ica, 0)
-    print(ica.exclude)
