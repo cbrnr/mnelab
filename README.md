@@ -23,6 +23,7 @@ Optional dependencies provide additional features if installed:
 - [scikit-learn]() (ICA computation via FastICA)
 - [python-picard](https://pierreablin.github.io/picard/) (ICA computation via PICARD)
 - [pyEDFlib](https://github.com/holgern/pyedflib) (export raw to EDF/BDF)
+- [pyxdf](https://github.com/xdf-modules/xdf-Python) (import XDF files)
 
 In general, it is recommended to always use the latest package versions.
 
@@ -30,6 +31,7 @@ In general, it is recommended to always use the latest package versions.
 MNELAB comes with the following features that are not available in MNE:
 - Export raw to EDF/BDF (requires [pyEDFlib](https://github.com/holgern/pyedflib))
 - Export raw to EEGLAB SET
+- Import [XDF](https://github.com/sccn/xdf/wiki/Specifications) files (requires [pyxdf](https://github.com/xdf-modules/xdf-Python))
 
 ### Installation
 A package on [PyPI](https://pypi.python.org/pypi) and a stand-alone installer will be available soon.
