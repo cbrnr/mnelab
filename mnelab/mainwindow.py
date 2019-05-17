@@ -37,7 +37,8 @@ from .dialogs.evokedtopodialog import EvokedTopoDialog
 from .dialogs.batchdialog import BatchDialog
 
 from .utils.ica_utils import plot_correlation_matrix as plot_cormat
-from .utils.ica_utils import plot_ica_components_with_timeseries
+from .utils.ica_utils import (plot_ica_components_with_timeseries,
+                             plot_overlay)
 from .model import (SUPPORTED_FORMATS, SUPPORTED_EXPORT_FORMATS,
                     LabelsNotFoundError, InvalidAnnotationsError)
 
@@ -691,12 +692,9 @@ class MainWindow(QMainWindow):
 
     def plot_ica_overlay(self):
         if self.model.current["raw"]:
-            self.model.current["ica"].plot_overlay(
-                                            inst=self.model.current["raw"])
+            plot_overlay(self.model.current["ica"], self.model.current["raw"])
         elif self.model.current["epochs"]:
-            self.model.current["ica"].plot_overlay(
-                                            inst=self.model.current["epochs"])
-
+            plot_overlay(self.model.current["ica"], self.model.current["epochs"])
         return()
 
     def run_ica(self):

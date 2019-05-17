@@ -72,90 +72,155 @@ def compute_gfp_epoch(epochs):
     return(np.mean(epochs.get_data()**2, axis=1)**0.5)
 
 
-def plot_overlay(raw, ica):
-    """Custom plot overlay given fitted ica and raw"""
-    if type(raw) == mne.io.fiff.raw.Raw:
-        raw_copy = raw.copy()
-        ica.apply(raw_copy)
-        # Info
-        sfreq = raw.info["sfreq"]
-        ch_types = ['eeg', 'eeg']
-        ch_names = ['before', 'after']
-        info = mne.create_info(ch_names=ch_names, sfreq=sfreq,
-                               ch_types=ch_types)
-        raw.info['bads'] = ["before"]
-        # Data
-        gfp_raw_signal = compute_gfp_raw(raw)
-        gfp_raw_applied_signal = compute_gfp_raw(raw_copy)
-        data = [gfp_raw_signal, gfp_raw_applied_signal]
-        # Raw
-        raw = mne.io.RawArray(data, info)
-        fig, ax = plt.subplots()
-        ax.plot(raw.times, gfp_raw_signal, 'r', label="before")
-        ax.plot(raw.times, gfp_raw_applied_signal, 'black', label="after")
-        min = np.abs(gfp_raw_signal.min())
-        max = np.abs(gfp_raw_signal.max())
-        ylim = np.max([min, max])
-        ax.set_ylim(-ylim, ylim)
-        ax.set_xlim(0, 10)
-        ax.set_xlabel("time(s)")
-        ax.set_yticklabels([])
-        ax.set_title("""Global field power before (red)
-                        and after (black) source rejection""")
-        ax.legend(loc=8, ncol=2, bbox_to_anchor=(0., 0., 1, 1))
-        plt.show(fig)
-    elif type(raw) == mne.epochs.EpochsFIF:
-        epochs = raw.copy()
-        ica.apply(epochs)
-        # Info
-        sfreq = epochs.info["sfreq"]
-        ch_types = ['eeg', 'eeg']
-        ch_names = ['before', 'after']
-        info = mne.create_info(ch_names=ch_names, sfreq=sfreq,
-                               ch_types=ch_types)
-        # Data
-        gfp_epochs_signal = compute_gfp_epoch(raw)
-        gfp_epochs_applied_signal = compute_gfp_epoch(epochs)
-        data = np.array([gfp_epochs_signal.T, gfp_epochs_applied_signal.T]).T
-        data = np.swapaxes(data, 1, 2)
-        # Epochs
-        times = epochs.times
-        tmin = epochs.tmin
-        # Figure
-        fig, ax = plt.subplots(num="ICA Overlay")
-        duration = times[-1] - times[0]
+def plot_overlay(ica, inst):
+    # Raw data
+    CH_NAMES = [ch for ch in inst.info["ch_names"] if ch not in inst.info["bads"]]
+    N_CHANNELS = len(CH_NAMES)
+    SFREQ = inst.info["sfreq"]
+    T = 1. / SFREQ
+    #DATA
+    DATA = inst.get_data()
+    # Create data without the ica comp
+    DATA_proc = ica.apply(inst.copy()).get_data()
+    if type(inst) == mne.epochs.EpochsFIF:
+        n_epochs = len(DATA)
+        shape = (len(DATA[0]), len(DATA[0][0])* n_epochs)
+        DATA = DATA.reshape(shape[0], shape[1])
+        DATA_proc = DATA_proc.reshape(shape[0], shape[1])
+        tmin = inst.tmin
         offset = 0
         if tmin < 0:
             offset = - tmin
-        # initialie to have oly 1 label
-        ep = 0
-        ep_data = data[ep]
-        ep_times = offset + times + ep*duration
-        ax.plot(ep_times, ep_data[0], "r", label="before")
-        ax.plot(ep_times, ep_data[1], "black", label="after")
-        ax.axvline(x=offset + ep*duration, color="green")
-        ax.axvline(x=ep*duration, color="black", linestyle="--")
-        # then l0op over all epochs
-        for ep in range(1, len(epochs)):
-            ep_data = data[ep]
-            ep_times = offset + times + ep*duration
-            ax.plot(ep_times, ep_data[0], "r")
-            ax.plot(ep_times, ep_data[1], "black")
-            ax.axvline(x=offset + ep*duration, color="green")
-            ax.axvline(x=ep*duration, color="black", linestyle="--")
-        min = np.abs(data.min())
-        max = np.abs(data.max())
-        ylim = np.max([min, max])
-        ax.set_ylim(-ylim, ylim)
-        ax.set_xlim(0, np.around(10/duration)*duration)
-        ax.set_xlabel("time(s)")
-        ax.set_yticklabels([])
-        ax.set_title(
-            """Global field power before (red) and after (black)"""
-            """ source rejection""")
-        ax.legend(loc=8, ncol=2, bbox_to_anchor=(0., 0., 1, 1))
-        plt.show(fig)
-    return()
+    # Time
+    x = np.linspace(0,len(DATA[0]), len(DATA[0])) / SFREQ
+    # Plot config
+    N_PLOT_CHANNELS = 6 #5 if N_CHANNELS >= 5 else N_CHANNELS
+    current_idx = {'index': 0}
+    scalings = _compute_scalings('auto',inst)
+    linewidth=0.5
+    # Data scalings
+    eeg_scale = scalings['eeg']
+    # Plot grid
+    fig = plt.figure(figsize=(12, 6))
+    gs = GridSpec(1, 1)
+    gs00 = gs[0].subgridspec(N_PLOT_CHANNELS, 1)
+    # EEG
+    LINES_eeg = []
+    LINES_eeg_proc = []
+    AXES = []
+    ax = fig.add_subplot(gs00[0, :])
+    if x[-1] >= 10:
+        ax.set_xlim(0, 10)
+    else:
+        ax.set_xlim(0, x[-1])
+    ax.set_ylabel(CH_NAMES[0])
+    ax.set_ylim(-eeg_scale, eeg_scale)
+    plt.setp(ax.get_xticklabels(), visible=False)
+    line_eeg, = ax.plot(x,DATA[0], linewidth=linewidth)
+    line_eeg_proc, = ax.plot(x,DATA_proc[0], linewidth=linewidth)
+
+    LINES_eeg.append(line_eeg)
+    LINES_eeg_proc.append(line_eeg_proc)
+    AXES.append(ax)
+
+    for k in range(1,N_PLOT_CHANNELS):
+        ax = fig.add_subplot(gs00[k, :], sharex=AXES[0], sharey=AXES[0])
+        plt.setp(ax.get_xticklabels(), visible=False)
+        ax.set_ylabel(CH_NAMES[k])
+        line_eeg, = ax.plot(x,DATA[k], linewidth=linewidth)
+        line_eeg_proc, = ax.plot(x,DATA_proc[k], linewidth=linewidth)
+        LINES_eeg.append(line_eeg)
+        LINES_eeg_proc.append(line_eeg_proc)
+        AXES.append(ax)
+
+    all_axes = AXES.copy()
+    if type(inst) == mne.io.fiff.raw.Raw:
+        # Annotationpsd_args
+        annot = inst.annotations
+        times = inst.times
+        for ax in all_axes:
+            for a in range(0,len(annot)):
+                onset = annot.onset[a]
+                duration = annot.duration[a]
+                description = annot.description[a]
+                color = 'r' if "bad" in description.lower() else 'b'
+                rect = patches.Rectangle((onset,-99999), duration, 2*99999,
+                                         linewidth=0, facecolor=color, alpha=0.3)
+                ax.add_patch(rect)
+        plt.setp(AXES[-1].get_xticklabels(), visible=True)
+
+    elif type(inst) == mne.epochs.EpochsFIF:
+        # Epochs limits
+        duration = (len(DATA[0])/n_epochs)/SFREQ
+        ticks = []
+        ticks_label = []
+        for ep in range(0,n_epochs):
+            for ax in all_axes:
+                ax.axvline(x=offset + ep*duration, color="green")
+                ax.axvline(x=ep*duration, color="black", linestyle="--")
+        for ax in all_axes:
+            ax.axvline(x=(n_epochs)*duration, color="black", linestyle="--")
+    #Matplotlib events
+    def scroll_channels_mouse(event):
+        ''' scroll channels when using mouse wheel'''
+        if current_idx['index'] < N_CHANNELS - N_PLOT_CHANNELS and event.button == 'down':
+            current_idx['index'] +=1
+        if current_idx['index']>0 and event.button == 'up':
+            current_idx['index'] -=1
+        for l in range(0, N_PLOT_CHANNELS):
+            LINES_eeg[l].set_ydata(DATA[current_idx['index'] + l])
+            LINES_eeg_proc[l].set_ydata(DATA_proc[current_idx['index'] + l])
+            AXES[l].set_ylabel(CH_NAMES[current_idx['index'] + l])
+        fig.canvas.draw()
+        fig.canvas.flush_events()
+
+    def scroll_channels_keyboard(event):
+        ''' scroll channels when using keyboard arroys'''
+        if current_idx['index'] < N_CHANNELS - N_PLOT_CHANNELS and event.key == 'down':
+            current_idx['index'] +=1
+        if current_idx['index']>0 and event.key == 'up':
+            current_idx['index'] -=1
+        for l in range(0, N_PLOT_CHANNELS):
+            LINES_eeg[l].set_ydata(DATA[current_idx['index'] + l])
+            LINES_eeg_proc[l].set_ydata(DATA_proc[current_idx['index'] + l])
+            AXES[l].set_ylabel(CH_NAMES[current_idx['index'] + l])
+        fig.canvas.draw()
+        fig.canvas.flush_events()
+
+    def scroll_time(event):
+        try:
+            ''' scroll time when using keyboard arroys'''
+            current_lim = AXES[0].get_xlim()
+            pad = abs((current_lim[1] - current_lim[0])/4.)
+            if event.key =='right':
+                new_lim = tuple(x + pad for x in current_lim)
+                if new_lim[-1] >= x[-1]:
+                    new_lim = tuple(x[-1] - pad , x[-1])
+                AXES[0].set_xlim(new_lim)
+            elif event.key =='left':
+                new_lim = tuple(x - pad for x in current_lim)
+                if new_lim[0] <= x[0]:
+                    new_lim = tuple(x[0], x[0] - pad)
+                AXES[0].set_xlim(new_lim)
+            fig.canvas.draw()
+            fig.canvas.flush_events()
+        except Exception as e:
+            print(e)
+            pass
+    # Disconnect defaults events
+    try:
+        matplotlib.rcParams['keymap.back'].remove('left')
+        matplotlib.rcParams['keymap.forward'].remove('right')
+    except ValueError:
+        pass
+    # connect events
+    fig.canvas.mpl_connect('scroll_event', lambda event: scroll_channels_mouse(event))
+    fig.canvas.mpl_connect('key_release_event', lambda event: scroll_time(event))
+    fig.canvas.mpl_connect('key_release_event', lambda event: scroll_channels_keyboard(event))
+    # Set layout
+    plt.tight_layout()
+    plt.show()
+    return (fig)
 
 
 def find_common_channels(ica_a, ica_b):
