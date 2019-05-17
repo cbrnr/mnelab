@@ -277,10 +277,11 @@ class MainWindow(QMainWindow):
         if len(self.model) > 0:
             self._add_recent(self.model.current["fname"])
 
-    def open_raw(self):
+    def open_raw(self, fname=None):
         """Open raw file."""
-        fname = QFileDialog.getOpenFileName(self, "Open raw",
-                                            filter=SUPPORTED_FORMATS)[0]
+        if fname is None:
+            fname = QFileDialog.getOpenFileName(self, "Open raw",
+                                                filter=SUPPORTED_FORMATS)[0]
         if fname:
             name, ext = splitext(split(fname)[-1])
             ftype = ext[1:].upper()
@@ -611,7 +612,7 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(QAction)
     def _load_recent(self, action):
-        self.model.load(action.text())
+        self.open_raw(fname=action.text())
 
     @pyqtSlot()
     def _toggle_statusbar(self):
