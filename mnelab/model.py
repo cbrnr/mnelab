@@ -593,13 +593,17 @@ class Model:
         if self.current["raw"]:
             self.current["raw"] = (self.current["raw"]
                                    .drop_channels(list(drops)))
+            self.history.append(("raw.drop_channels({})").format(list(drops)))
         elif self.current["epochs"]:
             self.current["epochs"] = (self.current["epochs"]
                                       .drop_channels(list(drops)))
-        else:
+            self.history.append(("raw.drop_channels({})").format(list(drops)))
+        elif self.current["evoked"]:
             self.current["evoked"] = (self.current["evoked"]
                                       .drop_channels(list(drops)))
+            self.history.append(("raw.drop_channels({})").format(list(drops)))
         self.current["name"] += " (channels dropped)"
+
 
     @data_changed
     def set_channel_properties(self, bads=None, names=None, types=None):
