@@ -363,10 +363,12 @@ class Model:
             msg = ("The following imported channel labels are not " +
                    "present in the data: " + ",".join(unknown))
             self.current["raw"].info["bads"] += known
+            self.history.append(('raw.info["bads"] += {}').format(known))
             self.view.data_changed()
             raise LabelsNotFoundError(msg)
         else:
             self.current["raw"].info["bads"] += bads
+            self.history.append(('raw.info["bads"] += {}').format(bads))
         self.current["raw"].info["bads"] = list(set(self.current["raw"].info["bads"]))
 
     @data_changed
@@ -387,6 +389,7 @@ class Model:
                 events = np.row_stack((self.current["events"], events))
                 events = np.unique(events, axis=0)
             self.current["events"] = events
+            self.history.append("Import events from " + fname)
 
         if fname.endswith('.mrk'):
             beg, end, desc = [], [], []
@@ -409,6 +412,7 @@ class Model:
                 events = np.row_stack((self.current["events"], events))
                 events = np.unique(events, axis=0)
             self.current["events"] = events
+            self.history.append("Import events from " + fname)
 
     @data_changed
     def import_annotations(self, fname):
@@ -433,6 +437,8 @@ class Model:
                             durations.append(duration)
             annotations = mne.Annotations(onsets, durations, descs)
             self.current["raw"].annotations = annotations
+            self.history.append("Import annotations from " + fname)
+            self.history.append("raw.annotations = annotations")
 
         if fname.endswith('.mrk'):
             beg, end, desc = [], [], []
@@ -452,10 +458,13 @@ class Model:
             durations = (end - beg) / fs
             annotations = mne.Annotations(onsets, durations, desc)
             self.current["raw"].annotations = annotations
+            self.history.append("Import annotations from " + fname)
+            self.history.append("raw.annotations = annotations")
 
     @data_changed
     def import_ica(self, fname):
         self.current["ica"] = mne.preprocessing.read_ica(fname)
+        self.history.append("ica = read_ica({})".format(fname))
 
     def get_info(self):
         """Get basic information on current data set.
@@ -610,17 +619,23 @@ class Model:
         if self.current["raw"]:
             if bads:
                 self.current["raw"].info["bads"] = bads
+                self.history.append(('raw.info["bads"]={}').format(bads))
             if names:
                 mne.rename_channels(self.current["raw"].info, names)
+                self.history.append(('rename_channels(raw.info, {}').format(names))
             if types:
                 self.current["raw"].set_channel_types(types)
+                self.history.append(('raw.set_channel_types({}').format(types))
         else:
             if bads:
                 self.current["epochs"].info["bads"] = bads
+                self.history.append(('epochs.info["bads"]={}').format(bads))
             if names:
                 mne.rename_channels(self.current["epochs"].info, names)
+                self.history.append(('rename_channels(epochs.info, {}').format(names))
             if types:
                 self.current["epochs"].set_channel_types(types)
+                self.history.append(('epochs.set_channel_types({}').format(types))
 
     @data_changed
     def set_montage(self, montage):
