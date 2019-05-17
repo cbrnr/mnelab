@@ -1,5 +1,6 @@
 import multiprocessing as mp
 from sys import version_info
+from os.path import split, splitext
 
 import mne
 from PyQt5.QtCore import (pyqtSlot, QStringListModel, QModelIndex, QSettings,
@@ -19,9 +20,11 @@ from .dialogs.channelpropertiesdialog import ChannelPropertiesDialog
 from .dialogs.runicadialog import RunICADialog
 from .dialogs.calcdialog import CalcDialog
 from .dialogs.eventsdialog import EventsDialog
+from .dialogs.xdfstreamsdialog import XDFStreamsDialog
 from .widgets.infowidget import InfoWidget
 from .model import (SUPPORTED_FORMATS, SUPPORTED_EXPORT_FORMATS,
                     LabelsNotFoundError, InvalidAnnotationsError)
+from .utils import have, parse_xdf, parse_chunks
 
 
 __version__ = "0.1.0"
@@ -95,9 +98,7 @@ class MainWindow(QMainWindow):
         # initialize menus
         file_menu = self.menuBar().addMenu("&File")
         self.actions["open_file"] = file_menu.addAction(
-            "&Open...",
-            lambda: self.open_file(model.load, "Open raw", SUPPORTED_FORMATS),
-            QKeySequence.Open)
+            "&Open...", self.open_raw, QKeySequence.Open)
         self.recent_menu = file_menu.addMenu("Open recent")
         self.recent_menu.aboutToShow.connect(self._update_recent_menu)
         self.recent_menu.triggered.connect(self._load_recent)
@@ -276,6 +277,41 @@ class MainWindow(QMainWindow):
         if len(self.model) > 0:
             self._add_recent(self.model.current["fname"])
 
+    def open_raw(self, fname=None):
+        """Open raw file."""
+        if fname is None:
+            fname = QFileDialog.getOpenFileName(self, "Open raw",
+                                                filter=SUPPORTED_FORMATS)[0]
+        if fname:
+            name, ext = splitext(split(fname)[-1])
+            ftype = ext[1:].upper()
+            if ext.lower() not in SUPPORTED_FORMATS:
+                raise ValueError(f"File format {ftype} is not supported.")
+
+            if ext.lower() == ".xdf":
+                streams = parse_chunks(parse_xdf(fname))
+                rows, disabled = [], []
+                for idx, s in enumerate(streams):
+                    rows.append([s["stream_id"], s["name"], s["type"],
+                                 s["channel_count"], s["channel_format"],
+                                 s["nominal_srate"]])
+                    if s["nominal_srate"] == 0:  # disable marker streams
+                        disabled.append(idx)
+
+                enabled = list(set(range(len(rows))) - set(disabled))
+                if enabled:
+                    selected = enabled[0]
+                else:
+                    selected = None
+                dialog = XDFStreamsDialog(self, rows, selected=selected,
+                                          disabled=disabled)
+                if dialog.exec_():
+                    row = dialog.view.selectionModel().selectedRows()[0].row()
+                    stream_id = dialog.model.data(dialog.model.index(row, 0))
+                    self.model.load(fname, stream_id=stream_id)
+            else:  # all other file formats
+                self.model.load(fname)
+
     def open_file(self, f, text, ffilter):
         """Open file."""
         fname = QFileDialog.getOpenFileName(self, text, filter=ffilter)[0]
@@ -413,22 +449,8 @@ class MainWindow(QMainWindow):
 
     def run_ica(self):
         """Run ICA calculation."""
-        try:
-            import picard
-        except ImportError:
-            have_picard = False
-        else:
-            have_picard = True
-
-        try:
-            import sklearn  # required for FastICA
-        except ImportError:
-            have_sklearn = False
-        else:
-            have_sklearn = True
-
         dialog = RunICADialog(self, self.model.current["raw"].info["nchan"],
-                              have_picard, have_sklearn)
+                              have["picard"], have["sklearn"])
 
         if dialog.exec_():
             calc = CalcDialog(self, "Calculating ICA", "Calculating ICA.")
@@ -590,7 +612,7 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(QAction)
     def _load_recent(self, action):
-        self.model.load(action.text())
+        self.open_raw(fname=action.text())
 
     @pyqtSlot()
     def _toggle_statusbar(self):

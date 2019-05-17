@@ -57,9 +57,9 @@ class ChannelPropertiesDialog(QDialog):
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
 
-        self.resize(500, 650)
-        self.view.setColumnWidth(0, 75)
-        self.view.setColumnWidth(1, 150)
+        self.resize(475, 650)
+        self.view.setColumnWidth(0, 70)
+        self.view.setColumnWidth(1, 155)
         self.view.setColumnWidth(2, 90)
 
 

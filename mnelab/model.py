@@ -8,15 +8,14 @@ from numpy.core.records import fromarrays
 from scipy.io import savemat
 import mne
 
+from .utils import read_raw_xdf, have
+
 
 SUPPORTED_FORMATS = "*.bdf *.edf *.gdf *.fif *.vhdr *.set"
+if have["pyxdf"]:
+    SUPPORTED_FORMATS += " *.xdf"
 SUPPORTED_EXPORT_FORMATS = "*.fif *.set"
-try:
-    import pyedflib
-except ImportError:
-    have_pyedflib = False
-else:
-    have_pyedflib = True
+if have["pyedflib"]:
     SUPPORTED_EXPORT_FORMATS += " *.edf *.bdf"
 
 
@@ -105,7 +104,7 @@ class Model:
         return len(self.data)
 
     @data_changed
-    def load(self, fname):
+    def load(self, fname, *args, **kwargs):
         """Load data set from file."""
         name, ext = splitext(split(fname)[-1])
         ftype = ext[1:].upper()
@@ -113,24 +112,46 @@ class Model:
             raise ValueError(f"File format {ftype} is not supported.")
 
         if ext.lower() in [".edf", ".bdf", ".gdf"]:
-            raw = mne.io.read_raw_edf(fname, preload=True)
-            self.history.append(f"raw = mne.io.read_raw_edf('{fname}', "
-                                f"preload=True)")
+            raw = self._load_edf(fname)
         elif ext in [".fif"]:
-            raw = mne.io.read_raw_fif(fname, preload=True)
-            self.history.append(f"raw = mne.io.read_raw_fif('{fname}', "
-                                f"preload=True)")
+            raw = self._load_fif(fname)
         elif ext in [".vhdr"]:
-            raw = mne.io.read_raw_brainvision(fname, preload=True)
-            self.history.append(f"raw = mne.io.read_raw_brainvision('{fname}',"
-                                f" preload=True)")
+            raw = self._load_brainvision(fname)
         elif ext in [".set"]:
-            raw = mne.io.read_raw_eeglab(fname, preload=True)
-            self.history.append(f"raw = mne.io.read_raw_eeglab('{fname}', "
-                                f"preload=True)")
+            raw = self._load_eeglab(fname)
+        elif ext in [".xdf"]:
+            raw = self._load_xdf(fname, *args, **kwargs)
 
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
                                      ftype=ftype, raw=raw))
+
+    def _load_edf(self, fname):
+        raw = mne.io.read_raw_edf(fname, preload=True)
+        self.history.append(f"raw = mne.io.read_raw_edf('{fname}', "
+                            f"preload=True)")
+        return raw
+
+    def _load_fif(self, fname):
+        raw = mne.io.read_raw_fif(fname, preload=True)
+        self.history.append(f"raw = mne.io.read_raw_fif('{fname}', "
+                            f"preload=True)")
+        return raw
+
+    def _load_brainvision(self, fname):
+        raw = mne.io.read_raw_brainvision(fname, preload=True)
+        self.history.append(f"raw = mne.io.read_raw_brainvision('{fname}',"
+                            f" preload=True)")
+        return raw
+
+    def _load_eeglab(self, fname):
+        raw = mne.io.read_raw_eeglab(fname, preload=True)
+        self.history.append(f"raw = mne.io.read_raw_eeglab('{fname}', "
+                            f"preload=True)")
+        return raw
+
+    def _load_xdf(self, fname, stream_id):
+        raw = read_raw_xdf(fname, stream_id=stream_id)
+        return raw
 
     @data_changed
     def find_events(self, stim_channel, consecutive=True, initial_event=True,
