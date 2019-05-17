@@ -8,17 +8,14 @@ from numpy.core.records import fromarrays
 from scipy.io import savemat
 import mne
 
-from .utils.xdf import read_raw_xdf
+from .utils import read_raw_xdf, have
 
 
-SUPPORTED_FORMATS = "*.bdf *.edf *.gdf *.fif *.vhdr *.set *.xdf"
+SUPPORTED_FORMATS = "*.bdf *.edf *.gdf *.fif *.vhdr *.set"
+if have["pyxdf"]:
+    SUPPORTED_FORMATS += " *.xdf"
 SUPPORTED_EXPORT_FORMATS = "*.fif *.set"
-try:
-    import pyedflib
-except ImportError:
-    have_pyedflib = False
-else:
-    have_pyedflib = True
+if have["pyedflib"]:
     SUPPORTED_EXPORT_FORMATS += " *.edf *.bdf"
 
 

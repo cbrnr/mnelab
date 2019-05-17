@@ -24,7 +24,7 @@ from .dialogs.xdfstreamsdialog import XDFStreamsDialog
 from .widgets.infowidget import InfoWidget
 from .model import (SUPPORTED_FORMATS, SUPPORTED_EXPORT_FORMATS,
                     LabelsNotFoundError, InvalidAnnotationsError)
-from .utils.xdf import parse_xdf, parse_chunks
+from .utils import have, parse_xdf, parse_chunks
 
 
 __version__ = "0.1.0"
@@ -448,22 +448,8 @@ class MainWindow(QMainWindow):
 
     def run_ica(self):
         """Run ICA calculation."""
-        try:
-            import picard
-        except ImportError:
-            have_picard = False
-        else:
-            have_picard = True
-
-        try:
-            import sklearn  # required for FastICA
-        except ImportError:
-            have_sklearn = False
-        else:
-            have_sklearn = True
-
         dialog = RunICADialog(self, self.model.current["raw"].info["nchan"],
-                              have_picard, have_sklearn)
+                              have["picard"], have["sklearn"])
 
         if dialog.exec_():
             calc = CalcDialog(self, "Calculating ICA", "Calculating ICA.")
