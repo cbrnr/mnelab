@@ -218,6 +218,9 @@ class MainWindow(QMainWindow):
         self.actions["plot_correlation_matrix"] = plot_menu.addAction(
             "Correlation matrix...", self.plot_correlation_matrix)
 
+        self.actions["plot_overlay"] = plot_menu.addAction(
+            "ICA Overlay...", self.plot_ica_overlay)
+
         tools_menu = self.menuBar().addMenu("&Tools")
         self.actions["filter"] = tools_menu.addAction("&Filter data...",
                                                       self.filter_data)
@@ -360,6 +363,8 @@ class MainWindow(QMainWindow):
             self.actions["plot_ica_sources"].setEnabled(enabled and ica
                                                         and montage)
             self.actions["plot_correlation_matrix"].setEnabled(
+                enabled and ica and montage)
+            self.actions["plot_overlay"].setEnabled(
                 enabled and ica and montage)
             self.actions["apply_ica"].setEnabled(enabled and ica
                                                  and montage)
@@ -683,6 +688,16 @@ class MainWindow(QMainWindow):
             except Exception as e:
                 QMessageBox.critical(self,
                  "Unexpected error ", str(e))
+
+    def plot_ica_overlay(self):
+        if self.model.current["raw"]:
+            self.model.current["ica"].plot_overlay(
+                                            inst=self.model.current["raw"])
+        elif self.model.current["epochs"]:
+            self.model.current["ica"].plot_overlay(
+                                            inst=self.model.current["epochs"])
+
+        return()
 
     def run_ica(self):
         """Run ICA calculation."""
