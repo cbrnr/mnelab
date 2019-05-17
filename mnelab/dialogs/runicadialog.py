@@ -1,12 +1,13 @@
 from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
                              QSpinBox, QComboBox, QDialogButtonBox, QCheckBox,
-                             QGroupBox)
+                             QGroupBox, QMessageBox)
 from PyQt5.QtCore import Qt, pyqtSlot
 
 
 class RunICADialog(QDialog):
     def __init__(self, parent, nchan, have_picard=True, have_sklearn=True):
         super().__init__(parent)
+        self.nchan = nchan
         self.setWindowTitle("Run ICA")
         vbox = QVBoxLayout(self)
         grid = QGridLayout()
@@ -70,7 +71,6 @@ class RunICADialog(QDialog):
 
         self.groupBox_advancedparameters.setCheckable(True)
         self.groupBox_advancedparameters.setChecked(False)
-        self.groupBox_advancedparameters.toggled.connect(self.toggle_advanced_options)
 
         grid.addWidget(self.groupBox_advancedparameters, 2, 0)
 
@@ -90,29 +90,31 @@ class RunICADialog(QDialog):
         buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
                                      QDialogButtonBox.Cancel)
         vbox.addWidget(buttonbox)
-        buttonbox.accepted.connect(self.accept)
+        buttonbox.accepted.connect(self.check_parameters)
         buttonbox.rejected.connect(self.reject)
         vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
 
-    @pyqtSlot()
-    def toggle_advanced_options(self):
-        return
-'''
-        """Toggle extended options.
-        """
-        if self.method.currentText() == "Picard":
-            self.extended_label.show()
-            self.extended.show()
-            self.ortho_label.show()
-            self.ortho.show()
-        elif self.method.currentText() == "Infomax":
-            self.extended_label.show()
-            self.extended.show()
-            self.ortho_label.hide()
-            self.ortho.hide()
+    def check_parameters(self):
+        """Checks if ica parameters are correctly set and accept dialog"""
+        if int(self.max_pca_components.text()) > self.nchan:
+            self.validparameters = False
+            QMessageBox.critical(self, "Invalid Parameters",
+                    "the number of max pca components must be <="
+                  + " to the number of channels")
+            return()
+        elif int(self.max_pca_components.text()) < int(self.n_components.text()):
+            self.validparameters = False
+            QMessageBox.critical(self, "Invalid Parameters",
+                    "the number of ica components must be <="
+                  + " to the number of max pca components")
+            return()
+        elif int(self.pca_components.text()) > int(self.max_pca_components.text()):
+            QMessageBox.critical(self, "Invalid Parameters",
+                    "the number of pca components must be <= "
+                  + "to the number of max pca components")
+            self.validparameters = False
+            return()
         else:
-            self.extended_label.hide()
-            self.extended.hide()
-            self.ortho_label.hide()
-            self.ortho.hide()
-'''
+            self.validparameters = True
+            self.accept()
+            return()

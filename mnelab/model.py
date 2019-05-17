@@ -659,12 +659,14 @@ class Model:
     def apply_ica(self):
         if self.current["raw"]:
             self.current["ica"].apply(self.current["raw"])
+            self.history.append("ica.apply(inst=raw, exclude = {})"
+                                    .format(self.current["ica"].exclude))
         if self.current["epochs"]:
             self.current["ica"].apply(self.current["epochs"])
-        if self.current["evoked"]:
-            self.current["ica"].apply(self.current["evoked"])
+            self.history.append("ica.apply(inst=epochs, exclude = {})"
+                                    .format(self.current["ica"].exclude))
         self.current["isApplied"] = True
-        self.current["name"] += " applied_ica"
+        self.current["name"] += "_applied_ica"
 
     @data_changed
     def interpolate_bads(self):
