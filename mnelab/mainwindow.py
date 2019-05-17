@@ -771,7 +771,11 @@ class MainWindow(QMainWindow):
 
     def filter_data(self):
         """Filter data."""
-        dialog = FilterDialog(self)
+        if self.model.current['raw']:
+            israw=True
+        else:
+            israw=False
+        dialog = FilterDialog(self, israw)
         if dialog.exec_():
             if dialog.low or dialog.high or dialog.notch_freqs:
                 self.auto_duplicate()

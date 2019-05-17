@@ -4,7 +4,7 @@ from ..utils.information import show_info
 
 
 class FilterDialog(QDialog):
-    def __init__(self, parent):
+    def __init__(self, parent, israw):
         super().__init__(parent)
         self.setWindowTitle("Filter data")
         vbox = QVBoxLayout(self)
@@ -18,6 +18,8 @@ class FilterDialog(QDialog):
         grid.addWidget(QLabel("Notch filter frequencies (Hz):"), 2, 0)
         self.notchedit = QLineEdit()
         grid.addWidget(self.notchedit, 2, 1)
+        if not israw:
+            self.notchedit.setEnabled(False)
         vbox.addLayout(grid)
         buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
                                      QDialogButtonBox.Cancel)
