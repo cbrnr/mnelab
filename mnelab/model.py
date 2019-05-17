@@ -699,6 +699,11 @@ class Model:
         self.current["raw"] = None
         self.current["epochs"] = epochs
         self.current["name"] += " (epoched)"
+        self.history.append("epochs = Epochs(raw, events,"
+                          + ("event_id={}, ").format(selected)
+                          + ("tmin={}, ").format(tmin)
+                          + ("tmax={}, ").format(tmax)
+                          + ("preload=True)"))
 
     @data_changed
     def evoke_data(self):
@@ -707,6 +712,7 @@ class Model:
         self.current["epochs"] = None
         self.current["evoked"] = evoked
         self.current["name"] += " (evoked)"
+        self.history.append("evoked = epochs.average()")
 
     @data_changed
     def set_reference(self, ref):
