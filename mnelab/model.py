@@ -694,6 +694,10 @@ class Model:
         annot = Annotations(onsets, durations, desc)
         self.current['raw'].set_annotations(annot)
         self.current["name"] += " (events added)"
+        self.history.append("self.current['raw'].set_annotations("
+                          + ("Annotations({}, {}, {}))").format(onsets,
+                                                                durations,
+                                                                desc))
 
     @data_changed
     def epoch_data(self, selected, tmin, tmax):
