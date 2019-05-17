@@ -198,10 +198,10 @@ class MainWindow(QMainWindow):
                                                        self.plot_raw)
         self.actions["plot_image"] = plot_menu.addAction("Data as &Image...",
                                                          self.plot_image)
-        self.actions["plot_states"] = plot_menu.addAction("Plot &States...",
+        self.actions["plot_states"] = plot_menu.addAction("&States...",
                                                           self.plot_states)
         self.actions["plot_topomaps"] = plot_menu.addAction(
-            "Plot &Topomaps...", self.plot_topomaps)
+            "&Topomaps...", self.plot_topomaps)
         self.actions["plot_montage"] = plot_menu.addAction("Current &montage",
                                                            self.plot_montage)
         plot_menu.addSeparator()
@@ -211,16 +211,16 @@ class MainWindow(QMainWindow):
             "&Time-Frequency...", self.plot_tfr)
         plot_menu.addSeparator()
         self.actions["plot_ica_components"] = plot_menu.addAction(
-            "ICA &components...", self.plot_ica_components_with_timeseries)
+            "&ICA components...", self.plot_ica_components_with_timeseries)
 
         self.actions["plot_ica_sources"] = plot_menu.addAction(
             "&ICA sources...", self.plot_ica_sources)
 
         self.actions["plot_correlation_matrix"] = plot_menu.addAction(
-            "Correlation matrix...", self.plot_correlation_matrix)
+            "&ICA Correlation matrix...", self.plot_correlation_matrix)
 
         self.actions["plot_overlay"] = plot_menu.addAction(
-            "ICA Overlay...", self.plot_ica_overlay)
+            "&ICA Overlay...", self.plot_ica_overlay)
 
         tools_menu = self.menuBar().addMenu("&Tools")
         self.actions["filter"] = tools_menu.addAction("&Filter data...",
