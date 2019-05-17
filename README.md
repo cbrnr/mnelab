@@ -32,4 +32,12 @@ MNELAB comes with the following features that are not available in MNE:
 - Export raw to EEGLAB SET
 
 ### Installation
-A package on [PyPI](https://pypi.python.org/pypi) will be available soon. Meanwhile, to use MNELAB first install all dependencies (e.g. via `pip` or `conda`) and then [download the source code](https://github.com/cbrnr/mnelab/archive/master.zip). Unpack it into a folder of your choice and run `python3 -m mnelab` in this folder (if this does not work try `python -m mnelab`, just make sure to use Python 3).
+A package on [PyPI](https://pypi.python.org/pypi) and a stand-alone installer will be available soon.
+
+Meanwhile, follow these steps to use MNELAB:
+
+1. [Download the source code](https://github.com/cbrnr/mnelab/archive/master.zip) and unpack it into a folder of your choice.
+2. Open a terminal, change to the folder where you unpacked the MNELAB source.
+    - If you use [Anaconda](https://www.anaconda.com/distribution/) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html), install all dependencies with `conda install numpy scipy matplotlib pyqt` followed by `pip install mne`.
+    - Otherwise, install all dependencies with `pip install -r requirements.txt`.
+3. Finally, run `python3 -m mnelab` to start MNELAB (if this does not work try `python -m mnelab`, just make sure to use Python 3).
