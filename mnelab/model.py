@@ -674,11 +674,11 @@ class Model:
             if eeg_to_montage(self.current["raw"]) is not None:
                 self.current["raw"].interpolate_bads(reset_bads=True)
                 self.current["name"] += " (Interpolated)"
-
+                self.history.append("raw.interpolate_bads(reset_bads=True)")
         else:
             if eeg_to_montage(self.current["epochs"]) is not None:
                 self.current["epochs"].interpolate_bads(reset_bads=True)
-                self.current["name"] += " (Interpolated)"
+                self.history.append("epochs.interpolate_bads(reset_bads=True)")
 
     @data_changed
     def add_events(self):
