@@ -200,7 +200,13 @@ class Model:
                                  shortest_event=shortest_event)
         if events.shape[0] > 0:  # if events were found
             self.current["events"] = events
-            self.history.append("events = mne.find_events(raw)")
+            self.history.append('events = mne.find_events(self.current["raw"], '
+                                 + "stim_channel={}, ".format(stim_channel)
+                                 + "consecutive={}, ".format(consecutive)
+                                 + "initial_event={}, ".format(initial_event)
+                                 + "uint_cast={}, ".format(uint_cast)
+                                 + "min_duration={}, ".format(min_duration)
+                                 + "shortest_event={})".format(shortest_event))
 
     def export_data(self, fname):
         """Export raw to file."""
@@ -642,13 +648,13 @@ class Model:
         self.current["montage"] = montage
         if self.current["raw"]:
             self.current["raw"].set_montage(montage)
-            self.history.append("raw.set_montage()")
+            self.history.append("raw.set_montage(montage)")
         elif self.current["epochs"]:
             self.current["epochs"].set_montage(montage)
-            self.history.append("epochs.set_montage()")
+            self.history.append("epochs.set_montage(montage)")
         elif self.current["evoked"]:
             self.current["evoked"].set_montage(montage)
-            self.history.append("evoked.set_montage()")
+            self.history.append("evoked.set_montage(montage)")
 
     @data_changed
     def filter(self, low, high, notch_freqs):
@@ -707,12 +713,13 @@ class Model:
         durations = np.zeros(events.shape[0])
         desc = np.array([str(e) for e in events[:, 1]])
         annot = Annotations(onsets, durations, desc)
+        self.history.append("annotations = "
+                          + "Annotations({}, {}, {})".format(onsets,
+                                                             durations,
+                                                             desc))
         self.current['raw'].set_annotations(annot)
         self.current["name"] += " (events added)"
-        self.history.append("self.current['raw'].set_annotations("
-                          + ("Annotations({}, {}, {}))").format(onsets,
-                                                                durations,
-                                                                desc))
+        self.history.append("raw.set_annotations(annotations)")
 
     @data_changed
     def epoch_data(self, selected, tmin, tmax):
@@ -739,17 +746,22 @@ class Model:
 
     @data_changed
     def set_reference(self, ref):
-        self.current["reference"] = ref
         if ref == "average":
+            self.current["reference"] = ref
             self.current["name"] += " (average ref)"
             if self.current["raw"]:
                 self.current["raw"].set_eeg_reference(ref, projection=False)
+                self.history.append("raw.set_eeg_reference({}, projection=False)"
+                                        .format(ref))
             elif self.current["epochs"]:
                 self.current["epochs"].set_eeg_reference(ref, projection=False)
+                self.history.append("epochs.set_eeg_reference({}, projection=False)"
+                                        .format(ref))
             elif self.current["evoked"]:
                 self.current["evoked"].set_eeg_reference(ref, projection=False)
+                self.history.append("evoked.set_eeg_reference({}, projection=False)"
+                                        .format(ref))
         else:
-            self.current["name"] += " (" + ",".join(ref) + ")"
             if set(ref) - set(self.current["raw"].info["ch_names"]):
                 # add new reference channel(s) to data
                 try:
@@ -762,9 +774,22 @@ class Model:
                     elif self.current["evoked"]:
                         mne.add_reference_channels(self.current["evoked"], ref,
                                                    copy=False)
+                    self.current["name"] += " (" + ",".join(ref) + ")"
                 except RuntimeError:
                     raise AddReferenceError("Cannot add reference channels "
                                             "to average reference signals.")
             else:
                 # re-reference to existing channel(s)
-                self.current["raw"].set_eeg_reference(ref, projection=False)
+                self.current["name"] += " (average ref)"
+                if self.current["raw"]:
+                    self.current["raw"].set_eeg_reference(ref, projection=False)
+                    self.history.append("raw.set_eeg_reference({}, projection=False)"
+                                            .format(ref))
+                elif self.current["epochs"]:
+                    self.current["epochs"].set_eeg_reference(ref, projection=False)
+                    self.history.append("epochs.set_eeg_reference({}, projection=False)"
+                                            .format(ref))
+                elif self.current["evoked"]:
+                    self.current["evoked"].set_eeg_reference(ref, projection=False)
+                    self.history.append("evoked.set_eeg_reference({}, projection=False)"
+                                            .format(ref))
