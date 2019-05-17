@@ -13,6 +13,7 @@ class RunICADialog(QDialog):
         grid = QGridLayout()
         grid.addWidget(QLabel("Method:"), 0, 0)
         self.method = QComboBox()
+        self.method.setToolTip("The ICA method to use")
         self.methods = {"Infomax": "infomax", "Extended-infomax": "extended-infomax"}
         if have_sklearn:
             self.methods["FastICA"] = "fastica"
@@ -26,6 +27,9 @@ class RunICADialog(QDialog):
 
         grid.addWidget(QLabel("Number of components:"),1, 0)
         self.n_components = QSpinBox()
+        self.n_components.setToolTip("Controls the number of PCA components "
+                                   + "from the pre-ICA PCA entering the ICA "
+                                   + "decomposition")
         self.n_components.setMinimum(0)
         self.n_components.setMaximum(nchan)
         self.n_components.setValue(nchan)
@@ -38,6 +42,9 @@ class RunICADialog(QDialog):
 
         self.gridLayout_advanced.addWidget(QLabel("pca components:"),1, 0)
         self.pca_components = QSpinBox()
+        self.pca_components.setToolTip("The number of PCA components used for "
+                                     + "re-projecting the decomposed "
+                                     + "data into sensor space")
         self.pca_components.setMinimum(0)
         self.pca_components.setMaximum(nchan)
         self.pca_components.setValue(nchan)
@@ -46,6 +53,8 @@ class RunICADialog(QDialog):
 
         self.gridLayout_advanced.addWidget(QLabel("max pca components:"),2, 0)
         self.max_pca_components = QSpinBox()
+        self.max_pca_components.setToolTip("The number of components returned "
+                                         + "by the PCA decomposition")
         self.max_pca_components.setMinimum(0)
         self.max_pca_components.setMaximum(nchan)
         self.max_pca_components.setValue(nchan)
@@ -54,6 +63,8 @@ class RunICADialog(QDialog):
 
         self.gridLayout_advanced.addWidget(QLabel("random seed:"),3, 0)
         self.random_seed = QSpinBox()
+        self.random_seed.setToolTip("Random state to initialize ICA estimation "
+                                  + "for reproducible results.")
         self.random_seed.setMinimum(0)
         self.random_seed.setMaximum(9999)
         self.random_seed.setValue(42)
@@ -62,6 +73,7 @@ class RunICADialog(QDialog):
 
         self.gridLayout_advanced.addWidget(QLabel("max iter:"),4, 0)
         self.max_iter = QSpinBox()
+        self.max_iter.setToolTip("Maximum number of iterations during fit")
         self.max_iter.setMinimum(0)
         self.max_iter.setMaximum(9999)
         self.max_iter.setValue(500)
@@ -76,6 +88,7 @@ class RunICADialog(QDialog):
 
         grid.addWidget(QLabel("decim:"),3, 0)
         self.decim = QSpinBox()
+        self.decim.setToolTip("Increment for selecting each nth time slice")
         self.decim.setMinimum(0)
         self.decim.setMaximum(9999)
         self.decim.setValue(1)
@@ -84,6 +97,8 @@ class RunICADialog(QDialog):
 
         grid.addWidget(QLabel("Exclude bad segments:"), 4, 0)
         self.exclude_bad_segments = QCheckBox()
+        self.exclude_bad_segments.setToolTip("Whether to omit bad segments "
+                                            +"from the data before fitting")
         self.exclude_bad_segments.setChecked(True)
         grid.addWidget(self.exclude_bad_segments)
         vbox.addLayout(grid)
