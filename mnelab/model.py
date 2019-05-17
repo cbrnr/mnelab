@@ -659,11 +659,11 @@ class Model:
     def apply_ica(self):
         if self.current["raw"]:
             self.current["ica"].apply(self.current["raw"])
-            self.history.append("ica.apply(inst=raw, exclude = {})"
+            self.history.append("ica.apply(inst=raw, exclude={})"
                                     .format(self.current["ica"].exclude))
         if self.current["epochs"]:
             self.current["ica"].apply(self.current["epochs"])
-            self.history.append("ica.apply(inst=epochs, exclude = {})"
+            self.history.append("ica.apply(inst=epochs, exclude={})"
                                     .format(self.current["ica"].exclude))
         self.current["isApplied"] = True
         self.current["name"] += "_applied_ica"
@@ -674,6 +674,7 @@ class Model:
             if eeg_to_montage(self.current["raw"]) is not None:
                 self.current["raw"].interpolate_bads(reset_bads=True)
                 self.current["name"] += " (Interpolated)"
+
         else:
             if eeg_to_montage(self.current["epochs"]) is not None:
                 self.current["epochs"].interpolate_bads(reset_bads=True)

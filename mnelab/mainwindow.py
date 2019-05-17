@@ -646,7 +646,7 @@ class MainWindow(QMainWindow):
                 except Exception as e:
                     QMessageBox.critical(self, "Unexpected error ", str(e))
 
-                 
+
     def plot_ica_sources(self):
         if self.model.current["raw"]:
             fig = (self.model.current["ica"]
@@ -699,8 +699,10 @@ class MainWindow(QMainWindow):
             have_sklearn = True
         if self.model.current["raw"]:
             data = self.model.current["raw"]
+            inst_type = "raw"
         elif self.model.current["epochs"]:
             data = self.model.current["epochs"]
+            inst_type = "epochs"
         nchan = len(pick_types(data.info,
                                meg=True, eeg=True, exclude='bads'))
         dialog = RunICADialog(self, nchan, have_picard, have_sklearn)
@@ -710,27 +712,18 @@ class MainWindow(QMainWindow):
             method = dialog.method.currentText()
             exclude_bad_segments = dialog.exclude_bad_segments.isChecked()
             decim = int(dialog.decim.text())
-            if dialog.groupBox_advancedparameters.isChecked():
-                n_components = int(dialog.n_components.text())
-                max_pca_components = int(dialog.max_pca_components.text())
-                n_pca_components = int(dialog.pca_components.text())
-                random_state = int(dialog.random_seed.text())
-                max_iter = int(dialog.max_iter.text())
-                ica = mne.preprocessing.ICA(
-                    method=dialog.methods[method],
-                    n_components=n_components,
-                    max_pca_components=max_pca_components,
-                    n_pca_components=n_pca_components,
-                    random_state=random_state,
-                    max_iter=max_iter)
-            else:
-                n_components = int(dialog.n_components.text())
-                max_iter = 500
-                random_state = 42
-                ica = mne.preprocessing.ICA(method=dialog.methods[method],
-                                            n_components=n_components,
-                                            random_state=random_state,
-                                            max_iter=max_iter)
+            n_components = int(dialog.n_components.text())
+            max_pca_components = int(dialog.max_pca_components.text())
+            n_pca_components = int(dialog.pca_components.text())
+            random_state = int(dialog.random_seed.text())
+            max_iter = int(dialog.max_iter.text())
+            ica = mne.preprocessing.ICA(
+                method=dialog.methods[method],
+                n_components=n_components,
+                max_pca_components=max_pca_components,
+                n_pca_components=n_pca_components,
+                random_state=random_state,
+                max_iter=max_iter)
 
             pool = mp.Pool(1)
             kwds = {"reject_by_annotation": exclude_bad_segments, "decim": decim}
@@ -742,6 +735,17 @@ class MainWindow(QMainWindow):
             else:
                 self.auto_duplicate()
                 self.model.current["ica"] = res.get(timeout=1)
+                self.model.history.append("ica=ICA("
+                    + ("method={} ,").format(dialog.methods[method])
+                    + ("n_components={}, ").format(n_components)
+                    + ("max_pca_components={}, ").format(max_pca_components)
+                    + ("n_pca_components={}, ").format(n_pca_components)
+                    + ("random_state={}, ").format(random_state)
+                    + ("max_iter={})").format(max_iter))
+                self.model.history.append("ica.fit("
+                    + ("inst={}, ").format(inst_type)
+                    + ("decim={}, ").format(decim)
+                    + ("reject_by_annotation={})").format(exclude_bad_segments))
                 self.data_changed()
 
     def apply_ica(self):
