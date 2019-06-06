@@ -45,13 +45,15 @@ def read_raw_xdf(fname, stream_id):
     scale = np.array([1e-6 if u == "microvolts" else 1 for u in units])
     raw = mne.io.RawArray((stream["time_series"] * scale).T, info)
 
-    # first_samp = stream["time_stamps"][0]
-    # markers = _find_stream_by_type(streams, stream_type="Markers")
-    # if markers is not None:
-    #     onsets = markers["time_stamps"] - first_samp
-    #     descriptions = markers["time_series"]
-    #     annotations = mne.Annotations(onsets, [0] * len(onsets), descriptions)
-    #     raw.set_annotations(annotations)
+    first_samp = stream["time_stamps"][0]
+    markers = match_streaminfos(resolve_streams(fname), [{"type": "Markers"}])
+    for stream_id in markers:
+        for stream in streams:
+            if stream["info"]["stream_id"] == stream_id:
+                break
+        onsets = stream["time_stamps"] - first_samp
+        descriptions = [item for sub in stream["time_series"] for item in sub]
+        raw.annotations.append(onsets, [0] * len(onsets), descriptions)
 
     return raw
 
@@ -90,6 +92,51 @@ def parse_chunks(chunks):
                                 channel_format=chunk["channel_format"],
                                 nominal_srate=int(chunk["nominal_srate"])))
     return streams
+
+
+def match_streaminfos(stream_infos, parameters):
+    """Find stream IDs matching specified criteria.
+
+    Parameters
+    ----------
+    stream_infos : list of dicts
+        List of dicts containing information on each stream. This information
+        can be obtained using the function resolve_streams.
+    parameters : list of dicts
+        List of dicts containing key/values that should be present in streams.
+        Examples: [{"name": "Keyboard"}] matches all streams with a "name"
+                  field equal to "Keyboard".
+                  [{"name": "Keyboard"}, {"type": "EEG"}] matches all streams
+                  with a "name" field equal to "Keyboard" and all streams with
+                  a "type" field equal to "EEG".
+    """
+    matches = []
+    for request in parameters:
+        for info in stream_infos:
+            for key in request.keys():
+                match = info[key] == request[key]
+                if not match:
+                    break
+            if match:
+                matches.append(info['stream_id'])
+
+    return list(set(matches))  # return unique values
+
+
+def resolve_streams(fname):
+    """Resolve streams in given XDF file.
+
+    Parameters
+    ----------
+    fname : str
+        Name of the XDF file.
+
+    Returns
+    -------
+    stream_infos : list of dicts
+        List of dicts containing information on each stream.
+    """
+    return parse_chunks(parse_xdf(fname))
 
 
 def _read_chunks(f):
