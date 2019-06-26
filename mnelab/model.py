@@ -456,3 +456,7 @@ class Model:
             else:
                 # re-reference to existing channel(s)
                 self.current["raw"].set_eeg_reference(ref, projection=False)
+
+    @data_changed
+    def set_events(self, events):
+        self.current["events"] = events

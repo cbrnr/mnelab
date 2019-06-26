@@ -410,7 +410,7 @@ class MainWindow(QMainWindow):
                 pos = int(dialog.table.item(i, 0).data(Qt.DisplayRole))
                 desc = int(dialog.table.item(i, 1).data(Qt.DisplayRole))
                 events[i] = pos, 0, desc
-            self.model.current["events"] = events
+            self.model.set_events(events)
 
     def plot_raw(self):
         """Plot raw data."""
