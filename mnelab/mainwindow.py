@@ -420,11 +420,9 @@ class MainWindow(QMainWindow):
 
         # prevent closing the window with the escape key
         try:
-            key_events = fig.canvas.callbacks.callbacks["key_press_event"][8]
-        except KeyError:
+            fig._mne_params["close_key"] = None
+        except AttributeError:  # does not exist in older MNE versions
             pass
-        else:  # this requires MNE >=0.15
-            key_events.func.keywords["params"]["close_key"] = None
 
         fig.show()
 
