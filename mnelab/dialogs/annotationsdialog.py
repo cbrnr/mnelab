@@ -1,0 +1,90 @@
+from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout,
+                             QDialogButtonBox, QTableWidget, QTableWidgetItem,
+                             QAbstractItemView, QPushButton)
+from PyQt5.QtCore import Qt, pyqtSlot
+
+
+class IntTableWidgetItem(QTableWidgetItem):
+    def __init__(self, value):
+        super().__init__(str(value))
+
+    def __lt__(self, other):
+        return int(self.data(Qt.EditRole)) < int(other.data(Qt.EditRole))
+
+    def setData(self, role, value):
+        try:
+            value = int(value)
+        except ValueError:
+            return
+        else:
+            if value >= 0:  # event position and type must not be negative
+                super().setData(role, str(value))
+
+
+class AnnotationsDialog(QDialog):
+    def __init__(self, parent, onset, duration, description):
+        super().__init__(parent)
+        self.setWindowTitle("Edit Annotations")
+
+        self.table = QTableWidget(len(onset), 3)
+
+        for row, annotation in enumerate(zip(onset, duration, description)):
+            self.table.setItem(row, 0, IntTableWidgetItem(annotation[0]))
+            self.table.setItem(row, 1, IntTableWidgetItem(annotation[1]))
+            self.table.setItem(row, 2, QTableWidgetItem(annotation[2]))
+
+        self.table.setHorizontalHeaderLabels(["Onset", "Duration", "Type"])
+        self.table.horizontalHeader().setStretchLastSection(True)
+        self.table.verticalHeader().setVisible(False)
+        self.table.setShowGrid(False)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.table.setSortingEnabled(True)
+        self.table.sortByColumn(0, Qt.AscendingOrder)
+
+        vbox = QVBoxLayout(self)
+        vbox.addWidget(self.table)
+        hbox = QHBoxLayout()
+        self.add_button = QPushButton("+")
+        self.remove_button = QPushButton("-")
+        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
+                                     QDialogButtonBox.Cancel)
+        hbox.addWidget(self.add_button)
+        hbox.addWidget(self.remove_button)
+        hbox.addStretch()
+        hbox.addWidget(buttonbox)
+        vbox.addLayout(hbox)
+        buttonbox.accepted.connect(self.accept)
+        buttonbox.rejected.connect(self.reject)
+        self.table.itemSelectionChanged.connect(self.toggle_buttons)
+        self.remove_button.clicked.connect(self.remove_event)
+        self.add_button.clicked.connect(self.add_event)
+        self.toggle_buttons()
+        self.resize(500, 500)
+
+    @pyqtSlot()
+    def toggle_buttons(self):
+        """Toggle + and - buttons."""
+        if len(self.table.selectedItems()) == 3:  # one row (3 items) selected
+            self.add_button.setEnabled(True)
+            self.remove_button.setEnabled(True)
+        elif len(self.table.selectedItems()) > 3:  # more than one row selected
+            self.add_button.setEnabled(False)
+            self.remove_button.setEnabled(True)
+        else:  # no rows selected
+            self.add_button.setEnabled(False)
+            self.remove_button.setEnabled(False)
+
+    def add_event(self):
+        current_row = self.table.selectedIndexes()[0].row()
+        pos = int(self.table.item(current_row, 0).data(Qt.DisplayRole))
+        self.table.setSortingEnabled(False)
+        self.table.insertRow(current_row)
+        self.table.setItem(current_row, 0, IntTableWidgetItem(pos))
+        self.table.setItem(current_row, 1, IntTableWidgetItem(0))
+        self.table.setItem(current_row, 2, QTableWidgetItem("New Annotation"))
+        self.table.setSortingEnabled(True)
+
+    def remove_event(self):
+        rows = {index.row() for index in self.table.selectedIndexes()}
+        for row in sorted(rows, reverse=True):
+            self.table.removeRow(row)

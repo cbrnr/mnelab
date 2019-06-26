@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                              QStatusBar, QToolBar)
 from mne.io.pick import channel_type
 
+from .dialogs.annotationsdialog import AnnotationsDialog
 from .dialogs.filterdialog import FilterDialog
 from .dialogs.findeventsdialog import FindEventsDialog
 from .dialogs.pickchannelsdialog import PickChannelsDialog
@@ -404,7 +405,15 @@ class MainWindow(QMainWindow):
                                      "not match any channel name in the data.")
 
     def edit_annotations(self):
-        pass
+        fs = self.model.current["raw"].info["sfreq"]
+        pos = self.model.current["raw"].annotations.onset
+        pos = (pos * fs).astype(int).tolist()
+        dur = self.model.current["raw"].annotations.duration
+        dur = (dur * fs).astype(int).tolist()
+        desc = self.model.current["raw"].annotations.description.tolist()
+        dialog = AnnotationsDialog(self, pos, dur, desc)
+        if dialog.exec_():
+            pass
 
     def edit_events(self):
         pos = self.model.current["events"][:, 0].tolist()
