@@ -1,6 +1,7 @@
-from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QDialogButtonBox,
-                             QTableWidget, QTableWidgetItem, QAbstractItemView)
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout,
+                             QDialogButtonBox, QTableWidget, QTableWidgetItem,
+                             QAbstractItemView, QPushButton)
+from PyQt5.QtCore import Qt, pyqtSlot
 
 
 class IntTableWidgetItem(QTableWidgetItem):
@@ -35,15 +36,41 @@ class EventsDialog(QDialog):
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.verticalHeader().setVisible(False)
         self.table.setShowGrid(False)
-        self.table.setSelectionMode(QAbstractItemView.NoSelection)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.table.setSortingEnabled(True)
         self.table.sortByColumn(0, Qt.AscendingOrder)
 
         vbox = QVBoxLayout(self)
         vbox.addWidget(self.table)
+        hbox = QHBoxLayout()
+        self.add_button = QPushButton("+")
+        self.remove_button = QPushButton("-")
         buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
                                      QDialogButtonBox.Cancel)
-        vbox.addWidget(buttonbox)
+        hbox.addWidget(self.add_button)
+        hbox.addWidget(self.remove_button)
+        hbox.addStretch()
+        hbox.addWidget(buttonbox)
+        vbox.addLayout(hbox)
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)
+        self.table.itemSelectionChanged.connect(self.toggle_buttons)
+        self.remove_button.clicked.connect(self.remove_event)
+        self.toggle_buttons()
         self.resize(300, 500)
+
+    @pyqtSlot()
+    def toggle_buttons(self):
+        """Toggle + and - buttons.
+        """
+        if self.table.selectedItems():
+            self.add_button.setEnabled(True)
+            self.remove_button.setEnabled(True)
+        else:
+            self.add_button.setEnabled(False)
+            self.remove_button.setEnabled(False)
+
+    def remove_event(self):
+        rows = {index.row() for index in self.table.selectedIndexes()}
+        for row in sorted(rows, reverse=True):
+            self.table.removeRow(row)
