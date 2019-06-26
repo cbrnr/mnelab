@@ -107,8 +107,8 @@ def match_streaminfos(stream_infos, parameters):
         Examples: [{"name": "Keyboard"}] matches all streams with a "name"
                   field equal to "Keyboard".
                   [{"name": "Keyboard"}, {"type": "EEG"}] matches all streams
-                  with a "name" field equal to "Keyboard" and all streams with
-                  a "type" field equal to "EEG".
+                  with a "name" field equal to "Keyboard" or a "type" field
+                  equal to "EEG".
     """
     matches = []
     for request in parameters:
