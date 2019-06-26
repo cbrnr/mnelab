@@ -56,19 +56,31 @@ class EventsDialog(QDialog):
         buttonbox.rejected.connect(self.reject)
         self.table.itemSelectionChanged.connect(self.toggle_buttons)
         self.remove_button.clicked.connect(self.remove_event)
+        self.add_button.clicked.connect(self.add_event)
         self.toggle_buttons()
         self.resize(300, 500)
 
     @pyqtSlot()
     def toggle_buttons(self):
-        """Toggle + and - buttons.
-        """
-        if self.table.selectedItems():
+        """Toggle + and - buttons."""
+        if len(self.table.selectedItems()) == 2:  # one row (2 items) selected
             self.add_button.setEnabled(True)
             self.remove_button.setEnabled(True)
-        else:
+        elif len(self.table.selectedItems()) > 2:  # more than one row selected
+            self.add_button.setEnabled(False)
+            self.remove_button.setEnabled(True)
+        else:  # no rows selected
             self.add_button.setEnabled(False)
             self.remove_button.setEnabled(False)
+
+    def add_event(self):
+        current_row = self.table.selectedIndexes()[0].row()
+        pos = int(self.table.item(current_row, 0).data(Qt.DisplayRole))
+        self.table.setSortingEnabled(False)
+        self.table.insertRow(current_row)
+        self.table.setItem(current_row, 0, IntTableWidgetItem(pos))
+        self.table.setItem(current_row, 1, IntTableWidgetItem(0))
+        self.table.setSortingEnabled(True)
 
     def remove_event(self):
         rows = {index.row() for index in self.table.selectedIndexes()}
