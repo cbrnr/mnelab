@@ -12,11 +12,12 @@ class IntTableWidgetItem(QTableWidgetItem):
 
     def setData(self, role, value):
         try:
-            value = str(int(value))
+            value = int(value)
         except ValueError:
             return
         else:
-            super().setData(role, value)
+            if value >= 0:  # event position and type must not be negative
+                super().setData(role, str(value))
 
 
 class EventsDialog(QDialog):
