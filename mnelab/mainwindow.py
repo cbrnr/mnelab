@@ -413,7 +413,16 @@ class MainWindow(QMainWindow):
         desc = self.model.current["raw"].annotations.description.tolist()
         dialog = AnnotationsDialog(self, pos, dur, desc)
         if dialog.exec_():
-            pass
+            rows = dialog.table.rowCount()
+            onset, duration, description = [], [], []
+            for i in range(rows):
+                data = dialog.table.item(i, 0).data(Qt.DisplayRole)
+                onset.append(float(data) / fs)
+                data = dialog.table.item(i, 1).data(Qt.DisplayRole)
+                duration.append(float(data) / fs)
+                data = dialog.table.item(i, 2).data(Qt.DisplayRole)
+                description.append(data)
+            self.model.set_annotations(onset, duration, description)
 
     def edit_events(self):
         pos = self.model.current["events"][:, 0].tolist()
