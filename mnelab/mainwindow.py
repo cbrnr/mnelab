@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                              QStatusBar, QToolBar)
 from mne.io.pick import channel_type
 
+from .dialogs.annotationsdialog import AnnotationsDialog
 from .dialogs.filterdialog import FilterDialog
 from .dialogs.findeventsdialog import FindEventsDialog
 from .dialogs.pickchannelsdialog import PickChannelsDialog
@@ -167,6 +168,9 @@ class MainWindow(QMainWindow):
         self.actions["set_ref"] = edit_menu.addAction("&Set reference...",
                                                       self.set_reference)
         edit_menu.addSeparator()
+        self.actions["annotations"] = edit_menu.addAction(
+            "Annotations...",
+            self.edit_annotations)
         self.actions["events"] = edit_menu.addAction("Events...",
                                                      self.edit_events)
 
@@ -266,8 +270,9 @@ class MainWindow(QMainWindow):
             self.actions["export_bads"].setEnabled(enabled and bads)
             events = self.model.current["events"] is not None
             self.actions["export_events"].setEnabled(enabled and events)
-            annot = self.model.current["raw"].annotations is not None
+            annot = bool(self.model.current["raw"].annotations)
             self.actions["export_annotations"].setEnabled(enabled and annot)
+            self.actions["annotations"].setEnabled(enabled and annot)
             montage = bool(self.model.current["montage"])
             self.actions["plot_montage"].setEnabled(enabled and montage)
             ica = bool(self.model.current["ica"])
@@ -398,6 +403,26 @@ class MainWindow(QMainWindow):
                 QMessageBox.critical(self, "No matching channel names",
                                      "Channel names defined in the montage do "
                                      "not match any channel name in the data.")
+
+    def edit_annotations(self):
+        fs = self.model.current["raw"].info["sfreq"]
+        pos = self.model.current["raw"].annotations.onset
+        pos = (pos * fs).astype(int).tolist()
+        dur = self.model.current["raw"].annotations.duration
+        dur = (dur * fs).astype(int).tolist()
+        desc = self.model.current["raw"].annotations.description.tolist()
+        dialog = AnnotationsDialog(self, pos, dur, desc)
+        if dialog.exec_():
+            rows = dialog.table.rowCount()
+            onset, duration, description = [], [], []
+            for i in range(rows):
+                data = dialog.table.item(i, 0).data(Qt.DisplayRole)
+                onset.append(float(data) / fs)
+                data = dialog.table.item(i, 1).data(Qt.DisplayRole)
+                duration.append(float(data) / fs)
+                data = dialog.table.item(i, 2).data(Qt.DisplayRole)
+                description.append(data)
+            self.model.set_annotations(onset, duration, description)
 
     def edit_events(self):
         pos = self.model.current["events"][:, 0].tolist()

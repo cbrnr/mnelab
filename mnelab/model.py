@@ -460,3 +460,8 @@ class Model:
     @data_changed
     def set_events(self, events):
         self.current["events"] = events
+
+    @data_changed
+    def set_annotations(self, onset, duration, description):
+        self.current["raw"].set_annotations(mne.Annotations(onset, duration,
+                                                            description))
