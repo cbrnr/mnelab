@@ -10,6 +10,15 @@ class IntTableWidgetItem(QTableWidgetItem):
     def __lt__(self, other):
         return int(self.data(Qt.EditRole)) < int(other.data(Qt.EditRole))
 
+    def setData(self, role, value):
+        try:
+            value = int(value)
+        except ValueError:
+            return
+        else:
+            if value >= 0:  # event position and type must not be negative
+                super().setData(role, str(value))
+
 
 class EventsDialog(QDialog):
     def __init__(self, parent, pos, desc):
