@@ -1,6 +1,7 @@
 import multiprocessing as mp
 from sys import version_info
 from os.path import split, splitext
+import numpy as np
 
 import mne
 from PyQt5.QtCore import (pyqtSlot, QStringListModel, QModelIndex, QSettings,
@@ -403,7 +404,13 @@ class MainWindow(QMainWindow):
         desc = self.model.current["events"][:, 2].tolist()
         dialog = EventsDialog(self, pos, desc)
         if dialog.exec_():
-            pass
+            rows = dialog.table.rowCount()
+            events = np.zeros((rows, 3), dtype=int)
+            for i in range(rows):
+                pos = int(dialog.table.item(i, 0).data(Qt.DisplayRole))
+                desc = int(dialog.table.item(i, 1).data(Qt.DisplayRole))
+                events[i] = pos, 0, desc
+            self.model.current["events"] = events
 
     def plot_raw(self):
         """Plot raw data."""
