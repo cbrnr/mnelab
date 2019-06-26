@@ -167,6 +167,9 @@ class MainWindow(QMainWindow):
         self.actions["set_ref"] = edit_menu.addAction("&Set reference...",
                                                       self.set_reference)
         edit_menu.addSeparator()
+        self.actions["annotations"] = edit_menu.addAction(
+            "Annotations...",
+            self.edit_annotations)
         self.actions["events"] = edit_menu.addAction("Events...",
                                                      self.edit_events)
 
@@ -266,8 +269,9 @@ class MainWindow(QMainWindow):
             self.actions["export_bads"].setEnabled(enabled and bads)
             events = self.model.current["events"] is not None
             self.actions["export_events"].setEnabled(enabled and events)
-            annot = self.model.current["raw"].annotations is not None
+            annot = bool(self.model.current["raw"].annotations)
             self.actions["export_annotations"].setEnabled(enabled and annot)
+            self.actions["annotations"].setEnabled(enabled and annot)
             montage = bool(self.model.current["montage"])
             self.actions["plot_montage"].setEnabled(enabled and montage)
             ica = bool(self.model.current["ica"])
@@ -398,6 +402,9 @@ class MainWindow(QMainWindow):
                 QMessageBox.critical(self, "No matching channel names",
                                      "Channel names defined in the montage do "
                                      "not match any channel name in the data.")
+
+    def edit_annotations(self):
+        pass
 
     def edit_events(self):
         pos = self.model.current["events"][:, 0].tolist()
