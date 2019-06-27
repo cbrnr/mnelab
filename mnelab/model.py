@@ -208,6 +208,7 @@ class Model:
 
     def _export_edf(self, fname):
         """Export raw to EDF/BDF file (requires pyEDFlib)."""
+        import pyedflib
         name, ext = splitext(split(fname)[-1])
         if ext == ".edf":
             filetype = pyedflib.FILETYPE_EDFPLUS
