@@ -220,7 +220,10 @@ class Model:
         fs = self.current["raw"].info["sfreq"]
         nchan = self.current["raw"].info["nchan"]
         ch_names = self.current["raw"].info["ch_names"]
-        meas_date = self.current["raw"].info["meas_date"][0]
+        if self.current["raw"].info["meas_date"] is not None:
+            meas_date = self.current["raw"].info["meas_date"][0]
+        else:
+            meas_date = None
         prefilter = (f"{self.current['raw'].info['highpass']}Hz - "
                      f"{self.current['raw'].info['lowpass']}")
         pmin, pmax = data.min(axis=1), data.max(axis=1)
@@ -240,7 +243,8 @@ class Model:
             data_list.append(data[i])
         f.setTechnician("Exported by MNELAB")
         f.setSignalHeaders(channel_info)
-        f.setStartdatetime(datetime.utcfromtimestamp(meas_date))
+        if meas_date is not None:
+            f.setStartdatetime(datetime.utcfromtimestamp(meas_date))
         # note that currently, only blocks of whole seconds can be written
         f.writeSamples(data_list)
         if self.current["raw"].annotations is not None:
