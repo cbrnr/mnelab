@@ -1,3 +1,5 @@
+from pathlib import Path
+import gzip
 import struct
 import xml.etree.ElementTree as ET
 import numpy as np
@@ -58,42 +60,6 @@ def read_raw_xdf(fname, stream_id):
     return raw
 
 
-def parse_xdf(fname):
-    """Parse and return chunks contained in an XDF file.
-
-    Parameters
-    ----------
-    fname : str
-        Name of the XDF file.
-
-    Returns
-    -------
-    chunks : list
-        List of all chunks contained in the XDF file.
-    """
-    chunks = []
-    with open(fname, "rb") as f:
-        if f.read(4) != b"XDF:":  # magic code
-            raise ValueError(f"Invalid XDF file {fname}.")
-        for chunk in _read_chunks(f):
-            chunks.append(chunk)
-    return chunks
-
-
-def parse_chunks(chunks):
-    """Parse chunks and extract information on individual streams."""
-    streams = []
-    for chunk in chunks:
-        if chunk["tag"] == 2:  # stream header chunk
-            streams.append(dict(stream_id=chunk["stream_id"],
-                                name=chunk.get("name"),  # optional
-                                type=chunk.get("type"),  # optional
-                                channel_count=int(chunk["channel_count"]),
-                                channel_format=chunk["channel_format"],
-                                nominal_srate=int(chunk["nominal_srate"])))
-    return streams
-
-
 def match_streaminfos(stream_infos, parameters):
     """Find stream IDs matching specified criteria.
 
@@ -107,8 +73,8 @@ def match_streaminfos(stream_infos, parameters):
         Examples: [{"name": "Keyboard"}] matches all streams with a "name"
                   field equal to "Keyboard".
                   [{"name": "Keyboard"}, {"type": "EEG"}] matches all streams
-                  with a "name" field equal to "Keyboard" or a "type" field
-                  equal to "EEG".
+                  with a "name" field equal to "Keyboard" and all streams with
+                  a "type" field equal to "EEG".
     """
     matches = []
     for request in parameters:
@@ -139,6 +105,45 @@ def resolve_streams(fname):
     return parse_chunks(parse_xdf(fname))
 
 
+def parse_xdf(fname):
+    """Parse and return chunks contained in an XDF file.
+
+    Parameters
+    ----------
+    fname : str
+        Name of the XDF file.
+
+    Returns
+    -------
+    chunks : list
+        List of all chunks contained in the XDF file.
+    """
+    chunks = []
+    with _open_xdf(fname) as f:
+        for chunk in _read_chunks(f):
+            chunks.append(chunk)
+    return chunks
+
+
+def parse_chunks(chunks):
+    """Parse chunks and extract information on individual streams."""
+    streams = []
+    for chunk in chunks:
+        if chunk["tag"] == 2:  # stream header chunk
+            streams.append(dict(stream_id=chunk["stream_id"],
+                                name=chunk.get("name"),  # optional
+                                type=chunk.get("type"),  # optional
+                                source_id=chunk.get("source_id"),  # optional
+                                created_at=chunk.get("created_at"),  # optional
+                                uid=chunk.get("uid"),  # optional
+                                session_id=chunk.get("session_id"),  # optional
+                                hostname=chunk.get("hostname"),  # optional
+                                channel_count=int(chunk["channel_count"]),
+                                channel_format=chunk["channel_format"],
+                                nominal_srate=int(chunk["nominal_srate"])))
+    return streams
+
+
 def _read_chunks(f):
     """Read and yield XDF chunks.
 
@@ -156,15 +161,9 @@ def _read_chunks(f):
     while True:
         chunk = dict()
         try:
-            nbytes = struct.unpack("B", f.read(1))[0]
-        except struct.error:
-            return  # reached EOF
-        if nbytes == 1:
-            chunk["nbytes"] = struct.unpack("B", f.read(1))[0]
-        elif nbytes == 4:
-            chunk["nbytes"] = struct.unpack("<I", f.read(4))[0]
-        elif nbytes == 8:
-            chunk["nbytes"] = struct.unpack("<Q", f.read(8))[0]
+            chunk["nbytes"] = _read_varlen_int(f)
+        except EOFError:
+            return
         chunk["tag"] = struct.unpack('<H', f.read(2))[0]
         if chunk["tag"] in [2, 3, 4, 6]:
             chunk["stream_id"] = struct.unpack("<I", f.read(4))[0]
@@ -181,3 +180,30 @@ def _read_chunks(f):
 def _parse_streamheader(xml):
     """Parse stream header XML."""
     return {el.tag: el.text for el in xml if el.tag != "desc"}
+
+
+def _read_varlen_int(f):
+    """Read a variable-length integer."""
+    nbytes = f.read(1)
+    if nbytes == b"\x01":
+        return ord(f.read(1))
+    elif nbytes == b"\x04":
+        return struct.unpack("<I", f.read(4))[0]
+    elif nbytes == b"\x08":
+        return struct.unpack("<Q", f.read(8))[0]
+    elif not nbytes:  # EOF
+        raise EOFError
+    else:
+        raise RuntimeError("Invalid variable-length integer")
+
+
+def _open_xdf(filename):
+    """Open XDF file for reading."""
+    filename = Path(filename)  # convert to pathlib object
+    if filename.suffix == ".xdfz" or filename.suffixes == [".xdf", ".gz"]:
+        f = gzip.open(filename, "rb")
+    else:
+        f = open(filename, "rb")
+    if f.read(4) != b"XDF:":  # magic bytes
+        raise IOError("Invalid XDF file {}".format(filename))
+    return f
