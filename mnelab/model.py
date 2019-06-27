@@ -409,8 +409,8 @@ class Model:
                 "Channels": f"{nchan} (" + ", ".join(
                     [" ".join([str(v), k.upper()]) for k, v in chans]) + ")",
                 "Samples": raw.n_times,
-                "Sampling frequency": f"{raw.info['sfreq']:.2f} Hz",
-                "Length": f"{raw.n_times / raw.info['sfreq']:.2f} s",
+                "Sampling frequency": f"{raw.info['sfreq']:.6g} Hz",
+                "Length": f"{raw.n_times / raw.info['sfreq']:.6g} s",
                 "Events": events,
                 "Annotations": annots,
                 "Reference": reference if reference else "-",
