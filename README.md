@@ -25,10 +25,10 @@ Optional dependencies provide additional features if installed:
 - [pyEDFlib](https://github.com/holgern/pyedflib) (export raw to EDF/BDF)
 - [pyxdf](https://github.com/xdf-modules/xdf-Python) (import XDF files)
 
-In general, it is recommended to always use the latest package versions.
+In general, I recommended to always use the latest package versions.
 
 ### Additional features
-MNELAB comes with the following features that are not available in MNE:
+MNELAB comes with the following features that are not (yet) available in MNE:
 - Export raw to EDF/BDF (requires [pyEDFlib](https://github.com/holgern/pyedflib))
 - Export raw to EEGLAB SET
 - Import [XDF](https://github.com/sccn/xdf/wiki/Specifications) files (requires [pyxdf](https://github.com/xdf-modules/xdf-Python))
@@ -42,4 +42,4 @@ Meanwhile, follow these steps to use MNELAB:
 2. Open a terminal, change to the folder where you unpacked the MNELAB source.
     - If you use [Anaconda](https://www.anaconda.com/distribution/) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html), install all dependencies with `conda install numpy scipy matplotlib pyqt` followed by `pip install mne`.
     - Otherwise, install all dependencies with `pip install -r requirements.txt`.
-3. Finally, run `python3 -m mnelab` to start MNELAB (if this does not work try `python -m mnelab`, just make sure to use Python 3).
+3. Finally, run `python3 -m mnelab` to start MNELAB (if this does not work try `python -m mnelab`, just make sure to use Python 3 because Python 2 is not supported).
