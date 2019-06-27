@@ -34,9 +34,14 @@ MNELAB comes with the following features that are not (yet) available in MNE:
 - Import [XDF](https://github.com/sccn/xdf/wiki/Specifications) files (requires [pyxdf](https://github.com/xdf-modules/xdf-Python))
 
 ### Installation
-A package on [PyPI](https://pypi.python.org/pypi) and a stand-alone installer will be available soon.
+The latest release is available on [PyPI](https://pypi.python.org/pypi) and can be installed with:
+```
+pip install mnelab
+```
 
-Meanwhile, follow these steps to use MNELAB:
+A stand-alone installer will be available soon.
+
+Follow these steps to use the latest development version of MNELAB:
 
 1. [Download the source code](https://github.com/cbrnr/mnelab/archive/master.zip) and unpack it into a folder of your choice.
 2. Open a terminal, change to the folder where you unpacked the MNELAB source.
