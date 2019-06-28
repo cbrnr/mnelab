@@ -9,7 +9,7 @@ Graphical user interface (GUI) for [MNE](https://github.com/mne-tools/mne-python
 
 ### Screenshots
 
-![](mnelab.png)
+![](https://raw.githubusercontent.com/cbrnr/mnelab/master/mnelab.png)
 
 ### Dependencies
 MNELAB requires Python >= 3.6. In addition, the following Python packages are required:
