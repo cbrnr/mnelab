@@ -2,3 +2,7 @@
 __pycache__
 .DS_Store
 .venv
+build
+dist
+mnelab.egg-info
+.pytest_cache
