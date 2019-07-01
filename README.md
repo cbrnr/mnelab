@@ -36,14 +36,15 @@ MNELAB comes with the following features that are not (yet) available in MNE:
 - Import [XDF](https://github.com/sccn/xdf/wiki/Specifications) files (requires [pyxdf](https://github.com/xdf-modules/xdf-Python))
 
 ### Installation
-#### Via `pip`
+#### Via pip
 The latest release is available on [PyPI](https://pypi.python.org/pypi) and can be installed with:
 ```
 pip install mnelab
 ```
+The `mnelab` command starts the application.
 
-#### Via `conda`
-An (unofficial, but regularly updated) `conda` package can be installed from `conda-forge`, ideally into
+#### Via conda
+An (unofficial, but regularly updated) conda package can be installed from [conda-forge](https://conda-forge.org/), ideally into
 its own dedicated environment:
 ```
 conda create -y --name mnelab -c conda-forge mnelab
@@ -51,7 +52,7 @@ conda activate mnelab
 mnelab
 ```
 The `mnelab` command starts the application.
-Any issues with this `conda` package should be reported to the respective
+Any issues with this conda package should be reported to the respective
 [issue tracker](https://github.com/conda-forge/mnelab-feedstock/issues).
 
 #### Standalone installer
