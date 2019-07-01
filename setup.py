@@ -39,7 +39,9 @@ setup(
     install_requires=['mne', 'numpy', 'scipy', 'matplotlib', 'PyQt5'],
     extras_require={"EDF export": ["pyedflib"],
                     "PICARD": ["python-picard"],
-                    "FastICA": ["scikit-learn"]},
+                    "FastICA": ["scikit-learn"],
+                    "XDF import": ["pyxdf"]},
+    license="BSD-3-Clause",
     entry_points={
         'gui_scripts': [
             'mnelab=mnelab.__main__:main',
