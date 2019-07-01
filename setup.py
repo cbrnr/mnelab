@@ -42,6 +42,7 @@ setup(
                     "FastICA": ["scikit-learn"],
                     "XDF import": ["pyxdf"]},
     license="BSD-3-Clause",
+    include_package_data=True,
     entry_points={
         'gui_scripts': [
             'mnelab=mnelab.__main__:main',
