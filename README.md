@@ -1,3 +1,5 @@
+[![Latest PyPI Release](https://img.shields.io/pypi/v/mnelab.svg)](https://pypi.org/project/mnelab/)
+[![Conda Version](https://img.shields.io/conda/vn/conda-forge/mnelab.svg)](https://anaconda.org/conda-forge/mnelab)
 ![Python 3.6](https://img.shields.io/badge/python-3.6-green.svg)
 ![Python 3.7](https://img.shields.io/badge/python-3.7-green.svg)
 ![License](https://img.shields.io/badge/license-BSD-green.svg)
@@ -34,13 +36,29 @@ MNELAB comes with the following features that are not (yet) available in MNE:
 - Import [XDF](https://github.com/sccn/xdf/wiki/Specifications) files (requires [pyxdf](https://github.com/xdf-modules/xdf-Python))
 
 ### Installation
+#### Via `pip`
 The latest release is available on [PyPI](https://pypi.python.org/pypi) and can be installed with:
 ```
 pip install mnelab
 ```
 
+#### Via `conda`
+An (unofficial, but regularly updated) `conda` package can be installed from `conda-forge`, ideally into
+its own dedicated environment:
+```
+conda create -y --name mnelab -c conda-forge mnelab
+conda activate mnelab
+mnelab
+```
+The `mnelab` command starts the application.
+Any issues with this `conda` package should be reported to the respective
+[issue tracker](https://github.com/conda-forge/mnelab-feedstock/issues).
+
+#### Standalone installer
 A stand-alone installer will be available soon.
 
+
+#### Development version
 Follow these steps to use the latest development version of MNELAB:
 
 1. [Download the source code](https://github.com/cbrnr/mnelab/archive/master.zip) and unpack it into a folder of your choice.
