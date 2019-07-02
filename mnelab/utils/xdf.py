@@ -31,13 +31,15 @@ def read_raw_xdf(fname, stream_id):
     n_chans = int(stream["info"]["channel_count"][0])
     fs = float(stream["info"]["nominal_srate"][0])
     labels, types, units = [], [], []
-    if stream["info"]["desc"]:
+    try:
         for ch in stream["info"]["desc"][0]["channels"][0]["channel"]:
             labels.append(str(ch["label"][0]))
             if ch["type"]:
                 types.append(ch["type"][0])
             if ch["unit"]:
                 units.append(ch["unit"][0])
+    except TypeError:
+        pass
     if not labels:
         labels = [str(n) for n in range(n_chans)]
     if not units:
