@@ -447,8 +447,8 @@ class Model:
         self.current["ica"].apply(self.current["raw"])
         self.history.append("ica.apply(inst=raw, exclude={})"
                                 .format(self.current["ica"].exclude))
-        self.current["name"] += "_applied_ica"
-        
+        self.current["name"] += " (ICA)"
+
     @data_changed
     def set_reference(self, ref):
         self.current["reference"] = ref
