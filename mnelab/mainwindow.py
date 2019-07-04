@@ -194,7 +194,8 @@ class MainWindow(QMainWindow):
                                                            self.find_events)
         self.actions["run_ica"] = tools_menu.addAction("Run &ICA...",
                                                        self.run_ica)
-
+        self.actions["apply_ica"] = tools_menu.addAction("Apply &ICA...",
+                                                         self.apply_ica)
         view_menu = self.menuBar().addMenu("&View")
         self.actions["statusbar"] = view_menu.addAction("Statusbar",
                                                         self._toggle_statusbar)
@@ -510,6 +511,11 @@ class MainWindow(QMainWindow):
             else:
                 self.model.current["ica"] = res.get(timeout=1)
                 self.data_changed()
+
+    def apply_ica(self):
+        """Apply current fitted ICA."""
+        self.auto_duplicate()
+        self.model.apply_ica()
 
     def filter_data(self):
         """Filter data."""
