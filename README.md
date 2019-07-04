@@ -46,7 +46,7 @@ The `mnelab` command in the last line starts the application.
 
 #### Via conda
 An (unofficial, but regularly updated) conda package can be installed from [conda-forge](https://conda-forge.org/).
-We **strongly** suggest to install `mnelab` into its own dedicated environment to ensure smooth installation
+We **strongly** suggest to install MNELAB into its own dedicated environment to ensure smooth installation
 and operation:
 ```
 conda create -y --name mnelab -c conda-forge mnelab
