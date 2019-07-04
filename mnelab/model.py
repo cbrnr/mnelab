@@ -85,7 +85,7 @@ class Model:
     @property
     def nbytes(self):
         """Return size (in bytes) of all data sets."""
-        return sum([item["raw"].get_data().nbytes for item in self.data])
+        return sum([item["data"].get_data().nbytes for item in self.data])
 
     @property
     def current(self):
@@ -123,7 +123,7 @@ class Model:
             raw = self._load_xdf(fname, *args, **kwargs)
 
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
-                                     ftype=ftype, raw=raw))
+                                     ftype=ftype, data=raw, type="raw"))
 
     def _load_edf(self, fname):
         raw = mne.io.read_raw_edf(fname, preload=True)
@@ -157,7 +157,7 @@ class Model:
     def find_events(self, stim_channel, consecutive=True, initial_event=True,
                     uint_cast=True, min_duration=0, shortest_event=0):
         """Find events in raw data."""
-        events = mne.find_events(self.current["raw"],
+        events = mne.find_events(self.current["data"],
                                  stim_channel=stim_channel,
                                  consecutive=consecutive,
                                  initial_event=initial_event,
@@ -182,7 +182,7 @@ class Model:
         ext = ext if ext else ".fif"  # automatically add extension
         fname = join(split(fname)[0], name + ext)
         if ext == ".fif":
-            self.current["raw"].save(fname)
+            self.current["data"].save(fname)
         elif ext == ".set":
             self._export_set(fname)
         elif ext in (".edf", ".bdf"):
@@ -190,14 +190,14 @@ class Model:
 
     def _export_set(self, fname):
         """Export raw to EEGLAB file."""
-        data = self.current["raw"].get_data() * 1e6  # convert to microvolts
-        fs = self.current["raw"].info["sfreq"]
-        times = self.current["raw"].times
-        ch_names = self.current["raw"].info["ch_names"]
+        data = self.current["data"].get_data() * 1e6  # convert to microvolts
+        fs = self.current["data"].info["sfreq"]
+        times = self.current["data"].times
+        ch_names = self.current["data"].info["ch_names"]
         chanlocs = fromarrays([ch_names], names=["labels"])
-        events = fromarrays([self.current["raw"].annotations.description,
-                             self.current["raw"].annotations.onset * fs + 1,
-                             self.current["raw"].annotations.duration * fs],
+        events = fromarrays([self.current["data"].annotations.description,
+                             self.current["data"].annotations.onset * fs + 1,
+                             self.current["data"].annotations.duration * fs],
                             names=["type", "latency", "duration"])
         savemat(fname, dict(EEG=dict(data=data,
                                      setname=fname,
@@ -224,16 +224,16 @@ class Model:
         elif ext == ".bdf":
             filetype = pyedflib.FILETYPE_BDFPLUS
             dmin, dmax = -8388608, 8388607
-        data = self.current["raw"].get_data() * 1e6  # convert to microvolts
-        fs = self.current["raw"].info["sfreq"]
-        nchan = self.current["raw"].info["nchan"]
-        ch_names = self.current["raw"].info["ch_names"]
-        if self.current["raw"].info["meas_date"] is not None:
-            meas_date = self.current["raw"].info["meas_date"][0]
+        data = self.current["data"].get_data() * 1e6  # convert to microvolts
+        fs = self.current["data"].info["sfreq"]
+        nchan = self.current["data"].info["nchan"]
+        ch_names = self.current["data"].info["ch_names"]
+        if self.current["data"].info["meas_date"] is not None:
+            meas_date = self.current['data'].info["meas_date"][0]
         else:
             meas_date = None
-        prefilter = (f"{self.current['raw'].info['highpass']}Hz - "
-                     f"{self.current['raw'].info['lowpass']}")
+        prefilter = (f"{self.current['data'].info['highpass']}Hz - "
+                     f"{self.current['data'].info['lowpass']}")
         pmin, pmax = data.min(axis=1), data.max(axis=1)
         f = pyedflib.EdfWriter(fname, nchan, filetype)
         channel_info = []
@@ -255,8 +255,8 @@ class Model:
             f.setStartdatetime(datetime.utcfromtimestamp(meas_date))
         # note that currently, only blocks of whole seconds can be written
         f.writeSamples(data_list)
-        if self.current["raw"].annotations is not None:
-            for ann in self.current["raw"].annotations:
+        if self.current["data"].annotations is not None:
+            for ann in self.current["data"].annotations:
                 f.writeAnnotation(ann["onset"], ann["duration"],
                                   ann["description"])
 
@@ -266,7 +266,7 @@ class Model:
         ext = ext if ext else ".csv"  # automatically add extension
         fname = join(split(fname)[0], name + ext)
         with open(fname, "w") as f:
-            f.write(",".join(self.current["raw"].info["bads"]))
+            f.write(",".join(self.current["data"].info["bads"]))
 
     def export_events(self, fname):
         """Export events to a CSV file."""
@@ -281,7 +281,7 @@ class Model:
         name, ext = splitext(split(fname)[-1])
         ext = ext if ext else ".csv"  # automatically add extension
         fname = join(split(fname)[0], name + ext)
-        anns = self.current["raw"].annotations
+        anns = self.current["data"].annotations
         with open(fname, "w") as f:
             f.write("type,onset,duration\n")
             for a in zip(anns.description, anns.onset, anns.duration):
@@ -299,13 +299,13 @@ class Model:
         """Import bad channels info from a CSV file."""
         with open(fname) as f:
             bads = f.read().replace(" ", "").strip().split(",")
-            unknown = set(bads) - set(self.current["raw"].info["ch_names"])
+            unknown = set(bads) - set(self.current["data"].info["ch_names"])
             if unknown:
                 msg = ("The following imported channel labels are not " +
                        "present in the data: " + ",".join(unknown))
                 raise LabelsNotFoundError(msg)
             else:
-                self.current["raw"].info["bads"] = bads
+                self.current["data"].info["bads"] = bads
 
     @data_changed
     def import_events(self, fname):
@@ -328,7 +328,7 @@ class Model:
     def import_annotations(self, fname):
         """Import annotations from a CSV file."""
         descs, onsets, durations = [], [], []
-        fs = self.current["raw"].info["sfreq"]
+        fs = self.current["data"].info["sfreq"]
         with open(fname) as f:
             f.readline()  # skip header
             for line in f:
@@ -336,7 +336,7 @@ class Model:
                 if len(ann) == 3:  # type, onset, duration
                     onset = float(ann[1].strip())
                     duration = float(ann[2].strip())
-                    if onset > self.current["raw"].n_times / fs:
+                    if onset > self.current["data"].n_times / fs:
                         msg = ("One or more annotations are outside of the "
                                "data range.")
                         raise InvalidAnnotationsError(msg)
@@ -345,7 +345,7 @@ class Model:
                         onsets.append(onset)
                         durations.append(duration)
         annotations = mne.Annotations(onsets, durations, descs)
-        self.current["raw"].annotations = annotations
+        self.current["data"].annotations = annotations
 
     @data_changed
     def import_ica(self, fname):
@@ -359,7 +359,7 @@ class Model:
         info : dict
             Dictionary with information on current data set.
         """
-        raw = self.current["raw"]
+        raw = self.current["data"]
         fname = self.current["fname"]
         ftype = self.current["ftype"]
         reference = self.current["reference"]
@@ -428,26 +428,26 @@ class Model:
     @data_changed
     def drop_channels(self, drops):
         # conversion to list required for MNE < 0.19
-        self.current["raw"] = self.current["raw"].drop_channels(list(drops))
+        self.current["data"] = self.current["data"].drop_channels(list(drops))
         self.current["name"] += " (channels dropped)"
 
     @data_changed
     def set_channel_properties(self, bads=None, names=None, types=None):
         if bads:
-            self.current["raw"].info["bads"] = bads
+            self.current["data"].info["bads"] = bads
         if names:
-            mne.rename_channels(self.current["raw"].info, names)
+            mne.rename_channels(self.current["data"].info, names)
         if types:
-            self.current["raw"].set_channel_types(types)
+            self.current["data"].set_channel_types(types)
 
     @data_changed
     def set_montage(self, montage):
         self.current["montage"] = montage
-        self.current["raw"].set_montage(montage)
+        self.current["data"].set_montage(montage)
 
     @data_changed
     def filter(self, low, high):
-        self.current["raw"].filter(low, high)
+        self.current["data"].filter(low, high)
         self.current["name"] += " ({}-{} Hz)".format(low, high)
         self.history.append("raw.filter({}, {})".format(low, high))
 
@@ -463,20 +463,20 @@ class Model:
         self.current["reference"] = ref
         if ref == "average":
             self.current["name"] += " (average ref)"
-            self.current["raw"].set_eeg_reference(ref, projection=False)
+            self.current["data"].set_eeg_reference(ref, projection=False)
         else:
             self.current["name"] += " (" + ",".join(ref) + ")"
-            if set(ref) - set(self.current["raw"].info["ch_names"]):
+            if set(ref) - set(self.current["data"].info["ch_names"]):
                 # add new reference channel(s) to data
                 try:
-                    mne.add_reference_channels(self.current["raw"], ref,
+                    mne.add_reference_channels(self.current["data"], ref,
                                                copy=False)
                 except RuntimeError:
                     raise AddReferenceError("Cannot add reference channels "
                                             "to average reference signals.")
             else:
                 # re-reference to existing channel(s)
-                self.current["raw"].set_eeg_reference(ref, projection=False)
+                self.current["data"].set_eeg_reference(ref, projection=False)
 
     @data_changed
     def set_events(self, events):
@@ -484,5 +484,5 @@ class Model:
 
     @data_changed
     def set_annotations(self, onset, duration, description):
-        self.current["raw"].set_annotations(mne.Annotations(onset, duration,
+        self.current["data"].set_annotations(mne.Annotations(onset, duration,
                                                             description))

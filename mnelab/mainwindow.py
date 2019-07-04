@@ -271,11 +271,11 @@ class MainWindow(QMainWindow):
                 action.setEnabled(enabled)
 
         if self.model.data:  # toggle if specific conditions are met
-            bads = bool(self.model.current["raw"].info["bads"])
+            bads = bool(self.model.current["data"].info["bads"])
             self.actions["export_bads"].setEnabled(enabled and bads)
             events = self.model.current["events"] is not None
             self.actions["export_events"].setEnabled(enabled and events)
-            annot = bool(self.model.current["raw"].annotations)
+            annot = bool(self.model.current["data"].annotations)
             self.actions["export_annotations"].setEnabled(enabled and annot)
             self.actions["annotations"].setEnabled(enabled and annot)
             montage = bool(self.model.current["montage"])
@@ -371,7 +371,7 @@ class MainWindow(QMainWindow):
 
     def pick_channels(self):
         """Pick channels in current data set."""
-        channels = self.model.current["raw"].info["ch_names"]
+        channels = self.model.current["data"].info["ch_names"]
         dialog = PickChannelsDialog(self, channels, selected=channels)
         if dialog.exec_():
             picks = [item.data(0) for item in dialog.channels.selectedItems()]
@@ -383,7 +383,7 @@ class MainWindow(QMainWindow):
 
     def channel_properties(self):
         """Show channel properties dialog."""
-        info = self.model.current["raw"].info
+        info = self.model.current["data"].info
         dialog = ChannelPropertiesDialog(self, info)
         if dialog.exec_():
             dialog.model.sort(0)
@@ -412,7 +412,7 @@ class MainWindow(QMainWindow):
         if dialog.exec_():
             name = dialog.montages.selectedItems()[0].data(0)
             montage = mne.channels.read_montage(name)
-            ch_names = self.model.current["raw"].info["ch_names"]
+            ch_names = self.model.current["data"].info["ch_names"]
             # check if at least one channel name matches a name in the montage
             if set(ch_names) & set(montage.ch_names):
                 self.model.set_montage(name)
@@ -422,12 +422,12 @@ class MainWindow(QMainWindow):
                                      "not match any channel name in the data.")
 
     def edit_annotations(self):
-        fs = self.model.current["raw"].info["sfreq"]
-        pos = self.model.current["raw"].annotations.onset
+        fs = self.model.current["data"].info["sfreq"]
+        pos = self.model.current["data"].annotations.onset
         pos = (pos * fs).astype(int).tolist()
-        dur = self.model.current["raw"].annotations.duration
+        dur = self.model.current["data"].annotations.duration
         dur = (dur * fs).astype(int).tolist()
-        desc = self.model.current["raw"].annotations.description.tolist()
+        desc = self.model.current["data"].annotations.description.tolist()
         dialog = AnnotationsDialog(self, pos, dur, desc)
         if dialog.exec_():
             rows = dialog.table.rowCount()
@@ -457,8 +457,8 @@ class MainWindow(QMainWindow):
     def plot_raw(self):
         """Plot raw data."""
         events = self.model.current["events"]
-        nchan = self.model.current["raw"].info["nchan"]
-        fig = self.model.current["raw"].plot(events=events, n_channels=nchan,
+        nchan = self.model.current["data"].info["nchan"]
+        fig = self.model.current["data"].plot(events=events, n_channels=nchan,
                                              title=self.model.current["name"],
                                              scalings="auto", show=False)
         self.model.history.append("raw.plot(n_channels={})".format(nchan))
@@ -477,7 +477,7 @@ class MainWindow(QMainWindow):
 
     def plot_psd(self):
         """Plot power spectral density (PSD)."""
-        fig = self.model.current["raw"].plot_psd(average=False,
+        fig = self.model.current["data"].plot_psd(average=False,
                                                  spatial_colors=False,
                                                  show=False)
         win = fig.canvas.manager.window
@@ -486,7 +486,7 @@ class MainWindow(QMainWindow):
 
     def plot_montage(self):
         """Plot current montage."""
-        fig = self.model.current["raw"].plot_sensors(show_names=True,
+        fig = self.model.current["data"].plot_sensors(show_names=True,
                                                      show=False)
         win = fig.canvas.manager.window
         win.setWindowTitle("Montage")
@@ -496,14 +496,14 @@ class MainWindow(QMainWindow):
 
     def plot_ica_components(self):
         self.model.current["ica"].plot_components(
-            inst=self.model.current["raw"])
+            inst=self.model.current["data"])
 
     def plot_ica_sources(self):
-        self.model.current["ica"].plot_sources(inst=self.model.current["raw"])
+        self.model.current["ica"].plot_sources(inst=self.model.current["data"])
 
     def run_ica(self):
         """Run ICA calculation."""
-        dialog = RunICADialog(self, self.model.current["raw"].info["nchan"],
+        dialog = RunICADialog(self, self.model.current["data"].info["nchan"],
                               have["picard"], have["sklearn"])
 
         if dialog.exec_():
@@ -526,7 +526,7 @@ class MainWindow(QMainWindow):
             pool = mp.Pool(1)
             kwds = {"reject_by_annotation": exclude_bad_segments}
             res = pool.apply_async(func=ica.fit,
-                                   args=(self.model.current["raw"],),
+                                   args=(self.model.current["data"],),
                                    kwds=kwds, callback=lambda x: calc.accept())
             if not calc.exec_():
                 pool.terminate()
@@ -550,7 +550,7 @@ class MainWindow(QMainWindow):
             self.model.filter(dialog.low, dialog.high)
 
     def find_events(self):
-        info = self.model.current["raw"].info
+        info = self.model.current["data"].info
 
         # use first stim channel as default in dialog
         default_stim = 0
