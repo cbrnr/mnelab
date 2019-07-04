@@ -443,6 +443,13 @@ class Model:
         self.history.append("raw.filter({}, {})".format(low, high))
 
     @data_changed
+    def apply_ica(self):
+        self.current["ica"].apply(self.current["raw"])
+        self.history.append("ica.apply(inst=raw, exclude={})"
+                                .format(self.current["ica"].exclude))
+        self.current["name"] += "_applied_ica"
+        
+    @data_changed
     def set_reference(self, ref):
         self.current["reference"] = ref
         if ref == "average":
