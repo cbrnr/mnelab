@@ -488,12 +488,9 @@ class MainWindow(QMainWindow):
 
     def plot_psd(self):
         """Plot power spectral density (PSD)."""
-        if self.model.current["type"] == "raw":
-            fig = self.model.current["data"].plot_psd(average=False,
-                                                      spatial_colors=False,
-                                                      show=False)
-        elif self.model.current["type"] == "epochs":
-            fig = self.model.current["data"].plot_psd(show=False)
+        fig = self.model.current["data"].plot_psd(average=False,
+                                                  spatial_colors=False,
+                                                  show=False)
         win = fig.canvas.manager.window
         win.setWindowTitle("Power spectral density")
         fig.show()
@@ -501,7 +498,7 @@ class MainWindow(QMainWindow):
     def plot_montage(self):
         """Plot current montage."""
         fig = self.model.current["data"].plot_sensors(show_names=True,
-                                                      show=False)
+                                                     show=False)
         win = fig.canvas.manager.window
         win.setWindowTitle("Montage")
         win.findChild(QStatusBar).hide()
