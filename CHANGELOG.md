@@ -9,5 +9,3 @@
 ## [0.1.0] - 2019-06-27
 ### Added
 - Initial release (by [Clemens Brunner](https://github.com/cbrnr))
-
-

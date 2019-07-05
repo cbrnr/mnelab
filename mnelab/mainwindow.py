@@ -496,23 +496,18 @@ class MainWindow(QMainWindow):
             method = dialog.method.currentText()
             exclude_bad_segments = dialog.exclude_bad_segments.isChecked()
             fit_params = {}
-            self.model.history.append("fit_params = {}")
 
             if not dialog.extended.isHidden():
                 fit_params["extended"] = dialog.extended.isChecked()
-                self.model.history.append('fit_params["extended"] = %s'
-                                          % (dialog.extended.isChecked()))
 
             if not dialog.ortho.isHidden():
                 fit_params["ortho"] = dialog.ortho.isChecked()
-                self.model.history.append('fit_params["ortho"] = %s'
-                                          % dialog.ortho.isChecked())
 
             ica = mne.preprocessing.ICA(method=dialog.methods[method],
                                         fit_params=fit_params)
             self.model.history.append("ica = mne.preprocessing.ICA("
-                                      "method=%s, fit_params=fit_params)"
-                                      % dialog.methods[method])
+                                      f"method={dialog.methods[method]}, "
+                                      f"fit_params={fit_params})")
             pool = mp.Pool(1)
             kwds = {"reject_by_annotation": exclude_bad_segments}
             res = pool.apply_async(func=ica.fit,
@@ -523,8 +518,8 @@ class MainWindow(QMainWindow):
             else:
                 self.model.current["ica"] = res.get(timeout=1)
                 self.model.history.append("ica.fit(inst=raw, "
-                                          "reject_by_annotation={})"
-                                          .format(exclude_bad_segments))
+                                          "reject_by_annotation="
+                                          f"{exclude_bad_segments})")
                 self.data_changed()
 
     def apply_ica(self):
