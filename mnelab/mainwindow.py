@@ -192,9 +192,10 @@ class MainWindow(QMainWindow):
                                                       self.filter_data)
         self.actions["find_events"] = tools_menu.addAction("Find &events...",
                                                            self.find_events)
+        tools_menu.addSeparator()
         self.actions["run_ica"] = tools_menu.addAction("Run &ICA...",
                                                        self.run_ica)
-        self.actions["apply_ica"] = tools_menu.addAction("Apply &ICA...",
+        self.actions["apply_ica"] = tools_menu.addAction("Apply &ICA",
                                                          self.apply_ica)
         view_menu = self.menuBar().addMenu("&View")
         self.actions["statusbar"] = view_menu.addAction("Statusbar",
@@ -505,7 +506,7 @@ class MainWindow(QMainWindow):
 
             ica = mne.preprocessing.ICA(method=dialog.methods[method],
                                         fit_params=fit_params)
-            self.model.history.append("ica = mne.preprocessing.ICA("
+            self.model.history.append(f"ica = mne.preprocessing.ICA("
                                       f"method={dialog.methods[method]}, "
                                       f"fit_params={fit_params})")
             pool = mp.Pool(1)
@@ -517,8 +518,8 @@ class MainWindow(QMainWindow):
                 pool.terminate()
             else:
                 self.model.current["ica"] = res.get(timeout=1)
-                self.model.history.append("ica.fit(inst=raw, "
-                                          "reject_by_annotation="
+                self.model.history.append(f"ica.fit(inst=raw, "
+                                          f"reject_by_annotation="
                                           f"{exclude_bad_segments})")
                 self.data_changed()
 
