@@ -1,6 +1,6 @@
 import multiprocessing as mp
 from sys import version_info
-from os.path import split, splitext
+from os.path import isfile, split, splitext
 import numpy as np
 
 import mne
@@ -295,6 +295,12 @@ class MainWindow(QMainWindow):
             fname = QFileDialog.getOpenFileName(self, "Open raw",
                                                 filter=SUPPORTED_FORMATS)[0]
         if fname:
+            if not isfile(fname):
+                self._remove_recent(fname)
+                QMessageBox.critical(self, "File does not exist",
+                                     f"File {fname} does not exist anymore.")
+                return
+
             name, ext = splitext(split(fname)[-1])
             ftype = ext[1:].upper()
             if ext.lower() not in SUPPORTED_FORMATS:
