@@ -483,10 +483,19 @@ class Model:
 
     @data_changed
     def apply_ica(self):
-        self.current["ica"].apply(self.current["raw"])
-        self.history.append(f"ica.apply(inst=raw, "
+        self.current["ica"].apply(self.current["data"])
+        self.history.append(f"ica.apply(inst=data, "
                             f"exclude={self.current['ica'].exclude})")
         self.current["name"] += " (ICA)"
+
+    @data_changed
+    def epoch_data(self, selected, tmin, tmax, baseline):
+        epochs = mne.Epochs(self.current["data"], self.current["events"],
+                            event_id=selected, tmin=tmin, tmax=tmax,
+                            baseline=baseline, preload=True)
+        self.current["data"] = epochs
+        self.current["type"] = "epochs"
+        self.current["name"] += " (epoched)"
 
     @data_changed
     def set_reference(self, ref):

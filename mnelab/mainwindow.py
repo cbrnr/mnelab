@@ -200,6 +200,9 @@ class MainWindow(QMainWindow):
                                                        self.run_ica)
         self.actions["apply_ica"] = tools_menu.addAction("Apply &ICA",
                                                          self.apply_ica)
+        self.actions["epoch_data"] = tools_menu.addAction(
+            "Cut Raw data into Epochs", self.epoch_data)
+
         view_menu = self.menuBar().addMenu("&View")
         self.actions["statusbar"] = view_menu.addAction("Statusbar",
                                                         self._toggle_statusbar)
@@ -292,6 +295,10 @@ class MainWindow(QMainWindow):
             self.actions["events"].setEnabled(enabled and events)
             self.actions["events_from_annotations"].setEnabled(enabled and
                                                                annot)
+            self.actions["find_events"].setEnabled(
+                enabled and self.model.current["type"] == "raw")
+            self.actions["epoch_data"].setEnabled(
+                enabled and events and self.model.current["type"] == "raw")
 
         # add to recent files
         if len(self.model) > 0:
@@ -462,8 +469,8 @@ class MainWindow(QMainWindow):
         events = self.model.current["events"]
         nchan = self.model.current["data"].info["nchan"]
         fig = self.model.current["data"].plot(events=events, n_channels=nchan,
-                                             title=self.model.current["name"],
-                                             scalings="auto", show=False)
+                                              title=self.model.current["name"],
+                                              scalings="auto", show=False)
         self.model.history.append("raw.plot(n_channels={})".format(nchan))
         win = fig.canvas.manager.window
         win.setWindowTitle(self.model.current["name"])
@@ -578,6 +585,37 @@ class MainWindow(QMainWindow):
 
     def events_from_annotations(self):
         self.model.events_from_annotations()
+
+    def epoch_data(self):
+        """Cut Raw data into Epochs."""
+        dialog = EpochingDialog(self, self.model.current["events"],
+                                self.model.current["data"])
+        if dialog.exec_():
+            selected = [int(item.text()) for item
+                        in dialog.labels.selectedItems()]
+            try:
+                tmin = float(dialog.tmin.text())
+                tmax = float(dialog.tmax.text())
+            except ValueError as e:
+                show_error('Unable to compute epochs...', info=str(e))
+            else:
+                if dialog.baseline.isChecked():
+                    try:
+                        a = float(float(dialog.a.text()))
+                    except ValueError:
+                        a = None
+
+                    try:
+                        b = float(float(dialog.b.text()))
+                    except ValueError:
+                        b = None
+
+                    baseline = (a, b)
+                else:
+                    baseline = None
+
+                self.auto_duplicate()
+                self.model.epoch_data(selected, tmin, tmax, baseline)
 
     def set_reference(self):
         """Set reference."""
