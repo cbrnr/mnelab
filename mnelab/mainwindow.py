@@ -192,9 +192,11 @@ class MainWindow(QMainWindow):
                                                       self.filter_data)
         self.actions["find_events"] = tools_menu.addAction("Find &events...",
                                                            self.find_events)
+        tools_menu.addSeparator()
         self.actions["run_ica"] = tools_menu.addAction("Run &ICA...",
                                                        self.run_ica)
-
+        self.actions["apply_ica"] = tools_menu.addAction("Apply &ICA",
+                                                         self.apply_ica)
         view_menu = self.menuBar().addMenu("&View")
         self.actions["statusbar"] = view_menu.addAction("Statusbar",
                                                         self._toggle_statusbar)
@@ -276,6 +278,7 @@ class MainWindow(QMainWindow):
             montage = bool(self.model.current["montage"])
             self.actions["plot_montage"].setEnabled(enabled and montage)
             ica = bool(self.model.current["ica"])
+            self.actions["apply_ica"].setEnabled(enabled and ica)
             self.actions["export_ica"].setEnabled(enabled and ica)
             self.actions["plot_ica_components"].setEnabled(enabled and ica and
                                                            montage)
@@ -494,12 +497,18 @@ class MainWindow(QMainWindow):
             method = dialog.method.currentText()
             exclude_bad_segments = dialog.exclude_bad_segments.isChecked()
             fit_params = {}
+
             if not dialog.extended.isHidden():
                 fit_params["extended"] = dialog.extended.isChecked()
+
             if not dialog.ortho.isHidden():
                 fit_params["ortho"] = dialog.ortho.isChecked()
+
             ica = mne.preprocessing.ICA(method=dialog.methods[method],
                                         fit_params=fit_params)
+            self.model.history.append(f"ica = mne.preprocessing.ICA("
+                                      f"method={dialog.methods[method]}, "
+                                      f"fit_params={fit_params})")
             pool = mp.Pool(1)
             kwds = {"reject_by_annotation": exclude_bad_segments}
             res = pool.apply_async(func=ica.fit,
@@ -509,7 +518,15 @@ class MainWindow(QMainWindow):
                 pool.terminate()
             else:
                 self.model.current["ica"] = res.get(timeout=1)
+                self.model.history.append(f"ica.fit(inst=raw, "
+                                          f"reject_by_annotation="
+                                          f"{exclude_bad_segments})")
                 self.data_changed()
+
+    def apply_ica(self):
+        """Apply current fitted ICA."""
+        self.auto_duplicate()
+        self.model.apply_ica()
 
     def filter_data(self):
         """Filter data."""
