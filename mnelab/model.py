@@ -123,7 +123,7 @@ class Model:
             raw, type = self._load_xdf(fname, *args, **kwargs), "raw"
 
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
-                                     ftype=ftype, data=raw, type="raw"))
+                                     ftype=ftype, data=raw, type=type))
 
     def _load_edf(self, fname):
         raw = mne.io.read_raw_edf(fname, preload=True)
@@ -371,7 +371,7 @@ class Model:
         info : dict
             Dictionary with information on current data set.
         """
-        raw = self.current["data"]
+        data = self.current["data"]
         fname = self.current["fname"]
         ftype = self.current["ftype"]
         reference = self.current["reference"]
@@ -379,13 +379,13 @@ class Model:
         montage = self.current["montage"]
         ica = self.current["ica"]
 
-        if raw.info["bads"]:
-            nbads = len(raw.info["bads"])
-            nchan = f"{raw.info['nchan']} ({nbads} bad)"
+        if data.info["bads"]:
+            nbads = len(data.info["bads"])
+            nchan = f"{data.info['nchan']} ({nbads} bad)"
         else:
-            nchan = raw.info["nchan"]
-        chans = Counter([mne.io.pick.channel_type(raw.info, i)
-                         for i in range(raw.info["nchan"])])
+            nchan = data.info["nchan"]
+        chans = Counter([mne.io.pick.channel_type(data.info, i)
+                         for i in range(data.info["nchan"])])
         # sort by channel type (always move "stim" to end of list)
         chans = sorted(dict(chans).items(),
                        key=lambda x: (x[0] == "stim", x[0]))
@@ -405,13 +405,6 @@ class Model:
         if isinstance(reference, list):
             reference = ",".join(reference)
 
-        if raw.annotations is not None:
-            annots = len(raw.annotations.description)
-            if annots == 0:
-                annots = "-"
-        else:
-            annots = "-"
-
         if ica is not None:
             method = ica.method.title()
             if method == "Fastica":
@@ -422,20 +415,45 @@ class Model:
 
         size_disk = f"{getsize(fname) / 1024 ** 2:.2f} MB" if fname else "-"
 
-        return {"File name": fname if fname else "-",
-                "File type": ftype if ftype else "-",
-                "Size on disk": size_disk,
-                "Size in memory": f"{raw.get_data().nbytes / 1024**2:.2f} MB",
-                "Channels": f"{nchan} (" + ", ".join(
-                    [" ".join([str(v), k.upper()]) for k, v in chans]) + ")",
-                "Samples": raw.n_times,
-                "Sampling frequency": f"{raw.info['sfreq']:.6g} Hz",
-                "Length": f"{raw.n_times / raw.info['sfreq']:.6g} s",
-                "Events": events,
-                "Annotations": annots,
-                "Reference": reference if reference else "-",
-                "Montage": montage if montage is not None else "-",
-                "ICA": ica}
+        if self.current["type"] == "raw":
+
+            if data.annotations is not None:
+                annots = len(data.annotations.description)
+                if annots == 0:
+                    annots = "-"
+            else:
+                annots = "-"
+            return {"File name": fname if fname else "-",
+                    "File type": ftype if ftype else "-",
+                    "Data type": "Raw",
+                    "Size on disk": size_disk,
+                    "Size in memory": f"{data.get_data().nbytes / 1024**2:.2f} MB",
+                    "Channels": f"{nchan} (" + ", ".join(
+                        [" ".join([str(v), k.upper()]) for k, v in chans]) + ")",
+                    "Samples": data.n_times,
+                    "Sampling frequency": f"{data.info['sfreq']:.6g} Hz",
+                    "Length": f"{data.n_times / data.info['sfreq']:.6g} s",
+                    "Events": events,
+                    "Annotations": annots,
+                    "Reference": reference if reference else "-",
+                    "Montage": montage if montage is not None else "-",
+                    "ICA": ica}
+
+        elif self.current["type"] == "epochs":
+
+            return {"File name": fname if fname else "-",
+                    "File type": ftype if ftype else "-",
+                    "Data type": "Epochs",
+                    "Size on disk": size_disk,
+                    "Size in memory": f"{data.get_data().nbytes / 1024**2:.2f} MB",
+                    "Channels": f"{nchan} (" + ", ".join(
+                        [" ".join([str(v), k.upper()]) for k, v in chans]) + ")",
+                    "Samples": len(data.times),
+                    "Sampling frequency": f"{data.info['sfreq']:.6g} Hz",
+                    "Length": f"{len(data.times) / data.info['sfreq']:.6g} s",
+                    "Reference": reference if reference else "-",
+                    "Montage": montage if montage is not None else "-",
+                    "ICA": ica}
 
     @data_changed
     def drop_channels(self, drops):

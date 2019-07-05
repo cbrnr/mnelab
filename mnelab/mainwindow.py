@@ -100,7 +100,7 @@ class MainWindow(QMainWindow):
         # initialize menus
         file_menu = self.menuBar().addMenu("&File")
         self.actions["open_file"] = file_menu.addAction(
-            "&Open...", self.open_raw, QKeySequence.Open)
+            "&Open...", self.open_data, QKeySequence.Open)
         self.recent_menu = file_menu.addMenu("Open recent")
         self.recent_menu.aboutToShow.connect(self._update_recent_menu)
         self.recent_menu.triggered.connect(self._load_recent)
@@ -275,7 +275,10 @@ class MainWindow(QMainWindow):
             self.actions["export_bads"].setEnabled(enabled and bads)
             events = self.model.current["events"] is not None
             self.actions["export_events"].setEnabled(enabled and events)
-            annot = bool(self.model.current["data"].annotations)
+            if self.model.current["type"] == "raw":
+                annot = bool(self.model.current["data"].annotations)
+            else:
+                annot = False
             self.actions["export_annotations"].setEnabled(enabled and annot)
             self.actions["annotations"].setEnabled(enabled and annot)
             montage = bool(self.model.current["montage"])
@@ -294,7 +297,7 @@ class MainWindow(QMainWindow):
         if len(self.model) > 0:
             self._add_recent(self.model.current["fname"])
 
-    def open_raw(self, fname=None):
+    def open_data(self, fname=None):
         """Open raw file."""
         if fname is None:
             fname = QFileDialog.getOpenFileName(self, "Open raw",
@@ -683,7 +686,7 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(QAction)
     def _load_recent(self, action):
-        self.open_raw(fname=action.text())
+        self.open_data(fname=action.text())
 
     @pyqtSlot()
     def _toggle_statusbar(self):
