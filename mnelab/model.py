@@ -112,15 +112,15 @@ class Model:
             raise ValueError(f"File format {ftype} is not supported.")
 
         if ext.lower() in [".edf", ".bdf", ".gdf"]:
-            raw = self._load_edf(fname)
+            raw, type = self._load_edf(fname), "raw"
         elif ext in [".fif"]:
-            raw = self._load_fif(fname)
+            raw, type = self._load_fif(fname)
         elif ext in [".vhdr"]:
-            raw = self._load_brainvision(fname)
+            raw, type = self._load_brainvision(fname), "raw"
         elif ext in [".set"]:
-            raw = self._load_eeglab(fname)
+            raw, type = self._load_eeglab(fname), "raw"
         elif ext in [".xdf"]:
-            raw = self._load_xdf(fname, *args, **kwargs)
+            raw, type = self._load_xdf(fname, *args, **kwargs), "raw"
 
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
                                      ftype=ftype, data=raw, type="raw"))
@@ -132,10 +132,22 @@ class Model:
         return raw
 
     def _load_fif(self, fname):
-        raw = mne.io.read_raw_fif(fname, preload=True)
-        self.history.append(f"raw = mne.io.read_raw_fif('{fname}', "
-                            f"preload=True)")
-        return raw
+        try:
+            raw = mne.io.read_raw_fif(fname, preload=True)
+            self.history.append(f"raw = mne.io.read_raw_fif('{fname}', "
+                                f"preload=True)")
+            return raw, "raw"
+        except ValueError:
+            try:
+                epochs = mne.read_epochs(fname, preload=True)
+                self.history.append(f"raw = mne.read_epochs('{fname}',"
+                                    f" preload=True)")
+                return epochs, "epochs"
+            except ValueError:
+                evoked = mne.read_evokeds(fname)
+                self.history.append(f"raw = mne.read_evokeds('{fname}',"
+                                    f" preload=True)")
+                return evoked, "evoked"
 
     def _load_brainvision(self, fname):
         raw = mne.io.read_raw_brainvision(fname, preload=True)
