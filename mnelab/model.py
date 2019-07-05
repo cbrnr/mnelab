@@ -445,8 +445,8 @@ class Model:
     @data_changed
     def apply_ica(self):
         self.current["ica"].apply(self.current["raw"])
-        self.history.append("ica.apply(inst=raw, exclude={})"
-                                .format(self.current["ica"].exclude))
+        self.history.append("ica.apply(inst=raw, exclude=%s)"
+                            % self.current["ica"].exclude)
         self.current["name"] += " (ICA)"
 
     @data_changed
