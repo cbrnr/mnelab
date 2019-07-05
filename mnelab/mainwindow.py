@@ -22,6 +22,7 @@ from .dialogs.channelpropertiesdialog import ChannelPropertiesDialog
 from .dialogs.runicadialog import RunICADialog
 from .dialogs.calcdialog import CalcDialog
 from .dialogs.eventsdialog import EventsDialog
+from .dialogs.epochingdialog import EpochingDialog
 from .dialogs.xdfstreamsdialog import XDFStreamsDialog
 from .widgets.infowidget import InfoWidget
 from .model import (SUPPORTED_FORMATS, SUPPORTED_EXPORT_FORMATS,
@@ -488,8 +489,8 @@ class MainWindow(QMainWindow):
     def plot_psd(self):
         """Plot power spectral density (PSD)."""
         fig = self.model.current["data"].plot_psd(average=False,
-                                                 spatial_colors=False,
-                                                 show=False)
+                                                  spatial_colors=False,
+                                                  show=False)
         win = fig.canvas.manager.window
         win.setWindowTitle("Power spectral density")
         fig.show()
@@ -497,7 +498,7 @@ class MainWindow(QMainWindow):
     def plot_montage(self):
         """Plot current montage."""
         fig = self.model.current["data"].plot_sensors(show_names=True,
-                                                     show=False)
+                                                      show=False)
         win = fig.canvas.manager.window
         win.setWindowTitle("Montage")
         win.findChild(QStatusBar).hide()

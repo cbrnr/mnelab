@@ -427,9 +427,12 @@ class Model:
                     "File type": ftype if ftype else "-",
                     "Data type": "Raw",
                     "Size on disk": size_disk,
-                    "Size in memory": f"{data.get_data().nbytes / 1024**2:.2f} MB",
-                    "Channels": f"{nchan} (" + ", ".join(
-                        [" ".join([str(v), k.upper()]) for k, v in chans]) + ")",
+                    "Size in memory":
+                        f"{data.get_data().nbytes / 1024**2:.2f} MB",
+                    "Channels":
+                        f"{nchan} (" + ", ".join(
+                            [" ".join([str(v), k.upper()])
+                             for k, v in chans]) + ")",
                     "Samples": data.n_times,
                     "Sampling frequency": f"{data.info['sfreq']:.6g} Hz",
                     "Length": f"{data.n_times / data.info['sfreq']:.6g} s",
@@ -445,9 +448,12 @@ class Model:
                     "File type": ftype if ftype else "-",
                     "Data type": "Epochs",
                     "Size on disk": size_disk,
-                    "Size in memory": f"{data.get_data().nbytes / 1024**2:.2f} MB",
-                    "Channels": f"{nchan} (" + ", ".join(
-                        [" ".join([str(v), k.upper()]) for k, v in chans]) + ")",
+                    "Size in memory":
+                        f"{data.get_data().nbytes / 1024**2:.2f} MB",
+                    "Channels":
+                        f"{nchan} (" + ", ".join(
+                            [" ".join([str(v), k.upper()])
+                             for k, v in chans]) + ")",
                     "Samples": len(data.times),
                     "Sampling frequency": f"{data.info['sfreq']:.6g} Hz",
                     "Length": f"{len(data.times) / data.info['sfreq']:.6g} s",
@@ -524,4 +530,4 @@ class Model:
     @data_changed
     def set_annotations(self, onset, duration, description):
         self.current["data"].set_annotations(mne.Annotations(onset, duration,
-                                                            description))
+                                                             description))
