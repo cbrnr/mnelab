@@ -374,10 +374,15 @@ class Model:
         data = self.current["data"]
         fname = self.current["fname"]
         ftype = self.current["ftype"]
+        dtype = self.current["dtype"].capitalize()
         reference = self.current["reference"]
         events = self.current["events"]
         montage = self.current["montage"]
         ica = self.current["ica"]
+
+        length = f"{len(data.times) / data.info['sfreq']:.6g} s"
+        if self.current["dtype"] == "epochs":  # add epoch count
+            length = f"{self.current['data'].events.shape[0]} x {length}"
 
         if data.info["bads"]:
             nbads = len(data.info["bads"])
@@ -415,51 +420,27 @@ class Model:
 
         size_disk = f"{getsize(fname) / 1024 ** 2:.2f} MB" if fname else "-"
 
-        if self.current["dtype"] == "raw":
-
-            if data.annotations is not None:
-                annots = len(data.annotations.description)
-                if annots == 0:
-                    annots = "-"
-            else:
+        if hasattr(data, "annotations") and data.annotations is not None:
+            annots = len(data.annotations.description)
+            if annots == 0:
                 annots = "-"
-            return {"File name": fname if fname else "-",
-                    "File type": ftype if ftype else "-",
-                    "Data type": "Raw",
-                    "Size on disk": size_disk,
-                    "Size in memory":
-                        f"{data.get_data().nbytes / 1024**2:.2f} MB",
-                    "Channels":
-                        f"{nchan} (" + ", ".join(
-                            [" ".join([str(v), k.upper()])
-                             for k, v in chans]) + ")",
-                    "Samples": data.n_times,
-                    "Sampling frequency": f"{data.info['sfreq']:.6g} Hz",
-                    "Length": f"{data.n_times / data.info['sfreq']:.6g} s",
-                    "Events": events,
-                    "Annotations": annots,
-                    "Reference": reference if reference else "-",
-                    "Montage": montage if montage is not None else "-",
-                    "ICA": ica}
-
-        elif self.current["dtype"] == "epochs":
-
-            return {"File name": fname if fname else "-",
-                    "File type": ftype if ftype else "-",
-                    "Data type": "Epochs",
-                    "Size on disk": size_disk,
-                    "Size in memory":
-                        f"{data.get_data().nbytes / 1024**2:.2f} MB",
-                    "Channels":
-                        f"{nchan} (" + ", ".join(
-                            [" ".join([str(v), k.upper()])
-                             for k, v in chans]) + ")",
-                    "Samples": len(data.times),
-                    "Sampling frequency": f"{data.info['sfreq']:.6g} Hz",
-                    "Length": f"{len(data.times) / data.info['sfreq']:.6g} s",
-                    "Reference": reference if reference else "-",
-                    "Montage": montage if montage is not None else "-",
-                    "ICA": ica}
+        else:
+            annots = "-"
+        return {"File name": fname if fname else "-",
+                "File type": ftype if ftype else "-",
+                "Data type": dtype,
+                "Size on disk": size_disk,
+                "Size in memory": f"{data.get_data().nbytes / 1024**2:.2f} MB",
+                "Channels": f"{nchan} (" + ", ".join(
+                    [" ".join([str(v), k.upper()]) for k, v in chans]) + ")",
+                "Samples": len(data.times),
+                "Sampling frequency": f"{data.info['sfreq']:.6g} Hz",
+                "Length": length,
+                "Events": events,
+                "Annotations": annots,
+                "Reference": reference if reference else "-",
+                "Montage": montage if montage is not None else "-",
+                "ICA": ica}
 
     @data_changed
     def drop_channels(self, drops):
@@ -501,6 +482,7 @@ class Model:
                             baseline=baseline, preload=True)
         self.current["data"] = epochs
         self.current["dtype"] = "epochs"
+        self.current["events"] = None
         self.current["name"] += " (epoched)"
 
     @data_changed
