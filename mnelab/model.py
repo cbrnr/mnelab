@@ -178,7 +178,7 @@ class Model:
                                  shortest_event=shortest_event)
         if events.shape[0] > 0:  # if events were found
             self.current["events"] = events
-            self.history.append("events = mne.find_events(raw)")
+            self.history.append("events = mne.find_events(data)")
 
     @data_changed
     def events_from_annotations(self):
@@ -480,6 +480,9 @@ class Model:
         epochs = mne.Epochs(self.current["data"], self.current["events"],
                             event_id=events, tmin=tmin, tmax=tmax,
                             baseline=baseline, preload=True)
+        self.history.append(f'data = mne.Epochs(data, events, '
+                            f'event_id={events}, tmin={tmin}, tmax={tmax}, '
+                            f'baseline={baseline}, preload=True)')
         self.current["data"] = epochs
         self.current["dtype"] = "epochs"
         self.current["events"] = None
