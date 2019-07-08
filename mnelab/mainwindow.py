@@ -328,7 +328,10 @@ class MainWindow(QMainWindow):
                     stream_id = dialog.model.data(dialog.model.index(row, 0))
                     self.model.load(fname, stream_id=stream_id)
             else:  # all other file formats
-                self.model.load(fname)
+                try:
+                    self.model.load(fname)
+                except FileNotFoundError as e:
+                    QMessageBox.critical(self, "File not found", str(e))
 
     def open_file(self, f, text, ffilter):
         """Open file."""
@@ -693,7 +696,10 @@ class MainWindow(QMainWindow):
         if mime.hasUrls():
             urls = mime.urls()
             for url in urls:
-                self.model.load(url.toLocalFile())
+                try:
+                    self.model.load(url.toLocalFile())
+                except FileNotFoundError as e:
+                    QMessageBox.critical(self, "File not found", str(e))
 
     @pyqtSlot(QEvent)
     def closeEvent(self, event):

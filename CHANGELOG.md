@@ -7,6 +7,7 @@
 ### Fixed
 - Fix crash when no channel labels are present in XDF file (by [Clemens Brunner](https://github.com/cbrnr))
 - Fix crash when opening a file from the Recent menu that doesn't exist anymore ([#37](https://github.com/cbrnr/mnelab/pull/37) by [Clemens Brunner](https://github.com/cbrnr))
+- Fix crash when opening a BrainVision VHDR file where the EEG and/or VMRK file(s) are missing ([#46](https://github.com/cbrnr/mnelab/pull/46) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [0.1.0] - 2019-06-27
 ### Added
