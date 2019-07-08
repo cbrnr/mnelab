@@ -176,17 +176,17 @@ class MainWindow(QMainWindow):
                                                      self.edit_events)
 
         plot_menu = self.menuBar().addMenu("&Plot")
-        self.actions["plot_raw"] = plot_menu.addAction("&Raw data",
-                                                       self.plot_raw)
+        self.actions["plot_data"] = plot_menu.addAction("&Data...",
+                                                        self.plot_data)
         self.actions["plot_psd"] = plot_menu.addAction(
             "&Power spectral density...", self.plot_psd)
-        self.actions["plot_montage"] = plot_menu.addAction("Current &montage",
+        self.actions["plot_montage"] = plot_menu.addAction("&Montage...",
                                                            self.plot_montage)
         plot_menu.addSeparator()
         self.actions["plot_ica_components"] = plot_menu.addAction(
-            "ICA components...", self.plot_ica_components)
+            "ICA &components...", self.plot_ica_components)
         self.actions["plot_ica_sources"] = plot_menu.addAction(
-            "ICA sources...", self.plot_ica_sources)
+            "ICA &sources...", self.plot_ica_sources)
 
         tools_menu = self.menuBar().addMenu("&Tools")
         self.actions["filter"] = tools_menu.addAction("&Filter data...",
@@ -466,7 +466,7 @@ class MainWindow(QMainWindow):
                 events[i] = pos, 0, desc
             self.model.set_events(events)
 
-    def plot_raw(self):
+    def plot_data(self):
         """Plot raw data."""
         events = self.model.current["events"]
         nchan = self.model.current["data"].info["nchan"]
