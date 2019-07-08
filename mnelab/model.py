@@ -126,44 +126,44 @@ class Model:
                                      ftype=ftype, data=raw, dtype=dtype))
 
     def _load_edf(self, fname):
-        raw = mne.io.read_raw_edf(fname, preload=True)
-        self.history.append(f"raw = mne.io.read_raw_edf('{fname}', "
+        data = mne.io.read_raw_edf(fname, preload=True)
+        self.history.append(f"data = mne.io.read_raw_edf('{fname}', "
                             f"preload=True)")
-        return raw
+        return data
 
     def _load_fif(self, fname):
         try:
-            raw = mne.io.read_raw_fif(fname, preload=True)
-            self.history.append(f"raw = mne.io.read_raw_fif('{fname}', "
+            data = mne.io.read_raw_fif(fname, preload=True)
+            self.history.append(f"data = mne.io.read_raw_fif('{fname}', "
                                 f"preload=True)")
-            return raw, "raw"
+            return data, "raw"
         except ValueError:
             try:
-                epochs = mne.read_epochs(fname, preload=True)
-                self.history.append(f"raw = mne.read_epochs('{fname}',"
-                                    f" preload=True)")
-                return epochs, "epochs"
+                data = mne.read_epochs(fname, preload=True)
+                self.history.append(f"data = mne.read_epochs('{fname}', "
+                                    f"preload=True)")
+                return data, "epochs"
             except ValueError:
-                evoked = mne.read_evokeds(fname)
-                self.history.append(f"raw = mne.read_evokeds('{fname}',"
-                                    f" preload=True)")
-                return evoked, "evoked"
+                data = mne.read_evokeds(fname)
+                self.history.append(f"data = mne.read_evokeds('{fname}', "
+                                    f"preload=True)")
+                return data, "evoked"
 
     def _load_brainvision(self, fname):
-        raw = mne.io.read_raw_brainvision(fname, preload=True)
-        self.history.append(f"raw = mne.io.read_raw_brainvision('{fname}',"
-                            f" preload=True)")
-        return raw
+        data = mne.io.read_raw_brainvision(fname, preload=True)
+        self.history.append(f"data = mne.io.read_raw_brainvision('{fname}', "
+                            f"preload=True)")
+        return data
 
     def _load_eeglab(self, fname):
-        raw = mne.io.read_raw_eeglab(fname, preload=True)
-        self.history.append(f"raw = mne.io.read_raw_eeglab('{fname}', "
+        data = mne.io.read_raw_eeglab(fname, preload=True)
+        self.history.append(f"data = mne.io.read_raw_eeglab('{fname}', "
                             f"preload=True)")
-        return raw
+        return data
 
     def _load_xdf(self, fname, stream_id):
-        raw = read_raw_xdf(fname, stream_id=stream_id)
-        return raw
+        data = read_raw_xdf(fname, stream_id=stream_id)
+        return data
 
     @data_changed
     def find_events(self, stim_channel, consecutive=True, initial_event=True,
@@ -466,7 +466,7 @@ class Model:
     def filter(self, low, high):
         self.current["data"].filter(low, high)
         self.current["name"] += " ({}-{} Hz)".format(low, high)
-        self.history.append("raw.filter({}, {})".format(low, high))
+        self.history.append("data.filter({}, {})".format(low, high))
 
     @data_changed
     def apply_ica(self):
