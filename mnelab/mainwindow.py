@@ -280,7 +280,7 @@ class MainWindow(QMainWindow):
             self.actions["export_bads"].setEnabled(enabled and bads)
             events = self.model.current["events"] is not None
             self.actions["export_events"].setEnabled(enabled and events)
-            if self.model.current["type"] == "raw":
+            if self.model.current["dtype"] == "raw":
                 annot = bool(self.model.current["data"].annotations)
             else:
                 annot = False
@@ -298,9 +298,9 @@ class MainWindow(QMainWindow):
             self.actions["events_from_annotations"].setEnabled(enabled and
                                                                annot)
             self.actions["find_events"].setEnabled(
-                enabled and self.model.current["type"] == "raw")
+                enabled and self.model.current["dtype"] == "raw")
             self.actions["epoch_data"].setEnabled(
-                enabled and events and self.model.current["type"] == "raw")
+                enabled and events and self.model.current["dtype"] == "raw")
 
         # add to recent files
         if len(self.model) > 0:

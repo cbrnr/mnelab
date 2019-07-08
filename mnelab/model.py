@@ -112,18 +112,18 @@ class Model:
             raise ValueError(f"File format {ftype} is not supported.")
 
         if ext.lower() in [".edf", ".bdf", ".gdf"]:
-            raw, type = self._load_edf(fname), "raw"
+            raw, dtype = self._load_edf(fname), "raw"
         elif ext in [".fif"]:
-            raw, type = self._load_fif(fname)
+            raw, dtype = self._load_fif(fname)
         elif ext in [".vhdr"]:
-            raw, type = self._load_brainvision(fname), "raw"
+            raw, dtype = self._load_brainvision(fname), "raw"
         elif ext in [".set"]:
-            raw, type = self._load_eeglab(fname), "raw"
+            raw, dtype = self._load_eeglab(fname), "raw"
         elif ext in [".xdf"]:
-            raw, type = self._load_xdf(fname, *args, **kwargs), "raw"
+            raw, dtype = self._load_xdf(fname, *args, **kwargs), "raw"
 
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
-                                     ftype=ftype, data=raw, type=type))
+                                     ftype=ftype, data=raw, dtype=dtype))
 
     def _load_edf(self, fname):
         raw = mne.io.read_raw_edf(fname, preload=True)
@@ -415,7 +415,7 @@ class Model:
 
         size_disk = f"{getsize(fname) / 1024 ** 2:.2f} MB" if fname else "-"
 
-        if self.current["type"] == "raw":
+        if self.current["dtype"] == "raw":
 
             if data.annotations is not None:
                 annots = len(data.annotations.description)
@@ -442,7 +442,7 @@ class Model:
                     "Montage": montage if montage is not None else "-",
                     "ICA": ica}
 
-        elif self.current["type"] == "epochs":
+        elif self.current["dtype"] == "epochs":
 
             return {"File name": fname if fname else "-",
                     "File type": ftype if ftype else "-",
@@ -500,7 +500,7 @@ class Model:
                             event_id=events, tmin=tmin, tmax=tmax,
                             baseline=baseline, preload=True)
         self.current["data"] = epochs
-        self.current["type"] = "epochs"
+        self.current["dtype"] = "epochs"
         self.current["name"] += " (epoched)"
 
     @data_changed
