@@ -201,8 +201,9 @@ class MainWindow(QMainWindow):
                                                        self.run_ica)
         self.actions["apply_ica"] = tools_menu.addAction("Apply &ICA",
                                                          self.apply_ica)
+        tools_menu.addSeparator()
         self.actions["epoch_data"] = tools_menu.addAction(
-            "Cut Raw data into Epochs", self.epoch_data)
+            "Create Epochs...", self.epoch_data)
 
         view_menu = self.menuBar().addMenu("&View")
         self.actions["statusbar"] = view_menu.addAction("Statusbar",
@@ -588,35 +589,21 @@ class MainWindow(QMainWindow):
         self.model.events_from_annotations()
 
     def epoch_data(self):
-        """Cut Raw data into Epochs."""
-        dialog = EpochDialog(self, self.model.current["events"],
-                             self.model.current["data"])
+        """Epoch raw data."""
+        dialog = EpochDialog(self, self.model.current["events"])
         if dialog.exec_():
-            selected = [int(item.text()) for item
-                        in dialog.labels.selectedItems()]
-            try:
-                tmin = float(dialog.tmin.text())
-                tmax = float(dialog.tmax.text())
-            except ValueError as e:
-                show_error('Unable to compute epochs...', info=str(e))
+            events = [int(item.text()) for item
+                      in dialog.events.selectedItems()]
+            tmin = dialog.tmin.value()
+            tmax = dialog.tmax.value()
+
+            if dialog.baseline.isChecked():
+                baseline = dialog.a.value(), dialog.b.value()
             else:
-                if dialog.baseline.isChecked():
-                    try:
-                        a = float(float(dialog.a.text()))
-                    except ValueError:
-                        a = None
+                baseline = None
 
-                    try:
-                        b = float(float(dialog.b.text()))
-                    except ValueError:
-                        b = None
-
-                    baseline = (a, b)
-                else:
-                    baseline = None
-
-                self.auto_duplicate()
-                self.model.epoch_data(selected, tmin, tmax, baseline)
+            self.auto_duplicate()
+            self.model.epoch_data(events, tmin, tmax, baseline)
 
     def set_reference(self):
         """Set reference."""

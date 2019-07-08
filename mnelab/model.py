@@ -495,9 +495,9 @@ class Model:
         self.current["name"] += " (ICA)"
 
     @data_changed
-    def epoch_data(self, selected, tmin, tmax, baseline):
+    def epoch_data(self, events, tmin, tmax, baseline):
         epochs = mne.Epochs(self.current["data"], self.current["events"],
-                            event_id=selected, tmin=tmin, tmax=tmax,
+                            event_id=events, tmin=tmin, tmax=tmax,
                             baseline=baseline, preload=True)
         self.current["data"] = epochs
         self.current["type"] = "epochs"

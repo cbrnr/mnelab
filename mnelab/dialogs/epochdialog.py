@@ -1,44 +1,76 @@
-from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
-                             QLineEdit, QDialogButtonBox, QComboBox,
-                             QPushButton, QListWidget, QStatusBar,
-                             QToolBar, QCheckBox)
+from PyQt5.QtWidgets import (QDialog, QGridLayout, QLabel, QDialogButtonBox,
+                             QListWidget, QCheckBox, QDoubleSpinBox)
 from PyQt5.QtCore import pyqtSlot, Qt
-from PyQt5.QtGui import QDoubleValidator
 
-from mne.viz import plot_events
 from numpy import unique
 
 
 class EpochDialog(QDialog):
-    def __init__(self, parent, events, raw, title="Create Epochs"):
+    def __init__(self, parent, events):
         super().__init__(parent)
-        self.setWindowTitle(title)
-        selected = None
-        event_labels = unique(events[:, 2]).astype(str)
-        self.events = events
+        self.setWindowTitle("Create Epochs")
+
         grid = QGridLayout(self)
-        grid.addWidget(QLabel("Choose Marker"), 1, 0, 1, 1)
-        self.labels = QListWidget()
-        self.labels.insertItems(0, event_labels)
-        self.labels.setSelectionMode(QListWidget.ExtendedSelection)
-        if selected is not None:
-            for i in range(self.labels.count()):
-                if self.labels.item(i).data(0) == selected:
-                    self.labels.item(i).setSelected(True)
-        grid.addWidget(self.labels, 1, 1, 1, 2)
-        grid.addWidget(QLabel("Interval around event"), 2, 0, 1, 1)
-        self.tmin = QLineEdit(self)
-        self.tmax = QLineEdit(self)
-        grid.addWidget(self.tmin, 2, 1, 1, 1)
-        grid.addWidget(self.tmax, 2, 2, 1, 1)
-        self.baseline = QCheckBox("&Baseline Correction")
-        grid.addWidget(self.baseline, 3, 0, 1, 1)
-        self.a = QLineEdit(self)
-        self.b = QLineEdit(self)
-        grid.addWidget(self.a, 3, 1, 1, 1)
-        grid.addWidget(self.b, 3, 2, 1, 1)
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                     QDialogButtonBox.Cancel)
-        buttonbox.accepted.connect(self.accept)
-        buttonbox.rejected.connect(self.reject)
-        grid.addWidget(buttonbox, 5, 2, 2, 2)
+        label = QLabel("Events:")
+        label.setAlignment(Qt.AlignTop)
+        grid.addWidget(label, 0, 0, 1, 1)
+
+        self.events = QListWidget()
+        self.events.insertItems(0, unique(events[:, 2]).astype(str))
+        self.events.setSelectionMode(QListWidget.ExtendedSelection)
+        grid.addWidget(self.events, 0, 1, 1, 2)
+
+        grid.addWidget(QLabel("Interval around events:"), 1, 0, 1, 1)
+        self.tmin = QDoubleSpinBox()
+        self.tmin.setMinimum(-10000)
+        self.tmin.setValue(-0.2)
+        self.tmin.setSingleStep(0.1)
+        self.tmin.setAlignment(Qt.AlignRight)
+        self.tmax = QDoubleSpinBox()
+        self.tmax.setMinimum(-10000)
+        self.tmax.setValue(0.5)
+        self.tmax.setSingleStep(0.1)
+        self.tmax.setAlignment(Qt.AlignRight)
+        grid.addWidget(self.tmin, 1, 1, 1, 1)
+        grid.addWidget(self.tmax, 1, 2, 1, 1)
+
+        self.baseline = QCheckBox("Baseline Correction:")
+        self.baseline.setChecked(True)
+        self.baseline.stateChanged.connect(self.toggle_baseline)
+        grid.addWidget(self.baseline, 2, 0, 1, 1)
+        self.a = QDoubleSpinBox()
+        self.a.setMinimum(-10000)
+        self.a.setValue(-0.2)
+        self.a.setSingleStep(0.1)
+        self.a.setAlignment(Qt.AlignRight)
+        self.b = QDoubleSpinBox()
+        self.b.setMinimum(-10000)
+        self.b.setValue(0)
+        self.b.setSingleStep(0.1)
+        self.b.setAlignment(Qt.AlignRight)
+        grid.addWidget(self.a, 2, 1, 1, 1)
+        grid.addWidget(self.b, 2, 2, 1, 1)
+        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
+                                          QDialogButtonBox.Cancel)
+        self.buttonbox.accepted.connect(self.accept)
+        self.buttonbox.rejected.connect(self.reject)
+        grid.addWidget(self.buttonbox, 3, 0, 1, -1)
+        self.events.itemSelectionChanged.connect(self.toggle_ok)
+        self.toggle_ok()
+        grid.setSizeConstraint(QGridLayout.SetFixedSize)
+
+    @pyqtSlot()
+    def toggle_ok(self):
+        if self.events.selectedItems():
+            self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(True)
+        else:
+            self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(False)
+
+    @pyqtSlot()
+    def toggle_baseline(self):
+        if self.baseline.isChecked():
+            self.a.setEnabled(True)
+            self.b.setEnabled(True)
+        else:
+            self.a.setEnabled(False)
+            self.b.setEnabled(False)
