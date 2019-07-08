@@ -22,7 +22,7 @@ from .dialogs.channelpropertiesdialog import ChannelPropertiesDialog
 from .dialogs.runicadialog import RunICADialog
 from .dialogs.calcdialog import CalcDialog
 from .dialogs.eventsdialog import EventsDialog
-from .dialogs.epochingdialog import EpochingDialog
+from .dialogs.epochdialog import EpochDialog
 from .dialogs.xdfstreamsdialog import XDFStreamsDialog
 from .widgets.infowidget import InfoWidget
 from .model import (SUPPORTED_FORMATS, SUPPORTED_EXPORT_FORMATS,
@@ -589,8 +589,8 @@ class MainWindow(QMainWindow):
 
     def epoch_data(self):
         """Cut Raw data into Epochs."""
-        dialog = EpochingDialog(self, self.model.current["events"],
-                                self.model.current["data"])
+        dialog = EpochDialog(self, self.model.current["events"],
+                             self.model.current["data"])
         if dialog.exec_():
             selected = [int(item.text()) for item
                         in dialog.labels.selectedItems()]

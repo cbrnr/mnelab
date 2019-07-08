@@ -9,9 +9,8 @@ from mne.viz import plot_events
 from numpy import unique
 
 
-class EpochingDialog(QDialog):
-
-    def __init__(self, parent, events, raw, title="Epoching..."):
+class EpochDialog(QDialog):
+    def __init__(self, parent, events, raw, title="Create Epochs"):
         super().__init__(parent)
         self.setWindowTitle(title)
         selected = None
