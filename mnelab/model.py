@@ -111,15 +111,19 @@ class Model:
         if ext.lower() not in SUPPORTED_FORMATS:
             raise ValueError(f"File format {ftype} is not supported.")
 
-        if ext.lower() in [".edf", ".bdf", ".gdf"]:
+        if ext.lower() == ".edf":
             data, dtype = self._load_edf(fname), "raw"
-        elif ext in [".fif"]:
+        elif ext.lower() == ".bdf":
+            data, dtype = self._load_bdf(fname), "raw"
+        elif ext.lower() == ".gdf":
+            data, dtype = self._load_gdf(fname), "raw"
+        elif ext == ".fif":
             data, dtype = self._load_fif(fname)
-        elif ext in [".vhdr"]:
+        elif ext == ".vhdr":
             data, dtype = self._load_brainvision(fname), "raw"
-        elif ext in [".set"]:
+        elif ext == ".set":
             data, dtype = self._load_eeglab(fname), "raw"
-        elif ext in [".xdf"]:
+        elif ext == ".xdf":
             data, dtype = self._load_xdf(fname, *args, **kwargs), "raw"
 
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
@@ -128,6 +132,18 @@ class Model:
     def _load_edf(self, fname):
         data = mne.io.read_raw_edf(fname, preload=True)
         self.history.append(f"data = mne.io.read_raw_edf('{fname}', "
+                            f"preload=True)")
+        return data
+
+    def _load_bdf(self, fname):
+        data = mne.io.read_raw_bdf(fname, preload=True)
+        self.history.append(f"data = mne.io.read_raw_bdf('{fname}', "
+                            f"preload=True)")
+        return data
+
+    def _load_gdf(self, fname):
+        data = mne.io.read_raw_gdf(fname, preload=True)
+        self.history.append(f"data = mne.io.read_raw_gdf('{fname}', "
                             f"preload=True)")
         return data
 
