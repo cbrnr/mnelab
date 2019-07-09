@@ -419,7 +419,7 @@ class Model:
 
     @data_changed
     def drop_channels(self, drops):
-        self.current["raw"] = self.current["raw"].drop_channels(drops)
+        self.current["raw"] = self.current["raw"].drop_channels(list(drops))
         self.current["name"] += " (channels dropped)"
 
     @data_changed
