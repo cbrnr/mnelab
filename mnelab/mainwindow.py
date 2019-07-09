@@ -192,6 +192,9 @@ class MainWindow(QMainWindow):
                                                       self.filter_data)
         self.actions["find_events"] = tools_menu.addAction("Find &events...",
                                                            self.find_events)
+        self.actions["events_from_annotations"] = tools_menu.addAction(
+            "Create events from annotations", self.events_from_annotations
+        )
         tools_menu.addSeparator()
         self.actions["run_ica"] = tools_menu.addAction("Run &ICA...",
                                                        self.run_ica)
@@ -284,6 +287,8 @@ class MainWindow(QMainWindow):
                                                            montage)
             self.actions["plot_ica_sources"].setEnabled(enabled and ica)
             self.actions["events"].setEnabled(enabled and events)
+            self.actions["events_from_annotations"].setEnabled(enabled and
+                                                               annot)
 
         # add to recent files
         if len(self.model) > 0:
@@ -567,6 +572,9 @@ class MainWindow(QMainWindow):
                                    uint_cast=uint_cast,
                                    min_duration=min_dur,
                                    shortest_event=shortest_event)
+
+    def events_from_annotations(self):
+        self.model.events_from_annotations()
 
     def set_reference(self):
         """Set reference."""
