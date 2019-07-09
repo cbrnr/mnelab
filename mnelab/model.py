@@ -168,6 +168,14 @@ class Model:
             self.current["events"] = events
             self.history.append("events = mne.find_events(raw)")
 
+    @data_changed
+    def events_from_annotations(self):
+        """Convert annotations to events."""
+        events, _ = mne.events_from_annotations(self.current["raw"])
+        if events.shape[0] > 0:
+            self.current["events"] = events
+            self.history.append("events, _ = mne.events_from_annotations(raw)")
+
     def export_raw(self, fname):
         """Export raw to file."""
         name, ext = splitext(split(fname)[-1])
