@@ -419,6 +419,7 @@ class Model:
 
     @data_changed
     def drop_channels(self, drops):
+        # conversion to list required for MNE < 0.19
         self.current["raw"] = self.current["raw"].drop_channels(list(drops))
         self.current["name"] += " (channels dropped)"
 
