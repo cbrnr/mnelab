@@ -481,8 +481,8 @@ class Model:
     @data_changed
     def filter(self, low, high):
         self.current["data"].filter(low, high)
-        self.current["name"] += " ({}-{} Hz)".format(low, high)
-        self.history.append("data.filter({}, {})".format(low, high))
+        self.current["name"] += f" ({low}-{high} Hz)"
+        self.history.append(f"data.filter({low}, {high})")
 
     @data_changed
     def apply_ica(self):
