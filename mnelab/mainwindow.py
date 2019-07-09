@@ -132,9 +132,9 @@ class MainWindow(QMainWindow):
             lambda: self.open_file(model.import_ica, "Import ICA",
                                    "*.fif *.fif.gz"))
         file_menu.addSeparator()
-        self.actions["export_raw"] = file_menu.addAction(
-            "Export &raw...",
-            lambda: self.export_file(model.export_raw, "Export raw",
+        self.actions["export_data"] = file_menu.addAction(
+            "Export &data...",
+            lambda: self.export_file(model.export_data, "Export raw",
                                      SUPPORTED_EXPORT_FORMATS))
         self.actions["export_bads"] = file_menu.addAction(
             "Export &bad channels...",

@@ -204,7 +204,7 @@ class Model:
             self.current["events"] = events
             self.history.append("events, _ = mne.events_from_annotations(raw)")
 
-    def export_raw(self, fname):
+    def export_data(self, fname):
         """Export raw to file."""
         name, ext = splitext(split(fname)[-1])
         ext = ext if ext else ".fif"  # automatically add extension
