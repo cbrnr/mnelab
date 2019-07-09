@@ -112,18 +112,18 @@ class Model:
             raise ValueError(f"File format {ftype} is not supported.")
 
         if ext.lower() in [".edf", ".bdf", ".gdf"]:
-            raw, dtype = self._load_edf(fname), "raw"
+            data, dtype = self._load_edf(fname), "raw"
         elif ext in [".fif"]:
-            raw, dtype = self._load_fif(fname)
+            data, dtype = self._load_fif(fname)
         elif ext in [".vhdr"]:
-            raw, dtype = self._load_brainvision(fname), "raw"
+            data, dtype = self._load_brainvision(fname), "raw"
         elif ext in [".set"]:
-            raw, dtype = self._load_eeglab(fname), "raw"
+            data, dtype = self._load_eeglab(fname), "raw"
         elif ext in [".xdf"]:
-            raw, dtype = self._load_xdf(fname, *args, **kwargs), "raw"
+            data, dtype = self._load_xdf(fname, *args, **kwargs), "raw"
 
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
-                                     ftype=ftype, data=raw, dtype=dtype))
+                                     ftype=ftype, data=data, dtype=dtype))
 
     def _load_edf(self, fname):
         data = mne.io.read_raw_edf(fname, preload=True)
