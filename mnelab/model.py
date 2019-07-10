@@ -199,10 +199,11 @@ class Model:
     @data_changed
     def events_from_annotations(self):
         """Convert annotations to events."""
-        events, _ = mne.events_from_annotations(self.current["raw"])
+        events, _ = mne.events_from_annotations(self.current["data"])
         if events.shape[0] > 0:
             self.current["events"] = events
-            self.history.append("events, _ = mne.events_from_annotations(raw)")
+            self.history.append("events, _ = "
+                                "mne.events_from_annotations(data)")
 
     def export_data(self, fname):
         """Export raw to file."""
