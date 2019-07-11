@@ -603,8 +603,13 @@ class MainWindow(QMainWindow):
             else:
                 baseline = None
 
-            self.auto_duplicate()
-            self.model.epoch_data(events, tmin, tmax, baseline)
+            duplicated = self.auto_duplicate()
+            try:
+                self.model.epoch_data(events, tmin, tmax, baseline)
+            except ValueError as e:
+                if duplicated:
+                    self.model.remove_data()
+                QMessageBox.critical(self, "Could not create epochs", str(e))
 
     def set_reference(self):
         """Set reference."""
@@ -645,15 +650,32 @@ class MainWindow(QMainWindow):
         QMessageBox.aboutQt(self, "About Qt")
 
     def auto_duplicate(self):
+        """Automatically duplicate current data set.
+
+        If the current data set is stored in a file (i.e. was loaded directly
+        from a file), a new data set is automatically created. If the current
+        data set is not stored in a file (i.e. was created by operations in
+        MNELAB), a dialog box asks the user if the current data set should be
+        overwritten or duplicated.
+
+        Returns
+        -------
+        duplicated : bool
+            True if the current data set was automatically duplicated, False if
+            the current data set was overwritten.
+        """
         # if current data is stored in a file create a new data set
         if self.model.current["fname"]:
             self.model.duplicate_data()
+            return True
         # otherwise ask the user
         else:
             msg = QMessageBox.question(self, "Overwrite existing data set",
                                        "Overwrite existing data set?")
             if msg == QMessageBox.No:  # create new data set
                 self.model.duplicate_data()
+                return True
+        return False
 
     def _add_recent(self, fname):
         """Add a file to recent file list.
