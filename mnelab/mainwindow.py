@@ -22,6 +22,7 @@ from .dialogs.channelpropertiesdialog import ChannelPropertiesDialog
 from .dialogs.runicadialog import RunICADialog
 from .dialogs.calcdialog import CalcDialog
 from .dialogs.eventsdialog import EventsDialog
+from .dialogs.epochdialog import EpochDialog
 from .dialogs.xdfstreamsdialog import XDFStreamsDialog
 from .widgets.infowidget import InfoWidget
 from .model import (SUPPORTED_FORMATS, SUPPORTED_EXPORT_FORMATS,
@@ -100,7 +101,7 @@ class MainWindow(QMainWindow):
         # initialize menus
         file_menu = self.menuBar().addMenu("&File")
         self.actions["open_file"] = file_menu.addAction(
-            "&Open...", self.open_raw, QKeySequence.Open)
+            "&Open...", self.open_data, QKeySequence.Open)
         self.recent_menu = file_menu.addMenu("Open recent")
         self.recent_menu.aboutToShow.connect(self._update_recent_menu)
         self.recent_menu.triggered.connect(self._load_recent)
@@ -131,9 +132,9 @@ class MainWindow(QMainWindow):
             lambda: self.open_file(model.import_ica, "Import ICA",
                                    "*.fif *.fif.gz"))
         file_menu.addSeparator()
-        self.actions["export_raw"] = file_menu.addAction(
-            "Export &raw...",
-            lambda: self.export_file(model.export_raw, "Export raw",
+        self.actions["export_data"] = file_menu.addAction(
+            "Export &data...",
+            lambda: self.export_file(model.export_data, "Export raw",
                                      SUPPORTED_EXPORT_FORMATS))
         self.actions["export_bads"] = file_menu.addAction(
             "Export &bad channels...",
@@ -175,17 +176,17 @@ class MainWindow(QMainWindow):
                                                      self.edit_events)
 
         plot_menu = self.menuBar().addMenu("&Plot")
-        self.actions["plot_raw"] = plot_menu.addAction("&Raw data",
-                                                       self.plot_raw)
+        self.actions["plot_data"] = plot_menu.addAction("&Data...",
+                                                        self.plot_data)
         self.actions["plot_psd"] = plot_menu.addAction(
             "&Power spectral density...", self.plot_psd)
-        self.actions["plot_montage"] = plot_menu.addAction("Current &montage",
+        self.actions["plot_montage"] = plot_menu.addAction("&Montage...",
                                                            self.plot_montage)
         plot_menu.addSeparator()
         self.actions["plot_ica_components"] = plot_menu.addAction(
-            "ICA components...", self.plot_ica_components)
+            "ICA &components...", self.plot_ica_components)
         self.actions["plot_ica_sources"] = plot_menu.addAction(
-            "ICA sources...", self.plot_ica_sources)
+            "ICA &sources...", self.plot_ica_sources)
 
         tools_menu = self.menuBar().addMenu("&Tools")
         self.actions["filter"] = tools_menu.addAction("&Filter data...",
@@ -200,6 +201,10 @@ class MainWindow(QMainWindow):
                                                        self.run_ica)
         self.actions["apply_ica"] = tools_menu.addAction("Apply &ICA",
                                                          self.apply_ica)
+        tools_menu.addSeparator()
+        self.actions["epoch_data"] = tools_menu.addAction(
+            "Create Epochs...", self.epoch_data)
+
         view_menu = self.menuBar().addMenu("&View")
         self.actions["statusbar"] = view_menu.addAction("Statusbar",
                                                         self._toggle_statusbar)
@@ -271,11 +276,14 @@ class MainWindow(QMainWindow):
                 action.setEnabled(enabled)
 
         if self.model.data:  # toggle if specific conditions are met
-            bads = bool(self.model.current["raw"].info["bads"])
+            bads = bool(self.model.current["data"].info["bads"])
             self.actions["export_bads"].setEnabled(enabled and bads)
             events = self.model.current["events"] is not None
             self.actions["export_events"].setEnabled(enabled and events)
-            annot = bool(self.model.current["raw"].annotations)
+            if self.model.current["dtype"] == "raw":
+                annot = bool(self.model.current["data"].annotations)
+            else:
+                annot = False
             self.actions["export_annotations"].setEnabled(enabled and annot)
             self.actions["annotations"].setEnabled(enabled and annot)
             montage = bool(self.model.current["montage"])
@@ -289,12 +297,16 @@ class MainWindow(QMainWindow):
             self.actions["events"].setEnabled(enabled and events)
             self.actions["events_from_annotations"].setEnabled(enabled and
                                                                annot)
+            self.actions["find_events"].setEnabled(
+                enabled and self.model.current["dtype"] == "raw")
+            self.actions["epoch_data"].setEnabled(
+                enabled and events and self.model.current["dtype"] == "raw")
 
         # add to recent files
         if len(self.model) > 0:
             self._add_recent(self.model.current["fname"])
 
-    def open_raw(self, fname=None):
+    def open_data(self, fname=None):
         """Open raw file."""
         if fname is None:
             fname = QFileDialog.getOpenFileName(self, "Open raw",
@@ -371,7 +383,7 @@ class MainWindow(QMainWindow):
 
     def pick_channels(self):
         """Pick channels in current data set."""
-        channels = self.model.current["raw"].info["ch_names"]
+        channels = self.model.current["data"].info["ch_names"]
         dialog = PickChannelsDialog(self, channels, selected=channels)
         if dialog.exec_():
             picks = [item.data(0) for item in dialog.channels.selectedItems()]
@@ -383,7 +395,7 @@ class MainWindow(QMainWindow):
 
     def channel_properties(self):
         """Show channel properties dialog."""
-        info = self.model.current["raw"].info
+        info = self.model.current["data"].info
         dialog = ChannelPropertiesDialog(self, info)
         if dialog.exec_():
             dialog.model.sort(0)
@@ -412,7 +424,7 @@ class MainWindow(QMainWindow):
         if dialog.exec_():
             name = dialog.montages.selectedItems()[0].data(0)
             montage = mne.channels.read_montage(name)
-            ch_names = self.model.current["raw"].info["ch_names"]
+            ch_names = self.model.current["data"].info["ch_names"]
             # check if at least one channel name matches a name in the montage
             if set(ch_names) & set(montage.ch_names):
                 self.model.set_montage(name)
@@ -422,12 +434,12 @@ class MainWindow(QMainWindow):
                                      "not match any channel name in the data.")
 
     def edit_annotations(self):
-        fs = self.model.current["raw"].info["sfreq"]
-        pos = self.model.current["raw"].annotations.onset
+        fs = self.model.current["data"].info["sfreq"]
+        pos = self.model.current["data"].annotations.onset
         pos = (pos * fs).astype(int).tolist()
-        dur = self.model.current["raw"].annotations.duration
+        dur = self.model.current["data"].annotations.duration
         dur = (dur * fs).astype(int).tolist()
-        desc = self.model.current["raw"].annotations.description.tolist()
+        desc = self.model.current["data"].annotations.description.tolist()
         dialog = AnnotationsDialog(self, pos, dur, desc)
         if dialog.exec_():
             rows = dialog.table.rowCount()
@@ -454,13 +466,13 @@ class MainWindow(QMainWindow):
                 events[i] = pos, 0, desc
             self.model.set_events(events)
 
-    def plot_raw(self):
+    def plot_data(self):
         """Plot raw data."""
         events = self.model.current["events"]
-        nchan = self.model.current["raw"].info["nchan"]
-        fig = self.model.current["raw"].plot(events=events, n_channels=nchan,
-                                             title=self.model.current["name"],
-                                             scalings="auto", show=False)
+        nchan = self.model.current["data"].info["nchan"]
+        fig = self.model.current["data"].plot(events=events, n_channels=nchan,
+                                              title=self.model.current["name"],
+                                              scalings="auto", show=False)
         self.model.history.append("raw.plot(n_channels={})".format(nchan))
         win = fig.canvas.manager.window
         win.setWindowTitle(self.model.current["name"])
@@ -477,16 +489,17 @@ class MainWindow(QMainWindow):
 
     def plot_psd(self):
         """Plot power spectral density (PSD)."""
-        fig = self.model.current["raw"].plot_psd(average=False,
-                                                 spatial_colors=False,
-                                                 show=False)
+        kwds = {"show": False}
+        if self.model.current["type"] == "raw":
+            kwds.update({"average": False, "spatial_colors": False})
+        fig = self.model.current["data"].plot_psd(**kwds)
         win = fig.canvas.manager.window
         win.setWindowTitle("Power spectral density")
         fig.show()
 
     def plot_montage(self):
         """Plot current montage."""
-        fig = self.model.current["raw"].plot_sensors(show_names=True,
+        fig = self.model.current["data"].plot_sensors(show_names=True,
                                                      show=False)
         win = fig.canvas.manager.window
         win.setWindowTitle("Montage")
@@ -496,14 +509,14 @@ class MainWindow(QMainWindow):
 
     def plot_ica_components(self):
         self.model.current["ica"].plot_components(
-            inst=self.model.current["raw"])
+            inst=self.model.current["data"])
 
     def plot_ica_sources(self):
-        self.model.current["ica"].plot_sources(inst=self.model.current["raw"])
+        self.model.current["ica"].plot_sources(inst=self.model.current["data"])
 
     def run_ica(self):
         """Run ICA calculation."""
-        dialog = RunICADialog(self, self.model.current["raw"].info["nchan"],
+        dialog = RunICADialog(self, self.model.current["data"].info["nchan"],
                               have["picard"], have["sklearn"])
 
         if dialog.exec_():
@@ -526,7 +539,7 @@ class MainWindow(QMainWindow):
             pool = mp.Pool(1)
             kwds = {"reject_by_annotation": exclude_bad_segments}
             res = pool.apply_async(func=ica.fit,
-                                   args=(self.model.current["raw"],),
+                                   args=(self.model.current["data"],),
                                    kwds=kwds, callback=lambda x: calc.accept())
             if not calc.exec_():
                 pool.terminate()
@@ -550,7 +563,7 @@ class MainWindow(QMainWindow):
             self.model.filter(dialog.low, dialog.high)
 
     def find_events(self):
-        info = self.model.current["raw"].info
+        info = self.model.current["data"].info
 
         # use first stim channel as default in dialog
         default_stim = 0
@@ -575,6 +588,28 @@ class MainWindow(QMainWindow):
 
     def events_from_annotations(self):
         self.model.events_from_annotations()
+
+    def epoch_data(self):
+        """Epoch raw data."""
+        dialog = EpochDialog(self, self.model.current["events"])
+        if dialog.exec_():
+            events = [int(item.text()) for item
+                      in dialog.events.selectedItems()]
+            tmin = dialog.tmin.value()
+            tmax = dialog.tmax.value()
+
+            if dialog.baseline.isChecked():
+                baseline = dialog.a.value(), dialog.b.value()
+            else:
+                baseline = None
+
+            duplicated = self.auto_duplicate()
+            try:
+                self.model.epoch_data(events, tmin, tmax, baseline)
+            except ValueError as e:
+                if duplicated:
+                    self.model.remove_data()
+                QMessageBox.critical(self, "Could not create epochs", str(e))
 
     def set_reference(self):
         """Set reference."""
@@ -615,15 +650,32 @@ class MainWindow(QMainWindow):
         QMessageBox.aboutQt(self, "About Qt")
 
     def auto_duplicate(self):
+        """Automatically duplicate current data set.
+
+        If the current data set is stored in a file (i.e. was loaded directly
+        from a file), a new data set is automatically created. If the current
+        data set is not stored in a file (i.e. was created by operations in
+        MNELAB), a dialog box asks the user if the current data set should be
+        overwritten or duplicated.
+
+        Returns
+        -------
+        duplicated : bool
+            True if the current data set was automatically duplicated, False if
+            the current data set was overwritten.
+        """
         # if current data is stored in a file create a new data set
         if self.model.current["fname"]:
             self.model.duplicate_data()
+            return True
         # otherwise ask the user
         else:
             msg = QMessageBox.question(self, "Overwrite existing data set",
                                        "Overwrite existing data set?")
             if msg == QMessageBox.No:  # create new data set
                 self.model.duplicate_data()
+                return True
+        return False
 
     def _add_recent(self, fname):
         """Add a file to recent file list.
@@ -683,7 +735,7 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot(QAction)
     def _load_recent(self, action):
-        self.open_raw(fname=action.text())
+        self.open_data(fname=action.text())
 
     @pyqtSlot()
     def _toggle_statusbar(self):
