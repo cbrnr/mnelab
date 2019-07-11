@@ -30,7 +30,7 @@ from .model import (SUPPORTED_FORMATS, SUPPORTED_EXPORT_FORMATS,
 from .utils import have, parse_xdf, parse_chunks
 
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 MAX_RECENT = 6  # maximum number of recent files
 
