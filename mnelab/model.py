@@ -374,7 +374,7 @@ class Model:
                         onsets.append(onset)
                         durations.append(duration)
         annotations = mne.Annotations(onsets, durations, descs)
-        self.current["data"].annotations = annotations
+        self.current["data"].set_annotations(annotations)
 
     @data_changed
     def import_ica(self, fname):
