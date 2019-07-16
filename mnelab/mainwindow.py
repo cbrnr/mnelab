@@ -506,7 +506,7 @@ class MainWindow(QMainWindow):
     def plot_montage(self):
         """Plot current montage."""
         fig = self.model.current["data"].plot_sensors(show_names=True,
-                                                     show=False)
+                                                      show=False)
         win = fig.canvas.manager.window
         win.setWindowTitle("Montage")
         win.findChild(QStatusBar).hide()

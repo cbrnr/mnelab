@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
-                             QLineEdit, QDialogButtonBox, QComboBox,
+                             QDialogButtonBox, QComboBox,
                              QCheckBox, QDoubleSpinBox)
 
 
@@ -40,10 +40,10 @@ class InterpolateBadsDialog(QDialog):
 
     @property
     def origin(self):
-        x = float(self.x.text())
-        y = float(self.y.text())
-        z = float(self.z.text())
-        return [x,y,z]
+        x = float(self.x.value())
+        y = float(self.y.value())
+        z = float(self.z.value())
+        return [x, y, z]
 
     @property
     def mode(self):
