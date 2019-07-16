@@ -473,13 +473,13 @@ class MainWindow(QMainWindow):
             self.model.set_events(events)
 
     def plot_data(self):
-        """Plot raw data."""
+        """Plot data."""
         events = self.model.current["events"]
         nchan = self.model.current["data"].info["nchan"]
         fig = self.model.current["data"].plot(events=events, n_channels=nchan,
                                               title=self.model.current["name"],
                                               scalings="auto", show=False)
-        self.model.history.append("raw.plot(n_channels={})".format(nchan))
+        self.model.history.append("data.plot(n_channels={})".format(nchan))
         win = fig.canvas.manager.window
         win.setWindowTitle(self.model.current["name"])
         win.findChild(QStatusBar).hide()
