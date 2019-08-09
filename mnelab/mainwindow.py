@@ -566,9 +566,15 @@ class MainWindow(QMainWindow):
         """Interpolate bad channels"""
         dialog = InterpolateBadsDialog(self)
         if dialog.exec_():
-            self.auto_duplicate()
-            self.model.interpolate_bads(dialog.reset_bads, dialog.mode,
-                                        dialog.origin)
+            duplicated = self.auto_duplicate()
+            try:
+                self.model.interpolate_bads(dialog.reset_bads, dialog.mode,
+                                            dialog.origin)
+            except ValueError as e:
+                if duplicated:
+                    self.model.remove_data()
+                QMessageBox.critical(self, "Could not interpolate bad "
+                                           "channels", str(e))
 
     def filter_data(self):
         """Filter data."""
