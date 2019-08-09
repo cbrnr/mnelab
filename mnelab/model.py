@@ -493,6 +493,13 @@ class Model:
         self.current["name"] += " (ICA)"
 
     @data_changed
+    def interpolate_bads(self, reset_bads, mode, origin):
+        self.current["data"].interpolate_bads(reset_bads, mode, origin)
+        self.history.append(f'data.interpolate_bads(reset_bads={reset_bads}, '
+                            f'mode={mode}, origin={origin})')
+        self.current["name"] += " (interpolated)"
+
+    @data_changed
     def epoch_data(self, events, tmin, tmax, baseline):
         epochs = mne.Epochs(self.current["data"], self.current["events"],
                             event_id=events, tmin=tmin, tmax=tmax,

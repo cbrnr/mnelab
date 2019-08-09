@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                              QStatusBar, QToolBar)
 from mne.io.pick import channel_type
 
+from .dialogs.interpolatebadsdialog import InterpolateBadsDialog
 from .dialogs.annotationsdialog import AnnotationsDialog
 from .dialogs.filterdialog import FilterDialog
 from .dialogs.findeventsdialog import FindEventsDialog
@@ -202,6 +203,10 @@ class MainWindow(QMainWindow):
         self.actions["apply_ica"] = tools_menu.addAction("Apply &ICA",
                                                          self.apply_ica)
         tools_menu.addSeparator()
+        self.actions["interpolate_bads"] = tools_menu.addAction(
+                                                "Interpolate bad channels...",
+                                                self.interpolate_bads)
+        tools_menu.addSeparator()
         self.actions["epoch_data"] = tools_menu.addAction(
             "Create Epochs...", self.epoch_data)
 
@@ -294,6 +299,8 @@ class MainWindow(QMainWindow):
             self.actions["plot_ica_components"].setEnabled(enabled and ica and
                                                            montage)
             self.actions["plot_ica_sources"].setEnabled(enabled and ica)
+            self.actions["interpolate_bads"].setEnabled(enabled and montage and
+                                                        bads)
             self.actions["events"].setEnabled(enabled and events)
             self.actions["events_from_annotations"].setEnabled(enabled and
                                                                annot)
@@ -467,13 +474,13 @@ class MainWindow(QMainWindow):
             self.model.set_events(events)
 
     def plot_data(self):
-        """Plot raw data."""
+        """Plot data."""
         events = self.model.current["events"]
         nchan = self.model.current["data"].info["nchan"]
         fig = self.model.current["data"].plot(events=events, n_channels=nchan,
                                               title=self.model.current["name"],
                                               scalings="auto", show=False)
-        self.model.history.append("raw.plot(n_channels={})".format(nchan))
+        self.model.history.append("data.plot(n_channels={})".format(nchan))
         win = fig.canvas.manager.window
         win.setWindowTitle(self.model.current["name"])
         win.findChild(QStatusBar).hide()
@@ -500,7 +507,7 @@ class MainWindow(QMainWindow):
     def plot_montage(self):
         """Plot current montage."""
         fig = self.model.current["data"].plot_sensors(show_names=True,
-                                                     show=False)
+                                                      show=False)
         win = fig.canvas.manager.window
         win.setWindowTitle("Montage")
         win.findChild(QStatusBar).hide()
@@ -554,6 +561,20 @@ class MainWindow(QMainWindow):
         """Apply current fitted ICA."""
         self.auto_duplicate()
         self.model.apply_ica()
+
+    def interpolate_bads(self):
+        """Interpolate bad channels"""
+        dialog = InterpolateBadsDialog(self)
+        if dialog.exec_():
+            duplicated = self.auto_duplicate()
+            try:
+                self.model.interpolate_bads(dialog.reset_bads, dialog.mode,
+                                            dialog.origin)
+            except ValueError as e:
+                if duplicated:
+                    self.model.remove_data()
+                QMessageBox.critical(self, "Could not interpolate bad "
+                                           "channels", str(e))
 
     def filter_data(self):
         """Filter data."""
