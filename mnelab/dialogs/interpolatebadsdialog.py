@@ -1,12 +1,12 @@
 from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
-                             QDialogButtonBox, QComboBox,
+                             QHBoxLayout, QDialogButtonBox, QComboBox,
                              QCheckBox, QDoubleSpinBox)
 
 
 class InterpolateBadsDialog(QDialog):
     def __init__(self, parent):
         super().__init__(parent)
-        self.setWindowTitle("Filter data")
+        self.setWindowTitle("Interpolate bad channels")
         vbox = QVBoxLayout(self)
         grid = QGridLayout()
         grid.addWidget(QLabel("Reset bads:"), 0, 0)
@@ -19,16 +19,21 @@ class InterpolateBadsDialog(QDialog):
         self.mode_select.addItems(self.modes.keys())
         self.mode_select.setCurrentText("Accurate")
         grid.addWidget(self.mode_select, 1, 1)
-        grid.addWidget(QLabel("Origin (x,y,z):"), 2, 0)
+        grid.addWidget(QLabel("Origin (x, y, z):"), 2, 0)
+        hbox = QHBoxLayout()
         self.x = QDoubleSpinBox()
-        self.x.setValue(0.)
-        grid.addWidget(self.x, 2, 1)
+        self.x.setValue(0)
+        self.x.setDecimals(3)
+        hbox.addWidget(self.x)
         self.y = QDoubleSpinBox()
-        self.y.setValue(0.)
-        grid.addWidget(self.y, 2, 2)
+        self.y.setValue(0)
+        self.y.setDecimals(3)
+        hbox.addWidget(self.y)
         self.z = QDoubleSpinBox()
         self.z.setValue(0.04)
-        grid.addWidget(self.z, 2, 3)
+        self.z.setDecimals(3)
+        hbox.addWidget(self.z)
+        grid.addLayout(hbox, 2, 1)
 
         vbox.addLayout(grid)
         buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
@@ -43,12 +48,12 @@ class InterpolateBadsDialog(QDialog):
         x = float(self.x.value())
         y = float(self.y.value())
         z = float(self.z.value())
-        return [x, y, z]
+        return x, y, z
 
     @property
     def mode(self):
-        return str(self.mode_select.currentText())
+        return self.mode_select.currentText()
 
     @property
     def reset_bads(self):
-        return bool(self.reset_bads_checkbox.isChecked())
+        return self.reset_bads_checkbox.isChecked()
