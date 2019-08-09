@@ -204,7 +204,7 @@ class MainWindow(QMainWindow):
                                                          self.apply_ica)
         tools_menu.addSeparator()
         self.actions["interpolate_bads"] = tools_menu.addAction(
-                                                "&Interpolate bad channels...",
+                                                "Interpolate bad channels...",
                                                 self.interpolate_bads)
         tools_menu.addSeparator()
         self.actions["epoch_data"] = tools_menu.addAction(
@@ -299,7 +299,8 @@ class MainWindow(QMainWindow):
             self.actions["plot_ica_components"].setEnabled(enabled and ica and
                                                            montage)
             self.actions["plot_ica_sources"].setEnabled(enabled and ica)
-            self.actions["interpolate_bads"].setEnabled(enabled and montage)
+            self.actions["interpolate_bads"].setEnabled(enabled and montage and
+                                                        bads)
             self.actions["events"].setEnabled(enabled and events)
             self.actions["events_from_annotations"].setEnabled(enabled and
                                                                annot)
@@ -562,7 +563,7 @@ class MainWindow(QMainWindow):
         self.model.apply_ica()
 
     def interpolate_bads(self):
-        """Interpoalte bad channels"""
+        """Interpolate bad channels"""
         dialog = InterpolateBadsDialog(self)
         if dialog.exec_():
             self.auto_duplicate()
