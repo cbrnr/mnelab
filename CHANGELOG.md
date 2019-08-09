@@ -1,3 +1,10 @@
+## [Unreleased] - XXXX-XX-XX
+### Added
+- Add option to interpolate bad channels ([#55](https://github.com/cbrnr/mnelab/pull/55) by [Victor Férat](https://github.com/vferat))
+
+### Fixed
+- Update view when all bads have been deselected in channel properties dialog by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [0.2.0] - 2019-07-11
 ### Added
 - Show version number in About dialog ([#28](https://github.com/cbrnr/mnelab/pull/28) by [Clemens Brunner](https://github.com/cbrnr))
@@ -5,7 +12,6 @@
 - Plot raw shows the dataset name in the title (instead of "Raw data") (by [Clemens Brunner](https://github.com/cbrnr))
 - Add option to convert annotations to events ([#50](https://github.com/cbrnr/mnelab/pull/50) by [Clemens Brunner](https://github.com/cbrnr))
 - Enable epoching of continuous data ([#45](https://github.com/cbrnr/mnelab/pull/45) by [Tanguy Vivier](https://github.com/TyWR) and [Clemens Brunner](https://github.com/cbrnr))
-- Add option to interpolate bad channels ([#55](https://github.com/cbrnr/mnelab/pull/55) by [Victor Férat](https://github.com/vferat))
 
 ### Fixed
 - Fix crash when no channel labels are present in XDF file (by [Clemens Brunner](https://github.com/cbrnr))

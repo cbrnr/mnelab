@@ -467,8 +467,7 @@ class Model:
 
     @data_changed
     def set_channel_properties(self, bads=None, names=None, types=None):
-        if bads:
-            self.current["data"].info["bads"] = bads
+        self.current["data"].info["bads"] = bads
         if names:
             mne.rename_channels(self.current["data"].info, names)
         if types:
