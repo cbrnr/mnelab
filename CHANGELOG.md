@@ -3,7 +3,7 @@
 - Add option to interpolate bad channels ([#55](https://github.com/cbrnr/mnelab/pull/55) by [Victor Férat](https://github.com/vferat))
 
 ### Fixed
-- Update view when all bads have been deselected in channel properties dialog by [Clemens Brunner](https://github.com/cbrnr))
+- Update view when all bads have been deselected in channel properties dialog (by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [0.2.0] - 2019-07-11
 ### Added
