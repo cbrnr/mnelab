@@ -4,6 +4,7 @@
 
 ### Fixed
 - Update view when all bads have been deselected in channel properties dialog (by [Clemens Brunner](https://github.com/cbrnr))
+- Fix visual glitch in info widget when showing error dialogs ([#57](https://github.com/cbrnr/mnelab/pull/57) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [0.2.0] - 2019-07-11
 ### Added
