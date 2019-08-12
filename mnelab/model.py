@@ -467,11 +467,15 @@ class Model:
 
     @data_changed
     def set_channel_properties(self, bads=None, names=None, types=None):
-        self.current["data"].info["bads"] = bads
+        if bads != self.current["data"].info["bads"]:
+            self.current["data"].info["bads"] = bads
+            self.history.append(f"data.info['bads'] = {bads}")
         if names:
             mne.rename_channels(self.current["data"].info, names)
+            self.history.append(f"mne.rename_channels(data.info, {names})")
         if types:
             self.current["data"].set_channel_types(types)
+            self.history.append(f"data.set_channel_types({types})")
 
     @data_changed
     def set_montage(self, montage):
