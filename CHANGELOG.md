@@ -1,6 +1,7 @@
 ## [Unreleased] - XXXX-XX-XX
 ### Added
 - Add option to interpolate bad channels ([#55](https://github.com/cbrnr/mnelab/pull/55) by [Victor Férat](https://github.com/vferat))
+- Add dialog to show the command history ([#58](https://github.com/cbrnr/mnelab/pull/57) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### Fixed
 - Update view when all bads have been deselected in channel properties dialog (by [Clemens Brunner](https://github.com/cbrnr))
