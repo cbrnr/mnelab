@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                              QStatusBar, QToolBar)
 from mne.io.pick import channel_type
 
+from .dialogs.errormessagebox import ErrorMessageBox
 from .dialogs.interpolatebadsdialog import InterpolateBadsDialog
 from .dialogs.annotationsdialog import AnnotationsDialog
 from .dialogs.filterdialog import FilterDialog
@@ -571,14 +572,14 @@ class MainWindow(QMainWindow):
                 self.model.interpolate_bads(dialog.reset_bads, dialog.mode,
                                             dialog.origin)
             except ValueError as e:
-                if duplicated:
+                if duplicated:  # undo
                     self.model.remove_data()
-                msgbox = QMessageBox(self)
-                msgbox.setText("Could not interpolate bad channels")
-                msgbox.setInformativeText(str(e))
-                msgbox.setDetailedText(traceback.format_exc())
-                msgbox.setIcon(QMessageBox.Warning)
-                msgbox.open()
+                    self.model.index -= 1
+                    self.data_changed()
+                msgbox = ErrorMessageBox(self,
+                                         "Could not interpolate bad channels",
+                                         str(e), traceback.format_exc())
+                msgbox.show()
 
     def filter_data(self):
         """Filter data."""
@@ -632,9 +633,13 @@ class MainWindow(QMainWindow):
             try:
                 self.model.epoch_data(events, tmin, tmax, baseline)
             except ValueError as e:
-                if duplicated:
+                if duplicated:  # undo
                     self.model.remove_data()
-                QMessageBox.critical(self, "Could not create epochs", str(e))
+                    self.model.index -= 1
+                    self.data_changed()
+                msgbox = ErrorMessageBox(self, "Could not create epochs",
+                                         str(e), traceback.format_exc())
+                msgbox.show()
 
     def set_reference(self):
         """Set reference."""
