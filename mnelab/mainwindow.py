@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
 from mne.io.pick import channel_type
 
 from .dialogs.errormessagebox import ErrorMessageBox
+from .dialogs.historydialog import HistoryDialog
 from .dialogs.interpolatebadsdialog import InterpolateBadsDialog
 from .dialogs.annotationsdialog import AnnotationsDialog
 from .dialogs.filterdialog import FilterDialog
@@ -213,7 +214,9 @@ class MainWindow(QMainWindow):
             "Create Epochs...", self.epoch_data)
 
         view_menu = self.menuBar().addMenu("&View")
-        self.actions["statusbar"] = view_menu.addAction("Statusbar",
+        self.actions["history"] = view_menu.addAction("&History...",
+                                                      self.show_history)
+        self.actions["statusbar"] = view_menu.addAction("&Statusbar",
                                                         self._toggle_statusbar)
         self.actions["statusbar"].setCheckable(True)
 
@@ -651,6 +654,12 @@ class MainWindow(QMainWindow):
             else:
                 ref = [c.strip() for c in dialog.channellist.text().split(",")]
                 self.model.set_reference(ref)
+
+    def show_history(self):
+        """Show history."""
+        dialog = HistoryDialog(self, "\n".join(self.model.history))
+        dialog.exec_()
+
 
     def show_about(self):
         """Show About dialog."""
