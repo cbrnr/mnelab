@@ -1,5 +1,6 @@
 import multiprocessing as mp
 from sys import version_info
+import traceback
 from os.path import isfile, split, splitext
 import numpy as np
 
@@ -308,7 +309,6 @@ class MainWindow(QMainWindow):
                 enabled and self.model.current["dtype"] == "raw")
             self.actions["epoch_data"].setEnabled(
                 enabled and events and self.model.current["dtype"] == "raw")
-
         # add to recent files
         if len(self.model) > 0:
             self._add_recent(self.model.current["fname"])
@@ -573,8 +573,12 @@ class MainWindow(QMainWindow):
             except ValueError as e:
                 if duplicated:
                     self.model.remove_data()
-                QMessageBox.critical(self, "Could not interpolate bad "
-                                           "channels", str(e))
+                msgbox = QMessageBox(self)
+                msgbox.setText("Could not interpolate bad channels")
+                msgbox.setInformativeText(str(e))
+                msgbox.setDetailedText(traceback.format_exc())
+                msgbox.setIcon(QMessageBox.Warning)
+                msgbox.open()
 
     def filter_data(self):
         """Filter data."""
