@@ -479,6 +479,9 @@ class MainWindow(QMainWindow):
 
     def plot_data(self):
         """Plot data."""
+        # self.bad is needed to update history if bad channels are selected in
+        # the interactive plot window (see also self.eventFilter)
+        self.bads = self.model.current["data"].info["bads"]
         events = self.model.current["events"]
         nchan = self.model.current["data"].info["nchan"]
         fig = self.model.current["data"].plot(events=events, n_channels=nchan,
@@ -820,4 +823,7 @@ class MainWindow(QMainWindow):
         # currently the only source is the raw plot window
         if event.type() == QEvent.Close:
             self.data_changed()
+            bads = self.model.current["data"].info["bads"]
+            if self.bads != bads:
+                self.model.history.append(f"data.info['bads'] = {bads}")
         return QObject.eventFilter(self, source, event)
