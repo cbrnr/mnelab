@@ -7,7 +7,7 @@ import numpy as np
 import mne
 from PyQt5.QtCore import (pyqtSlot, QStringListModel, QModelIndex, QSettings,
                           QEvent, Qt, QObject)
-from PyQt5.QtGui import QKeySequence, QDropEvent
+from PyQt5.QtGui import QKeySequence, QDropEvent, QIcon
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                              QMessageBox, QListView, QAction, QLabel, QFrame,
                              QStatusBar, QToolBar)
@@ -54,6 +54,10 @@ def read_settings():
     if not recent:
         recent = []  # default is empty list
 
+    toolbar = settings.value("toolbar")
+    if toolbar is None:  # default is True
+        toolbar = True
+
     statusbar = settings.value("statusbar")
     if statusbar is None:  # default is True
         statusbar = True
@@ -62,7 +66,7 @@ def read_settings():
     state = settings.value("state")
 
     return {"recent": recent, "statusbar": statusbar, "geometry": geometry,
-            "state": state}
+            "state": state, "toolbar": toolbar}
 
 
 def write_settings(**kwargs):
@@ -104,7 +108,8 @@ class MainWindow(QMainWindow):
 
         # initialize menus
         file_menu = self.menuBar().addMenu("&File")
-        self.actions["open_file"] = file_menu.addAction(
+        icon = QIcon("images/outline-folder_open-24px.svg")
+        self.actions["open_file"] = file_menu.addAction(icon,
             "&Open...", self.open_data, QKeySequence.Open)
         self.recent_menu = file_menu.addMenu("Open recent")
         self.recent_menu.aboutToShow.connect(self._update_recent_menu)
@@ -164,9 +169,9 @@ class MainWindow(QMainWindow):
         self.actions["pick_chans"] = edit_menu.addAction(
             "Pick &channels...",
             self.pick_channels)
+        icon = QIcon("images/outline-view_list-24px.svg")
         self.actions["chan_props"] = edit_menu.addAction(
-            "Channel &properties...",
-            self.channel_properties)
+            icon, "Channel &properties...", self.channel_properties)
         self.actions["set_montage"] = edit_menu.addAction("Set &montage...",
                                                           self.set_montage)
         edit_menu.addSeparator()
@@ -180,11 +185,14 @@ class MainWindow(QMainWindow):
                                                      self.edit_events)
 
         plot_menu = self.menuBar().addMenu("&Plot")
-        self.actions["plot_data"] = plot_menu.addAction("&Data...",
+        icon = QIcon("images/outline-waves-24px.svg")
+        self.actions["plot_data"] = plot_menu.addAction(icon, "&Data...",
                                                         self.plot_data)
+        icon = QIcon("images/outline-poll-24px.svg")
         self.actions["plot_psd"] = plot_menu.addAction(
-            "&Power spectral density...", self.plot_psd)
-        self.actions["plot_montage"] = plot_menu.addAction("&Montage...",
+            icon, "&Power spectral density...", self.plot_psd)
+        icon = QIcon("images/outline-blur_on-24px.svg")
+        self.actions["plot_montage"] = plot_menu.addAction(icon, "&Montage...",
                                                            self.plot_montage)
         plot_menu.addSeparator()
         self.actions["plot_ica_components"] = plot_menu.addAction(
@@ -193,15 +201,19 @@ class MainWindow(QMainWindow):
             "ICA &sources...", self.plot_ica_sources)
 
         tools_menu = self.menuBar().addMenu("&Tools")
-        self.actions["filter"] = tools_menu.addAction("&Filter data...",
+        icon = QIcon("images/outline-filter_list-24px.svg")
+        self.actions["filter"] = tools_menu.addAction(icon, "&Filter data...",
                                                       self.filter_data)
-        self.actions["find_events"] = tools_menu.addAction("Find &events...",
+        icon = QIcon("images/outline-youtube_searched_for-24px.svg")
+        self.actions["find_events"] = tools_menu.addAction(icon,
+                                                           "Find &events...",
                                                            self.find_events)
         self.actions["events_from_annotations"] = tools_menu.addAction(
             "Create events from annotations", self.events_from_annotations
         )
         tools_menu.addSeparator()
-        self.actions["run_ica"] = tools_menu.addAction("Run &ICA...",
+        icon = QIcon("images/outline-grain-24px.svg")
+        self.actions["run_ica"] = tools_menu.addAction(icon, "Run &ICA...",
                                                        self.run_ica)
         self.actions["apply_ica"] = tools_menu.addAction("Apply &ICA",
                                                          self.apply_ica)
@@ -210,12 +222,16 @@ class MainWindow(QMainWindow):
                                                 "Interpolate bad channels...",
                                                 self.interpolate_bads)
         tools_menu.addSeparator()
+        icon = QIcon("images/outline-view_stream-24px.svg")
         self.actions["epoch_data"] = tools_menu.addAction(
-            "Create Epochs...", self.epoch_data)
+            icon, "Create Epochs...", self.epoch_data)
 
         view_menu = self.menuBar().addMenu("&View")
         self.actions["history"] = view_menu.addAction("&History...",
                                                       self.show_history)
+        self.actions["toolbar"] = view_menu.addAction("&Toolbar",
+                                                      self._toggle_toolbar)
+        self.actions["toolbar"].setCheckable(True)
         self.actions["statusbar"] = view_menu.addAction("&Statusbar",
                                                         self._toggle_statusbar)
         self.actions["statusbar"].setCheckable(True)
@@ -227,7 +243,30 @@ class MainWindow(QMainWindow):
 
         # actions that are always enabled
         self.always_enabled = ["open_file", "about", "about_qt", "quit",
-                               "statusbar"]
+                               "toolbar", "statusbar"]
+
+        # set up toolbar
+        self.toolbar = self.addToolBar("toolbar")
+        self.toolbar.addAction(self.actions["open_file"])
+        self.toolbar.addSeparator()
+        self.toolbar.addAction(self.actions["chan_props"])
+        self.toolbar.addSeparator()
+        self.toolbar.addAction(self.actions["plot_data"])
+        self.toolbar.addAction(self.actions["plot_psd"])
+        self.toolbar.addAction(self.actions["plot_montage"])
+        self.toolbar.addSeparator()
+        self.toolbar.addAction(self.actions["filter"])
+        self.toolbar.addAction(self.actions["find_events"])
+        self.toolbar.addAction(self.actions["epoch_data"])
+        self.toolbar.addAction(self.actions["run_ica"])
+
+        self.setUnifiedTitleAndToolBarOnMac(True)
+        if settings["toolbar"]:
+            self.toolbar.show()
+            self.actions["toolbar"].setChecked(True)
+        else:
+            self.toolbar.hide()
+            self.actions["toolbar"].setChecked(False)
 
         # set up data model for sidebar (list of open files)
         self.names = QStringListModel()
@@ -777,6 +816,14 @@ class MainWindow(QMainWindow):
     @pyqtSlot(QAction)
     def _load_recent(self, action):
         self.open_data(fname=action.text())
+
+    @pyqtSlot()
+    def _toggle_toolbar(self):
+        if self.toolbar.isHidden():
+            self.toolbar.show()
+        else:
+            self.toolbar.hide()
+        write_settings(toolbar=not self.toolbar.isHidden())
 
     @pyqtSlot()
     def _toggle_statusbar(self):
