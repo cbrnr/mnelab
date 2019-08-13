@@ -663,7 +663,6 @@ class MainWindow(QMainWindow):
         dialog = HistoryDialog(self, "\n".join(self.model.history))
         dialog.exec_()
 
-
     def show_about(self):
         """Show About dialog."""
         msg_box = QMessageBox(self)
