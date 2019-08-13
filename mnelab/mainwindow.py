@@ -34,7 +34,7 @@ from .model import (SUPPORTED_FORMATS, SUPPORTED_EXPORT_FORMATS,
 from .utils import have, parse_xdf, parse_chunks
 # all icons are stored in mnelab/resources.py, which must be automatically
 # generated with "pyrcc5 -o mnelab/resources.py mnelab.qrc"
-import mnelab.resources
+import mnelab.resources  # noqa
 
 
 __version__ = "0.2.0"
