@@ -37,7 +37,7 @@ from .utils import have, parse_xdf, parse_chunks
 import mnelab.resources  # noqa
 
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 MAX_RECENT = 6  # maximum number of recent files
 

@@ -1,4 +1,4 @@
-## [Unreleased] - XXXX-XX-XX
+## [0.3.0] - 2019-08-13
 ### Added
 - Add option to interpolate bad channels ([#55](https://github.com/cbrnr/mnelab/pull/55) by [Victor Férat](https://github.com/vferat))
 - Add dialog to show the command history ([#58](https://github.com/cbrnr/mnelab/pull/58) by [Clemens Brunner](https://github.com/cbrnr))
