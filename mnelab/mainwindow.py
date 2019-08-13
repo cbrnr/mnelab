@@ -250,6 +250,7 @@ class MainWindow(QMainWindow):
 
         # set up toolbar
         self.toolbar = self.addToolBar("toolbar")
+        self.toolbar.setObjectName("toolbar")
         self.toolbar.addAction(self.actions["open_file"])
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.actions["chan_props"])
