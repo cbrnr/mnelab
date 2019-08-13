@@ -9,8 +9,6 @@ MNELAB
 
 Graphical user interface (GUI) for [MNE](https://github.com/mne-tools/mne-python), a Python-based toolbox for EEG/MEG analysis.
 
-### Screenshots
-
 ![](https://raw.githubusercontent.com/cbrnr/mnelab/master/mnelab.png)
 
 ### Dependencies
