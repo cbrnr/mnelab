@@ -32,6 +32,9 @@ from .widgets.infowidget import InfoWidget
 from .model import (SUPPORTED_FORMATS, SUPPORTED_EXPORT_FORMATS,
                     LabelsNotFoundError, InvalidAnnotationsError)
 from .utils import have, parse_xdf, parse_chunks
+# all icons are stored in mnelab/resources.py, which must be automatically
+# generated with "pyrcc5 -o mnelab/resources.py mnelab.qrc"
+import mnelab.resources
 
 
 __version__ = "0.2.0"
@@ -108,7 +111,7 @@ class MainWindow(QMainWindow):
 
         # initialize menus
         file_menu = self.menuBar().addMenu("&File")
-        icon = QIcon("images/outline-folder_open-24px.svg")
+        icon = QIcon(":/open_file.svg")
         self.actions["open_file"] = file_menu.addAction(icon,
             "&Open...", self.open_data, QKeySequence.Open)
         self.recent_menu = file_menu.addMenu("Open recent")
@@ -169,7 +172,7 @@ class MainWindow(QMainWindow):
         self.actions["pick_chans"] = edit_menu.addAction(
             "Pick &channels...",
             self.pick_channels)
-        icon = QIcon("images/outline-view_list-24px.svg")
+        icon = QIcon(":/chan_props.svg")
         self.actions["chan_props"] = edit_menu.addAction(
             icon, "Channel &properties...", self.channel_properties)
         self.actions["set_montage"] = edit_menu.addAction("Set &montage...",
@@ -185,13 +188,13 @@ class MainWindow(QMainWindow):
                                                      self.edit_events)
 
         plot_menu = self.menuBar().addMenu("&Plot")
-        icon = QIcon("images/outline-waves-24px.svg")
+        icon = QIcon(":/plot_data.svg")
         self.actions["plot_data"] = plot_menu.addAction(icon, "&Data...",
                                                         self.plot_data)
-        icon = QIcon("images/outline-poll-24px.svg")
+        icon = QIcon(":/plot_psd.svg")
         self.actions["plot_psd"] = plot_menu.addAction(
             icon, "&Power spectral density...", self.plot_psd)
-        icon = QIcon("images/outline-blur_on-24px.svg")
+        icon = QIcon(":/plot_montage.svg")
         self.actions["plot_montage"] = plot_menu.addAction(icon, "&Montage...",
                                                            self.plot_montage)
         plot_menu.addSeparator()
@@ -201,10 +204,10 @@ class MainWindow(QMainWindow):
             "ICA &sources...", self.plot_ica_sources)
 
         tools_menu = self.menuBar().addMenu("&Tools")
-        icon = QIcon("images/outline-filter_list-24px.svg")
+        icon = QIcon(":/filter.svg")
         self.actions["filter"] = tools_menu.addAction(icon, "&Filter data...",
                                                       self.filter_data)
-        icon = QIcon("images/outline-youtube_searched_for-24px.svg")
+        icon = QIcon(":/find_events.svg")
         self.actions["find_events"] = tools_menu.addAction(icon,
                                                            "Find &events...",
                                                            self.find_events)
@@ -212,7 +215,7 @@ class MainWindow(QMainWindow):
             "Create events from annotations", self.events_from_annotations
         )
         tools_menu.addSeparator()
-        icon = QIcon("images/outline-grain-24px.svg")
+        icon = QIcon(":/run_ica.svg")
         self.actions["run_ica"] = tools_menu.addAction(icon, "Run &ICA...",
                                                        self.run_ica)
         self.actions["apply_ica"] = tools_menu.addAction("Apply &ICA",
@@ -222,7 +225,7 @@ class MainWindow(QMainWindow):
                                                 "Interpolate bad channels...",
                                                 self.interpolate_bads)
         tools_menu.addSeparator()
-        icon = QIcon("images/outline-view_stream-24px.svg")
+        icon = QIcon(":/epoch_data.svg")
         self.actions["epoch_data"] = tools_menu.addAction(
             icon, "Create Epochs...", self.epoch_data)
 
