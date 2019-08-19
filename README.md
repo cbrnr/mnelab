@@ -55,6 +55,10 @@ The `mnelab` command in the last line starts the application.
 Any issues with this conda package should be reported to the respective
 [issue tracker](https://github.com/conda-forge/mnelab-feedstock/issues).
 
+#### Arch Linux
+If you use [Arch Linux](https://www.archlinux.org/), you can install the [python-mnelab](https://aur.archlinux.org/packages/python-mnelab/) AUR package (note that this requires the [python-mne](https://aur.archlinux.org/packages/python-mne/) AUR package).
+
+
 #### Standalone installer
 A stand-alone installer will be available soon.
 
