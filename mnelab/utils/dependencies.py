@@ -3,7 +3,7 @@ from importlib import import_module
 
 # contains information whether a specific package is available or not
 have = {d: False for d in ["numpy", "scipy", "mne", "matplotlib", "pyxdf",
-                           "pyedflib", "picard", "sklearn", "PyQt5"]}
+                           "pyedflib", "picard", "sklearn", "PyQt5", "pybv"]}
 
 for key, value in have.items():
     try:

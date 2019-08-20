@@ -18,6 +18,8 @@ SUPPORTED_EXPORT_FORMATS = {"Elekta Neuromag": "fif", "EEGLAB": "set"}
 if have["pyedflib"]:
     SUPPORTED_EXPORT_FORMATS["European Data Format"] = "edf"
     SUPPORTED_EXPORT_FORMATS["BioSemi Data Format"] = "bdf"
+if have["pybv"]:
+    SUPPORTED_EXPORT_FORMATS["BrainVision"] = "eeg"
 
 
 class LabelsNotFoundError(Exception):
@@ -217,6 +219,8 @@ class Model:
             self._export_set(fname)
         elif ext in (".edf", ".bdf"):
             self._export_edf(fname)
+        elif ext == ".eeg":
+            self._export_bv(fname)
 
     def _export_set(self, fname):
         """Export raw to EEGLAB file."""
@@ -289,6 +293,27 @@ class Model:
             for ann in self.current["data"].annotations:
                 f.writeAnnotation(ann["onset"], ann["duration"],
                                   ann["description"])
+
+    def _export_bv(self, fname):
+        """Export data to BrainVision EEG/VHDR/VMRK file (requires pybv)."""
+        import pybv
+        head, tail = split(fname)
+        name, ext = splitext(tail)
+        data = self.current["data"].get_data()
+        fs = self.current["data"].info["sfreq"]
+        ch_names = self.current["data"].info["ch_names"]
+        if self.current["data"].info["meas_date"] is not None:
+            meas_date = self.current['data'].info["meas_date"][0]
+            meas_date = datetime.utcfromtimestamp(meas_date)
+        else:
+            meas_date = None
+        if not isinstance(self.current["events"], np.ndarray):
+            events = mne.events_from_annotations(self.current["data"])[0]
+            events = events[:, [0, 2]]
+        else:
+            events = self.current["events"][:, [0, 2]]
+        pybv.write_brainvision(data, fs, ch_names, name, head, events=events,
+                               meas_date=meas_date)
 
     def export_bads(self, fname):
         """Export bad channels info to a CSV file."""
