@@ -4,8 +4,7 @@
 ![Python 3.7](https://img.shields.io/badge/python-3.7-green.svg)
 ![License](https://img.shields.io/badge/license-BSD-green.svg)
 
-MNELAB
-======
+![](https://raw.githubusercontent.com/cbrnr/mnelab/master/mnelab/images/mnelab_logo.png)
 
 Graphical user interface (GUI) for [MNE](https://github.com/mne-tools/mne-python), a Python-based toolbox for EEG/MEG analysis.
 
