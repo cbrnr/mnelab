@@ -8,7 +8,7 @@ import numpy as np
 import mne
 from PyQt5.QtCore import (pyqtSlot, QStringListModel, QModelIndex, QSettings,
                           QEvent, Qt, QObject)
-from PyQt5.QtGui import QKeySequence, QDropEvent, QIcon, QPixmap
+from PyQt5.QtGui import QKeySequence, QDropEvent, QIcon
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                              QMessageBox, QListView, QAction, QLabel, QFrame,
                              QStatusBar, QToolBar)

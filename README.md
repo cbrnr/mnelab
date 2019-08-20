@@ -23,6 +23,7 @@ Optional dependencies provide additional features if installed:
 - [python-picard](https://pierreablin.github.io/picard/) (ICA computation via PICARD)
 - [pyEDFlib](https://github.com/holgern/pyedflib) (export raw to EDF/BDF)
 - [pyxdf](https://github.com/xdf-modules/xdf-Python) (import XDF files)
+- [pybv](https://github.com/bids-standard/pybv) (export to BrainVision files)
 
 In general, I recommended to always use the latest package versions.
 
@@ -30,6 +31,7 @@ In general, I recommended to always use the latest package versions.
 MNELAB comes with the following features that are not (yet) available in MNE:
 - Export raw to EDF/BDF (requires [pyEDFlib](https://github.com/holgern/pyedflib))
 - Export raw to EEGLAB SET
+- Export raw to BrainVision VHDR/VMRK/EEG (requires [pybv](https://github.com/bids-standard/pybv))
 - Import [XDF](https://github.com/sccn/xdf/wiki/Specifications) files (requires [pyxdf](https://github.com/xdf-modules/xdf-Python))
 
 ### Installation
