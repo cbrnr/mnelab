@@ -1,6 +1,7 @@
 ## [Unreleased] - XXXX-XX-XX
 ### Added
 - Add MNELAB logo to About dialog (by [Clemens Brunner](https://github.com/cbrnr))
+- Export data is split into submenus with a separate entry for each supported export format ([#66](https://github.com/cbrnr/mnelab/pull/66) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [0.3.0] - 2019-08-13
 ### Added

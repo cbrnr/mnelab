@@ -14,9 +14,10 @@ from .utils import read_raw_xdf, have
 SUPPORTED_FORMATS = "*.bdf *.edf *.gdf *.fif *.vhdr *.set"
 if have["pyxdf"]:
     SUPPORTED_FORMATS += " *.xdf"
-SUPPORTED_EXPORT_FORMATS = "*.fif *.set"
+SUPPORTED_EXPORT_FORMATS = {"Elekta Neuromag": "fif", "EEGLAB": "set"}
 if have["pyedflib"]:
-    SUPPORTED_EXPORT_FORMATS += " *.edf *.bdf"
+    SUPPORTED_EXPORT_FORMATS["European Data Format"] = "edf"
+    SUPPORTED_EXPORT_FORMATS["BioSemi Data Format"] = "bdf"
 
 
 class LabelsNotFoundError(Exception):
@@ -205,10 +206,10 @@ class Model:
             self.history.append("events, _ = "
                                 "mne.events_from_annotations(data)")
 
-    def export_data(self, fname):
+    def export_data(self, fname, ffilter):
         """Export raw to file."""
         name, ext = splitext(split(fname)[-1])
-        ext = ext if ext else ".fif"  # automatically add extension
+        ext = ext or ffilter[1:]
         fname = join(split(fname)[0], name + ext)
         if ext == ".fif":
             self.current["data"].save(fname)
