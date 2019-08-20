@@ -9,5 +9,6 @@
     <file alias="epoch_data.svg">mnelab/images/outline-view_stream-24px.svg</file>
     <file alias="plot_data.svg">mnelab/images/outline-waves-24px.svg</file>
     <file alias="find_events.svg">mnelab/images/outline-youtube_searched_for-24px.svg</file>
+    <file alias="mnelab_logo.png">mnelab/images/mnelab_logo.png</file>
 </qresource>
 </RCC>

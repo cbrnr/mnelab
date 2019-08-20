@@ -7,7 +7,7 @@ import numpy as np
 import mne
 from PyQt5.QtCore import (pyqtSlot, QStringListModel, QModelIndex, QSettings,
                           QEvent, Qt, QObject)
-from PyQt5.QtGui import QKeySequence, QDropEvent, QIcon
+from PyQt5.QtGui import QKeySequence, QDropEvent, QIcon, QPixmap
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                              QMessageBox, QListView, QAction, QLabel, QFrame,
                              QStatusBar, QToolBar)
@@ -709,15 +709,14 @@ class MainWindow(QMainWindow):
     def show_about(self):
         """Show About dialog."""
         msg_box = QMessageBox(self)
-        text = (f"<h3>MNELAB {__version__}</h3>"
-                f"<nobr><p>MNELAB is a graphical user interface for MNE.</p>"
-                f"</nobr>")
+        text = (f"<img src=':/mnelab_logo.png'>"
+                f"<p>MNELAB {__version__}</p>")
         msg_box.setText(text)
 
         mnelab_url = "github.com/cbrnr/mnelab"
         mne_url = "github.com/mne-tools/mne-python"
 
-        text = (f'<nobr><p>This program uses MNE version {mne.__version__} '
+        text = (f'<nobr><p>This program uses MNE {mne.__version__} '
                 f'(Python {".".join(str(k) for k in version_info[:3])}).</p>'
                 f'</nobr>'
                 f'<nobr><p>MNELAB repository: '
