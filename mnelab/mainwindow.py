@@ -2,6 +2,7 @@ import multiprocessing as mp
 from sys import version_info
 import traceback
 from os.path import isfile, split, splitext
+from functools import partial
 import numpy as np
 
 import mne
@@ -144,10 +145,12 @@ class MainWindow(QMainWindow):
             lambda: self.open_file(model.import_ica, "Import ICA",
                                    "*.fif *.fif.gz"))
         file_menu.addSeparator()
-        self.actions["export_data"] = file_menu.addAction(
-            "Export &data...",
-            lambda: self.export_file(model.export_data, "Export raw",
-                                     SUPPORTED_EXPORT_FORMATS))
+        self.export_menu = file_menu.addMenu("Export data")
+        for name, ext in SUPPORTED_EXPORT_FORMATS.items():
+            self.actions["export_data_" + ext] = self.export_menu.addAction(
+                f"Export to {ext.upper()} ({name})...",
+                partial(self.export_file, model.export_data, "Export data",
+                        f"*.{ext}"))
         self.actions["export_bads"] = file_menu.addAction(
             "Export &bad channels...",
             lambda: self.export_file(model.export_bads, "Export bad channels",
@@ -414,7 +417,7 @@ class MainWindow(QMainWindow):
         """Export to file."""
         fname = QFileDialog.getSaveFileName(self, text, filter=ffilter)[0]
         if fname:
-            f(fname)
+            f(fname, ffilter)
 
     def import_file(self, f, text, ffilter):
         """Import file."""
