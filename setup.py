@@ -1,3 +1,7 @@
+# Authors: Clemens Brunner <clemens.brunner@gmail.com>
+#
+# License: BSD (3-clause)
+
 from setuptools import setup, find_packages
 from os import path
 

@@ -1,3 +1,7 @@
+# Authors: Clemens Brunner <clemens.brunner@gmail.com>
+#
+# License: BSD (3-clause)
+
 import multiprocessing as mp
 from sys import version_info
 import traceback

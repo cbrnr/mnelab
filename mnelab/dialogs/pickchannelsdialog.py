@@ -1,3 +1,7 @@
+# Authors: Clemens Brunner <clemens.brunner@gmail.com>
+#
+# License: BSD (3-clause)
+
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QListWidget, QDialogButtonBox
 from PyQt5.QtCore import pyqtSlot
 

@@ -1,3 +1,8 @@
+# Authors: Clemens Brunner <clemens.brunner@gmail.com>
+#          Tanguy Vivier <tanguy.viv@gmail.com>
+#
+# License: BSD (3-clause)
+
 from PyQt5.QtWidgets import (QDialog, QGridLayout, QLabel, QDialogButtonBox,
                              QListWidget, QCheckBox, QDoubleSpinBox)
 from PyQt5.QtCore import pyqtSlot, Qt

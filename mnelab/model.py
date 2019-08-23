@@ -1,3 +1,7 @@
+# Authors: Clemens Brunner <clemens.brunner@gmail.com>
+#
+# License: BSD (3-clause)
+
 from os.path import getsize, join, split, splitext
 from collections import Counter, defaultdict
 from functools import wraps
