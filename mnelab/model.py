@@ -133,8 +133,14 @@ class Model:
         elif ext == ".xdf":
             data, dtype = self._load_xdf(fname, *args, **kwargs), "raw"
 
+        if ext == ".vhdr":
+            fsize = getsize(join(split(fname)[0], name + ".eeg")) / 1024 ** 2
+        else:
+            fsize = getsize(fname) / 1024 ** 2
+
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
-                                     ftype=ftype, data=data, dtype=dtype))
+                                     ftype=ftype, fsize=fsize, data=data,
+                                     dtype=dtype))
 
     def _load_edf(self, fname):
         data = mne.io.read_raw_edf(fname, preload=True)
@@ -421,6 +427,7 @@ class Model:
         data = self.current["data"]
         fname = self.current["fname"]
         ftype = self.current["ftype"]
+        fsize = self.current["fsize"]
         dtype = self.current["dtype"].capitalize()
         reference = self.current["reference"]
         events = self.current["events"]
@@ -465,7 +472,7 @@ class Model:
         else:
             ica = "-"
 
-        size_disk = f"{getsize(fname) / 1024 ** 2:.2f} MB" if fname else "-"
+        size_disk = f"{fsize:.2f} MB" if fname else "-"
 
         if hasattr(data, "annotations") and data.annotations is not None:
             annots = len(data.annotations.description)
