@@ -4,6 +4,9 @@
 - Export data is split into submenus with a separate entry for each supported export format ([#66](https://github.com/cbrnr/mnelab/pull/66) by [Clemens Brunner](https://github.com/cbrnr))
 - Add support for exporting to BrainVision files ([#68](https://github.com/cbrnr/mnelab/pull/68) by [Clemens Brunner](https://github.com/cbrnr)) 
 
+### Fixed
+- Correctly report file size for BrainVision data ([#69](https://github.com/cbrnr/mnelab/pull/69) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [0.3.0] - 2019-08-13
 ### Added
 - Add option to interpolate bad channels ([#55](https://github.com/cbrnr/mnelab/pull/55) by [Victor Férat](https://github.com/vferat))
