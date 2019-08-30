@@ -435,8 +435,10 @@ class Model:
         ica = self.current["ica"]
 
         length = f"{len(data.times) / data.info['sfreq']:.6g} s"
+        samples = f"{len(data.times)}"
         if self.current["dtype"] == "epochs":  # add epoch count
             length = f"{self.current['data'].events.shape[0]} x {length}"
+            samples = f"{self.current['data'].events.shape[0]} x {samples}"
 
         if data.info["bads"]:
             nbads = len(data.info["bads"])
@@ -487,7 +489,7 @@ class Model:
                 "Size in memory": f"{data.get_data().nbytes / 1024**2:.2f} MB",
                 "Channels": f"{nchan} (" + ", ".join(
                     [" ".join([str(v), k.upper()]) for k, v in chans]) + ")",
-                "Samples": len(data.times),
+                "Samples": samples,
                 "Sampling frequency": f"{data.info['sfreq']:.6g} Hz",
                 "Length": length,
                 "Events": events,
@@ -549,7 +551,7 @@ class Model:
                             f'baseline={baseline}, preload=True)')
         self.current["data"] = epochs
         self.current["dtype"] = "epochs"
-        self.current["events"] = None
+        self.current["events"] = self.current["data"].events
         self.current["name"] += " (epoched)"
 
     @data_changed
