@@ -6,6 +6,7 @@
 
 ### Fixed
 - Correctly report file size for BrainVision data ([#69](https://github.com/cbrnr/mnelab/pull/69) by [Clemens Brunner](https://github.com/cbrnr))
+- Retain events when creating epochs ([#73](https://github.com/cbrnr/mnelab/pull/73) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [0.3.0] - 2019-08-13
 ### Added
