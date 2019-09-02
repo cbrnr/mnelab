@@ -34,8 +34,8 @@ from .dialogs.eventsdialog import EventsDialog
 from .dialogs.epochdialog import EpochDialog
 from .dialogs.xdfstreamsdialog import XDFStreamsDialog
 from .widgets.infowidget import InfoWidget
-from .model import (SUPPORTED_IMPORTS, SUPPORTED_EXPORTS,
-                    LabelsNotFoundError, InvalidAnnotationsError)
+from .model import (SUPPORTED_IMPORTS, SUPPORTED_EXPORTS, LabelsNotFoundError,
+                    InvalidAnnotationsError, UnknownFileTypeError)
 from .utils import have, parse_xdf, parse_chunks, split_fname
 # all icons are stored in mnelab/resources.py, which must be automatically
 # generated with "pyrcc5 -o mnelab/resources.py mnelab.qrc"
@@ -407,6 +407,8 @@ class MainWindow(QMainWindow):
                     self.model.load(fname)
                 except FileNotFoundError as e:
                     QMessageBox.critical(self, "File not found", str(e))
+                except UnknownFileTypeError as e:
+                    QMessageBox.critical(self, "Unknown file type", str(e))
 
     def open_file(self, f, text, ffilter):
         """Open file."""
