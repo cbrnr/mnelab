@@ -34,9 +34,9 @@ from .dialogs.eventsdialog import EventsDialog
 from .dialogs.epochdialog import EpochDialog
 from .dialogs.xdfstreamsdialog import XDFStreamsDialog
 from .widgets.infowidget import InfoWidget
-from .model import (SUPPORTED_FORMATS, SUPPORTED_EXPORT_FORMATS,
+from .model import (SUPPORTED_IMPORTS, SUPPORTED_EXPORTS,
                     LabelsNotFoundError, InvalidAnnotationsError)
-from .utils import have, parse_xdf, parse_chunks
+from .utils import have, parse_xdf, parse_chunks, split_fname
 # all icons are stored in mnelab/resources.py, which must be automatically
 # generated with "pyrcc5 -o mnelab/resources.py mnelab.qrc"
 import mnelab.resources  # noqa
@@ -150,11 +150,11 @@ class MainWindow(QMainWindow):
                                    "*.fif *.fif.gz"))
         file_menu.addSeparator()
         self.export_menu = file_menu.addMenu("Export data")
-        for name, ext in SUPPORTED_EXPORT_FORMATS.items():
+        for name, ext in SUPPORTED_EXPORTS.items():
             self.actions["export_data_" + ext] = self.export_menu.addAction(
                 f"Export to {ext.upper()} ({name})...",
                 partial(self.export_file, model.export_data, "Export data",
-                        f"*.{ext}"))
+                        ext))
         self.actions["export_bads"] = file_menu.addAction(
             "Export &bad channels...",
             lambda: self.export_file(model.export_bads, "Export bad channels",
@@ -371,7 +371,7 @@ class MainWindow(QMainWindow):
         """Open raw file."""
         if fname is None:
             fname = QFileDialog.getOpenFileName(self, "Open raw",
-                                                filter=SUPPORTED_FORMATS)[0]
+                                                filter="*")[0]
         if fname:
             if not isfile(fname):
                 self._remove_recent(fname)
@@ -379,12 +379,9 @@ class MainWindow(QMainWindow):
                                      f"File {fname} does not exist anymore.")
                 return
 
-            name, ext = splitext(split(fname)[-1])
-            ftype = ext[1:].upper()
-            if ext.lower() not in SUPPORTED_FORMATS:
-                raise ValueError(f"File format {ftype} is not supported.")
+            name, ext, ftype = split_fname(fname, SUPPORTED_IMPORTS)
 
-            if ext.lower() == ".xdf":
+            if ext in [".xdf", ".xdfz", ".xdf.gz"]:
                 streams = parse_chunks(parse_xdf(fname))
                 rows, disabled = [], []
                 for idx, s in enumerate(streams):
@@ -413,19 +410,19 @@ class MainWindow(QMainWindow):
 
     def open_file(self, f, text, ffilter):
         """Open file."""
-        fname = QFileDialog.getOpenFileName(self, text, filter=ffilter)[0]
+        fname = QFileDialog.getOpenFileName(self, text, filter="*")[0]
         if fname:
             f(fname)
 
     def export_file(self, f, text, ffilter):
         """Export to file."""
-        fname = QFileDialog.getSaveFileName(self, text, filter=ffilter)[0]
+        fname = QFileDialog.getSaveFileName(self, text, filter="*")[0]
         if fname:
             f(fname, ffilter)
 
     def import_file(self, f, text, ffilter):
         """Import file."""
-        fname = QFileDialog.getOpenFileName(self, text, filter=ffilter)[0]
+        fname = QFileDialog.getOpenFileName(self, text, filter="*")[0]
         if fname:
             try:
                 f(fname)
