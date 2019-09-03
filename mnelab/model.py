@@ -26,6 +26,7 @@ class InvalidAnnotationsError(Exception):
 class AddReferenceError(Exception):
     pass
 
+
 class UnknownFileTypeError(Exception):
     pass
 
@@ -113,12 +114,20 @@ class Model:
             data, dtype = self._load_bdf(fname), "raw"
         elif ext == ".gdf":
             data, dtype = self._load_gdf(fname), "raw"
-        elif ext in (".fif" , ".fif.gz"):
+        elif ext in (".fif", ".fif.gz"):
             data, dtype = self._load_fif(fname)
         elif ext == ".vhdr":
             data, dtype = self._load_brainvision(fname), "raw"
         elif ext == ".set":
             data, dtype = self._load_eeglab(fname), "raw"
+        elif ext == ".cnt":
+            data, dtype = self._load_cnt(fname), "raw"
+        elif ext == ".mff":
+            # fname is really a directory, so remove any trailing slashes
+            fname = fname.rstrip("/").rstrip("\\")
+            data, dtype = self._load_egi(fname), "raw"
+        elif ext == ".nxe":
+            data, dtype = self._load_nxe(fname), "raw"
         elif ext in (".xdf", ".xdfz", ".xdf.gz"):
             data, dtype = self._load_xdf(fname, *args, **kwargs), "raw"
         else:
@@ -178,6 +187,24 @@ class Model:
     def _load_eeglab(self, fname):
         data = mne.io.read_raw_eeglab(fname, preload=True)
         self.history.append(f"data = mne.io.read_raw_eeglab('{fname}', "
+                            f"preload=True)")
+        return data
+
+    def _load_cnt(self, fname):
+        data = mne.io.read_raw_cnt(fname, preload=True)
+        self.history.append(f"data = mne.io.read_raw_cnt('{fname}', "
+                            f"preload=True)")
+        return data
+
+    def _load_egi(self, fname):
+        data = mne.io.read_raw_egi(fname, preload=True)
+        self.history.append(f"data = mne.io.read_raw_egi('{fname}', "
+                            f"preload=True)")
+        return data
+
+    def _load_nxe(self, fname):
+        data = mne.io.read_raw_eximia(fname, preload=True)
+        self.history.append(f"data = mne.io.read_raw_eximia('{fname}', "
                             f"preload=True)")
         return data
 
