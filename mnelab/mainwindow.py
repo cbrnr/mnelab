@@ -34,9 +34,10 @@ from .dialogs.eventsdialog import EventsDialog
 from .dialogs.epochdialog import EpochDialog
 from .dialogs.xdfstreamsdialog import XDFStreamsDialog
 from .widgets.infowidget import InfoWidget
-from .model import (SUPPORTED_IMPORTS, SUPPORTED_EXPORTS, LabelsNotFoundError,
-                    InvalidAnnotationsError, UnknownFileTypeError)
-from .utils import have, parse_xdf, parse_chunks, split_fname
+from .model import (LabelsNotFoundError, InvalidAnnotationsError,
+                    UnknownFileTypeError)
+from .utils import (IMPORT_FORMATS, EXPORT_FORMATS, have, split_fname,
+                    parse_xdf, parse_chunks)
 # all icons are stored in mnelab/resources.py, which must be automatically
 # generated with "pyrcc5 -o mnelab/resources.py mnelab.qrc"
 import mnelab.resources  # noqa
@@ -150,9 +151,9 @@ class MainWindow(QMainWindow):
                                    "*.fif *.fif.gz"))
         file_menu.addSeparator()
         self.export_menu = file_menu.addMenu("Export data")
-        for name, ext in SUPPORTED_EXPORTS.items():
+        for name, ext in EXPORT_FORMATS.items():
             self.actions["export_data_" + ext] = self.export_menu.addAction(
-                f"Export to {ext.upper()} ({name})...",
+                f"{name} ({ext[1:].upper()})...",
                 partial(self.export_file, model.export_data, "Export data",
                         ext))
         self.actions["export_bads"] = file_menu.addAction(
@@ -379,7 +380,7 @@ class MainWindow(QMainWindow):
                                      f"File {fname} does not exist anymore.")
                 return
 
-            name, ext, ftype = split_fname(fname, SUPPORTED_IMPORTS)
+            name, ext, ftype = split_fname(fname, IMPORT_FORMATS)
 
             if ext in [".xdf", ".xdfz", ".xdf.gz"]:
                 streams = parse_chunks(parse_xdf(fname))

@@ -12,22 +12,7 @@ from numpy.core.records import fromarrays
 from scipy.io import savemat
 import mne
 
-from .utils import read_raw_xdf, have, split_fname
-
-
-SUPPORTED_IMPORTS = [".bdf", ".edf", ".gdf", ".fif", ".fif.gz", ".vhdr",
-                     ".set"]
-if have["pyxdf"]:
-    SUPPORTED_IMPORTS.extend([".xdf", ".xdfz", ".xdf.gz"])
-
-SUPPORTED_EXPORTS = {"Elekta Neuromag": ".fif",
-                     "Elekta Neuromag compressed": ".fif.gz",
-                     "EEGLAB": ".set"}
-if have["pyedflib"]:
-    SUPPORTED_EXPORTS["European Data Format"] = ".edf"
-    SUPPORTED_EXPORTS["BioSemi Data Format"] = ".bdf"
-if have["pybv"]:
-    SUPPORTED_EXPORTS["BrainVision"] = ".eeg"
+from .utils import IMPORT_FORMATS, EXPORT_FORMATS, read_raw_xdf, split_fname
 
 
 class LabelsNotFoundError(Exception):
@@ -120,7 +105,7 @@ class Model:
     @data_changed
     def load(self, fname, *args, **kwargs):
         """Load data set from file."""
-        name, ext, ftype = split_fname(fname, SUPPORTED_IMPORTS)
+        name, ext, ftype = split_fname(fname, IMPORT_FORMATS)
 
         if ext == ".edf":
             data, dtype = self._load_edf(fname), "raw"
@@ -226,7 +211,7 @@ class Model:
 
     def export_data(self, fname, ffilter):
         """Export raw to file."""
-        name, ext, ftype = split_fname(fname, SUPPORTED_EXPORTS)
+        name, ext, ftype = split_fname(fname, EXPORT_FORMATS)
         if ext != ffilter:
             ext = ffilter
             fname += ext
