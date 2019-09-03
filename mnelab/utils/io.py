@@ -9,6 +9,85 @@ import xml.etree.ElementTree as ET
 import numpy as np
 import mne
 
+from ..utils import have
+
+
+IMPORT_FORMATS = {"BioSemi Data Format": ".bdf",
+                  "European Data Format": ".edf",
+                  "General Data Format": ".gdf",
+                  "Elekta Neuromag": [".fif", ".fif.gz"],
+                  "BrainVision": ".vhdr",
+                  "EEGLAB": ".set"}
+if have["pyxdf"]:
+    IMPORT_FORMATS["Extensible Data Format"] = [".xdf", ".xdfz", ".xdf.gz"]
+
+EXPORT_FORMATS = {"Elekta Neuromag": ".fif",
+                  "Elekta Neuromag compressed": ".fif.gz",
+                  "EEGLAB": ".set"}
+if have["pyedflib"]:
+    EXPORT_FORMATS["European Data Format"] = ".edf"
+    EXPORT_FORMATS["BioSemi Data Format"] = ".bdf"
+if have["pybv"]:
+    EXPORT_FORMATS["BrainVision"] = ".eeg"
+
+
+def split_fname(fname, ffilter):
+    """Split file name into name and known extension parts.
+
+    Parameters
+    ----------
+    fname : str or pathlib.Path
+        File name (can include full path).
+    ffilter : dict
+        Known file types. The keys contain descriptions (names), whereas the
+        values contain the corresponding file extension(s).
+
+    Returns
+    -------
+    name : str
+        File name without extension.
+    ext : str
+        File extension (including the leading dot).
+    ftype : str
+        File type (empty string if unknown).
+    """
+    path = Path(fname)
+    if not path.suffixes:
+        return path.stem, "", ""
+
+    ftype = _match_suffix(path.suffixes[-1], ffilter)
+    if ftype is not None:
+        return path.stem, path.suffixes[-1], ftype
+
+    ftype = _match_suffix("".join(path.suffixes[-2:]), ffilter)
+    if ftype is not None:
+        name = ".".join(path.stem.split(".")[:-1])
+        return name, "".join(path.suffixes[-2:]), ftype
+
+    return path.stem, path.suffix, ""
+
+
+def _match_suffix(suffix, ffilter):
+    """Return file type (textual description) for a given suffix.
+
+    Parameters
+    ----------
+    suffix : str
+        File extension to check (must include the leading dot).
+    ffilter : dict
+        ffilter : dict
+        Known file types. The keys contain descriptions (names), whereas the
+        values contain the corresponding file extension(s).
+
+    Returns
+    -------
+    ftype : str | None
+        File type (None if unknown file type).
+    """
+    for ftype, ext in ffilter.items():
+        if suffix in ext:
+            return ftype
+
 
 def read_raw_xdf(fname, stream_id):
     """Read XDF file.

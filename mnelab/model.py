@@ -12,18 +12,7 @@ from numpy.core.records import fromarrays
 from scipy.io import savemat
 import mne
 
-from .utils import read_raw_xdf, have
-
-
-SUPPORTED_FORMATS = "*.bdf *.edf *.gdf *.fif *.vhdr *.set"
-if have["pyxdf"]:
-    SUPPORTED_FORMATS += " *.xdf"
-SUPPORTED_EXPORT_FORMATS = {"Elekta Neuromag": "fif", "EEGLAB": "set"}
-if have["pyedflib"]:
-    SUPPORTED_EXPORT_FORMATS["European Data Format"] = "edf"
-    SUPPORTED_EXPORT_FORMATS["BioSemi Data Format"] = "bdf"
-if have["pybv"]:
-    SUPPORTED_EXPORT_FORMATS["BrainVision"] = "eeg"
+from .utils import IMPORT_FORMATS, EXPORT_FORMATS, read_raw_xdf, split_fname
 
 
 class LabelsNotFoundError(Exception):
@@ -35,6 +24,9 @@ class InvalidAnnotationsError(Exception):
 
 
 class AddReferenceError(Exception):
+    pass
+
+class UnknownFileTypeError(Exception):
     pass
 
 
@@ -113,25 +105,24 @@ class Model:
     @data_changed
     def load(self, fname, *args, **kwargs):
         """Load data set from file."""
-        name, ext = splitext(split(fname)[-1])
-        ftype = ext[1:].upper()
-        if ext.lower() not in SUPPORTED_FORMATS:
-            raise ValueError(f"File format {ftype} is not supported.")
+        name, ext, ftype = split_fname(fname, IMPORT_FORMATS)
 
-        if ext.lower() == ".edf":
+        if ext == ".edf":
             data, dtype = self._load_edf(fname), "raw"
-        elif ext.lower() == ".bdf":
+        elif ext == ".bdf":
             data, dtype = self._load_bdf(fname), "raw"
-        elif ext.lower() == ".gdf":
+        elif ext == ".gdf":
             data, dtype = self._load_gdf(fname), "raw"
-        elif ext == ".fif":
+        elif ext in (".fif" , ".fif.gz"):
             data, dtype = self._load_fif(fname)
         elif ext == ".vhdr":
             data, dtype = self._load_brainvision(fname), "raw"
         elif ext == ".set":
             data, dtype = self._load_eeglab(fname), "raw"
-        elif ext == ".xdf":
+        elif ext in (".xdf", ".xdfz", ".xdf.gz"):
             data, dtype = self._load_xdf(fname, *args, **kwargs), "raw"
+        else:
+            raise UnknownFileTypeError(f"Unknown file type for {fname}.")
 
         if ext == ".vhdr":
             fsize = getsize(join(split(fname)[0], name + ".eeg")) / 1024 ** 2
@@ -220,10 +211,12 @@ class Model:
 
     def export_data(self, fname, ffilter):
         """Export raw to file."""
-        name, ext = splitext(split(fname)[-1])
-        ext = ext or ffilter[1:]
-        fname = join(split(fname)[0], name + ext)
-        if ext == ".fif":
+        name, ext, ftype = split_fname(fname, EXPORT_FORMATS)
+        if ext != ffilter:
+            ext = ffilter
+            fname += ext
+
+        if ext in (".fif", ".fif.gz"):
             self.current["data"].save(fname)
         elif ext == ".set":
             self._export_set(fname)
