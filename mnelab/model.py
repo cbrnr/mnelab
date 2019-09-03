@@ -312,18 +312,15 @@ class Model:
         data = self.current["data"].get_data()
         fs = self.current["data"].info["sfreq"]
         ch_names = self.current["data"].info["ch_names"]
-        if self.current["data"].info["meas_date"] is not None:
-            meas_date = self.current['data'].info["meas_date"][0]
-            meas_date = datetime.utcfromtimestamp(meas_date)
-        else:
-            meas_date = None
+        events = None
         if not isinstance(self.current["events"], np.ndarray):
-            events = mne.events_from_annotations(self.current["data"])[0]
-            events = events[:, [0, 2]]
+            if self.current["data"].annotations:
+                events = mne.events_from_annotations(self.current["data"])[0]
+                dur = self.current["data"].annotations.duration * fs
+                events = np.column_stack([events[:, [0, 2]], dur.astype(int)])
         else:
             events = self.current["events"][:, [0, 2]]
-        pybv.write_brainvision(data, fs, ch_names, name, head, events=events,
-                               meas_date=meas_date)
+        pybv.write_brainvision(data, fs, ch_names, name, head, events=events)
 
     def export_bads(self, fname):
         """Export bad channels info to a CSV file."""
