@@ -17,7 +17,10 @@ IMPORT_FORMATS = {"BioSemi Data Format": ".bdf",
                   "General Data Format": ".gdf",
                   "Elekta Neuromag": [".fif", ".fif.gz"],
                   "BrainVision": ".vhdr",
-                  "EEGLAB": ".set"}
+                  "EEGLAB": ".set",
+                  "Neuroscan": ".cnt",
+                  "EGI Netstation": ".mff",
+                  "Nexstim eXimia": ".nxe"}
 if have["pyxdf"]:
     IMPORT_FORMATS["Extensible Data Format"] = [".xdf", ".xdfz", ".xdf.gz"]
 
