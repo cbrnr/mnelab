@@ -44,7 +44,8 @@ setup(
     extras_require={"EDF export": ["pyedflib"],
                     "PICARD": ["python-picard"],
                     "FastICA": ["scikit-learn"],
-                    "XDF import": ["pyxdf"]},
+                    "XDF import": ["pyxdf"],
+                    "BrainVision export": ["pybv"]},
     license="BSD-3-Clause",
     include_package_data=True,
     entry_points={

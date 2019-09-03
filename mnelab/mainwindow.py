@@ -117,8 +117,8 @@ class MainWindow(QMainWindow):
         # initialize menus
         file_menu = self.menuBar().addMenu("&File")
         icon = QIcon(":/open_file.svg")
-        self.actions["open_file"] = file_menu.addAction(icon,
-            "&Open...", self.open_data, QKeySequence.Open)
+        self.actions["open_file"] = file_menu.addAction(
+            icon, "&Open...", self.open_data, QKeySequence.Open)
         self.recent_menu = file_menu.addMenu("Open recent")
         self.recent_menu.aboutToShow.connect(self._update_recent_menu)
         self.recent_menu.triggered.connect(self._load_recent)
