@@ -11,8 +11,16 @@ have = {d: False for d in ["numpy", "scipy", "mne", "matplotlib", "pyxdf",
 
 for key, value in have.items():
     try:
-        import_module(key)
+        mod = import_module(key)
     except ModuleNotFoundError:
         pass
     else:
-        have[key] = True
+        try:
+            version = mod.__version__
+        except AttributeError:
+            if key == "PyQt5":
+                mod = import_module("PyQt5.QtCore")
+                version = mod.PYQT_VERSION_STR
+            else:
+                version = True  # no __version__ found but the module exists
+        have[key] = version
