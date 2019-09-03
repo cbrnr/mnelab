@@ -6,15 +6,15 @@ from importlib import import_module
 
 
 # contains information whether a specific package is available or not
-have = {d: False for d in ["numpy", "scipy", "mne", "matplotlib", "pyxdf",
-                           "pyedflib", "picard", "sklearn", "PyQt5", "pybv"]}
+have = {d: False for d in ["PyQt5", "numpy", "scipy", "matplotlib", "mne",
+                           "sklearn", "picard", "pyedflib", "pyxdf", "pybv"]}
 
 for key, value in have.items():
     try:
         mod = import_module(key)
     except ModuleNotFoundError:
         pass
-    else:
+    else:  # module successfully imported
         try:
             version = mod.__version__
         except AttributeError:
