@@ -12,9 +12,14 @@ import mne
 from ..utils import have
 
 
-IMPORT_FORMATS = [".bdf", ".edf", ".gdf", ".fif", ".fif.gz", ".vhdr", ".set"]
+IMPORT_FORMATS = {"BioSemi Data Format": ".bdf",
+                  "European Data Format": ".edf",
+                  "General Data Format": ".gdf",
+                  "Elekta Neuromag": [".fif", ".fif.gz"],
+                  "BrainVision": ".vhdr",
+                  "EEGLAB": ".set"}
 if have["pyxdf"]:
-    IMPORT_FORMATS.extend([".xdf", ".xdfz", ".xdf.gz"])
+    IMPORT_FORMATS["Extensible Data Format"] = [".xdf", ".xdfz", ".xdf.gz"]
 
 EXPORT_FORMATS = {"Elekta Neuromag": ".fif",
                   "Elekta Neuromag compressed": ".fif.gz",
@@ -33,9 +38,9 @@ def split_fname(fname, ffilter):
     ----------
     fname : str or pathlib.Path
         File name (can include full path).
-    ffilter : list of str
-        List of known file extensions (individual entries must include leading
-        dot, e.g. [".fif", ".fif.gz", ".set"]).
+    ffilter : dict
+        Known file types. The keys contain descriptions (names), whereas the
+        values contain the corresponding file extension(s).
 
     Returns
     -------
@@ -44,20 +49,44 @@ def split_fname(fname, ffilter):
     ext : str
         File extension (including the leading dot).
     ftype : str
-        File type (empty if unknown).
+        File type (empty string if unknown).
     """
     path = Path(fname)
     if not path.suffixes:
-        name, ext, ftype = path.stem, "", ""
-    elif path.suffixes[-1] in ffilter:  # first extension
-        name, ext, ftype = path.stem, path.suffixes[-1], path.suffixes[-1][1:]
-    elif "".join(path.suffixes[-2:]) in ffilter:  # first and second extension
+        return path.stem, "", ""
+
+    ftype = _match_suffix(path.suffixes[-1], ffilter)
+    if ftype is not None:
+        return path.stem, path.suffixes[-1], ftype
+
+    ftype = _match_suffix("".join(path.suffixes[-2:]), ffilter)
+    if ftype is not None:
         name = ".".join(path.stem.split(".")[:-1])
-        ext = "".join(path.suffixes[-2:])
-        ftype = ext[1:]
-    else:
-        name, ext, ftype = path.stem, path.suffix, ""
-    return name, ext.lower(), ftype.upper()
+        return name, "".join(path.suffixes[-2:]), ftype
+
+    return path.stem, path.suffix, ""
+
+
+def _match_suffix(suffix, ffilter):
+    """Return file type (textual description) for a given suffix.
+
+    Parameters
+    ----------
+    suffix : str
+        File extension to check (must include the leading dot).
+    ffilter : dict
+        ffilter : dict
+        Known file types. The keys contain descriptions (names), whereas the
+        values contain the corresponding file extension(s).
+
+    Returns
+    -------
+    ftype : str | None
+        File type (None if unknown file type).
+    """
+    for ftype, ext in ffilter.items():
+        if suffix in ext:
+            return ftype
 
 
 def read_raw_xdf(fname, stream_id):
