@@ -23,6 +23,7 @@ from .dialogs.historydialog import HistoryDialog
 from .dialogs.interpolatebadsdialog import InterpolateBadsDialog
 from .dialogs.annotationsdialog import AnnotationsDialog
 from .dialogs.filterdialog import FilterDialog
+from .dialogs.cropdialog import CropDialog
 from .dialogs.findeventsdialog import FindEventsDialog
 from .dialogs.pickchannelsdialog import PickChannelsDialog
 from .dialogs.referencedialog import ReferenceDialog
@@ -195,6 +196,9 @@ class MainWindow(QMainWindow):
         self.actions["events"] = edit_menu.addAction("Events...",
                                                      self.edit_events)
 
+        edit_menu.addSeparator()
+        self.actions["crop"] = edit_menu.addAction("&Crop data...", self.crop)
+
         plot_menu = self.menuBar().addMenu("&Plot")
         icon = QIcon(":/plot_data.svg")
         self.actions["plot_data"] = plot_menu.addAction(icon, "&Data...",
@@ -364,6 +368,8 @@ class MainWindow(QMainWindow):
                 enabled and self.model.current["dtype"] == "raw")
             self.actions["epoch_data"].setEnabled(
                 enabled and events and self.model.current["dtype"] == "raw")
+            self.actions["crop"].setEnabled(
+                enabled and self.model.current["dtype"] == "raw")
         # add to recent files
         if len(self.model) > 0:
             self._add_recent(self.model.current["fname"])
@@ -526,6 +532,17 @@ class MainWindow(QMainWindow):
                 desc = int(dialog.table.item(i, 1).data(Qt.DisplayRole))
                 events[i] = pos, 0, desc
             self.model.set_events(events)
+
+    def crop(self):
+        """Filter data."""
+        fs = self.model.current["data"].info["sfreq"]
+        length = self.model.current["data"].n_times / fs
+        dialog = CropDialog(self, 0, length)
+        if dialog.exec_():
+            self.auto_duplicate()
+            if dialog.start is None:
+                dialog.start = 0
+            self.model.crop(dialog.start, dialog.stop)
 
     def plot_data(self):
         """Plot data."""
