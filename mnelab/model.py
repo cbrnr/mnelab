@@ -545,6 +545,12 @@ class Model:
         self.history.append(f"data.filter({low}, {high})")
 
     @data_changed
+    def crop(self, start, stop):
+        self.current["data"].crop(start, stop)
+        self.current["name"] += " (cropped)"
+        self.history.append(f"data.crop({start}, {stop})")
+
+    @data_changed
     def apply_ica(self):
         self.current["ica"].apply(self.current["data"])
         self.history.append(f"ica.apply(inst=data, "
