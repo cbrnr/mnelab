@@ -18,22 +18,11 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                              QStatusBar, QToolBar)
 from mne.io.pick import channel_type
 
-from .dialogs.errormessagebox import ErrorMessageBox
-from .dialogs.historydialog import HistoryDialog
-from .dialogs.interpolatebadsdialog import InterpolateBadsDialog
-from .dialogs.annotationsdialog import AnnotationsDialog
-from .dialogs.filterdialog import FilterDialog
-from .dialogs.cropdialog import CropDialog
-from .dialogs.findeventsdialog import FindEventsDialog
-from .dialogs.pickchannelsdialog import PickChannelsDialog
-from .dialogs.referencedialog import ReferenceDialog
-from .dialogs.montagedialog import MontageDialog
-from .dialogs.channelpropertiesdialog import ChannelPropertiesDialog
-from .dialogs.runicadialog import RunICADialog
-from .dialogs.calcdialog import CalcDialog
-from .dialogs.eventsdialog import EventsDialog
-from .dialogs.epochdialog import EpochDialog
-from .dialogs.xdfstreamsdialog import XDFStreamsDialog
+from .dialogs import (AnnotationsDialog, CalcDialog, ChannelPropertiesDialog,
+                      CropDialog, EpochDialog, ErrorMessageBox, EventsDialog,
+                      FilterDialog, FindEventsDialog, HistoryDialog,
+                      InterpolateBadsDialog, MontageDialog, PickChannelsDialog,
+                      ReferenceDialog, RunICADialog, XDFStreamsDialog)
 from .widgets.infowidget import InfoWidget
 from .model import (LabelsNotFoundError, InvalidAnnotationsError,
                     UnknownFileTypeError)
