@@ -56,3 +56,23 @@ jobs:
     displayName: 'Install MNELAB'
   - script: pytest -s mnelab/tests
     displayName: 'Run tests'
+
+- job: 'Oldest supported'
+  pool:
+    vmImage: 'ubuntu-16.04'
+  steps:
+  - script: sudo apt install libxkbcommon-x11-0
+    displayName: 'Install libxkbcommon-x11-0'
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.6'
+    displayName: 'Use Python 3.6'
+  - script: |
+      python -m pip install --upgrade pip setuptools wheel
+      pip install -r requirements-oldest.txt
+      pip install pytest pytest-azurepipelines pytest-faulthandler pytest-qt pytest-xvfb
+    displayName: 'Install dependencies'
+  - script: python setup.py develop
+    displayName: 'Install MNELAB'
+  - script: pytest -s mnelab/tests
+    displayName: 'Run tests'
