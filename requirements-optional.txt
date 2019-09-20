@@ -1,0 +1,5 @@
+scikit-learn
+python-picard
+pyEDFlib
+pyxdf
+pybv
