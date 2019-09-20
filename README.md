@@ -1,7 +1,8 @@
-[![PyPI Version](https://img.shields.io/pypi/v/mnelab.svg)](https://pypi.org/project/mnelab/)
-[![Conda Version](https://img.shields.io/conda/vn/conda-forge/mnelab.svg)](https://anaconda.org/conda-forge/mnelab)
-![Python 3.6](https://img.shields.io/badge/python-3.6-green.svg)
-![Python 3.7](https://img.shields.io/badge/python-3.7-green.svg)
+[![PyPI Version](https://img.shields.io/pypi/v/mnelab)](https://pypi.org/project/mnelab/)
+[![Conda Version](https://img.shields.io/conda/vn/conda-forge/mnelab)](https://anaconda.org/conda-forge/mnelab)
+![Python](https://img.shields.io/badge/python-3.6--3.7-green.svg)
+![Downloads PyPI](https://img.shields.io/pypi/dm/mnelab?color=blue&label=downloads%20pypi)
+![Downloads Conda](https://img.shields.io/conda/dn/conda-forge/mnelab?color=blue&label=downloads%20conda)
 ![License](https://img.shields.io/github/license/cbrnr/mnelab)
 
 ![](https://raw.githubusercontent.com/cbrnr/mnelab/master/mnelab/images/mnelab_logo.png)
