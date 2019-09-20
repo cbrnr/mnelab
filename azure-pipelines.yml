@@ -1,17 +1,78 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
 jobs:
-- template: azure-template.yml
-  parameters:
-    name: Linux
+- job: 'Linux'
+  pool:
     vmImage: 'ubuntu-16.04'
+  steps:
+  - script: sudo apt install libxkbcommon-x11-0
+    displayName: 'Install libxkbcommon-x11-0'
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.7'
+    displayName: 'Use Python 3.7'
+  - script: |
+      python -m pip install --upgrade pip setuptools wheel
+      pip install -r requirements.txt
+      pip install pytest pytest-azurepipelines pytest-faulthandler pytest-qt pytest-xvfb
+    displayName: 'Install dependencies'
+  - script: python setup.py develop
+    displayName: 'Install MNELAB'
+  - script: pytest -s mnelab/tests
+    displayName: 'Run tests'
 
-- template: azure-template.yml
-  parameters:
-    name: macOS
+- job: 'macOS'
+  pool:
     vmImage: 'macOS-10.14'
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.7'
+    displayName: 'Use Python 3.7'
+  - script: |
+      python -m pip install --upgrade pip setuptools wheel
+      pip install -r requirements.txt
+      pip install pytest pytest-azurepipelines pytest-faulthandler pytest-qt
+    displayName: 'Install dependencies'
+  - script: python setup.py develop
+    displayName: 'Install MNELAB'
+  - script: pytest -s mnelab/tests
+    displayName: 'Run tests'
 
-- template: azure-template.yml
-  parameters:
-    name: Windows
-    vmImage: 'vs2017-win2016'
+- job: 'Windows'
+  pool:
+    vmImage: 'windows-2019'
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.7'
+    displayName: 'Use Python 3.7'
+  - script: |
+      python -m pip install --upgrade pip setuptools wheel
+      pip install -r requirements.txt
+      pip install pytest pytest-azurepipelines pytest-faulthandler pytest-qt
+    displayName: 'Install dependencies'
+  - script: python setup.py develop
+    displayName: 'Install MNELAB'
+  - script: pytest -s mnelab/tests
+    displayName: 'Run tests'
+
+- job: 'Oldest'
+  pool:
+    vmImage: 'ubuntu-16.04'
+  steps:
+  - script: sudo apt install libxkbcommon-x11-0
+    displayName: 'Install libxkbcommon-x11-0'
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.6'
+    displayName: 'Use Python 3.6'
+  - script: |
+      python -m pip install --upgrade pip setuptools wheel
+      pip install -r requirements-oldest.txt
+      pip install pytest pytest-azurepipelines pytest-faulthandler pytest-qt pytest-xvfb
+    displayName: 'Install dependencies'
+  - script: python setup.py develop
+    displayName: 'Install MNELAB'
+  - script: pytest -s mnelab/tests
+    displayName: 'Run tests'

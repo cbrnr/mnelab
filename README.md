@@ -12,11 +12,11 @@ Graphical user interface (GUI) for [MNE](https://github.com/mne-tools/mne-python
 
 ### Dependencies
 MNELAB requires Python >= 3.6. In addition, the following Python packages are required:
-- [PyQt5](https://www.riverbankcomputing.com/software/pyqt/download5) >= 5.6.0
-- [numpy](http://www.numpy.org/) >= 1.8.1
-- [scipy](https://www.scipy.org/scipylib/index.html) >= 0.17.1
+- [PyQt5](https://www.riverbankcomputing.com/software/pyqt/download5) >= 5.10.0
+- [numpy](http://www.numpy.org/) >= 1.14.0
+- [scipy](https://www.scipy.org/scipylib/index.html) >= 1.0.0
 - [matplotlib](https://matplotlib.org/) >= 2.0.0
-- [mne](https://github.com/mne-tools/mne-python) >= 0.17
+- [mne](https://github.com/mne-tools/mne-python) >= 0.17.0
 
 Optional dependencies provide additional features if installed:
 - [scikit-learn]() (ICA computation via FastICA)
