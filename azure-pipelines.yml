@@ -57,7 +57,7 @@ jobs:
   - script: pytest -s mnelab/tests
     displayName: 'Run tests'
 
-- job: 'Oldest supported'
+- job: 'Oldest'
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
