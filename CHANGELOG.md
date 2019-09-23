@@ -1,3 +1,7 @@
+## [0.5.0] - XXXX-XX-XX
+### Added
+- MNELAB is now shown as an app name in the menu bar on macOS ([#83](https://github.com/cbrnr/mnelab/pull/83) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [0.4.0] - 2019-09-04
 ### Added
 - Add MNELAB logo to About dialog (by [Clemens Brunner](https://github.com/cbrnr))
