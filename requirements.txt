@@ -3,3 +3,4 @@ numpy
 scipy
 matplotlib
 mne
+pyobjc-framework-Cocoa; sys_platform == "darwin"
