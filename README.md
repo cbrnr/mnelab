@@ -71,3 +71,6 @@ Follow these steps to use the latest development version of MNELAB:
     - If you use [Anaconda](https://www.anaconda.com/distribution/) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html), install all dependencies with `conda install numpy scipy matplotlib pyqt` followed by `pip install mne`.
     - Otherwise, install all dependencies with `pip install -r requirements.txt` (and optionally `pip install -r requirements-optional.txt`).
 3. Finally, run `python3 -m mnelab` to start MNELAB (if this does not work try `python -m mnelab`, just make sure to use Python 3 because Python 2 is not supported).
+
+### Contributing
+The [contributing guide](https://github.com/cbrnr/mnelab/blob/master/CONTRIBUTING.md) contains details on how to contribute to MNELAB.
