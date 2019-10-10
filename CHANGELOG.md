@@ -2,6 +2,9 @@
 ### Added
 - MNELAB is now shown as an app name in the menu bar on macOS ([#83](https://github.com/cbrnr/mnelab/pull/83) by [Clemens Brunner](https://github.com/cbrnr))
 
+### Fixed
+- Fixed dropping XDF files on MNELAB and loading XDF files without channel labels ([#86](https://github.com/cbrnr/mnelab/pull/86) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [0.4.0] - 2019-09-04
 ### Added
 - Add MNELAB logo to About dialog (by [Clemens Brunner](https://github.com/cbrnr))
