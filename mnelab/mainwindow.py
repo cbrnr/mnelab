@@ -861,7 +861,7 @@ class MainWindow(QMainWindow):
             urls = mime.urls()
             for url in urls:
                 try:
-                    self.model.load(url.toLocalFile())
+                    self.open_data(url.toLocalFile())
                 except FileNotFoundError as e:
                     QMessageBox.critical(self, "File not found", str(e))
 

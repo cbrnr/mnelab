@@ -49,7 +49,7 @@ class XDFStreamsDialog(QDialog):
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
 
-        self.resize(750, 650)
-        self.view.setColumnWidth(0, 80)
+        self.resize(775, 650)
+        self.view.setColumnWidth(0, 100)
         self.view.setColumnWidth(1, 200)
         self.view.setColumnWidth(2, 120)
