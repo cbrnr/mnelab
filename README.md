@@ -1,6 +1,6 @@
 [![PyPI Version](https://img.shields.io/pypi/v/mnelab)](https://pypi.org/project/mnelab/)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/mnelab)](https://anaconda.org/conda-forge/mnelab)
-![Python](https://img.shields.io/badge/python-3.6--3.7-green.svg)
+![Python](https://img.shields.io/badge/python-3.6+-green.svg)
 ![Downloads PyPI](https://img.shields.io/pypi/dm/mnelab?color=blue&label=downloads%20pypi)
 ![Downloads Conda](https://img.shields.io/conda/dn/conda-forge/mnelab?color=blue&label=downloads%20conda)
 ![License](https://img.shields.io/github/license/cbrnr/mnelab)
