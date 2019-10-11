@@ -384,7 +384,9 @@ class MainWindow(QMainWindow):
                     rows.append([s["stream_id"], s["name"], s["type"],
                                  s["channel_count"], s["channel_format"],
                                  s["nominal_srate"]])
-                    if s["nominal_srate"] == 0:  # disable marker streams
+                    is_marker = (s["nominal_srate"] == 0 or
+                                 s["channel_format"] == "string")
+                    if is_marker:  # disable marker streams
                         disabled.append(idx)
 
                 enabled = list(set(range(len(rows))) - set(disabled))
