@@ -729,9 +729,17 @@ class MainWindow(QMainWindow):
         mnelab_url = "github.com/cbrnr/mnelab"
         mne_url = "github.com/mne-tools/mne-python"
 
-        text = (f'<nobr><p>This program uses MNE {mne.__version__} '
-                f'(Python {".".join(str(k) for k in version_info[:3])}).</p>'
-                f'</nobr>'
+        pkgs = []
+        for key, value in have.items():
+            if value:
+                pkgs.append(f"{key}&nbsp;({value})")
+            else:
+                pkgs.append(f"{key}&nbsp;(not installed)")
+
+        text = (f'<nobr><p>This program uses Python '
+                f'{".".join(str(k) for k in version_info[:3])} and the '
+                f'following packages:</p></nobr>'
+                f'<p>{", ".join(pkgs)}</p>'
                 f'<nobr><p>MNELAB repository: '
                 f'<a href=https://{mnelab_url}>{mnelab_url}</a></p></nobr>'
                 f'<nobr><p>MNE repository: '
