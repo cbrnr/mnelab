@@ -124,7 +124,7 @@ def read_raw_xdf(fname, stream_id):
                 types.append(ch["type"][0])
             if ch["unit"]:
                 units.append(ch["unit"][0])
-    except TypeError:
+    except (TypeError, IndexError):  # no channel labels found
         pass
     if not labels:
         labels = [str(n) for n in range(n_chans)]
