@@ -124,7 +124,9 @@ class MainWindow(QMainWindow):
             "Close all",
             self.close_all)
         file_menu.addSeparator()
-        self.actions["meta_info"] = file_menu.addAction("Show Information...",
+        icon = QIcon(":/meta_info.svg")
+        self.actions["meta_info"] = file_menu.addAction(icon,
+                                                        "Show Information...",
                                                         self.meta_info)
         file_menu.addSeparator()
         self.actions["import_bads"] = file_menu.addAction(
@@ -257,6 +259,7 @@ class MainWindow(QMainWindow):
         self.toolbar = self.addToolBar("toolbar")
         self.toolbar.setObjectName("toolbar")
         self.toolbar.addAction(self.actions["open_file"])
+        self.toolbar.addAction(self.actions["meta_info"])
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.actions["chan_props"])
         self.toolbar.addSeparator()
