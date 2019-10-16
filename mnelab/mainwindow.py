@@ -126,7 +126,7 @@ class MainWindow(QMainWindow):
         file_menu.addSeparator()
         icon = QIcon(":/meta_info.svg")
         self.actions["meta_info"] = file_menu.addAction(icon,
-                                                        "Show Information...",
+                                                        "Show information...",
                                                         self.meta_info)
         file_menu.addSeparator()
         self.actions["import_bads"] = file_menu.addAction(
