@@ -5,7 +5,8 @@
 from pathlib import Path
 import gzip
 import struct
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as et
+from collections import defaultdict
 import numpy as np
 import mne
 
@@ -256,7 +257,7 @@ def _read_chunks(f):
         if chunk["tag"] in [2, 3, 4, 6]:
             chunk["stream_id"] = struct.unpack("<I", f.read(4))[0]
             if chunk["tag"] == 2:  # parse StreamHeader chunk
-                xml = ET.fromstring(f.read(chunk["nbytes"] - 6).decode())
+                xml = et.fromstring(f.read(chunk["nbytes"] - 6).decode())
                 chunk = {**chunk, **_parse_streamheader(xml)}
             else:  # skip remaining chunk contents
                 f.seek(chunk["nbytes"] - 6, 1)
@@ -295,3 +296,34 @@ def _open_xdf(filename):
     if f.read(4) != b"XDF:":  # magic bytes
         raise IOError("Invalid XDF file {}".format(filename))
     return f
+
+
+def get_xml(fname):
+    """Get XML stream headers and footers from all streams.
+    Parameters
+    ----------
+    fname : str
+        Name of the XDF file.
+
+    Returns
+    -------
+    xml : dict
+        XML stream headers and footers.
+    """
+    with _open_xdf(fname) as f:
+        xml = defaultdict(dict)
+        while True:
+            try:
+                nbytes = _read_varlen_int(f)
+            except EOFError:
+                return xml
+            tag = struct.unpack('<H', f.read(2))[0]
+            if tag in [2, 3, 4, 6]:
+                stream_id = struct.unpack("<I", f.read(4))[0]
+                if tag in [2, 6]:  # parse StreamHeader/StreamFooter chunk
+                    string = f.read(nbytes - 6).decode()
+                    xml[stream_id][tag] = et.fromstring(string)
+                else:  # skip remaining chunk contents
+                    f.seek(nbytes - 6, 1)
+            else:
+                f.seek(nbytes - 2, 1)  # skip remaining chunk contents
