@@ -22,12 +22,13 @@ from .dialogs import (AnnotationsDialog, CalcDialog, ChannelPropertiesDialog,
                       CropDialog, EpochDialog, ErrorMessageBox, EventsDialog,
                       FilterDialog, FindEventsDialog, HistoryDialog,
                       InterpolateBadsDialog, MontageDialog, PickChannelsDialog,
-                      ReferenceDialog, RunICADialog, XDFStreamsDialog)
+                      ReferenceDialog, RunICADialog, XDFStreamsDialog,
+                      MetaInfoDialog)
 from .widgets.infowidget import InfoWidget
 from .model import (LabelsNotFoundError, InvalidAnnotationsError,
                     UnknownFileTypeError)
 from .utils import (IMPORT_FORMATS, EXPORT_FORMATS, have, split_fname,
-                    parse_xdf, parse_chunks)
+                    parse_xdf, parse_chunks, get_xml)
 # all icons are stored in mnelab/resources.py, which must be automatically
 # generated with "pyrcc5 -o mnelab/resources.py mnelab.qrc"
 import mnelab.resources  # noqa
@@ -122,6 +123,11 @@ class MainWindow(QMainWindow):
         self.actions["close_all"] = file_menu.addAction(
             "Close all",
             self.close_all)
+        file_menu.addSeparator()
+        icon = QIcon(":/meta_info.svg")
+        self.actions["meta_info"] = file_menu.addAction(icon,
+                                                        "Show information...",
+                                                        self.meta_info)
         file_menu.addSeparator()
         self.actions["import_bads"] = file_menu.addAction(
             "Import bad channels...",
@@ -253,6 +259,7 @@ class MainWindow(QMainWindow):
         self.toolbar = self.addToolBar("toolbar")
         self.toolbar.setObjectName("toolbar")
         self.toolbar.addAction(self.actions["open_file"])
+        self.toolbar.addAction(self.actions["meta_info"])
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.actions["chan_props"])
         self.toolbar.addSeparator()
@@ -359,6 +366,9 @@ class MainWindow(QMainWindow):
                 enabled and events and self.model.current["dtype"] == "raw")
             self.actions["crop"].setEnabled(
                 enabled and self.model.current["dtype"] == "raw")
+            self.actions["meta_info"].setEnabled(
+                enabled and
+                self.model.current["ftype"] == "Extensible Data Format")
         # add to recent files
         if len(self.model) > 0:
             self._add_recent(self.model.current["fname"])
@@ -438,6 +448,11 @@ class MainWindow(QMainWindow):
         if msg == QMessageBox.Yes:
             while len(self.model) > 0:
                 self.model.remove_data()
+
+    def meta_info(self):
+        xml = get_xml(self.model.current["fname"])
+        dialog = MetaInfoDialog(self, xml)
+        dialog.exec_()
 
     def pick_channels(self):
         """Pick channels in current data set."""

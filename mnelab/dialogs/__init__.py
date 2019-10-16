@@ -13,6 +13,7 @@ from .filterdialog import FilterDialog
 from .findeventsdialog import FindEventsDialog
 from .historydialog import HistoryDialog
 from .interpolatebadsdialog import InterpolateBadsDialog
+from .metainfodialog import MetaInfoDialog
 from .montagedialog import MontageDialog
 from .pickchannelsdialog import PickChannelsDialog
 from .referencedialog import ReferenceDialog

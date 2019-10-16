@@ -2,6 +2,7 @@
 ### Added
 - MNELAB is now shown as an app name in the menu bar on macOS ([#83](https://github.com/cbrnr/mnelab/pull/83) by [Clemens Brunner](https://github.com/cbrnr))
 - The About dialog now lists all package dependencies ([#88](https://github.com/cbrnr/mnelab/pull/88) by [Clemens Brunner](https://github.com/cbrnr))
+- Added a dialog (File - Show Information) that shows XDF meta information (stream headers and footers) ([#92](https://github.com/cbrnr/mnelab/pull/92) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### Fixed
 - Fixed dropping XDF files on MNELAB and loading XDF files without channel labels ([#86](https://github.com/cbrnr/mnelab/pull/86) by [Clemens Brunner](https://github.com/cbrnr))
