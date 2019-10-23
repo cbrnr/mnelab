@@ -28,3 +28,18 @@ Once you have an open pull request, add an entry to the top of `CHANGELOG.md` in
 
 ### Coding style
 MNELAB adheres to [PEP8](https://www.python.org/dev/peps/pep-0008/) wherever possible. However, because PyQt5 is based on the C++-based Qt library, most of its names use camel case (violating PEP8 recommendations) instead of snake case. In your own code, please follow PEP8 naming conventions.
+
+## Making a PyPI release
+Follow these steps to make a new [PyPI](https://pypi.org/project/mnelab/) release (requires write permissions for GitHub and PyPI project sites):
+
+- Run `pip install -U setuptools wheel twine` to install/update the necessary packages
+- Remove the `.dev0` suffix from the `__version__ string in `mnelab/mainwindow.py`
+- Update the section in `CHANGELOG.md` corresponding to the new release with the current date
+- Commit these changes and push
+- Create a new release on GitHub and use the version as the tag name (make sure to prepend the version with a `v`)
+- Generate the source and binary wheels with `python3 setup.py sdist bdist_wheel` (remove the folders `build`, `dist`, and `mnelab.egg-info` before if these already exist)
+- Upload to PyPI with `twine upload dist/*`
+
+This concludes the new release. Now prepare the source for the next planned release as follows:
+
+- Update the `__version__` string in `mainwindow.py` to the next planned release and append `.dev0` (don't forget to push this change)
