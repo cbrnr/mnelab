@@ -1,4 +1,4 @@
-## [0.5.0] - XXXX-XX-XX
+## [0.5.0] - 2019-10-23
 ### Added
 - MNELAB is now shown as an app name in the menu bar on macOS ([#83](https://github.com/cbrnr/mnelab/pull/83) by [Clemens Brunner](https://github.com/cbrnr))
 - The About dialog now lists all package dependencies ([#88](https://github.com/cbrnr/mnelab/pull/88) by [Clemens Brunner](https://github.com/cbrnr))
