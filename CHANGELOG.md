@@ -1,6 +1,6 @@
 ## [0.5.1] - 2019-10-24
 ### Fixed
-- Remove binary wheel on PyPI because of a macOS-only package dependency
+- Remove binary wheel on PyPI because of a macOS-only package dependency ([#95](https://github.com/cbrnr/mnelab/pull/95) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [0.5.0] - 2019-10-23
 ### Added
