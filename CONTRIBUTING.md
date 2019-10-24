@@ -37,7 +37,7 @@ Follow these steps to make a new [PyPI](https://pypi.org/project/mnelab/) releas
 - Update the section in `CHANGELOG.md` corresponding to the new release with the current date
 - Commit these changes and push
 - Create a new release on GitHub and use the version as the tag name (make sure to prepend the version with a `v`)
-- Generate the source and binary wheels with `python3 setup.py sdist` (remove the folders `build`, `dist`, and `mnelab.egg-info` before if these already exist)
+- Generate the source distribution package with `python3 setup.py sdist` (remove the folders `build`, `dist`, and `mnelab.egg-info` before if these already exist)
 - Upload to PyPI with `twine upload dist/*`
 
 This concludes the new release. Now prepare the source for the next planned release as follows:
