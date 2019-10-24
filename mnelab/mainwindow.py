@@ -34,7 +34,7 @@ from .utils import (IMPORT_FORMATS, EXPORT_FORMATS, have, split_fname,
 import mnelab.resources  # noqa
 
 
-__version__ = "0.6.0.dev0"
+__version__ = "0.5.1"
 
 MAX_RECENT = 6  # maximum number of recent files
 
