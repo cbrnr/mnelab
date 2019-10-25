@@ -293,7 +293,7 @@ class MainWindow(QMainWindow):
         self.infowidget = InfoWidget()
         splitter.addWidget(self.infowidget)
         width = splitter.size().width()
-        splitter.setSizes((width * 0.3, width * 0.7))
+        splitter.setSizes((int(width * 0.3), int(width * 0.7)))
         self.setCentralWidget(splitter)
 
         self.status_label = QLabel()
