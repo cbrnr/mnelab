@@ -89,6 +89,8 @@ class MainWindow(QMainWindow):
         """
         super().__init__()
 
+        mp.set_start_method("spawn", force=True)  # required for Linux/macOS
+
         self.model = model  # data model
         self.setWindowTitle("MNELAB")
 

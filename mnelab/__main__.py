@@ -6,7 +6,6 @@ import sys
 import matplotlib
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import Qt
-import multiprocessing as mp
 
 from mnelab import MainWindow, Model
 
@@ -24,7 +23,6 @@ def main():
                     info["CFBundleName"] = app_name
         except ImportError:
             pass
-    mp.set_start_method("spawn")  # required for Linux/macOS
     matplotlib.use("Qt5Agg")
     app = QApplication(sys.argv)
     app.setApplicationName(app_name)
