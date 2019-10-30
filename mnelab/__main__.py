@@ -30,12 +30,11 @@ def main():
     if sys.platform.startswith("darwin"):
         app.setAttribute(Qt.AA_DontShowIconsInMenus, True)
     model = Model()
-    view = MainWindow(model)
-    model.view = view
+    model.view = MainWindow(model)
     if len(sys.argv) > 1:  # open files from command line arguments
         for f in sys.argv[1:]:
             model.load(f)
-    view.show()
+    model.view.show()
     sys.exit(app.exec_())
 
 
