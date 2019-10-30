@@ -34,7 +34,7 @@ from .utils import (IMPORT_FORMATS, EXPORT_FORMATS, have, split_fname,
 import mnelab.resources  # noqa
 
 
-__version__ = "0.6.0.dev0"
+__version__ = "0.5.2"
 
 MAX_RECENT = 6  # maximum number of recent files
 
@@ -88,6 +88,8 @@ class MainWindow(QMainWindow):
             sets. This decouples the GUI from the data (model/view).
         """
         super().__init__()
+
+        mp.set_start_method("spawn", force=True)  # required for Linux/macOS
 
         self.model = model  # data model
         self.setWindowTitle("MNELAB")
