@@ -582,7 +582,8 @@ class Model:
         self.current["reference"] = ref
         if ref == "average":
             self.current["name"] += " (average ref)"
-            self.current["data"].set_eeg_reference(ref, projection=False)
+            self.current["data"].set_eeg_reference(ref)
+            self.history.append(f'data.set_eeg_reference("average")')
         else:
             self.current["name"] += " (" + ",".join(ref) + ")"
             if set(ref) - set(self.current["data"].info["ch_names"]):
@@ -593,9 +594,13 @@ class Model:
                 except RuntimeError:
                     raise AddReferenceError("Cannot add reference channels "
                                             "to average reference signals.")
+                else:
+                    self.history.append(f'mne.add_reference_channels(data, '
+                                        f'{ref}, copy=False)')
             else:
                 # re-reference to existing channel(s)
-                self.current["data"].set_eeg_reference(ref, projection=False)
+                self.current["data"].set_eeg_reference(ref)
+                self.history.append(f'data.set_eeg_reference({ref})')
 
     @data_changed
     def set_events(self, events):
