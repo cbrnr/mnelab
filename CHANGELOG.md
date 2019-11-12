@@ -2,6 +2,9 @@
 ### Added
 - Add history for setting reference ([#100](https://github.com/cbrnr/mnelab/pull/100) by [Clemens Brunner](https://github.com/cbrnr))  
 
+### Fixed
+- Fix blurry icons on macOS HiDPI screens ([#102](https://github.com/cbrnr/mnelab/pull/102) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [0.5.2] - 2019-10-30
 ### Fixed
 - Fix multiprocessing runtime error (context has already been set) ([#98](https://github.com/cbrnr/mnelab/pull/98) by [Clemens Brunner](https://github.com/cbrnr)) 
