@@ -20,11 +20,6 @@ with open(path.join('mnelab', 'mainwindow.py'), 'r') as f:
             version = line.split('=')[1].strip().strip('"')
             break
 
-
-install_requires = ['mne', 'numpy', 'scipy', 'matplotlib', 'PyQt5']
-if sys.platform.startswith("darwin"):
-    install_requires.append('pyobjc-framework-Cocoa')
-
 setup(
     name='mnelab',
     version=version,
@@ -46,7 +41,8 @@ setup(
     keywords='EEG MEG MNE GUI electrophysiology',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
     python_requires='>=3.6, <4',
-    install_requires=install_requires,
+    install_requires=['mne', 'numpy', 'scipy', 'matplotlib', 'PyQt5',
+                      'pyobjc-framework-Cocoa;platform_system=="Darwin"'],
     extras_require={"EDF export": ["pyedflib"],
                     "PICARD": ["python-picard"],
                     "FastICA": ["scikit-learn"],
