@@ -2,6 +2,7 @@
 __pycache__
 .DS_Store
 .venv
+venv
 build
 dist
 mnelab.egg-info
