@@ -498,7 +498,7 @@ class MainWindow(QMainWindow):
                                selected=self.model.current["montage"])
         if dialog.exec_():
             name = dialog.montages.selectedItems()[0].data(0)
-            montage = mne.channels.read_montage(name)
+            montage = mne.channels.make_standard_montage(name)
             ch_names = self.model.current["data"].info["ch_names"]
             # check if at least one channel name matches a name in the montage
             if set(ch_names) & set(montage.ch_names):

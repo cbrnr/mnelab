@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QListWidget,
                              QToolBar)
 from PyQt5.QtCore import pyqtSlot, Qt
 
-from mne.channels import read_montage
+from mne.channels import make_standard_montage
 
 
 class MontageDialog(QDialog):
@@ -49,7 +49,7 @@ class MontageDialog(QDialog):
             self.view_button.setEnabled(False)
 
     def view_montage(self):
-        montage = read_montage(self.montages.selectedItems()[0].data(0))
+        montage = make_standard_montage(self.montages.selectedItems()[0].data(0))
         fig = montage.plot(show_names=True, show=False)
         win = fig.canvas.manager.window
         win.setWindowModality(Qt.WindowModal)
