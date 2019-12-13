@@ -49,7 +49,8 @@ class MontageDialog(QDialog):
             self.view_button.setEnabled(False)
 
     def view_montage(self):
-        montage = make_standard_montage(self.montages.selectedItems()[0].data(0))
+        name = self.montages.selectedItems()[0].data(0)
+        montage = make_standard_montage(name)
         fig = montage.plot(show_names=True, show=False)
         win = fig.canvas.manager.window
         win.setWindowModality(Qt.WindowModal)
