@@ -11,6 +11,9 @@ Graphical user interface (GUI) for [MNE](https://github.com/mne-tools/mne-python
 
 ![](https://raw.githubusercontent.com/cbrnr/mnelab/master/mnelab.png)
 
+### Changelog
+Check out the [changelog](https://github.com/cbrnr/mnelab/blob/master/CHANGELOG.md) to learn what we added, changed or fixed in the latest version.
+
 ### Dependencies
 MNELAB requires Python >= 3.6. In addition, the following Python packages are required:
 - [PyQt5](https://www.riverbankcomputing.com/software/pyqt/download5) >= 5.10.0
