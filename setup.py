@@ -4,7 +4,6 @@
 
 from setuptools import setup, find_packages
 from os import path
-import sys
 
 
 here = path.abspath(path.dirname(__file__))
@@ -37,12 +36,17 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8'
     ],
     keywords='EEG MEG MNE GUI electrophysiology',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
     python_requires='>=3.6, <4',
-    install_requires=['mne', 'numpy', 'scipy', 'matplotlib', 'PyQt5',
-                      'pyobjc-framework-Cocoa;platform_system=="Darwin"'],
+    install_requires=['mne>=0.19',
+                      'numpy>=1.14',
+                      'scipy>=1.0',
+                      'matplotlib>=2.0',
+                      'PyQt5>=5.10',
+                      'pyobjc-framework-Cocoa>=5.2;platform_system=="Darwin"'],
     extras_require={"EDF export": ["pyedflib"],
                     "PICARD": ["python-picard"],
                     "FastICA": ["scikit-learn"],
