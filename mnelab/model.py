@@ -536,7 +536,7 @@ class Model:
     @data_changed
     def set_montage(self, montage):
         self.current["montage"] = montage
-        self.current["data"].set_montage(montage)
+        self.current["data"].set_montage(montage, raise_if_subset=False)
 
     @data_changed
     def filter(self, low, high):

@@ -498,7 +498,7 @@ class MainWindow(QMainWindow):
                                selected=self.model.current["montage"])
         if dialog.exec_():
             name = dialog.montages.selectedItems()[0].data(0)
-            montage = mne.channels.read_montage(name)
+            montage = mne.channels.make_standard_montage(name)
             ch_names = self.model.current["data"].info["ch_names"]
             # check if at least one channel name matches a name in the montage
             if set(ch_names) & set(montage.ch_names):
@@ -764,7 +764,7 @@ class MainWindow(QMainWindow):
                 f'<nobr><p>MNE repository: '
                 f'<a href=https://{mne_url}>{mne_url}</a></p></nobr>'
                 f'<p>Licensed under the BSD 3-clause license.</p>'
-                f'<p>Copyright 2017-2019 by Clemens Brunner.</p>')
+                f'<p>Copyright 2017-2020 by Clemens Brunner.</p>')
         msg_box.setInformativeText(text)
         msg_box.exec_()
 

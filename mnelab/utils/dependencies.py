@@ -5,22 +5,33 @@
 from importlib import import_module
 
 
-# contains information whether a specific package is available or not
-have = {d: False for d in ["PyQt5", "numpy", "scipy", "matplotlib", "mne",
-                           "sklearn", "picard", "pyedflib", "pyxdf", "pybv"]}
+# required packages
+required = dict(PyQt5="5.10.0",
+                numpy="1.14.0",
+                scipy="1.0.0",
+                matplotlib="2.0.0",
+                mne="0.19.0")
 
-for key, value in have.items():
+# optional packages
+optional = dict(sklearn=None,
+                picard=None,
+                pyedflib=None,
+                pyxdf=None,
+                pybv=None)
+
+have = {}
+for package in {**required, **optional}:
     try:
-        mod = import_module(key)
+        mod = import_module(package)
     except ModuleNotFoundError:
-        pass
+        have[package] = False
     else:  # module successfully imported
         try:
             version = mod.__version__
         except AttributeError:
-            if key == "PyQt5":
+            if package == "PyQt5":
                 mod = import_module("PyQt5.QtCore")
                 version = mod.PYQT_VERSION_STR
             else:
-                version = True  # no __version__ found but the module exists
-        have[key] = version
+                version = "unknown"
+        have[package] = version
