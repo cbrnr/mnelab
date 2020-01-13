@@ -10,24 +10,28 @@ You will need to have a working Python environment. Make sure to use at least Py
 In addition to Python, you will also need a working [Git](https://git-scm.com/) installation. Again, installation methods are different depending on which platform you develop, but if you use Anaconda you can type `conda install git` in a terminal and you should be all set.
 
 ### Forking and cloning MNELAB
-On the [GitHub website](https://github.com/cbrnr/mnelab), click on the "Fork" button in the top right corner to create your own fork of MNELAB (you need to be logged in with your GitHub account). Next, from the main page of your fork, click on the green "Clone or download" button. Copy the URL to the clipboard - you will need this URL to create your local MNELAB repository.
+On the [GitHub website](https://github.com/cbrnr/mnelab), click on the "Fork" button in the top right corner to create your own fork of MNELAB (you need to be logged in with your GitHub account). Next, from the main page of your fork, click on the green "Clone or download" button. Copy the URL to the clipboard &ndash; you will need this URL to create your local MNELAB repository.
 
 Open a terminal and change into the folder where you would like your MNELAB project to live. Then, type `git clone <URL>` (replace `<URL>` with the repository URL you copied to the clipboard earlier). Your fork of MNELAB is now available in the `mnelab` folder.
 
 ### Installing required Python packages
-In a terminal, change to the `mnelab` folder containing your MNELAB fork. Now you are ready to install all MNELAB dependencies. If you use Anaconda, you should run `conda install numpy scipy matplotlib pyqt scikit-learn` followed by `pip install mne python-picard pyEDFlib pyxdf pybv`. If you do not use Anaconda, run `pip install -r requirements.txt` followed by `pip install -r requirements-optional.txt`. Note that this automatically installs `pyobjc-framework-Cocoa` if you are on macOS, which is not available with `conda`. Therefore, if you use Anaconda and you are on macOS, you need to manually install it with `pip install pyobjc-framework-Cocoa`.
+In a terminal, change to the `mnelab` folder containing your MNELAB fork. Now you are ready to install all MNELAB dependencies.
+
+If you use Anaconda, you should run `conda install numpy scipy matplotlib pyqt scikit-learn` followed by `python3 -m pip install mne python-picard pyEDFlib pyxdf pybv` and `python3 -m pip install pyobjc-framework-Cocoa` if you are on macOS. You might want to [create a new environment](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-with-commands) instead of installing everything into your base environment.
+
+If you do not use Anaconda, run `python3 -m pip install -r requirements.txt` followed by `python3 -m pip install -r requirements-optional.txt`. You might want to [create a virtual environment](https://docs.python.org/3/library/venv.html#creating-virtual-environments) instead of installing everything into your main environment.
 
 ### Creating a new branch
 Before you start working with the MNELAB codebase you need to create a new branch. In a terminal, type `git checkout -b <BRANCH_NAME>` (replacing `<BRANCH_NAME>` with a suitable name for your branch). Now you are ready to work on your contribution.
 
 ### Making a pull request
-Once you have committed all of your changes, you can push them to your remote fork by typing `git push`. The GitHub main page of your fork will now show a prompt to create a new pull request. Think of a good title and describe your contribution. If you have a corresponding issue, make sure to mention this issue in your description (so it will be automatically closed after your pull request is merged).
+Once you have committed all of your changes, you can push them to your remote fork by typing `git push`. The GitHub page of your fork will now show a prompt to create a new pull request. Think of a good title and describe your contribution. If you have a corresponding issue, make sure to mention this issue in your description (so it will be automatically closed after your pull request is merged).
 
 ### Adding a changelog entry
 Once you have an open pull request, add an entry to the top of `CHANGELOG.md` in the most suitable section: "Added" lists new features, "Fixed" lists bug fixes, and "Changed" lists all other (mostly internal) changes. Finally, make sure to mention your pull request and your name.
 
 ### Coding style
-MNELAB adheres to [PEP8](https://www.python.org/dev/peps/pep-0008/) wherever possible. However, because PyQt5 is based on the C++-based Qt library, most of its names use camel case (violating PEP8 recommendations) instead of snake case. In your own code, please follow PEP8 naming conventions.
+MNELAB adheres to [PEP8](https://www.python.org/dev/peps/pep-0008/) wherever possible. However, because PyQt5 is based on the C++-based Qt library, most of its names use camel case (violating PEP8 recommendations) instead of snake case. In your own code, please follow PEP8 naming conventions whenever possible. Furthermore, MNELAB uses double quotes for strings by default unless this is not possible (e.g. use `"string"` instead of `'string'`, but `'this is "weird"'` uses single quotes because the string itself contains double quotes).
 
 ## Making a PyPI release
 Follow these steps to make a new [PyPI](https://pypi.org/project/mnelab/) release (requires write permissions for GitHub and PyPI project sites):
