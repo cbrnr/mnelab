@@ -1,6 +1,6 @@
 [![PyPI Version](https://img.shields.io/pypi/v/mnelab)](https://pypi.org/project/mnelab/)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/mnelab)](https://anaconda.org/conda-forge/mnelab)
-![Python](https://img.shields.io/badge/python-3.6+-green.svg)
+![Python](https://img.shields.io/badge/python-3.6&ndash;3.8-green.svg)
 ![Downloads PyPI](https://img.shields.io/pypi/dm/mnelab?color=blue&label=downloads%20pypi)
 ![Downloads Conda](https://img.shields.io/conda/dn/conda-forge/mnelab?color=blue&label=downloads%20conda)
 ![License](https://img.shields.io/github/license/cbrnr/mnelab)
@@ -17,7 +17,7 @@ MNELAB requires Python >= 3.6. In addition, the following Python packages are re
 - [numpy](http://www.numpy.org/) >= 1.14.0
 - [scipy](https://www.scipy.org/scipylib/index.html) >= 1.0.0
 - [matplotlib](https://matplotlib.org/) >= 2.0.0
-- [mne](https://github.com/mne-tools/mne-python) >= 0.17.0
+- [mne](https://github.com/mne-tools/mne-python) >= 0.19.0
 - [pyobjc-framework-Cocoa](https://pyobjc.readthedocs.io/en/latest/) >= 5.2.0 (macOS only)
 
 Optional dependencies provide additional features if installed:
