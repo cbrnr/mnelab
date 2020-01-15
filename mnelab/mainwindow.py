@@ -19,8 +19,8 @@ from qtpy.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
 from mne.io.pick import channel_type
 
 from .dialogs import (AnnotationsDialog, CalcDialog, ChannelPropertiesDialog,
-                      CropDialog, EpochDialog, ErrorMessageBox, EventsDialog,
-                      FilterDialog, FindEventsDialog, HistoryDialog,
+                      CropDialog, ConcatenateDataDialog, EpochDialog, ErrorMessageBox,
+                      EventsDialog, FilterDialog, FindEventsDialog, HistoryDialog,
                       InterpolateBadsDialog, MontageDialog, PickChannelsDialog,
                       ReferenceDialog, RunICADialog, XDFStreamsDialog,
                       MetaInfoDialog)
@@ -172,6 +172,9 @@ class MainWindow(QMainWindow):
         self.actions["pick_chans"] = edit_menu.addAction(
             "Pick &channels...",
             self.pick_channels)
+        self.actions["concat_data"] = edit_menu.addAction(
+            "Concatenate &data...",
+            self.concatenate_data)
         icon = QIcon(image_path("chan_props.svg"))
         self.actions["chan_props"] = edit_menu.addAction(
             icon, "Channel &properties...", self.channel_properties)
@@ -461,6 +464,26 @@ class MainWindow(QMainWindow):
                 self.auto_duplicate()
                 self.model.drop_channels(drops)
                 self.model.history.append(f"raw.drop({drops})")
+
+    def concatenate_data(self):
+        """Concatenate several raw data objects"""
+
+        info = self.model.current["data"].info
+
+        ds_names = []
+        for d in filter(lambda x:
+                        (x['data'].info['nchan'] == info['nchan']) and
+                        (np.isclose(x['data'].info['sfreq'], info['sfreq'])) and
+                        (np.isclose(x['data'].info['highpass'], info['highpass'])) and
+                        (np.isclose(x['data'].info['lowpass'], info['lowpass'])),
+                        self.model.data):
+            if d['name'] != self.model.current["name"]:
+                ds_names.append(d['name'])
+
+        dialog = ConcatenateDataDialog(self, self.model.current["name"], ds_names)
+        if dialog.exec_():
+            self.auto_duplicate()
+            self.model.concatenate_data(dialog.raw_names, dialog.name)
 
     def channel_properties(self):
         """Show channel properties dialog."""

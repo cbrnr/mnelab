@@ -6,6 +6,7 @@ from .annotationsdialog import AnnotationsDialog
 from .calcdialog import CalcDialog
 from .channelpropertiesdialog import ChannelPropertiesDialog
 from .cropdialog import CropDialog
+from .concatenatedatadialog import ConcatenateDataDialog
 from .epochdialog import EpochDialog
 from .errormessagebox import ErrorMessageBox
 from .eventsdialog import EventsDialog
