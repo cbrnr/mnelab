@@ -472,13 +472,13 @@ class MainWindow(QMainWindow):
 
         ds_names = []
         for d in filter(lambda x:
-                        (x['data'].info['nchan'] == info['nchan']) and
-                        (np.isclose(x['data'].info['sfreq'], info['sfreq'])) and
-                        (np.isclose(x['data'].info['highpass'], info['highpass'])) and
-                        (np.isclose(x['data'].info['lowpass'], info['lowpass'])),
+                        (x["data"].info["nchan"] == info["nchan"]) and
+                        (np.isclose(x["data"].info["sfreq"], info["sfreq"])) and
+                        (np.isclose(x["data"].info["highpass"], info["highpass"])) and
+                        (np.isclose(x["data"].info["lowpass"], info["lowpass"])),
                         self.model.data):
-            if d['name'] != self.model.current["name"]:
-                ds_names.append(d['name'])
+            if d["name"] != self.model.current["name"]:
+                ds_names.append(d["name"])
 
         dialog = ConcatenateDataDialog(self, self.model.current["name"], ds_names)
         if dialog.exec_():
