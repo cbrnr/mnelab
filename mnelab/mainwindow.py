@@ -324,7 +324,7 @@ class MainWindow(QMainWindow):
         # update status bar
         if self.model.data:
             mb = self.model.nbytes / 1024 ** 2
-            self.status_label.setText("Total Memory: {:.2f} MB".format(mb))
+            self.status_label.setText(f"Total Memory: {mb:.2f} MB")
         else:
             self.status_label.clear()
 

@@ -294,7 +294,7 @@ def _open_xdf(filename):
     else:
         f = open(filename, "rb")
     if f.read(4) != b"XDF:":  # magic bytes
-        raise IOError("Invalid XDF file {}".format(filename))
+        raise IOError(f"Invalid XDF file {filename}")
     return f
 
 
