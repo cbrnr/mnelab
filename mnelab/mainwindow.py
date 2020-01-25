@@ -562,7 +562,11 @@ class MainWindow(QMainWindow):
         fig = self.model.current["data"].plot(events=events, n_channels=nchan,
                                               title=self.model.current["name"],
                                               scalings="auto", show=False)
-        self.model.history.append("data.plot(n_channels={})".format(nchan))
+        if events is not None:
+            hist = f"data.plot(events=events, n_channels={nchan})"
+        else:
+            hist = f"data.plot(n_channels={nchan})"
+        self.model.history.append(hist)
         win = fig.canvas.manager.window
         win.setWindowTitle(self.model.current["name"])
         win.findChild(QStatusBar).hide()
