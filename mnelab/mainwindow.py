@@ -582,10 +582,16 @@ class MainWindow(QMainWindow):
 
     def plot_psd(self):
         """Plot power spectral density (PSD)."""
-        kwds = {"show": False}
-        if self.model.current["type"] == "raw":
+        kwds = {}
+        if self.model.current["dtype"] == "raw":
             kwds.update({"average": False, "spatial_colors": False})
-        fig = self.model.current["data"].plot_psd(**kwds)
+        fig = self.model.current["data"].plot_psd(show=False, **kwds)
+        if kwds:
+            tmp = ", ".join(f"{key}={value}" for key, value in kwds.items())
+            hist = f"data.plot_psd({tmp})"
+        else:
+            hist = "data.plot_psd()"
+        self.model.history.append(hist)
         win = fig.canvas.manager.window
         win.setWindowTitle("Power spectral density")
         fig.show()
