@@ -46,7 +46,7 @@ class Model:
         self.view = None  # current view
         self.data = []  # list of data sets
         self.index = -1  # index of currently active data set
-        self.history = []  # command history
+        self.history = ["import mne"]  # command history
 
     @data_changed
     def insert_data(self, dataset):
