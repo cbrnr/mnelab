@@ -3,9 +3,9 @@
 #
 # License: BSD (3-clause)
 
-from PyQt5.QtWidgets import (QDialog, QGridLayout, QLabel, QDialogButtonBox,
-                             QListWidget, QCheckBox, QDoubleSpinBox)
-from PyQt5.QtCore import pyqtSlot, Qt
+from qtpy.QtWidgets import (QDialog, QGridLayout, QLabel, QDialogButtonBox,
+                            QListWidget, QCheckBox, QDoubleSpinBox)
+from qtpy.QtCore import Slot, Qt
 
 from numpy import unique
 
@@ -64,14 +64,14 @@ class EpochDialog(QDialog):
         self.toggle_ok()
         grid.setSizeConstraint(QGridLayout.SetFixedSize)
 
-    @pyqtSlot()
+    @Slot()
     def toggle_ok(self):
         if self.events.selectedItems():
             self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(True)
         else:
             self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(False)
 
-    @pyqtSlot()
+    @Slot()
     def toggle_baseline(self):
         if self.baseline.isChecked():
             self.a.setEnabled(True)

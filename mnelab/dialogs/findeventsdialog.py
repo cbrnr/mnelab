@@ -2,8 +2,8 @@
 #
 # License: BSD (3-clause)
 
-from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
-                             QCheckBox, QDialogButtonBox, QSpinBox, QComboBox)
+from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
+                            QCheckBox, QDialogButtonBox, QSpinBox, QComboBox)
 
 
 MAX_INT = 2147483647

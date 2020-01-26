@@ -10,12 +10,12 @@ from functools import partial
 import numpy as np
 
 import mne
-from PyQt5.QtCore import (pyqtSlot, QStringListModel, QModelIndex, QSettings,
-                          QEvent, Qt, QObject)
-from PyQt5.QtGui import QKeySequence, QDropEvent, QIcon
-from PyQt5.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
-                             QMessageBox, QListView, QAction, QLabel, QFrame,
-                             QStatusBar, QToolBar)
+from qtpy.QtCore import (Qt, Slot, QStringListModel, QModelIndex, QSettings,
+                         QEvent, QObject)
+from qtpy.QtGui import QKeySequence, QDropEvent, QIcon
+from qtpy.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
+                            QMessageBox, QListView, QAction, QLabel, QFrame,
+                            QStatusBar, QToolBar)
 from mne.io.pick import channel_type
 
 from .dialogs import (AnnotationsDialog, CalcDialog, ChannelPropertiesDialog,
@@ -844,7 +844,7 @@ class MainWindow(QMainWindow):
             if not self.recent:
                 self.recent_menu.setEnabled(False)
 
-    @pyqtSlot(QModelIndex)
+    @Slot(QModelIndex)
     def _update_data(self, selected):
         """Update index and information based on the state of the sidebar.
 
@@ -858,23 +858,23 @@ class MainWindow(QMainWindow):
             self.data_changed()
             self.model.history.append(f"data = datasets[{self.model.index}]")
 
-    @pyqtSlot(QModelIndex, QModelIndex)
+    @Slot(QModelIndex, QModelIndex)
     def _update_names(self, start, stop):
         """Update names in DataSets after changes in sidebar."""
         for index in range(start.row(), stop.row() + 1):
             self.model.data[index]["name"] = self.names.stringList()[index]
 
-    @pyqtSlot()
+    @Slot()
     def _update_recent_menu(self):
         self.recent_menu.clear()
         for recent in self.recent:
             self.recent_menu.addAction(recent)
 
-    @pyqtSlot(QAction)
+    @Slot(QAction)
     def _load_recent(self, action):
         self.open_data(fname=action.text())
 
-    @pyqtSlot()
+    @Slot()
     def _toggle_toolbar(self):
         if self.toolbar.isHidden():
             self.toolbar.show()
@@ -882,7 +882,7 @@ class MainWindow(QMainWindow):
             self.toolbar.hide()
         write_settings(toolbar=not self.toolbar.isHidden())
 
-    @pyqtSlot()
+    @Slot()
     def _toggle_statusbar(self):
         if self.statusBar().isHidden():
             self.statusBar().show()
@@ -890,12 +890,12 @@ class MainWindow(QMainWindow):
             self.statusBar().hide()
         write_settings(statusbar=not self.statusBar().isHidden())
 
-    @pyqtSlot(QDropEvent)
+    @Slot(QDropEvent)
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
             event.acceptProposedAction()
 
-    @pyqtSlot(QDropEvent)
+    @Slot(QDropEvent)
     def dropEvent(self, event):
         mime = event.mimeData()
         if mime.hasUrls():
@@ -906,7 +906,7 @@ class MainWindow(QMainWindow):
                 except FileNotFoundError as e:
                     QMessageBox.critical(self, "File not found", str(e))
 
-    @pyqtSlot(QEvent)
+    @Slot(QEvent)
     def closeEvent(self, event):
         """Close application.
 

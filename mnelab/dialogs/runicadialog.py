@@ -2,9 +2,9 @@
 #
 # License: BSD (3-clause)
 
-from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
-                             QSpinBox, QComboBox, QDialogButtonBox, QCheckBox)
-from PyQt5.QtCore import Qt, pyqtSlot
+from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
+                            QSpinBox, QComboBox, QDialogButtonBox, QCheckBox)
+from qtpy.QtCore import Qt, Slot
 
 
 class RunICADialog(QDialog):
@@ -63,7 +63,7 @@ class RunICADialog(QDialog):
         buttonbox.rejected.connect(self.reject)
         vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
 
-    @pyqtSlot()
+    @Slot()
     def toggle_options(self):
         """Toggle extended options.
         """
