@@ -853,6 +853,7 @@ class MainWindow(QMainWindow):
         if selected.row() != self.model.index:
             self.model.index = selected.row()
             self.data_changed()
+            self.model.history.append(f"data = datasets[{self.model.index}]")
 
     @pyqtSlot(QModelIndex, QModelIndex)
     def _update_names(self, start, stop):
