@@ -542,7 +542,7 @@ class MainWindow(QMainWindow):
             self.model.set_events(events)
 
     def crop(self):
-        """Filter data."""
+        """Crop data."""
         fs = self.model.current["data"].info["sfreq"]
         length = self.model.current["data"].n_times / fs
         dialog = CropDialog(self, 0, length)
