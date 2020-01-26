@@ -537,6 +537,8 @@ class Model:
     def set_montage(self, montage):
         self.current["montage"] = montage
         self.current["data"].set_montage(montage, raise_if_subset=False)
+        self.history.append(f"data.set_montage('{montage}', "
+                            f"raise_if_subset=False)")
 
     @data_changed
     def filter(self, low, high):
