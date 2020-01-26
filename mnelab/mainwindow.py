@@ -324,7 +324,7 @@ class MainWindow(QMainWindow):
         # update status bar
         if self.model.data:
             mb = self.model.nbytes / 1024 ** 2
-            self.status_label.setText("Total Memory: {:.2f} MB".format(mb))
+            self.status_label.setText(f"Total Memory: {mb:.2f} MB")
         else:
             self.status_label.clear()
 
@@ -542,7 +542,7 @@ class MainWindow(QMainWindow):
             self.model.set_events(events)
 
     def crop(self):
-        """Filter data."""
+        """Crop data."""
         fs = self.model.current["data"].info["sfreq"]
         length = self.model.current["data"].n_times / fs
         dialog = CropDialog(self, 0, length)
@@ -562,7 +562,11 @@ class MainWindow(QMainWindow):
         fig = self.model.current["data"].plot(events=events, n_channels=nchan,
                                               title=self.model.current["name"],
                                               scalings="auto", show=False)
-        self.model.history.append("data.plot(n_channels={})".format(nchan))
+        if events is not None:
+            hist = f"data.plot(events=events, n_channels={nchan})"
+        else:
+            hist = f"data.plot(n_channels={nchan})"
+        self.model.history.append(hist)
         win = fig.canvas.manager.window
         win.setWindowTitle(self.model.current["name"])
         win.findChild(QStatusBar).hide()
@@ -578,10 +582,16 @@ class MainWindow(QMainWindow):
 
     def plot_psd(self):
         """Plot power spectral density (PSD)."""
-        kwds = {"show": False}
-        if self.model.current["type"] == "raw":
+        kwds = {}
+        if self.model.current["dtype"] == "raw":
             kwds.update({"average": False, "spatial_colors": False})
-        fig = self.model.current["data"].plot_psd(**kwds)
+        fig = self.model.current["data"].plot_psd(show=False, **kwds)
+        if kwds:
+            tmp = ", ".join(f"{key}={value}" for key, value in kwds.items())
+            hist = f"data.plot_psd({tmp})"
+        else:
+            hist = "data.plot_psd()"
+        self.model.history.append(hist)
         win = fig.canvas.manager.window
         win.setWindowTitle("Power spectral density")
         fig.show()
@@ -843,6 +853,7 @@ class MainWindow(QMainWindow):
         if selected.row() != self.model.index:
             self.model.index = selected.row()
             self.data_changed()
+            self.model.history.append(f"data = datasets[{self.model.index}]")
 
     @pyqtSlot(QModelIndex, QModelIndex)
     def _update_names(self, start, stop):

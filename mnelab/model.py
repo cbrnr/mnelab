@@ -46,13 +46,17 @@ class Model:
         self.view = None  # current view
         self.data = []  # list of data sets
         self.index = -1  # index of currently active data set
-        self.history = []  # command history
+        self.history = ["from copy import deepcopy",
+                        "import mne",
+                        "",
+                        "datasets = []"]
 
     @data_changed
     def insert_data(self, dataset):
         """Insert data set after current index."""
         self.index += 1
         self.data.insert(self.index, dataset)
+        self.history.append(f"datasets.insert({self.index}, data)")
 
     @data_changed
     def update_data(self, dataset):
@@ -74,6 +78,8 @@ class Model:
     def duplicate_data(self):
         """Duplicate current data set."""
         self.insert_data(deepcopy(self.current))
+        self.history[-1] = self.history[-1][:-5] + "deepcopy(data))"
+        self.history.append(f"data = datasets[{self.index}]")
         self.current["fname"] = None
         self.current["ftype"] = None
 
@@ -537,6 +543,8 @@ class Model:
     def set_montage(self, montage):
         self.current["montage"] = montage
         self.current["data"].set_montage(montage, raise_if_subset=False)
+        self.history.append(f"data.set_montage('{montage}', "
+                            f"raise_if_subset=False)")
 
     @data_changed
     def filter(self, low, high):
