@@ -17,9 +17,9 @@ Open a terminal and change into the folder where you would like your MNELAB proj
 ### Installing required Python packages
 In a terminal, change to the `mnelab` folder containing your MNELAB fork. Now you are ready to install all MNELAB dependencies.
 
-If you use Anaconda, you should run `conda install numpy scipy matplotlib pyqt scikit-learn` followed by `python3 -m pip install mne python-picard pyEDFlib pyxdf pybv` and `python3 -m pip install pyobjc-framework-Cocoa` if you are on macOS. You might want to [create a new environment](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-with-commands) instead of installing everything into your base environment.
+If you use Anaconda, you should first install PyQt5 with `conda install pyqt` (PySide2 is not available in standard Anaconda). Then run `conda install numpy scipy matplotlib qtpy scikit-learn` followed by `python3 -m pip install mne python-picard pyEDFlib pyxdf pybv` and `python3 -m pip install pyobjc-framework-Cocoa` if you are on macOS. You might want to [create a new environment](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#creating-an-environment-with-commands) instead of installing everything into your base environment.
 
-If you do not use Anaconda, run `python3 -m pip install -r requirements.txt` followed by `python3 -m pip install -r requirements-optional.txt`. You might want to [create a virtual environment](https://docs.python.org/3/library/venv.html#creating-virtual-environments) instead of installing everything into your main environment.
+If you do not use Anaconda, first install either PyQt5 or PySide2 with `python3 -m pip install PyQt5` or `python3 -m pip install PySide2`. Then run `python3 -m pip install -r requirements.txt` followed by `python3 -m pip install -r requirements-optional.txt`. You might want to [create a virtual environment](https://docs.python.org/3/library/venv.html#creating-virtual-environments) instead of installing everything into your main environment.
 
 ### Creating a new branch
 Before you start working with the MNELAB codebase you need to create a new branch. In a terminal, type `git checkout -b <BRANCH_NAME>` (replacing `<BRANCH_NAME>` with a suitable name for your branch). Now you are ready to work on your contribution.
