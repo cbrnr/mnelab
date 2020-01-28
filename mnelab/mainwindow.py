@@ -12,7 +12,7 @@ import numpy as np
 import mne
 from qtpy.QtCore import (Qt, Slot, QStringListModel, QModelIndex, QSettings,
                          QEvent, QObject)
-from qtpy.QtGui import QKeySequence, QDropEvent, QIcon
+from qtpy.QtGui import QKeySequence, QDropEvent, QIcon, QScreen
 from qtpy.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                             QMessageBox, QListView, QAction, QLabel, QFrame,
                             QStatusBar, QToolBar)
@@ -98,8 +98,7 @@ class MainWindow(QMainWindow):
             self.restoreGeometry(settings["geometry"])
         else:
             self.setGeometry(300, 300, 1000, 750)  # default window size
-            self.move(QApplication.desktop().screen().rect().center() -
-                      self.rect().center())  # center window
+            self.move(QScreen.geometry().center() - self.rect().center())
         if settings["state"]:
             self.restoreState(settings["state"])
 
