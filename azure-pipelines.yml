@@ -13,6 +13,7 @@ jobs:
     displayName: 'Use Python 3.7'
   - script: |
       python -m pip install --upgrade pip setuptools wheel
+      pip install PyQt5
       pip install -r requirements.txt
       pip install pytest pytest-azurepipelines pytest-faulthandler pytest-qt pytest-xvfb
     displayName: 'Install dependencies'
@@ -31,6 +32,7 @@ jobs:
     displayName: 'Use Python 3.7'
   - script: |
       python -m pip install --upgrade pip setuptools wheel
+      pip install PyQt5
       pip install -r requirements.txt
       pip install pytest pytest-azurepipelines pytest-faulthandler pytest-qt
     displayName: 'Install dependencies'
@@ -49,6 +51,7 @@ jobs:
     displayName: 'Use Python 3.7'
   - script: |
       python -m pip install --upgrade pip setuptools wheel
+      pip install PyQt5
       pip install -r requirements.txt
       pip install pytest pytest-azurepipelines pytest-faulthandler pytest-qt
     displayName: 'Install dependencies'
@@ -69,6 +72,7 @@ jobs:
     displayName: 'Use Python 3.6'
   - script: |
       python -m pip install --upgrade pip setuptools wheel
+      pip install PySide2
       pip install -r requirements-oldest.txt
       pip install pytest pytest-azurepipelines pytest-faulthandler pytest-qt pytest-xvfb
     displayName: 'Install dependencies'
@@ -89,6 +93,7 @@ jobs:
     displayName: 'Use Python 3.7'
   - script: |
       python -m pip install --upgrade pip setuptools wheel
+      pip install PySide2
       pip install -r requirements.txt
       pip install -r requirements-optional.txt
       pip install pytest pytest-azurepipelines pytest-faulthandler pytest-qt pytest-xvfb

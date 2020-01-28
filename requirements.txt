@@ -1,4 +1,4 @@
-PyQt5
+QtPy
 numpy
 scipy
 pebble

@@ -1,4 +1,4 @@
-PyQt5==5.10.0
+QtPy==1.9.0
 numpy==1.14.0
 scipy==1.0.0
 pebble==4.5.0
