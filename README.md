@@ -16,7 +16,8 @@ Check out the [changelog](https://github.com/cbrnr/mnelab/blob/master/CHANGELOG.
 
 ### Dependencies
 MNELAB requires Python >= 3.6. In addition, the following Python packages are required:
-- [PyQt5](https://www.riverbankcomputing.com/software/pyqt/download5) >= 5.10.0
+- [QtPy](https://github.com/spyder-ide/qtpy) >= 1.9.0
+- [PyQt5](https://www.riverbankcomputing.com/software/pyqt/download5) >= 5.10.0 or [PySide2](https://www.qt.io/qt-for-python) >= 5.10.0
 - [numpy](http://www.numpy.org/) >= 1.14.0
 - [scipy](https://www.scipy.org/scipylib/index.html) >= 1.0.0
 - [Pebble](https://pebble.readthedocs.io/) >= 4.5.0
@@ -26,13 +27,11 @@ MNELAB requires Python >= 3.6. In addition, the following Python packages are re
 - python.app (only when using Anaconda or Miniconda Python on macOS)
 
 Optional dependencies provide additional features if installed:
-- [scikit-learn]() (ICA computation via FastICA)
-- [python-picard](https://pierreablin.github.io/picard/) (ICA computation via PICARD)
-- [pyEDFlib](https://github.com/holgern/pyedflib) (export to EDF/BDF)
+- [scikit-learn]() (ICA computation with FastICA)
+- [python-picard](https://pierreablin.github.io/picard/) (ICA computation with PICARD)
 - [pyxdf](https://github.com/xdf-modules/xdf-Python) (import XDF)
+- [pyEDFlib](https://github.com/holgern/pyedflib) (export to EDF/BDF)
 - [pybv](https://github.com/bids-standard/pybv) (export to BrainVision VHDR/VMRK/EEG)
-
-In general, it is recommended to always use the latest package versions.
 
 ### Additional features
 MNELAB comes with the following features that are not (yet) available in MNE:
@@ -42,36 +41,21 @@ MNELAB comes with the following features that are not (yet) available in MNE:
 - Import [XDF](https://github.com/sccn/xdf/wiki/Specifications) files (requires [pyxdf](https://github.com/xdf-modules/xdf-Python))
 
 ### Installation
-#### Via pip
-The latest release is available on [PyPI](https://pypi.python.org/pypi) and can be installed with:
-```
-pip install mnelab
-mnelab
-```
-The `mnelab` command in the last line starts the application.
+#### pip
+1. Install either PyQt5 (`python3 -m pip install PyQt5`) or PySide2 (`python3 -m pip install PySide2`). 
+2. Install MNELAB (`python3 -m pip install mnelab`).
 
-#### Via conda
+You can start MNELAB in a terminal with `mnelab` or `python3 -m mnelab`.
+
+#### conda
 An (unofficial, but regularly updated) conda package can be installed from [conda-forge](https://conda-forge.org/).
 We strongly suggest to install MNELAB into its own dedicated environment to ensure smooth installation and operation:
-```
-conda create -y --name mnelab -c conda-forge mnelab
-conda activate mnelab
-mnelab
-```
-The `mnelab` command in the last line starts the application. Any issues with this conda package should be reported to the respective [issue tracker](https://github.com/conda-forge/mnelab-feedstock/issues).
 
-Alternatively, if for some reason you do not want to use conda-forge, you can first install all dependencies that are present in the default conda channel:
 ```
-conda install pyqt numpy scipy matplotlib
+conda create -y -n mnelab -c conda-forge mnelab
 ```
-Next, install the dependencies that are not in the default conda channel via pip:
-```
-pip install mne
-```
-Finally, install MNELAB as follows:
-```
-pip install --no-deps mnelab
-```
+
+You can start MNELAB in a terminal with `conda activate mnelab` followed by `mnelab` or `python -m mnelab`. Any issues with this conda package should be reported to the respective [issue tracker](https://github.com/conda-forge/mnelab-feedstock/issues).
 
 #### Arch Linux
 If you use [Arch Linux](https://www.archlinux.org/), you can install the [python-mnelab](https://aur.archlinux.org/packages/python-mnelab/) AUR package (note that this requires the [python-mne](https://aur.archlinux.org/packages/python-mne/) AUR package).
@@ -83,10 +67,8 @@ A stand-alone installer will be available soon.
 Follow these steps to use the latest development version of MNELAB:
 
 1. [Download the source code](https://github.com/cbrnr/mnelab/archive/master.zip) and unpack it into a folder of your choice.
-2. Open a terminal and change to the MNELAB source folder.
-    - If you use [Anaconda](https://www.anaconda.com/distribution/) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html), install all dependencies with `conda install numpy scipy matplotlib pyqt` followed by `pip install mne`.
-    - Otherwise, install all dependencies with `pip install -r requirements.txt` (and optionally `pip install -r requirements-optional.txt`).
-3. Finally, run `python3 -m mnelab` to start MNELAB (if this does not work try `python -m mnelab`, just make sure to use Python 3 because Python 2 is not supported).
+2. Install all dependencies listed above.
+3. Run `python3 -m mnelab` to start MNELAB (if this does not work try `python -m mnelab`, just make sure to use Python 3 because Python 2 is not supported).
 
 ### Contributing
-The [contributing guide](https://github.com/cbrnr/mnelab/blob/master/CONTRIBUTING.md) contains details on how to contribute to MNELAB.
+The [contributing guide](https://github.com/cbrnr/mnelab/blob/master/CONTRIBUTING.md) contains detailed instructions on how to contribute to MNELAB.
