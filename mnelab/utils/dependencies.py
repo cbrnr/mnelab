@@ -8,7 +8,8 @@ from qtpy import API_NAME
 
 # required packages
 required = {API_NAME: "5.10.0"}
-required.update(pebble="4.5.0",
+required.update(qtpy="1.9.0",
+                pebble="4.5.0",
                 numpy="1.14.0",
                 scipy="1.0.0",
                 matplotlib="2.0.0",
