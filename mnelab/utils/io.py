@@ -229,7 +229,7 @@ def parse_chunks(chunks):
                                 hostname=chunk.get("hostname"),  # optional
                                 channel_count=int(chunk["channel_count"]),
                                 channel_format=chunk["channel_format"],
-                                nominal_srate=int(chunk["nominal_srate"])))
+                                nominal_srate=int(float(chunk["nominal_srate"]))))
     return streams
 
 
