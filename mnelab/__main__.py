@@ -3,6 +3,7 @@
 # License: BSD (3-clause)
 
 import sys
+import os
 import matplotlib
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import Qt
@@ -10,7 +11,7 @@ from PyQt5.QtCore import Qt
 from mnelab import MainWindow, Model
 
 
-def main():
+def _run():
     app_name = "MNELAB"
     if sys.platform.startswith("darwin"):
         try:  # set bundle name on macOS (app name shown in the menu bar)
@@ -37,6 +38,36 @@ def main():
             model.load(f)
     model.view.show()
     sys.exit(app.exec_())
+
+
+def _run_pythonw():
+    """Execute this script again through pythonw.
+
+    This ensures we're using a framework build of Python on macOS.
+    """
+    cmd = [sys.executable + "w", __file__]  # pythonw executable
+
+    # Append command line arguments.
+    if len(sys.argv) > 1:
+        cmd.append(*sys.argv[1:])
+
+    env = os.environ.copy()
+    env["MNELAB_RUNNING_PYTHONW"] = "True"
+
+    import subprocess
+    subprocess.run(cmd, env=env)
+    sys.exit()
+
+
+def main():
+    # Ensure we're always using a "framework build" on macOS.
+    _MACOS_CONDA = sys.platform == "darwin" and "CONDA_PREFIX" in os.environ
+    _RUNNING_PYTHONW = "MNELAB_RUNNING_PYTHONW" in os.environ
+
+    if _MACOS_CONDA and not _RUNNING_PYTHONW:
+        _run_pythonw()
+    else:
+        _run()
 
 
 if __name__ == "__main__":
