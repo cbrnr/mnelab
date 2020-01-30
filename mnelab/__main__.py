@@ -45,7 +45,18 @@ def _run_pythonw():
 
     This ensures we're using a framework build of Python on macOS.
     """
-    cmd = [sys.executable + "w", __file__]  # pythonw executable
+    import pathlib
+    import subprocess
+
+    cwd = pathlib.Path.cwd()
+    python_path = pathlib.Path(sys.executable).parent / 'pythonw'
+
+    if not python_path.exists():
+        msg = ('pythonw executable not found. '
+               'Please install python.app via conda.')
+        raise RuntimeError(msg)
+
+    cmd = [python_path, '-m', 'mnelab']
 
     # Append command line arguments.
     if len(sys.argv) > 1:
@@ -54,8 +65,7 @@ def _run_pythonw():
     env = os.environ.copy()
     env["MNELAB_RUNNING_PYTHONW"] = "True"
 
-    import subprocess
-    subprocess.run(cmd, env=env)
+    subprocess.run(cmd, env=env, cwd=cwd)
     sys.exit()
 
 
