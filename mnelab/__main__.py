@@ -49,7 +49,7 @@ def _run_pythonw():
 
     # Append command line arguments.
     if len(sys.argv) > 1:
-        cmd.append(*sys.argv[1:])
+        cmd.extend(sys.argv[1:])
 
     env = os.environ.copy()
     env["MNELAB_RUNNING_PYTHONW"] = "True"
