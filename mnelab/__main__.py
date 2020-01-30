@@ -6,7 +6,7 @@ import sys
 import os
 import matplotlib
 from PyQt5.QtWidgets import QApplication
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QProcess, QProcessEnvironment
 
 from mnelab import MainWindow, Model
 
@@ -56,7 +56,7 @@ def _run_pythonw():
                'Please install python.app via conda.')
         raise RuntimeError(msg)
 
-    cmd = [python_path, '-m', 'mnelab']
+    cmd = [str(python_path), '-m', 'mnelab']
 
     # Append command line arguments.
     if len(sys.argv) > 1:
@@ -65,8 +65,19 @@ def _run_pythonw():
     env = os.environ.copy()
     env["MNELAB_RUNNING_PYTHONW"] = "True"
 
-    subprocess.run(cmd, env=env, cwd=cwd)
-    sys.exit()
+    # subprocess.run(cmd, env=env, cwd=cwd)
+    proc = subprocess.Popen(cmd, env=env, cwd=cwd, start_new_session=True)
+    # proc.communicate()
+
+    # env = QProcessEnvironment.systemEnvironment()
+    # env.insert("MNELAB_RUNNING_PYTHONW", "True")
+    # p = QProcess()
+    # p.setProcessEnvironment(env)
+    # p.setWorkingDirectory(str(cwd))
+    # p.start(' '.join(cmd))
+    # p.waitForFinished()
+    # sys.exit()
+    print('foo!')
 
 
 def main():
