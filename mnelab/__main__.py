@@ -49,7 +49,7 @@ def _run_pythonw():
     import subprocess
 
     cwd = pathlib.Path.cwd()
-    python_path = pathlib.Path(sys.exec_prefix) / 'pythonw'
+    python_path = pathlib.Path(sys.exec_prefix) / 'bin' / 'pythonw'
 
     if not python_path.exists():
         msg = ('pythonw executable not found. '
