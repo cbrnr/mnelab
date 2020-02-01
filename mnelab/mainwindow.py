@@ -636,7 +636,6 @@ class MainWindow(QMainWindow):
                                       f"fit_params={fit_params})")
 
             kwds = {"reject_by_annotation": exclude_bad_segments}
-            print(mp.get_start_method)
             pool = pebble.ProcessPool(max_workers=1)
             process = pool.schedule(function=ica.fit,
                                     args=(self.model.current["data"],),
