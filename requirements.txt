@@ -1,6 +1,7 @@
 PyQt5
 numpy
 scipy
+pebble
 matplotlib
 mne
 pyobjc-framework-Cocoa; sys_platform == "darwin"

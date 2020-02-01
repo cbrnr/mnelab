@@ -1,6 +1,7 @@
 PyQt5==5.10.0
 numpy==1.14.0
 scipy==1.0.0
+pebble
 matplotlib==2.0.0
 mne==0.19.0
 pyobjc-framework-Cocoa==5.2.0; sys_platform == "darwin"

@@ -44,6 +44,7 @@ setup(
     install_requires=['mne>=0.19',
                       'numpy>=1.14',
                       'scipy>=1.0',
+                      'pebble',
                       'matplotlib>=2.0',
                       'PyQt5>=5.10',
                       'pyobjc-framework-Cocoa>=5.2;platform_system=="Darwin"'],
