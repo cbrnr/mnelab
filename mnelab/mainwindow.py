@@ -2,7 +2,6 @@
 #
 # License: BSD (3-clause)
 
-import multiprocessing as mp
 import pebble
 from sys import version_info
 import traceback
@@ -38,7 +37,6 @@ import mnelab.resources  # noqa
 __version__ = "0.6.0.dev0"
 
 MAX_RECENT = 6  # maximum number of recent files
-mp.set_start_method("spawn", force=True)  # required for Linux/macOS
 
 
 def read_settings():

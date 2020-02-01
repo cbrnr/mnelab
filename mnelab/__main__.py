@@ -4,6 +4,7 @@
 
 import sys
 import os
+import multiprocessing as mp
 import matplotlib
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import Qt
@@ -81,4 +82,5 @@ def main():
 
 
 if __name__ == "__main__":
+    mp.set_start_method("spawn", force=True)  # required for Linux/macOS
     main()
