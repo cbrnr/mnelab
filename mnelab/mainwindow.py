@@ -2,7 +2,7 @@
 #
 # License: BSD (3-clause)
 
-import multiprocessing as mp
+import pebble
 from sys import version_info
 import traceback
 from os.path import isfile, isdir
@@ -88,9 +88,6 @@ class MainWindow(QMainWindow):
             sets. This decouples the GUI from the data (model/view).
         """
         super().__init__()
-
-        mp.set_start_method("spawn", force=True)  # required for Linux/macOS
-
         self.model = model  # data model
         self.setWindowTitle("MNELAB")
 
@@ -635,19 +632,25 @@ class MainWindow(QMainWindow):
             self.model.history.append(f"ica = mne.preprocessing.ICA("
                                       f"method={dialog.methods[method]}, "
                                       f"fit_params={fit_params})")
-            pool = mp.Pool(1)
+
             kwds = {"reject_by_annotation": exclude_bad_segments}
-            res = pool.apply_async(func=ica.fit,
-                                   args=(self.model.current["data"],),
-                                   kwds=kwds, callback=lambda x: calc.accept())
+            pool = pebble.ProcessPool(max_workers=1)
+            process = pool.schedule(function=ica.fit,
+                                    args=(self.model.current["data"],),
+                                    kwargs=kwds)
+            process.add_done_callback(lambda x: calc.accept())
+            pool.close()
+
             if not calc.exec_():
-                pool.terminate()
+                pool.stop()
+                pool.join()
             else:
-                self.model.current["ica"] = res.get(timeout=1)
+                self.model.current["ica"] = process.result()
                 self.model.history.append(f"ica.fit(inst=raw, "
                                           f"reject_by_annotation="
                                           f"{exclude_bad_segments})")
                 self.data_changed()
+                pool.join()
 
     def apply_ica(self):
         """Apply current fitted ICA."""
