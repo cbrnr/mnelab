@@ -7,6 +7,7 @@ from importlib import import_module
 
 # required packages
 required = dict(PyQt5="5.10.0",
+                pebble="4.5.0",
                 numpy="1.14.0",
                 scipy="1.0.0",
                 matplotlib="2.0.0",
