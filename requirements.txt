@@ -1,7 +1,7 @@
 QtPy
 numpy
 scipy
-pebble
+Pebble
 matplotlib
 mne
 pyobjc-framework-Cocoa; sys_platform == "darwin"
