@@ -1,3 +1,5 @@
+## [Unreleased] - XXXX-XX-XX
+
 ## [0.5.3] - 2020-02-03
 ### Added
 - Add history for setting reference ([#100](https://github.com/cbrnr/mnelab/pull/100) by [Clemens Brunner](https://github.com/cbrnr))
