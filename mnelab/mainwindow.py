@@ -31,6 +31,8 @@ from .utils import (IMPORT_FORMATS, EXPORT_FORMATS, have, split_fname,
                     parse_xdf, parse_chunks, get_xml)
 # all icons are stored in mnelab/resources.py, which must be automatically
 # generated with "pyrcc5 -o mnelab/resources.py mnelab.qrc"
+# or "pyside2-rcc -o mnelab/resources.py mnelab.qrc"
+# note that the import in resources.py needs to be manually changed to qtpy!
 import mnelab.resources  # noqa
 
 
