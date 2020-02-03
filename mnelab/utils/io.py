@@ -5,7 +5,7 @@
 from pathlib import Path
 import gzip
 import struct
-import xml.etree.ElementTree as et
+import xml.etree.ElementTree as ETree
 from collections import defaultdict
 import numpy as np
 import mne
@@ -34,8 +34,6 @@ if have["pyedflib"]:
 if have["pybv"]:
     EXPORT_FORMATS["BrainVision"] = ".eeg"
 
-
-print(__file__)
 
 def image_path(fname):
     """Return absolute path to image fname."""
@@ -265,7 +263,7 @@ def _read_chunks(f):
         if chunk["tag"] in [2, 3, 4, 6]:
             chunk["stream_id"] = struct.unpack("<I", f.read(4))[0]
             if chunk["tag"] == 2:  # parse StreamHeader chunk
-                xml = et.fromstring(f.read(chunk["nbytes"] - 6).decode())
+                xml = ETree.fromstring(f.read(chunk["nbytes"] - 6).decode())
                 chunk = {**chunk, **_parse_streamheader(xml)}
             else:  # skip remaining chunk contents
                 f.seek(chunk["nbytes"] - 6, 1)
@@ -330,7 +328,7 @@ def get_xml(fname):
                 stream_id = struct.unpack("<I", f.read(4))[0]
                 if tag in [2, 6]:  # parse StreamHeader/StreamFooter chunk
                     string = f.read(nbytes - 6).decode()
-                    xml[stream_id][tag] = et.fromstring(string)
+                    xml[stream_id][tag] = ETree.fromstring(string)
                 else:  # skip remaining chunk contents
                     f.seek(nbytes - 6, 1)
             else:
