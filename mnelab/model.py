@@ -214,7 +214,8 @@ class Model:
                             f"preload=True)")
         return data
 
-    def _load_xdf(self, fname, stream_id):
+    @staticmethod
+    def _load_xdf(fname, stream_id):
         data = read_raw_xdf(fname, stream_id=stream_id)
         return data
 
