@@ -37,7 +37,7 @@ MNELAB adheres to [PEP8](https://www.python.org/dev/peps/pep-0008/) wherever pos
 Follow these steps to make a new [PyPI](https://pypi.org/project/mnelab/) release (requires write permissions for GitHub and PyPI project sites):
 
 - Run `pip install -U setuptools wheel twine` to install/update the necessary packages
-- Remove the `.dev0` suffix from the `__version__ string in `mnelab/mainwindow.py`
+- Remove the `.dev0` suffix from the `__version__` string in `mnelab/mainwindow.py`
 - Update the section in `CHANGELOG.md` corresponding to the new release with the current date
 - Commit these changes and push
 - Create a new release on GitHub and use the version as the tag name (make sure to prepend the version with a `v`)
