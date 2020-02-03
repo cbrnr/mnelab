@@ -35,6 +35,11 @@ if have["pybv"]:
     EXPORT_FORMATS["BrainVision"] = ".eeg"
 
 
+def image_path(fname):
+    """Return absolute path to image fname."""
+    return str(("mnelab/images" / Path(fname)).resolve())
+
+
 def split_fname(fname, ffilter):
     """Split file name into name and known extension parts.
 

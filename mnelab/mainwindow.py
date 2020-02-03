@@ -28,7 +28,7 @@ from .widgets.infowidget import InfoWidget
 from .model import (LabelsNotFoundError, InvalidAnnotationsError,
                     UnknownFileTypeError)
 from .utils import (IMPORT_FORMATS, EXPORT_FORMATS, have, split_fname,
-                    parse_xdf, parse_chunks, get_xml)
+                    parse_xdf, parse_chunks, get_xml, image_path)
 
 
 __version__ = "0.6.0.dev0"
@@ -104,7 +104,7 @@ class MainWindow(QMainWindow):
 
         # initialize menus
         file_menu = self.menuBar().addMenu("&File")
-        icon = QIcon("images/open_file.svg")
+        icon = QIcon(image_path("open_file.svg"))
         self.actions["open_file"] = file_menu.addAction(
             icon, "&Open...", self.open_data, QKeySequence.Open)
         self.recent_menu = file_menu.addMenu("Open recent")
@@ -120,7 +120,7 @@ class MainWindow(QMainWindow):
             "Close all",
             self.close_all)
         file_menu.addSeparator()
-        icon = QIcon("images/meta_info.svg")
+        icon = QIcon(image_path("meta_info.svg"))
         self.actions["meta_info"] = file_menu.addAction(icon,
                                                         "Show information...",
                                                         self.meta_info)
@@ -172,7 +172,7 @@ class MainWindow(QMainWindow):
         self.actions["pick_chans"] = edit_menu.addAction(
             "Pick &channels...",
             self.pick_channels)
-        icon = QIcon("images/chan_props.svg")
+        icon = QIcon(image_path("chan_props.svg"))
         self.actions["chan_props"] = edit_menu.addAction(
             icon, "Channel &properties...", self.channel_properties)
         self.actions["set_montage"] = edit_menu.addAction("Set &montage...",
@@ -191,13 +191,13 @@ class MainWindow(QMainWindow):
         self.actions["crop"] = edit_menu.addAction("&Crop data...", self.crop)
 
         plot_menu = self.menuBar().addMenu("&Plot")
-        icon = QIcon("images/plot_data.svg")
+        icon = QIcon(image_path("plot_data.svg"))
         self.actions["plot_data"] = plot_menu.addAction(icon, "&Data...",
                                                         self.plot_data)
-        icon = QIcon("images/plot_psd.svg")
+        icon = QIcon(image_path("plot_psd.svg"))
         self.actions["plot_psd"] = plot_menu.addAction(
             icon, "&Power spectral density...", self.plot_psd)
-        icon = QIcon("images/plot_montage.svg")
+        icon = QIcon(image_path("plot_montage.svg"))
         self.actions["plot_montage"] = plot_menu.addAction(icon, "&Montage...",
                                                            self.plot_montage)
         plot_menu.addSeparator()
@@ -207,10 +207,10 @@ class MainWindow(QMainWindow):
             "ICA &sources...", self.plot_ica_sources)
 
         tools_menu = self.menuBar().addMenu("&Tools")
-        icon = QIcon("images/filter.svg")
+        icon = QIcon(image_path("filter.svg"))
         self.actions["filter"] = tools_menu.addAction(icon, "&Filter data...",
                                                       self.filter_data)
-        icon = QIcon("images/find_events.svg")
+        icon = QIcon(image_path("find_events.svg"))
         self.actions["find_events"] = tools_menu.addAction(icon,
                                                            "Find &events...",
                                                            self.find_events)
@@ -218,7 +218,7 @@ class MainWindow(QMainWindow):
             "Create events from annotations", self.events_from_annotations
         )
         tools_menu.addSeparator()
-        icon = QIcon("images/run_ica.svg")
+        icon = QIcon(image_path("run_ica.svg"))
         self.actions["run_ica"] = tools_menu.addAction(icon, "Run &ICA...",
                                                        self.run_ica)
         self.actions["apply_ica"] = tools_menu.addAction("Apply &ICA",
@@ -228,7 +228,7 @@ class MainWindow(QMainWindow):
                                                 "Interpolate bad channels...",
                                                 self.interpolate_bads)
         tools_menu.addSeparator()
-        icon = QIcon("images/epoch_data.svg")
+        icon = QIcon(image_path("epoch_data.svg"))
         self.actions["epoch_data"] = tools_menu.addAction(
             icon, "Create Epochs...", self.epoch_data)
 
@@ -749,7 +749,7 @@ class MainWindow(QMainWindow):
     def show_about(self):
         """Show About dialog."""
         msg_box = QMessageBox(self)
-        text = (f"<img src='images/mnelab_logo.png'>"
+        text = (f"<img src='{image_path('mnelab_logo.png')}'>"
                 f"<p>MNELAB {__version__}</p>")
         msg_box.setText(text)
 
