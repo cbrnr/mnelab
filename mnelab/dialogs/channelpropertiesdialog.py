@@ -2,11 +2,10 @@
 #
 # License: BSD (3-clause)
 
-from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QDialogButtonBox,
-                             QAbstractItemView, QTableView, QComboBox,
-                             QStyledItemDelegate)
-from PyQt5.QtGui import QStandardItemModel, QStandardItem
-from PyQt5.QtCore import Qt, QSortFilterProxyModel, pyqtSlot
+from qtpy.QtWidgets import (QDialog, QVBoxLayout, QDialogButtonBox, QComboBox,
+                            QAbstractItemView, QTableView, QStyledItemDelegate)
+from qtpy.QtGui import QStandardItemModel, QStandardItem
+from qtpy.QtCore import Qt, QSortFilterProxyModel, Slot
 
 from mne.io.pick import channel_type, get_channel_types
 
@@ -85,7 +84,7 @@ class MySortFilterProxyModel(QSortFilterProxyModel):
 
 
 class ComboBoxDelegate(QStyledItemDelegate):
-    @pyqtSlot()
+    @Slot()
     def commit_data(self):
         self.commitData.emit(self.sender())
         self.closeEditor.emit(self.sender())
@@ -109,7 +108,7 @@ class ComboBoxDelegate(QStyledItemDelegate):
         editor.setGeometry(option.rect)
 
 
-@pyqtSlot()
+@Slot()
 def bad_changed(item):
     if item.checkState() == Qt.Checked:
         item.setData(True, Qt.UserRole)

@@ -2,7 +2,7 @@
 #
 # License: BSD (3-clause)
 
-from PyQt5.QtWidgets import QMessageBox
+from qtpy.QtWidgets import QMessageBox
 
 
 class ErrorMessageBox(QMessageBox):

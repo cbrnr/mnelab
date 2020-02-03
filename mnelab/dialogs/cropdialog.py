@@ -2,9 +2,9 @@
 #
 # License: BSD (3-clause)
 
-from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
-                             QDoubleSpinBox, QDialogButtonBox, QCheckBox)
-from PyQt5.QtCore import pyqtSlot
+from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QDoubleSpinBox,
+                            QDialogButtonBox, QCheckBox)
+from qtpy.QtCore import Slot
 
 
 class CropDialog(QDialog):
@@ -56,14 +56,14 @@ class CropDialog(QDialog):
         else:
             return None
 
-    @pyqtSlot()
+    @Slot()
     def toggle_start(self):
         if self.start_checkbox.isChecked():
             self._start.setEnabled(True)
         else:
             self._start.setEnabled(False)
 
-    @pyqtSlot()
+    @Slot()
     def toggle_stop(self):
         if self.stop_checkbox.isChecked():
             self._stop.setEnabled(True)

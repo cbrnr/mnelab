@@ -2,10 +2,10 @@
 #
 # License: BSD (3-clause)
 
-from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QDialogButtonBox,
-                             QAbstractItemView, QTableView)
-from PyQt5.QtGui import QStandardItemModel, QStandardItem
-from PyQt5.QtCore import Qt
+from qtpy.QtWidgets import (QDialog, QVBoxLayout, QDialogButtonBox,
+                            QAbstractItemView, QTableView)
+from qtpy.QtGui import QStandardItemModel, QStandardItem
+from qtpy.QtCore import Qt
 
 
 class XDFStreamsDialog(QDialog):

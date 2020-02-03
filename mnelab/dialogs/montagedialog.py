@@ -2,10 +2,10 @@
 #
 # License: BSD (3-clause)
 
-from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QListWidget,
-                             QDialogButtonBox, QPushButton, QStatusBar,
-                             QToolBar)
-from PyQt5.QtCore import pyqtSlot, Qt
+from qtpy.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QListWidget,
+                            QDialogButtonBox, QPushButton, QStatusBar,
+                            QToolBar)
+from qtpy.QtCore import Slot, Qt
 
 from mne.channels import make_standard_montage
 
@@ -37,7 +37,7 @@ class MontageDialog(QDialog):
         self.montages.itemSelectionChanged.connect(self.toggle_buttons)
         self.toggle_buttons()  # initialize OK and View buttons state
 
-    @pyqtSlot()
+    @Slot()
     def toggle_buttons(self):
         """Toggle OK and View buttons.
         """

@@ -2,8 +2,8 @@
 #
 # License: BSD (3-clause)
 
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QListWidget, QDialogButtonBox
-from PyQt5.QtCore import pyqtSlot
+from qtpy.QtWidgets import QDialog, QVBoxLayout, QListWidget, QDialogButtonBox
+from qtpy.QtCore import Slot
 
 
 class PickChannelsDialog(QDialog):
@@ -29,7 +29,7 @@ class PickChannelsDialog(QDialog):
         self.channels.itemSelectionChanged.connect(self.toggle_buttons)
         self.toggle_buttons()  # initialize OK button state
 
-    @pyqtSlot()
+    @Slot()
     def toggle_buttons(self):
         """Toggle OK button.
         """

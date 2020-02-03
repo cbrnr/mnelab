@@ -2,10 +2,10 @@
 #
 # License: BSD (3-clause)
 
-from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout,
-                             QDialogButtonBox, QTableWidget, QTableWidgetItem,
-                             QAbstractItemView, QPushButton)
-from PyQt5.QtCore import Qt, pyqtSlot
+from qtpy.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QPushButton,
+                            QDialogButtonBox, QTableWidget, QTableWidgetItem,
+                            QAbstractItemView)
+from qtpy.QtCore import Qt, Slot
 
 
 class IntTableWidgetItem(QTableWidgetItem):
@@ -65,7 +65,7 @@ class AnnotationsDialog(QDialog):
         self.toggle_buttons()
         self.resize(500, 500)
 
-    @pyqtSlot()
+    @Slot()
     def toggle_buttons(self):
         """Toggle + and - buttons."""
         if len(self.table.selectedItems()) == 3:  # one row (3 items) selected
