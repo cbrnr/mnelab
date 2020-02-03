@@ -6,23 +6,7 @@ from qtpy.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QPushButton,
                             QDialogButtonBox, QTableWidget, QTableWidgetItem,
                             QAbstractItemView)
 from qtpy.QtCore import Qt, Slot
-
-
-class IntTableWidgetItem(QTableWidgetItem):
-    def __init__(self, value):
-        super().__init__(str(value))
-
-    def __lt__(self, other):
-        return int(self.data(Qt.EditRole)) < int(other.data(Qt.EditRole))
-
-    def setData(self, role, value):
-        try:
-            value = int(value)
-        except ValueError:
-            return
-        else:
-            if value >= 0:  # event position and type must not be negative
-                super().setData(role, str(value))
+from .eventsdialog import IntTableWidgetItem
 
 
 class AnnotationsDialog(QDialog):
