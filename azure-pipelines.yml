@@ -3,19 +3,19 @@
 jobs:
 - job: 'Linux'
   pool:
-    vmImage: 'ubuntu-16.04'
+    vmImage: 'ubuntu-latest'
   steps:
   - script: sudo apt install libxkbcommon-x11-0
     displayName: 'Install libxkbcommon-x11-0'
   - task: UsePythonVersion@0
     inputs:
-      versionSpec: '3.7'
-    displayName: 'Use Python 3.7'
+      versionSpec: '3.8'
+    displayName: 'Use Python 3.8'
   - script: |
       python -m pip install --upgrade pip setuptools wheel
-      pip install PyQt5
-      pip install -r requirements.txt
-      pip install pytest pytest-azurepipelines pytest-faulthandler pytest-qt pytest-xvfb
+      python -m pip install PyQt5
+      python -m pip install -r requirements.txt
+      python -m pip install pytest pytest-azurepipelines pytest-faulthandler pytest-qt pytest-xvfb
     displayName: 'Install dependencies'
   - script: python setup.py develop
     displayName: 'Install MNELAB'
@@ -24,17 +24,17 @@ jobs:
 
 - job: 'macOS'
   pool:
-    vmImage: 'macOS-10.14'
+    vmImage: 'macOS-latest'
   steps:
   - task: UsePythonVersion@0
     inputs:
-      versionSpec: '3.7'
-    displayName: 'Use Python 3.7'
+      versionSpec: '3.8'
+    displayName: 'Use Python 3.8'
   - script: |
       python -m pip install --upgrade pip setuptools wheel
-      pip install PyQt5
-      pip install -r requirements.txt
-      pip install pytest pytest-azurepipelines pytest-faulthandler pytest-qt
+      python -m pip install PyQt5
+      python -m pip install -r requirements.txt
+      python -m pip install pytest pytest-azurepipelines pytest-faulthandler pytest-qt
     displayName: 'Install dependencies'
   - script: python setup.py develop
     displayName: 'Install MNELAB'
@@ -43,17 +43,17 @@ jobs:
 
 - job: 'Windows'
   pool:
-    vmImage: 'windows-2019'
+    vmImage: 'windows-latest'
   steps:
   - task: UsePythonVersion@0
     inputs:
-      versionSpec: '3.7'
-    displayName: 'Use Python 3.7'
+      versionSpec: '3.8'
+    displayName: 'Use Python 3.8'
   - script: |
       python -m pip install --upgrade pip setuptools wheel
-      pip install PyQt5
-      pip install -r requirements.txt
-      pip install pytest pytest-azurepipelines pytest-faulthandler pytest-qt
+      python -m pip install PyQt5
+      python -m pip install -r requirements.txt
+      python -m pip install pytest pytest-azurepipelines pytest-faulthandler pytest-qt
     displayName: 'Install dependencies'
   - script: python setup.py develop
     displayName: 'Install MNELAB'
@@ -72,9 +72,9 @@ jobs:
     displayName: 'Use Python 3.6'
   - script: |
       python -m pip install --upgrade pip setuptools wheel
-      pip install PySide2
-      pip install -r requirements-oldest.txt
-      pip install pytest pytest-azurepipelines pytest-faulthandler pytest-qt pytest-xvfb
+      python -m pip install PySide2
+      python -m pip install -r requirements-oldest.txt
+      python -m pip install pytest pytest-azurepipelines pytest-faulthandler pytest-qt pytest-xvfb
     displayName: 'Install dependencies'
   - script: python setup.py develop
     displayName: 'Install MNELAB'
@@ -83,20 +83,20 @@ jobs:
 
 - job: 'Optional'
   pool:
-    vmImage: 'ubuntu-16.04'
+    vmImage: 'ubuntu-latest'
   steps:
   - script: sudo apt install libxkbcommon-x11-0
     displayName: 'Install libxkbcommon-x11-0'
   - task: UsePythonVersion@0
     inputs:
-      versionSpec: '3.7'
-    displayName: 'Use Python 3.7'
+      versionSpec: '3.8'
+    displayName: 'Use Python 3.8'
   - script: |
       python -m pip install --upgrade pip setuptools wheel
-      pip install PySide2
-      pip install -r requirements.txt
-      pip install -r requirements-optional.txt
-      pip install pytest pytest-azurepipelines pytest-faulthandler pytest-qt pytest-xvfb
+      python -m pip install PySide2
+      python -m pip install -r requirements.txt
+      python -m pip install -r requirements-optional.txt
+      python -m pip install pytest pytest-azurepipelines pytest-faulthandler pytest-qt pytest-xvfb
     displayName: 'Install dependencies'
   - script: python setup.py develop
     displayName: 'Install MNELAB'
