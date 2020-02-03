@@ -414,21 +414,21 @@ class MainWindow(QMainWindow):
                 except UnknownFileTypeError as e:
                     QMessageBox.critical(self, "Unknown file type", str(e))
 
-    def open_file(self, f, text, ffilter):
+    def open_file(self, f, text, ffilter="*"):
         """Open file."""
-        fname = QFileDialog.getOpenFileName(self, text, filter="*")[0]
+        fname = QFileDialog.getOpenFileName(self, text, filter=ffilter)[0]
         if fname:
             f(fname)
 
-    def export_file(self, f, text, ffilter):
+    def export_file(self, f, text, ffilter="*"):
         """Export to file."""
-        fname = QFileDialog.getSaveFileName(self, text, filter="*")[0]
+        fname = QFileDialog.getSaveFileName(self, text, filter=ffilter)[0]
         if fname:
             f(fname, ffilter)
 
-    def import_file(self, f, text, ffilter):
+    def import_file(self, f, text, ffilter="*"):
         """Import file."""
-        fname = QFileDialog.getOpenFileName(self, text, filter="*")[0]
+        fname = QFileDialog.getOpenFileName(self, text, filter=ffilter)[0]
         if fname:
             try:
                 f(fname)
