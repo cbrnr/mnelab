@@ -214,7 +214,8 @@ class Model:
                             f"preload=True)")
         return data
 
-    def _load_xdf(self, fname, stream_id):
+    @staticmethod
+    def _load_xdf(fname, stream_id):
         data = read_raw_xdf(fname, stream_id=stream_id)
         return data
 
@@ -402,7 +403,7 @@ class Model:
         with open(fname) as f:
             f.readline()  # skip header
             for line in f:
-                p, d = [int(l.strip()) for l in line.split(",")]
+                p, d = [int(token.strip()) for token in line.split(",")]
                 pos.append(p)
                 desc.append(d)
         events = np.column_stack((pos, desc))

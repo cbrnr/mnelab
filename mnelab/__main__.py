@@ -17,14 +17,16 @@ def _run():
     if sys.platform.startswith("darwin"):
         try:  # set bundle name on macOS (app name shown in the menu bar)
             from Foundation import NSBundle
+        except ImportError:
+            pass
+        else:
             bundle = NSBundle.mainBundle()
             if bundle:
                 info = (bundle.localizedInfoDictionary() or
                         bundle.infoDictionary())
                 if info:
                     info["CFBundleName"] = app_name
-        except ImportError:
-            pass
+
     matplotlib.use("Qt5Agg")
     app = QApplication(sys.argv)
     app.setApplicationName(app_name)

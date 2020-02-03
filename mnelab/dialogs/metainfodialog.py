@@ -2,7 +2,7 @@
 #
 # License: BSD (3-clause)
 
-import xml.etree.ElementTree as et
+import xml.etree.ElementTree as ETree
 from qtpy.QtWidgets import (QDialog, QVBoxLayout, QDialogButtonBox,
                             QTreeWidget, QTreeWidgetItem)
 
@@ -33,7 +33,7 @@ class MetaInfoDialog(QDialog):
             footer = xml[stream][6]
             footer.tag = "Footer"
 
-            root = et.Element(f"Stream {stream}")
+            root = ETree.Element(f"Stream {stream}")
             root.extend([header, footer])
             populate_tree(tree, root)
 
