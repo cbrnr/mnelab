@@ -4,3 +4,6 @@
 
 from .mainwindow import MainWindow
 from .model import Model
+
+
+__all__ = [MainWindow, Model]
