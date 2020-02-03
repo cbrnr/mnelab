@@ -542,9 +542,7 @@ class MainWindow(QMainWindow):
         dialog = CropDialog(self, 0, length)
         if dialog.exec_():
             self.auto_duplicate()
-            if dialog.start is None:
-                dialog.start = 0
-            self.model.crop(dialog.start, dialog.stop)
+            self.model.crop(dialog.start or 0, dialog.stop)
 
     def plot_data(self):
         """Plot data."""
