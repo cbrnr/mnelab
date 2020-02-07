@@ -2,7 +2,7 @@
 #
 # License: BSD (3-clause)
 
-from .mainwindow import MainWindow
+from .mainwindow import MainWindow, __version__
 from .model import Model
 
 
