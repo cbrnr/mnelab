@@ -468,14 +468,18 @@ class MainWindow(QMainWindow):
     def concatenate_data(self):
         """Concatenate several raw data objects"""
 
-        info = self.model.current["data"].info
+        current = self.model.current["data"]
 
         ds_names = []
         for d in filter(lambda x:
-                        (x["data"].info["nchan"] == info["nchan"]) and
-                        (np.isclose(x["data"].info["sfreq"], info["sfreq"])) and
-                        (np.isclose(x["data"].info["highpass"], info["highpass"])) and
-                        (np.isclose(x["data"].info["lowpass"], info["lowpass"])),
+                        (isinstance(x["data"], type(current))) and
+                        (x["data"].info["nchan"] == current.info["nchan"]) and
+                        (set(x["data"].info["ch_names"]) == set(current.info["ch_names"])) and
+                        (x["data"].info["bads"] == current.info["bads"]) and
+                        (all(x["data"]._cals == current._cals)) and
+                        (np.isclose(x["data"].info["sfreq"], current.info["sfreq"])) and
+                        (np.isclose(x["data"].info["highpass"], current.info["highpass"])) and
+                        (np.isclose(x["data"].info["lowpass"], current.info["lowpass"])),
                         self.model.data):
             if d["name"] != self.model.current["name"]:
                 ds_names.append(d["name"])
@@ -483,7 +487,7 @@ class MainWindow(QMainWindow):
         dialog = ConcatenateDataDialog(self, self.model.current["name"], ds_names)
         if dialog.exec_():
             self.auto_duplicate()
-            self.model.concatenate_data(dialog.raw_names, dialog.name)
+            self.model.concatenate_data(dialog.raw_names, dialog.data_name)
 
     def channel_properties(self):
         """Show channel properties dialog."""

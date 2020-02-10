@@ -2,8 +2,22 @@
 #
 # License: BSD clause(3-)
 
-from PyQt5.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
-                             QLineEdit, QDialogButtonBox, QListWidget)
+from qtpy.QtCore import Qt
+from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
+                            QLineEdit, QDialogButtonBox, QListWidget)
+
+
+class listWidg(QListWidget):
+    def __init__(self, parent):
+        super(listWidg, self).__init__(parent)
+        self.setAcceptDrops(True)
+        self.setDragEnabled(True)
+        self.setDefaultDropAction(Qt.DropAction.MoveAction)
+        self.setMinimumSize(60, 30)
+
+    def setSize(self, height, width):
+        self.setMaximumWidth(width)
+        self.setMaximumHeight(height)
 
 
 class ConcatenateDataDialog(QDialog):
@@ -11,34 +25,52 @@ class ConcatenateDataDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle(title)
         vbox = QVBoxLayout(self)
+
         grid = QGridLayout()
-        grid.addWidget(QLabel("Concatenate data to '{}'".format(current_name)), 0, 0, 1, 2)
-        grid.addWidget(QLabel("Name:"), 1, 0)
-        self.nameedit = QLineEdit()
-        grid.addWidget(self.nameedit, 1, 1)
+        grid.addWidget(QLabel("Name: "), 0, 0, 1, 2, Qt.AlignHCenter)
+        self.nameEdit = QLineEdit("{}_concat".format(current_name))
+        grid.addWidget(self.nameEdit, 0, 2, 1, 3)
 
-        grid.addWidget(QLabel("Concatenate data:"), 2, 0)
-        self.mylist = QListWidget()
-        self.mylist.insertItems(0, ds_names)
-        self.mylist.setSelectionMode(QListWidget.ExtendedSelection)
+        grid.addWidget(QLabel(""), 1, 0)
 
-        grid.addWidget(self.mylist, 2, 1)
+        grid.addWidget(QLabel("Compatible data"), 2, 0, Qt.AlignCenter)
+        grid.addWidget(QLabel("Append order"), 2, 4, Qt.AlignCenter)
 
-        vbox.addLayout(grid)
+        self.listAvailable = listWidg(self)
+        self.listAvailable.list = ds_names
+        self.listAvailable.insertItems(0, ds_names)
+        list_height = (2 + len(ds_names)) * self.listAvailable.sizeHintForRow(0)
+        list_width = 2. * self.listAvailable.sizeHintForColumn(0)
+
+        self.listAvailable.setSize(list_height, list_width)
+        grid.addWidget(self.listAvailable, 3, 0)
+
+        grid.addWidget(QLabel(" --> "), 3, 2, 1, 2, Qt.AlignHCenter)
+
+        self.listOrdered = listWidg(self)
+        self.listOrdered.list = []
+        self.listOrdered.setSize(list_height, list_width)
+        grid.addWidget(self.listOrdered, 3, 4)
+
         buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
                                      QDialogButtonBox.Cancel)
-        vbox.addWidget(buttonbox)
+        grid.addWidget(buttonbox, 4, 0, 2, 6, Qt.AlignRight)
+
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)
 
+        vbox.addLayout(grid)
         vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
 
     @property
-    def name(self):
-        name = self.nameedit.text()
+    def data_name(self):
+        name = self.nameEdit.text()
         return name if name else None
 
     @property
     def raw_names(self):
-        raw_names = [item.data(0) for item in self.mylist.selectedItems()]
-        return raw_names if raw_names else None
+        raw_names = []
+        for it in range(self.listOrdered.count()):
+            raw_names.append(self.listOrdered.model().index(it).data())
+
+        return raw_names

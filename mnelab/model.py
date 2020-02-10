@@ -81,7 +81,7 @@ class Model:
             if d["name"] in sel_names and d["data"] is not None:
                 self.current["data"].append(d["data"], preload=True)
         self.current["name"] = name
-        self.history.append(f"data = mne.read_evokeds('{sel_names}')")
+        self.history.append(f"data = mne.concatenate_data('{sel_names}')")
 
     @data_changed
     def duplicate_data(self):
