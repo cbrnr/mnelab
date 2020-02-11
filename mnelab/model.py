@@ -559,6 +559,51 @@ class Model:
         self.current["name"] += " (cropped)"
         self.history.append(f"data.crop({start}, {stop})")
 
+    def get_compatibles(self):
+        """Return a list of data sets that are compatible with the current one.
+
+        This function is useful for checking which data sets can be appended to
+        the current data set.
+
+        Returns
+        -------
+        compatibles : list
+            List with compatible data sets.
+        """
+        compatibles = []
+        data = self.current["data"]
+        for idx, d in enumerate(self.data):
+            if idx == self.index:  # skip current data set
+                continue
+            if d["dtype"] != self.current["dtype"]:
+                continue
+            if d["data"].info["nchan"] != data.info["nchan"]:
+                continue
+            if set(d["data"].info["ch_names"]) != set(data.info["ch_names"]):
+                continue
+            if d["data"].info["bads"] != data.info["bads"]:
+                continue
+            if not all(d["data"]._cals == data._cals):
+                continue
+            if not np.isclose(d["data"].info["sfreq"], data.info["sfreq"]):
+                continue
+            if not np.isclose(d["data"].info["highpass"],
+                              data.info["highpass"]):
+                continue
+            if not np.isclose(d["data"].info["lowpass"], data.info["lowpass"]):
+                continue
+            compatibles.append(d)
+        return compatibles
+
+    @data_changed
+    def append_data(self, names):
+        """Append the given raw data sets."""
+        for d in self.data:
+            if d["name"] in names and d["data"] is not None:
+                self.current["data"].append(d["data"], preload=True)
+        self.current["name"] += " (appended)"
+        self.history.append(f"data.append({names})")
+
     @data_changed
     def apply_ica(self):
         self.current["ica"].apply(self.current["data"])

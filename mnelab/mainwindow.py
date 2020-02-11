@@ -19,8 +19,8 @@ from qtpy.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
 from mne.io.pick import channel_type
 
 from .dialogs import (AnnotationsDialog, CalcDialog, ChannelPropertiesDialog,
-                      CropDialog, EpochDialog, ErrorMessageBox, EventsDialog,
-                      FilterDialog, FindEventsDialog, HistoryDialog,
+                      CropDialog, AppendDialog, EpochDialog, ErrorMessageBox,
+                      EventsDialog, FilterDialog, FindEventsDialog, HistoryDialog,
                       InterpolateBadsDialog, MontageDialog, PickChannelsDialog,
                       ReferenceDialog, RunICADialog, XDFStreamsDialog,
                       MetaInfoDialog)
@@ -170,7 +170,7 @@ class MainWindow(QMainWindow):
 
         edit_menu = self.menuBar().addMenu("&Edit")
         self.actions["pick_chans"] = edit_menu.addAction(
-            "Pick &channels...",
+            "P&ick channels...",
             self.pick_channels)
         icon = QIcon(image_path("chan_props.svg"))
         self.actions["chan_props"] = edit_menu.addAction(
@@ -178,17 +178,20 @@ class MainWindow(QMainWindow):
         self.actions["set_montage"] = edit_menu.addAction("Set &montage...",
                                                           self.set_montage)
         edit_menu.addSeparator()
-        self.actions["set_ref"] = edit_menu.addAction("&Set reference...",
+        self.actions["set_ref"] = edit_menu.addAction("Set &reference...",
                                                       self.set_reference)
         edit_menu.addSeparator()
         self.actions["annotations"] = edit_menu.addAction(
-            "Annotations...",
+            "&Annotations...",
             self.edit_annotations)
-        self.actions["events"] = edit_menu.addAction("Events...",
+        self.actions["events"] = edit_menu.addAction("&Events...",
                                                      self.edit_events)
 
         edit_menu.addSeparator()
         self.actions["crop"] = edit_menu.addAction("&Crop data...", self.crop)
+        self.actions["append_data"] = edit_menu.addAction(
+            "Appen&d data...",
+            self.append_data)
 
         plot_menu = self.menuBar().addMenu("&Plot")
         icon = QIcon(image_path("plot_data.svg"))
@@ -362,6 +365,8 @@ class MainWindow(QMainWindow):
                 enabled and events and self.model.current["dtype"] == "raw")
             self.actions["crop"].setEnabled(
                 enabled and self.model.current["dtype"] == "raw")
+            append = bool(self.model.get_compatibles())
+            self.actions["append_data"].setEnabled(enabled and append)
             self.actions["meta_info"].setEnabled(
                 enabled and
                 self.model.current["ftype"] == "Extensible Data Format")
@@ -543,6 +548,14 @@ class MainWindow(QMainWindow):
         if dialog.exec_():
             self.auto_duplicate()
             self.model.crop(dialog.start or 0, dialog.stop)
+
+    def append_data(self):
+        """Concatenate raw data objects to current one."""
+        compatibles = self.model.get_compatibles()
+        dialog = AppendDialog(self, compatibles)
+        if dialog.exec_():
+            self.auto_duplicate()
+            self.model.append_data(dialog.names)
 
     def plot_data(self):
         """Plot data."""
