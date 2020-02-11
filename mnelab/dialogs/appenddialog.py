@@ -5,7 +5,7 @@
 
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
-                            QDialogButtonBox, QListWidget)
+                            QDialogButtonBox, QListWidget, QAbstractItemView)
 
 
 class AppendDialog(QDialog):
@@ -22,6 +22,7 @@ class AppendDialog(QDialog):
         source = QListWidget(self)
         source.setAcceptDrops(True)
         source.setDragEnabled(True)
+        source.setSelectionMode(QAbstractItemView.ExtendedSelection)
         source.setDefaultDropAction(Qt.DropAction.MoveAction)
         source.insertItems(0, [d["name"] for d in compatibles])
         grid.addWidget(source, 3, 0, 1, 2)
@@ -31,6 +32,7 @@ class AppendDialog(QDialog):
         self.destination = QListWidget(self)
         self.destination.setAcceptDrops(True)
         self.destination.setDragEnabled(True)
+        self.destination.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.destination.setDefaultDropAction(Qt.DropAction.MoveAction)
         grid.addWidget(self.destination, 3, 4, 1, 2)
 
