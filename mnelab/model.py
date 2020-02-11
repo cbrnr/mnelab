@@ -75,15 +75,6 @@ class Model:
                 self.index = len(self.data) - 1  # reset index to last entry
 
     @data_changed
-    def concatenate_data(self, names):
-        """Concatenate the given raw data sets."""
-        for d in self.data:
-            if d["name"] in names and d["data"] is not None:
-                self.current["data"].append(d["data"], preload=True)
-        self.current["name"] += " (concatenated)"
-        self.history.append(f"data.append({names})")
-
-    @data_changed
     def duplicate_data(self):
         """Duplicate current data set."""
         self.insert_data(deepcopy(self.current))
@@ -567,6 +558,15 @@ class Model:
         self.current["data"].crop(start, stop)
         self.current["name"] += " (cropped)"
         self.history.append(f"data.crop({start}, {stop})")
+
+    @data_changed
+    def append_data(self, names):
+        """Append the given raw data sets."""
+        for d in self.data:
+            if d["name"] in names and d["data"] is not None:
+                self.current["data"].append(d["data"], preload=True)
+        self.current["name"] += " (appended)"
+        self.history.append(f"data.append({names})")
 
     @data_changed
     def apply_ica(self):

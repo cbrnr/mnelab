@@ -19,7 +19,7 @@ from qtpy.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
 from mne.io.pick import channel_type
 
 from .dialogs import (AnnotationsDialog, CalcDialog, ChannelPropertiesDialog,
-                      CropDialog, ConcatenateDataDialog, EpochDialog, ErrorMessageBox,
+                      CropDialog, AppendDialog, EpochDialog, ErrorMessageBox,
                       EventsDialog, FilterDialog, FindEventsDialog, HistoryDialog,
                       InterpolateBadsDialog, MontageDialog, PickChannelsDialog,
                       ReferenceDialog, RunICADialog, XDFStreamsDialog,
@@ -172,9 +172,6 @@ class MainWindow(QMainWindow):
         self.actions["pick_chans"] = edit_menu.addAction(
             "Pick &channels...",
             self.pick_channels)
-        self.actions["concat_data"] = edit_menu.addAction(
-            "Concatenate &data...",
-            self.concatenate_data)
         icon = QIcon(image_path("chan_props.svg"))
         self.actions["chan_props"] = edit_menu.addAction(
             icon, "Channel &properties...", self.channel_properties)
@@ -192,6 +189,9 @@ class MainWindow(QMainWindow):
 
         edit_menu.addSeparator()
         self.actions["crop"] = edit_menu.addAction("&Crop data...", self.crop)
+        self.actions["append_data"] = edit_menu.addAction(
+            "Append &data...",
+            self.append_data)
 
         plot_menu = self.menuBar().addMenu("&Plot")
         icon = QIcon(image_path("plot_data.svg"))
@@ -465,28 +465,6 @@ class MainWindow(QMainWindow):
                 self.model.drop_channels(drops)
                 self.model.history.append(f"raw.drop({drops})")
 
-    def concatenate_data(self):
-        """Concatenate raw data objects to current one."""
-        current = self.model.current["data"]
-        names = []
-        for d in filter(lambda x:
-                        (isinstance(x["data"], type(current))) and
-                        (x["data"].info["nchan"] == current.info["nchan"]) and
-                        (set(x["data"].info["ch_names"]) == set(current.info["ch_names"])) and
-                        (x["data"].info["bads"] == current.info["bads"]) and
-                        (all(x["data"]._cals == current._cals)) and
-                        (np.isclose(x["data"].info["sfreq"], current.info["sfreq"])) and
-                        (np.isclose(x["data"].info["highpass"], current.info["highpass"])) and
-                        (np.isclose(x["data"].info["lowpass"], current.info["lowpass"])),
-                        self.model.data):
-            if d["name"] != self.model.current["name"]:
-                names.append(d["name"])
-
-        dialog = ConcatenateDataDialog(self, names)
-        if dialog.exec_():
-            self.auto_duplicate()
-            self.model.concatenate_data(dialog.raw_names)
-
     def channel_properties(self):
         """Show channel properties dialog."""
         info = self.model.current["data"].info
@@ -568,6 +546,28 @@ class MainWindow(QMainWindow):
         if dialog.exec_():
             self.auto_duplicate()
             self.model.crop(dialog.start or 0, dialog.stop)
+
+    def append_data(self):
+        """Concatenate raw data objects to current one."""
+        current = self.model.current["data"]
+        names = []
+        for d in filter(lambda x:
+                        (isinstance(x["data"], type(current))) and
+                        (x["data"].info["nchan"] == current.info["nchan"]) and
+                        (set(x["data"].info["ch_names"]) == set(current.info["ch_names"])) and
+                        (x["data"].info["bads"] == current.info["bads"]) and
+                        (all(x["data"]._cals == current._cals)) and
+                        (np.isclose(x["data"].info["sfreq"], current.info["sfreq"])) and
+                        (np.isclose(x["data"].info["highpass"], current.info["highpass"])) and
+                        (np.isclose(x["data"].info["lowpass"], current.info["lowpass"])),
+                        self.model.data):
+            if d["name"] != self.model.current["name"]:
+                names.append(d["name"])
+
+        dialog = AppendDialog(self, names)
+        if dialog.exec_():
+            self.auto_duplicate()
+            self.model.append_data(dialog.raw_names)
 
     def plot_data(self):
         """Plot data."""

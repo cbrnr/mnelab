@@ -8,8 +8,8 @@ from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
                             QDialogButtonBox, QListWidget)
 
 
-class ConcatenateDataDialog(QDialog):
-    def __init__(self, parent, names, title="Concatenate data"):
+class AppendDialog(QDialog):
+    def __init__(self, parent, names, title="Append data"):
         super().__init__(parent)
         self.setWindowTitle(title)
 
