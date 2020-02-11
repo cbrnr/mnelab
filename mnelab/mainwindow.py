@@ -170,7 +170,7 @@ class MainWindow(QMainWindow):
 
         edit_menu = self.menuBar().addMenu("&Edit")
         self.actions["pick_chans"] = edit_menu.addAction(
-            "Pick &channels...",
+            "P&ick channels...",
             self.pick_channels)
         icon = QIcon(image_path("chan_props.svg"))
         self.actions["chan_props"] = edit_menu.addAction(
@@ -178,19 +178,19 @@ class MainWindow(QMainWindow):
         self.actions["set_montage"] = edit_menu.addAction("Set &montage...",
                                                           self.set_montage)
         edit_menu.addSeparator()
-        self.actions["set_ref"] = edit_menu.addAction("&Set reference...",
+        self.actions["set_ref"] = edit_menu.addAction("Set &reference...",
                                                       self.set_reference)
         edit_menu.addSeparator()
         self.actions["annotations"] = edit_menu.addAction(
-            "Annotations...",
+            "&Annotations...",
             self.edit_annotations)
-        self.actions["events"] = edit_menu.addAction("Events...",
+        self.actions["events"] = edit_menu.addAction("&Events...",
                                                      self.edit_events)
 
         edit_menu.addSeparator()
         self.actions["crop"] = edit_menu.addAction("&Crop data...", self.crop)
         self.actions["append_data"] = edit_menu.addAction(
-            "Append &data...",
+            "Appen&d data...",
             self.append_data)
 
         plot_menu = self.menuBar().addMenu("&Plot")
