@@ -467,9 +467,7 @@ class MainWindow(QMainWindow):
 
     def concatenate_data(self):
         """Concatenate raw data objects to current one."""
-
         current = self.model.current["data"]
-
         names = []
         for d in filter(lambda x:
                         (isinstance(x["data"], type(current))) and
@@ -487,8 +485,7 @@ class MainWindow(QMainWindow):
         dialog = ConcatenateDataDialog(self, names)
         if dialog.exec_():
             self.auto_duplicate()
-            name = self.model.current["name"] + "_concat"
-            self.model.concatenate_data(dialog.raw_names, name)
+            self.model.concatenate_data(dialog.raw_names)
 
     def channel_properties(self):
         """Show channel properties dialog."""

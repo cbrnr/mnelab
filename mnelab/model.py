@@ -75,13 +75,13 @@ class Model:
                 self.index = len(self.data) - 1  # reset index to last entry
 
     @data_changed
-    def concatenate_data(self, sel_names, name):
-        """ Concatenate the given raw data sets"""
+    def concatenate_data(self, names):
+        """Concatenate the given raw data sets."""
         for d in self.data:
-            if d["name"] in sel_names and d["data"] is not None:
+            if d["name"] in names and d["data"] is not None:
                 self.current["data"].append(d["data"], preload=True)
-        self.current["name"] = name
-        self.history.append(f"data = mne.concatenate_data('{sel_names}')")
+        self.current["name"] += " (concatenated)"
+        self.history.append(f"data.append({names})")
 
     @data_changed
     def duplicate_data(self):
