@@ -466,11 +466,11 @@ class MainWindow(QMainWindow):
                 self.model.history.append(f"raw.drop({drops})")
 
     def concatenate_data(self):
-        """Concatenate several raw data objects"""
+        """Concatenate raw data objects to current one."""
 
         current = self.model.current["data"]
 
-        ds_names = []
+        names = []
         for d in filter(lambda x:
                         (isinstance(x["data"], type(current))) and
                         (x["data"].info["nchan"] == current.info["nchan"]) and
@@ -482,12 +482,13 @@ class MainWindow(QMainWindow):
                         (np.isclose(x["data"].info["lowpass"], current.info["lowpass"])),
                         self.model.data):
             if d["name"] != self.model.current["name"]:
-                ds_names.append(d["name"])
+                names.append(d["name"])
 
-        dialog = ConcatenateDataDialog(self, self.model.current["name"], ds_names)
+        dialog = ConcatenateDataDialog(self, names)
         if dialog.exec_():
             self.auto_duplicate()
-            self.model.concatenate_data(dialog.raw_names, dialog.data_name)
+            name = self.model.current["name"] + "_concat"
+            self.model.concatenate_data(dialog.raw_names, name)
 
     def channel_properties(self):
         """Show channel properties dialog."""

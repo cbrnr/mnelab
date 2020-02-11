@@ -5,7 +5,7 @@
 
 from qtpy.QtCore import Qt
 from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
-                            QLineEdit, QDialogButtonBox, QListWidget)
+                            QDialogButtonBox, QListWidget)
 
 
 class MyListWidget(QListWidget):
@@ -16,23 +16,14 @@ class MyListWidget(QListWidget):
         self.setDefaultDropAction(Qt.DropAction.MoveAction)
         self.setMinimumSize(60, 30)
 
-    def setSize(self, height, width):
-        self.setMaximumWidth(width)
-        self.setMaximumHeight(height)
-
 
 class ConcatenateDataDialog(QDialog):
-    def __init__(self, parent, current_name, names, title="Concatenate data"):
+    def __init__(self, parent, names, title="Concatenate data"):
         super().__init__(parent)
         self.setWindowTitle(title)
+
         vbox = QVBoxLayout(self)
-
         grid = QGridLayout()
-        grid.addWidget(QLabel("Name: "), 0, 0, 1, 2, Qt.AlignHCenter)
-        self.nameEdit = QLineEdit(f"{current_name}_concat")
-        grid.addWidget(self.nameEdit, 0, 2, 1, 3)
-
-        grid.addWidget(QLabel(""), 1, 0)
 
         grid.addWidget(QLabel("Compatible data"), 2, 0, Qt.AlignCenter)
         grid.addWidget(QLabel("Append order"), 2, 4, Qt.AlignCenter)
@@ -57,11 +48,6 @@ class ConcatenateDataDialog(QDialog):
 
         vbox.addLayout(grid)
         vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
-
-    @property
-    def data_name(self):
-        name = self.nameEdit.text()
-        return name if name else None
 
     @property
     def raw_names(self):
