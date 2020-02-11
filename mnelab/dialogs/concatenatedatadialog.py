@@ -25,19 +25,19 @@ class ConcatenateDataDialog(QDialog):
         vbox = QVBoxLayout(self)
         grid = QGridLayout()
 
-        grid.addWidget(QLabel("Compatible data"), 2, 0, Qt.AlignCenter)
-        grid.addWidget(QLabel("Append order"), 2, 4, Qt.AlignCenter)
+        grid.addWidget(QLabel("Source"), 2, 0, Qt.AlignCenter)
+        grid.addWidget(QLabel("Destination"), 2, 4, Qt.AlignCenter)
 
-        self.listAvailable = MyListWidget(self)
-        self.listAvailable.list = names
-        self.listAvailable.insertItems(0, names)
-        grid.addWidget(self.listAvailable, 3, 0, 1, 2)
+        source = MyListWidget(self)
+        source.list = names
+        source.insertItems(0, names)
+        grid.addWidget(source, 3, 0, 1, 2)
 
         grid.addWidget(QLabel(" -> "), 3, 2, 1, 2, Qt.AlignHCenter)
 
-        self.listOrdered = MyListWidget(self)
-        self.listOrdered.list = []
-        grid.addWidget(self.listOrdered, 3, 4, 1, 2)
+        self.destination = MyListWidget(self)
+        self.destination.list = []
+        grid.addWidget(self.destination, 3, 4, 1, 2)
 
         buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
                                      QDialogButtonBox.Cancel)
@@ -52,6 +52,6 @@ class ConcatenateDataDialog(QDialog):
     @property
     def raw_names(self):
         raw_names = []
-        for it in range(self.listOrdered.count()):
-            raw_names.append(self.listOrdered.model().index(it).data())
+        for it in range(self.destination.count()):
+            raw_names.append(self.destination.model().index(it).data())
         return raw_names
