@@ -40,18 +40,13 @@ class ConcatenateDataDialog(QDialog):
         self.listAvailable = MyListWidget(self)
         self.listAvailable.list = names
         self.listAvailable.insertItems(0, names)
-        list_height = (2 + len(names)) * self.listAvailable.sizeHintForRow(0)
-        list_width = 2. * self.listAvailable.sizeHintForColumn(0)
+        grid.addWidget(self.listAvailable, 3, 0, 1, 2)
 
-        self.listAvailable.setSize(list_height, list_width)
-        grid.addWidget(self.listAvailable, 3, 0)
-
-        grid.addWidget(QLabel(" --> "), 3, 2, 1, 2, Qt.AlignHCenter)
+        grid.addWidget(QLabel(" -> "), 3, 2, 1, 2, Qt.AlignHCenter)
 
         self.listOrdered = MyListWidget(self)
         self.listOrdered.list = []
-        self.listOrdered.setSize(list_height, list_width)
-        grid.addWidget(self.listOrdered, 3, 4)
+        grid.addWidget(self.listOrdered, 3, 4, 1, 2)
 
         buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
                                      QDialogButtonBox.Cancel)
