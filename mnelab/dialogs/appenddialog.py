@@ -9,7 +9,7 @@ from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
 
 
 class AppendDialog(QDialog):
-    def __init__(self, parent, names, title="Append data"):
+    def __init__(self, parent, compatibles, title="Append data"):
         super().__init__(parent)
         self.setWindowTitle(title)
 
@@ -23,7 +23,7 @@ class AppendDialog(QDialog):
         source.setAcceptDrops(True)
         source.setDragEnabled(True)
         source.setDefaultDropAction(Qt.DropAction.MoveAction)
-        source.insertItems(0, names)
+        source.insertItems(0, [d["name"] for d in compatibles])
         grid.addWidget(source, 3, 0, 1, 2)
 
         grid.addWidget(QLabel(" -> "), 3, 2, 1, 2, Qt.AlignHCenter)

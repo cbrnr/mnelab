@@ -551,22 +551,8 @@ class MainWindow(QMainWindow):
 
     def append_data(self):
         """Concatenate raw data objects to current one."""
-        current = self.model.current["data"]
-        names = []
-        for d in filter(lambda x:
-                        (isinstance(x["data"], type(current))) and
-                        (x["data"].info["nchan"] == current.info["nchan"]) and
-                        (set(x["data"].info["ch_names"]) == set(current.info["ch_names"])) and
-                        (x["data"].info["bads"] == current.info["bads"]) and
-                        (all(x["data"]._cals == current._cals)) and
-                        (np.isclose(x["data"].info["sfreq"], current.info["sfreq"])) and
-                        (np.isclose(x["data"].info["highpass"], current.info["highpass"])) and
-                        (np.isclose(x["data"].info["lowpass"], current.info["lowpass"])),
-                        self.model.data):
-            if d["name"] != self.model.current["name"]:
-                names.append(d["name"])
-
-        dialog = AppendDialog(self, names)
+        compatibles = self.model.get_compatibles()
+        dialog = AppendDialog(self, compatibles)
         if dialog.exec_():
             self.auto_duplicate()
             self.model.append_data(dialog.raw_names)
