@@ -559,6 +559,32 @@ class Model:
         self.current["name"] += " (cropped)"
         self.history.append(f"data.crop({start}, {stop})")
 
+    def get_compatibles(self):
+        """Return a list of data sets that are compatible with the current one.
+
+        This function is useful for checking data sets before appending.
+
+        Returns
+        -------
+        compatibles : list
+            List with compatible data sets.
+        """
+        compatibles = []
+        current = self.current["data"]
+        for d in filter(lambda x:
+                        (isinstance(x["data"], type(current))) and
+                        (x["data"].info["nchan"] == current.info["nchan"]) and
+                        (set(x["data"].info["ch_names"]) == set(current.info["ch_names"])) and
+                        (x["data"].info["bads"] == current.info["bads"]) and
+                        (all(x["data"]._cals == current._cals)) and
+                        (np.isclose(x["data"].info["sfreq"], current.info["sfreq"])) and
+                        (np.isclose(x["data"].info["highpass"], current.info["highpass"])) and
+                        (np.isclose(x["data"].info["lowpass"], current.info["lowpass"])),
+                        self.data):
+            if d["name"] != self.current["name"]:
+                compatibles.append(d)
+        return compatibles
+
     @data_changed
     def append_data(self, names):
         """Append the given raw data sets."""
