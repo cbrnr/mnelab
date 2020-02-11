@@ -8,15 +8,6 @@ from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
                             QDialogButtonBox, QListWidget)
 
 
-class MyListWidget(QListWidget):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.setAcceptDrops(True)
-        self.setDragEnabled(True)
-        self.setDefaultDropAction(Qt.DropAction.MoveAction)
-        self.setMinimumSize(60, 30)
-
-
 class ConcatenateDataDialog(QDialog):
     def __init__(self, parent, names, title="Concatenate data"):
         super().__init__(parent)
@@ -28,15 +19,19 @@ class ConcatenateDataDialog(QDialog):
         grid.addWidget(QLabel("Source"), 2, 0, Qt.AlignCenter)
         grid.addWidget(QLabel("Destination"), 2, 4, Qt.AlignCenter)
 
-        source = MyListWidget(self)
-        source.list = names
+        source = QListWidget(self)
+        source.setAcceptDrops(True)
+        source.setDragEnabled(True)
+        source.setDefaultDropAction(Qt.DropAction.MoveAction)
         source.insertItems(0, names)
         grid.addWidget(source, 3, 0, 1, 2)
 
         grid.addWidget(QLabel(" -> "), 3, 2, 1, 2, Qt.AlignHCenter)
 
-        self.destination = MyListWidget(self)
-        self.destination.list = []
+        self.destination = QListWidget(self)
+        self.destination.setAcceptDrops(True)
+        self.destination.setDragEnabled(True)
+        self.destination.setDefaultDropAction(Qt.DropAction.MoveAction)
         grid.addWidget(self.destination, 3, 4, 1, 2)
 
         buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
