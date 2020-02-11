@@ -3,7 +3,7 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtCore import Qt
+from qtpy.QtCore import Qt, Slot
 from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
                             QDialogButtonBox, QListWidget, QAbstractItemView)
 
@@ -37,13 +37,16 @@ class AppendDialog(QDialog):
         grid.addWidget(self.destination, 1, 2)
         vbox.addLayout(grid)
 
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                     QDialogButtonBox.Cancel)
-        buttonbox.accepted.connect(self.accept)
-        buttonbox.rejected.connect(self.reject)
+        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
+                                          QDialogButtonBox.Cancel)
+        self.buttonbox.accepted.connect(self.accept)
+        self.buttonbox.rejected.connect(self.reject)
 
-        vbox.addWidget(buttonbox)
+        vbox.addWidget(self.buttonbox)
         vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+        self.destination.model().rowsInserted.connect(self.toggle_buttons)
+        self.destination.model().rowsRemoved.connect(self.toggle_buttons)
+        self.toggle_buttons()
 
     @property
     def names(self):
@@ -51,3 +54,12 @@ class AppendDialog(QDialog):
         for it in range(self.destination.count()):
             names.append(self.destination.item(it).text())
         return names
+
+    @Slot()
+    def toggle_buttons(self):
+        """Toggle OK button.
+        """
+        if self.destination.count() > 0:
+            self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(True)
+        else:
+            self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(False)
