@@ -562,7 +562,8 @@ class Model:
     def get_compatibles(self):
         """Return a list of data sets that are compatible with the current one.
 
-        This function is useful for checking data sets before appending.
+        This function is useful for checking which data sets can be appended to
+        the current data set.
 
         Returns
         -------
@@ -570,19 +571,28 @@ class Model:
             List with compatible data sets.
         """
         compatibles = []
-        current = self.current["data"]
-        for d in filter(lambda x:
-                        (isinstance(x["data"], type(current))) and
-                        (x["data"].info["nchan"] == current.info["nchan"]) and
-                        (set(x["data"].info["ch_names"]) == set(current.info["ch_names"])) and
-                        (x["data"].info["bads"] == current.info["bads"]) and
-                        (all(x["data"]._cals == current._cals)) and
-                        (np.isclose(x["data"].info["sfreq"], current.info["sfreq"])) and
-                        (np.isclose(x["data"].info["highpass"], current.info["highpass"])) and
-                        (np.isclose(x["data"].info["lowpass"], current.info["lowpass"])),
-                        self.data):
-            if d["name"] != self.current["name"]:
-                compatibles.append(d)
+        data = self.current["data"]
+        for idx, d in enumerate(self.data):
+            if idx == self.index:  # skip current data set
+                continue
+            if d["dtype"] != self.current["dtype"]:
+                continue
+            if d["data"].info["nchan"] != data.info["nchan"]:
+                continue
+            if set(d["data"].info["ch_names"]) != set(data.info["ch_names"]):
+                continue
+            if d["data"].info["bads"] != data.info["bads"]:
+                continue
+            if not all(d["data"]._cals == data._cals):
+                continue
+            if not np.isclose(d["data"].info["sfreq"], data.info["sfreq"]):
+                continue
+            if not np.isclose(d["data"].info["highpass"],
+                              data.info["highpass"]):
+                continue
+            if not np.isclose(d["data"].info["lowpass"], data.info["lowpass"]):
+                continue
+            compatibles.append(d)
         return compatibles
 
     @data_changed
