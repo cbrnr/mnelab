@@ -10,8 +10,12 @@ from functools import partial
 from pathlib import Path
 
 import numpy as np
+import matplotlib.pyplot as plt
 import mne
 from mne.io.pick import channel_type
+from mne.viz.utils import center_cmap
+from mne.time_frequency import tfr_multitaper
+from mne.stats import permutation_cluster_1samp_test as pcluster_test
 from qtpy.QtCore import (Qt, Slot, QStringListModel, QModelIndex, QSettings,
                          QEvent, QObject)
 from qtpy.QtGui import QKeySequence, QDropEvent, QIcon
@@ -24,7 +28,8 @@ from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog,
                       ErrorMessageBox, EventsDialog, FilterDialog,
                       FindEventsDialog, HistoryDialog, InterpolateBadsDialog,
                       MetaInfoDialog, MontageDialog, PickChannelsDialog,
-                      ReferenceDialog, RunICADialog, XDFStreamsDialog)
+                      PlotTFDialog, ReferenceDialog, RunICADialog,
+                      XDFStreamsDialog)
 from .widgets.infowidget import InfoWidget
 from .model import LabelsNotFoundError, InvalidAnnotationsError
 from .utils import have, has_locations, image_path, interface_style
@@ -208,6 +213,8 @@ class MainWindow(QMainWindow):
         icon = QIcon.fromTheme("plot-locations")
         self.actions["plot_locations"] = plot_menu.addAction(
             icon, "&Channel locations...", self.plot_locations)
+        self.actions["plot_time_frequency"] = plot_menu.addAction(
+            "Time/Frequency map", self.plot_timefrequency)
         plot_menu.addSeparator()
         self.actions["plot_ica_components"] = plot_menu.addAction(
             "ICA &components...", self.plot_ica_components)
@@ -643,6 +650,97 @@ class MainWindow(QMainWindow):
 
     def plot_ica_sources(self):
         self.model.current["ica"].plot_sources(inst=self.model.current["data"])
+
+    def plot_timefrequency(self):
+        """Plot Time-frequency maps"""
+
+        current_data = self.model.current["data"]
+
+        t_range = [current_data.tmin, current_data.tmax]
+        f_range = [1., current_data.info["sfreq"] / 2.]
+        baseline_modi = ['mean', 'ratio', 'logratio', 'percent', 'zscore', 'zlogratio']
+
+        dialog = PlotTFDialog(self, t_range, f_range, baseline_modi)
+
+        if dialog.exec_():
+            # parameters
+            if current_data.info["nchan"] <= 3:
+                n_rows = 1
+                n_cols = current_data.info["nchan"]
+            else:
+                n_rows = int(np.ceil(np.sqrt(current_data.info["nchan"])))
+                n_cols = int(np.ceil(current_data.info["nchan"] / n_rows))
+            col_widths = list(n_cols*[10])
+            col_widths.append(1)
+            freqs = np.arange(dialog.lower_frequency, dialog.upper_frequency, dialog.freq_resolution)
+            baseline_mode = dialog.baseline_mode
+            t_baseline = [dialog.start_baseline, dialog.stop_baseline]
+            time = [dialog.start_time, dialog.stop_time]
+            cluster_params = dict(n_permutations=100, step_down_p=0.05, seed=1, buffer_size=None)  # for cluster test
+
+            # Run TF decomposition over all epochs
+            tfr = tfr_multitaper(current_data,
+                                 freqs=freqs,
+                                 n_cycles=freqs,
+                                 use_fft=True,
+                                 return_itc=False,
+                                 average=False)
+
+            tfr.crop(time[0], time[1])
+            if dialog.apply_baseline:
+                tfr.apply_baseline(t_baseline, mode=baseline_mode)
+
+            for event in current_data.event_id:
+                # select desired epochs for visualization
+                tfr_ev = tfr[event]
+                tfr_avg = tfr_ev.average()
+                vmin = np.min(tfr_avg._data)
+                vmax = np.max(tfr_avg._data)
+
+                fig, axes = plt.subplots(n_rows, n_cols+1, figsize=(12, 12), gridspec_kw={"width_ratios": col_widths})
+                cmap = center_cmap(plt.cm.RdBu, vmin, vmax)  # zero maps to white
+
+                mask = np.ones(tfr_avg._data.shape[1:]) == 1
+
+                for ch in range(current_data.info["nchan"]):
+                    if n_rows == 1:
+                        ax = axes[ch]
+                    else:
+                        ax = axes[int(ch / n_cols)][int(np.mod(ch, n_cols))]
+
+                    if dialog.cluster:
+                        # positive clusters
+                        _, c1, p1, _ = pcluster_test(tfr_ev.data[:, ch, ...], tail=1, **cluster_params)
+                        # negative clusters
+                        _, c2, p2, _ = pcluster_test(tfr_ev.data[:, ch, ...], tail=-1, **cluster_params)
+
+                        c = np.stack(c1 + c2, axis=2)  # combined clusters
+                        p = np.concatenate((p1, p2))  # combined p-values
+                        mask = c[..., p <= 0.05].any(axis=-1)
+
+                    # plot TFR (ERDS map with masking)
+                    tfr_avg.plot([ch], vmin=vmin, vmax=vmax, cmap=(cmap, False),
+                                 axes=ax, colorbar=False, show=True,
+                                 mask=mask, mask_style="mask")
+
+                    ax.set_title(self.model.current['data'].ch_names[ch], fontsize=10)
+                    ax.axvline(0, linewidth=1, color="black", linestyle=":")  # event
+                    if not ax.is_first_col():
+                        ax.set_ylabel("")
+                        ax.set_yticklabels("")
+
+                    if not ax.is_last_row():
+                        ax.set_xlabel("")
+                        ax.set_xticklabels("")
+
+                if n_rows == 1:
+                    fig.colorbar(axes[0].images[1], cax=axes[-1])
+                else:
+                    for row in range(n_rows):
+                        fig.colorbar(axes[row][0].images[1], cax=axes[row][-1])
+
+                fig.suptitle("ERDS ({})".format(event))
+                fig.show()
 
     def run_ica(self):
         """Run ICA calculation."""
