@@ -4,7 +4,7 @@
 # License: BSD (3-clause)
 
 from qtpy.QtWidgets import (QCheckBox, QDialog, QDialogButtonBox, QDoubleSpinBox,
-                            QGridLayout, QLabel, QListWidget, QVBoxLayout)
+                            QGridLayout, QLabel, QListWidget, QListWidgetItem, QVBoxLayout)
 from qtpy.QtCore import Qt, Slot
 
 
@@ -102,7 +102,11 @@ class PlotTFDialog(QDialog):
         grid.addWidget(self._stop_baseline, 3, 4, 1, 2)
 
         self._baseline_mode = QListWidget()
-        self._baseline_mode.insertItems(0, modi)
+        for modus in modi:
+            item = QListWidgetItem(modus)
+            item.setTextAlignment(Qt.AlignHCenter)
+            self._baseline_mode.addItem(item)
+        self._baseline_mode.setCurrentRow(0)
         self._baseline_mode.setSelectionMode(QListWidget.SingleSelection)
         grid.addWidget(self._baseline_mode, 4, 2, 1, 4)
 
