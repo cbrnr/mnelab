@@ -370,6 +370,8 @@ class MainWindow(QMainWindow):
             ica = bool(self.model.current["ica"])
             self.actions["apply_ica"].setEnabled(enabled and ica)
             self.actions["export_ica"].setEnabled(enabled and ica)
+            self.actions["plot_time_frequency"].setEnabled(enabled and
+                                                           self.model.current["dtype"] == "epochs")
             self.actions["plot_ica_components"].setEnabled(enabled and ica and
                                                            locations)
             self.actions["plot_ica_sources"].setEnabled(enabled and ica)
