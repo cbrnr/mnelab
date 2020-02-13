@@ -3,8 +3,9 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtWidgets import (QCheckBox, QDialog, QDialogButtonBox, QDoubleSpinBox,
-                            QGridLayout, QLabel, QListWidget, QListWidgetItem, QVBoxLayout)
+from qtpy.QtWidgets import (QCheckBox, QDialog, QDialogButtonBox,
+                            QDoubleSpinBox,QGridLayout, QLabel, QListWidget,
+                            QListWidgetItem, QVBoxLayout)
 from qtpy.QtCore import Qt, Slot
 
 
