@@ -6,7 +6,6 @@ import sys
 import os
 import multiprocessing as mp
 import matplotlib
-import qtpy
 from qtpy.QtWidgets import QApplication
 from qtpy.QtCore import Qt
 
@@ -29,7 +28,6 @@ def _run():
                     info["CFBundleName"] = app_name
 
     matplotlib.use("Qt5Agg")
-
     app = QApplication(sys.argv)
     app.setApplicationName(app_name)
     app.setOrganizationName("cbrnr")

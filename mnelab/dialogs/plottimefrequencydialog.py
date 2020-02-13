@@ -10,7 +10,8 @@ from qtpy.QtCore import Qt, Slot
 
 
 class PlotTFDialog(QDialog):
-    def __init__(self, parent, t_range, f_range, modes, title="Time/Frequency settings"):
+    def __init__(self, parent, t_range, f_range, modes,
+                 title="Time/Frequency settings"):
         super().__init__(parent)
         self.setWindowTitle(title)
         vbox = QVBoxLayout(self)

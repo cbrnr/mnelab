@@ -369,8 +369,8 @@ class MainWindow(QMainWindow):
             ica = bool(self.model.current["ica"])
             self.actions["apply_ica"].setEnabled(enabled and ica)
             self.actions["export_ica"].setEnabled(enabled and ica)
-            self.actions["plot_time_frequency"].setEnabled(enabled and
-                                                           self.model.current["dtype"] == "epochs")
+            self.actions["plot_time_frequency"].setEnabled(
+                enabled and self.model.current["dtype"] == "epochs")
             self.actions["plot_ica_components"].setEnabled(enabled and ica and
                                                            locations)
             self.actions["plot_ica_sources"].setEnabled(enabled and ica)
@@ -659,7 +659,8 @@ class MainWindow(QMainWindow):
 
         t_range = [current_data.tmin, current_data.tmax]
         f_range = [1., current_data.info["sfreq"] / 2.]
-        baseline_modi = ['mean', 'ratio', 'logratio', 'percent', 'zscore', 'zlogratio']
+        baseline_modi = ['mean', 'ratio', 'logratio', 'percent',
+                         'zscore', 'zlogratio']
 
         dialog = PlotTFDialog(self, t_range, f_range, baseline_modi)
 
@@ -673,11 +674,13 @@ class MainWindow(QMainWindow):
                 n_cols = int(np.ceil(current_data.info["nchan"] / n_rows))
             col_widths = list(n_cols*[10])
             col_widths.append(1)
-            freqs = np.arange(dialog.lower_frequency, dialog.upper_frequency, dialog.freq_resolution)
+            freqs = np.arange(dialog.lower_frequency, dialog.upper_frequency,
+                              dialog.freq_resolution)
             baseline_mode = dialog.baseline_mode
             t_baseline = [dialog.start_baseline, dialog.stop_baseline]
             time = [dialog.start_time, dialog.stop_time]
-            cluster_params = dict(n_permutations=100, step_down_p=0.05, seed=1, buffer_size=None)  # for cluster test
+            cluster_params = dict(n_permutations=100, step_down_p=0.05, seed=1,
+                                  buffer_size=None)  # for cluster test
 
             # Run TF decomposition over all epochs
             tfr = tfr_multitaper(current_data,
@@ -698,8 +701,9 @@ class MainWindow(QMainWindow):
                 vmin = np.min(tfr_avg._data)
                 vmax = np.max(tfr_avg._data)
 
-                fig, axes = plt.subplots(n_rows, n_cols+1, figsize=(12, 12), gridspec_kw={"width_ratios": col_widths})
-                cmap = center_cmap(plt.cm.RdBu, vmin, vmax)  # zero maps to white
+                fig, axes = plt.subplots(n_rows, n_cols+1, figsize=(12, 12),
+                                         gridspec_kw={"width_ratios": col_widths})
+                cmap = center_cmap(plt.cm.RdBu, vmin, vmax)
 
                 mask = np.ones(tfr_avg._data.shape[1:]) == 1
 
@@ -711,21 +715,24 @@ class MainWindow(QMainWindow):
 
                     if dialog.cluster:
                         # positive clusters
-                        _, c1, p1, _ = pcluster_test(tfr_ev.data[:, ch, ...], tail=1, **cluster_params)
+                        _, c1, p1, _ = pcluster_test(tfr_ev.data[:, ch, ...],
+                                                     tail=1, **cluster_params)
                         # negative clusters
-                        _, c2, p2, _ = pcluster_test(tfr_ev.data[:, ch, ...], tail=-1, **cluster_params)
+                        _, c2, p2, _ = pcluster_test(tfr_ev.data[:, ch, ...],
+                                                     tail=-1, **cluster_params)
 
                         c = np.stack(c1 + c2, axis=2)  # combined clusters
                         p = np.concatenate((p1, p2))  # combined p-values
                         mask = c[..., p <= 0.05].any(axis=-1)
 
                     # plot TFR (ERDS map with masking)
-                    tfr_avg.plot([ch], vmin=vmin, vmax=vmax, cmap=(cmap, False),
-                                 axes=ax, colorbar=False, show=True,
-                                 mask=mask, mask_style="mask")
+                    tfr_avg.plot([ch], vmin=vmin, vmax=vmax,
+                                 cmap=(cmap, False), axes=ax, colorbar=False,
+                                 show=True, mask=mask, mask_style="mask")
 
-                    ax.set_title(self.model.current['data'].ch_names[ch], fontsize=10)
-                    ax.axvline(0, linewidth=1, color="black", linestyle=":")  # event
+                    ax.set_title(self.model.current['data'].ch_names[ch],
+                                 fontsize=10)
+                    ax.axvline(0, linewidth=1, color="black", linestyle=":")
                     if not ax.is_first_col():
                         ax.set_ylabel("")
                         ax.set_yticklabels("")
