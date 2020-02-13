@@ -28,10 +28,7 @@ def _run():
                 if info:
                     info["CFBundleName"] = app_name
 
-    if qtpy.PYQT5 or qtpy.PYSIDE2:
-        matplotlib.use("Qt5Agg")
-    elif qtpy.PYQT4 or qtpy.PYSIDE:
-        matplotlib.use("Qt4Agg")
+    matplotlib.use("Qt5Agg")
 
     app = QApplication(sys.argv)
     app.setApplicationName(app_name)
