@@ -10,7 +10,7 @@ from qtpy.QtCore import Qt, Slot
 
 
 class PlotTFDialog(QDialog):
-    def __init__(self, parent, t_range, f_range, modi, title="Time/Frequency settings"):
+    def __init__(self, parent, t_range, f_range, modes, title="Time/Frequency settings"):
         super().__init__(parent)
         self.setWindowTitle(title)
         vbox = QVBoxLayout(self)
@@ -21,7 +21,7 @@ class PlotTFDialog(QDialog):
         grid.addWidget(QLabel("To"), 0, 5, Qt.AlignCenter)
 
         # Frequency
-        grid.addWidget(QLabel("Frequecy (in Hz):"), 1, 0)
+        grid.addWidget(QLabel("Frequency (in Hz):"), 1, 0)
         self.freq_checkbox = QCheckBox()
         self.freq_checkbox.setChecked(True)
         self.freq_checkbox.setEnabled(False)
@@ -35,13 +35,13 @@ class PlotTFDialog(QDialog):
         self._lfreq.setSuffix(" Hz")
         grid.addWidget(self._lfreq, 1, 2)
 
-        self._freq_reso = QDoubleSpinBox()
-        self._freq_reso.setMinimum(0.2)
-        self._freq_reso.setValue(1.)
-        self._freq_reso.setMaximum(4.)
-        self._freq_reso.setDecimals(1)
-        self._freq_reso.setSingleStep(0.1)
-        grid.addWidget(self._freq_reso, 1, 3, 1, 2)
+        self._freq_res = QDoubleSpinBox()
+        self._freq_res.setMinimum(0.2)
+        self._freq_res.setValue(1.)
+        self._freq_res.setMaximum(4.)
+        self._freq_res.setDecimals(1)
+        self._freq_res.setSingleStep(0.1)
+        grid.addWidget(self._freq_res, 1, 3, 1, 2)
 
         self._ufreq = QDoubleSpinBox()
         self._ufreq.setMinimum(f_range[0])
@@ -103,8 +103,8 @@ class PlotTFDialog(QDialog):
         grid.addWidget(self._stop_baseline, 3, 4, 1, 2)
 
         self._baseline_mode = QListWidget()
-        for modus in modi:
-            item = QListWidgetItem(modus)
+        for mode in modes:
+            item = QListWidgetItem(mode)
             item.setTextAlignment(Qt.AlignHCenter)
             self._baseline_mode.addItem(item)
         self._baseline_mode.setCurrentRow(0)
@@ -143,7 +143,7 @@ class PlotTFDialog(QDialog):
     @property
     def freq_resolution(self):
         if self.freq_checkbox.isChecked():
-            return self._freq_reso.value()
+            return self._freq_res.value()
         else:
             return None
 
