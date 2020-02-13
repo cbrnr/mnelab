@@ -45,7 +45,7 @@ setup(
                       'numpy>=1.14',
                       'scipy>=1.0',
                       'Pebble>=4.5.0',
-                      'matplotlib>=2.0',
+                      'matplotlib>=2.1',
                       'QtPy>=1.9.0',
                       'pyobjc-framework-Cocoa>=5.2;platform_system=="Darwin"'],
     extras_require={"EDF export": ["pyedflib"],

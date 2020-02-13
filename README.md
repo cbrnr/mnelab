@@ -21,7 +21,7 @@ MNELAB requires Python >= 3.6. In addition, the following Python packages are re
 - [numpy](http://www.numpy.org/) >= 1.14.0
 - [scipy](https://www.scipy.org/scipylib/index.html) >= 1.0.0
 - [Pebble](https://pebble.readthedocs.io/) >= 4.5.0
-- [matplotlib](https://matplotlib.org/) >= 2.0.0
+- [matplotlib](https://matplotlib.org/) >= 2.1.0
 - [mne](https://github.com/mne-tools/mne-python) >= 0.19.0
 - [pyobjc-framework-Cocoa](https://pyobjc.readthedocs.io/en/latest/) >= 5.2.0 (macOS only)
 - python.app (only when using Anaconda or Miniconda Python on macOS)
@@ -42,7 +42,7 @@ MNELAB comes with the following features that are not (yet) available in MNE:
 
 ### Installation
 #### pip
-1. Install either PyQt5 (`python3 -m pip install PyQt5`) or PySide2 (`python3 -m pip install PySide2`). 
+1. Install either PyQt5 (`python3 -m pip install PyQt5`) or PySide2 (`python3 -m pip install PySide2`).
 2. Install MNELAB (`python3 -m pip install mnelab`).
 
 You can start MNELAB in a terminal with `mnelab` or `python3 -m mnelab`.
