@@ -721,9 +721,19 @@ class MainWindow(QMainWindow):
                         _, c2, p2, _ = pcluster_test(tfr_ev.data[:, ch, ...],
                                                      tail=-1, **cluster_params)
 
-                        c = np.stack(c1 + c2, axis=2)  # combined clusters
-                        p = np.concatenate((p1, p2))  # combined p-values
-                        mask = c[..., p <= 0.05].any(axis=-1)
+                        c = []
+                        if bool(len(c1)) and bool(len(c2)):
+                            c = np.stack(c1 + c2, axis=2)  # combined clusters
+                        elif bool(len(c1)):
+                            c = np.swapaxes(c1, 1, 2).T
+                        elif bool(len(c2)):
+                            c = np.swapaxes(c2, 1, 2).T
+
+                        if len(c) > 0:
+                            p = np.concatenate((p1, p2))  # combined p-values
+                            mask = c[..., p <= 0.05].any(axis=-1)
+                        else:
+                            mask = np.ones(tfr_avg._data.shape[1:]) == 1
 
                     # plot TFR (ERDS map with masking)
                     tfr_avg.plot([ch], vmin=vmin, vmax=vmax,
