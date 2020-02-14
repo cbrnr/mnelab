@@ -213,7 +213,8 @@ class MainWindow(QMainWindow):
         self.actions["plot_locations"] = plot_menu.addAction(
             icon, "&Channel locations...", self.plot_locations)
         self.actions["plot_time_frequency"] = plot_menu.addAction(
-            "Time/Frequency map", self.plot_timefrequency)
+            "&Time/Frequency map...", self.plot_timefrequency)
+
         plot_menu.addSeparator()
         self.actions["plot_ica_components"] = plot_menu.addAction(
             "ICA &components...", self.plot_ica_components)
