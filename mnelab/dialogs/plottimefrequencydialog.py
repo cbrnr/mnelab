@@ -115,7 +115,7 @@ class PlotTFDialog(QDialog):
         # Cluster
         grid.addWidget(QLabel("Permutation clustering:"), 5, 0)
         self.cluster_checkbox = QCheckBox("")
-        self.cluster_checkbox.setChecked(True)
+        self.cluster_checkbox.setChecked(False)
         grid.addWidget(self.cluster_checkbox, 5, 1)
 
         vbox.addLayout(grid)
