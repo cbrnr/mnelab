@@ -759,6 +759,8 @@ class MainWindow(QMainWindow):
                         fig.colorbar(axes[row][0].images[1], cax=axes[row][-1])
 
                 fig.suptitle("ERDS ({})".format(event))
+                win = fig.canvas.manager.window
+                win.findChild(QStatusBar).hide()
                 fig.show()
 
     def run_ica(self):
