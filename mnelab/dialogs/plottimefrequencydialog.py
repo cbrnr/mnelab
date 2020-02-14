@@ -23,10 +23,6 @@ class PlotTFDialog(QDialog):
 
         # Frequency
         grid.addWidget(QLabel("Frequency (in Hz):"), 1, 0)
-        self.freq_checkbox = QCheckBox()
-        self.freq_checkbox.setChecked(True)
-        self.freq_checkbox.setEnabled(False)
-        grid.addWidget(self.freq_checkbox, 1, 1)
 
         self._lfreq = QDoubleSpinBox()
         self._lfreq.setMinimum(f_range[0])
@@ -55,10 +51,6 @@ class PlotTFDialog(QDialog):
 
         # Time
         grid.addWidget(QLabel("Time (in s):"), 2, 0)
-        self.time_checkbox = QCheckBox()
-        self.time_checkbox.setChecked(True)
-        self.time_checkbox.setEnabled(False)
-        grid.addWidget(self.time_checkbox, 2, 1)
 
         self._start_time = QDoubleSpinBox()
         self._start_time.setMinimum(t_range[0])
@@ -129,38 +121,23 @@ class PlotTFDialog(QDialog):
 
     @property
     def lower_frequency(self):
-        if self.freq_checkbox.isChecked():
-            return self._lfreq.value()
-        else:
-            return None
+        return self._lfreq.value()
 
     @property
     def upper_frequency(self):
-        if self.freq_checkbox.isChecked():
-            return self._ufreq.value()
-        else:
-            return None
+        return self._ufreq.value()
 
     @property
     def freq_resolution(self):
-        if self.freq_checkbox.isChecked():
-            return self._freq_res.value()
-        else:
-            return None
+        return self._freq_res.value()
 
     @property
     def start_time(self):
-        if self.time_checkbox.isChecked():
-            return self._start_time.value()
-        else:
-            return None
+        return self._start_time.value()
 
     @property
     def stop_time(self):
-        if self.time_checkbox.isChecked():
-            return self._stop_time.value()
-        else:
-            return None
+        return self._stop_time.value()
 
     @property
     def start_baseline(self):
