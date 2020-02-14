@@ -23,12 +23,12 @@ class PlotTFDialog(QDialog):
         self._method.setCurrentIndex(0)
         grid.addWidget(self._method, 0, 2, 1, 4)
 
-        grid.addWidget(QLabel("From"), 2, 2, Qt.AlignCenter)
-        grid.addWidget(QLabel("Resolution"), 2, 3, 1, 2, Qt.AlignCenter)
-        grid.addWidget(QLabel("To"), 2, 5, Qt.AlignCenter)
+        grid.addWidget(QLabel("From"), 1, 2, Qt.AlignCenter)
+        grid.addWidget(QLabel("Resolution"), 1, 3, 1, 2, Qt.AlignCenter)
+        grid.addWidget(QLabel("To"), 1, 5, Qt.AlignCenter)
 
         # Frequency
-        grid.addWidget(QLabel("Frequency (in Hz):"), 3, 0)
+        grid.addWidget(QLabel("Frequency (in Hz):"), 2, 0)
 
         self._lfreq = QDoubleSpinBox()
         self._lfreq.setMinimum(f_range[0])
@@ -36,7 +36,7 @@ class PlotTFDialog(QDialog):
         self._lfreq.setMaximum(f_range[1])
         self._lfreq.setDecimals(1)
         self._lfreq.setSuffix(" Hz")
-        grid.addWidget(self._lfreq, 3, 2)
+        grid.addWidget(self._lfreq, 2, 2)
 
         self._freq_res = QDoubleSpinBox()
         self._freq_res.setMinimum(0.2)
@@ -44,7 +44,7 @@ class PlotTFDialog(QDialog):
         self._freq_res.setMaximum(4.)
         self._freq_res.setDecimals(1)
         self._freq_res.setSingleStep(0.1)
-        grid.addWidget(self._freq_res, 3, 3, 1, 2)
+        grid.addWidget(self._freq_res, 2, 3, 1, 2)
 
         self._ufreq = QDoubleSpinBox()
         self._ufreq.setMinimum(f_range[0])
@@ -52,11 +52,11 @@ class PlotTFDialog(QDialog):
         self._ufreq.setMaximum(f_range[1])
         self._ufreq.setDecimals(1)
         self._ufreq.setSuffix(" Hz")
-        grid.addWidget(self._ufreq, 3, 5)
+        grid.addWidget(self._ufreq, 2, 5)
 
 
         # Time
-        grid.addWidget(QLabel("Time (in s):"), 4, 0)
+        grid.addWidget(QLabel("Time (in s):"), 3, 0)
 
         self._start_time = QDoubleSpinBox()
         self._start_time.setMinimum(t_range[0])
@@ -65,7 +65,7 @@ class PlotTFDialog(QDialog):
         self._start_time.setDecimals(2)
         self._start_time.setSingleStep(0.1)
         self._start_time.setSuffix(" s")
-        grid.addWidget(self._start_time, 4, 2, 1, 2)
+        grid.addWidget(self._start_time, 3, 2, 1, 2)
 
         self._stop_time = QDoubleSpinBox()
         self._stop_time.setMinimum(t_range[0])
@@ -74,7 +74,17 @@ class PlotTFDialog(QDialog):
         self._stop_time.setDecimals(2)
         self._stop_time.setSingleStep(0.1)
         self._stop_time.setSuffix(" s")
-        grid.addWidget(self._stop_time, 4, 4, 1, 2)
+        grid.addWidget(self._stop_time, 3, 4, 1, 2)
+
+        grid.addWidget(QLabel("Cycles:"), 4, 0)
+        grid.addWidget(QLabel(" Frequency /"), 4, 2)
+
+        self._n_cycles = QDoubleSpinBox()
+        self._n_cycles.setMinimum(1.)
+        self._n_cycles.setValue(1.)
+        self._n_cycles.setMaximum(8.)
+        self._n_cycles.setDecimals(1)
+        grid.addWidget(self._n_cycles, 4, 3)
 
         # Baseline
         grid.addWidget(QLabel("Baseline correction:"), 5, 0)
@@ -124,6 +134,10 @@ class PlotTFDialog(QDialog):
     @property
     def tfr_method(self):
         return self._method.currentText()
+
+    @property
+    def n_cycles(self):
+        return self._n_cycles.value()
 
     @property
     def lower_frequency(self):

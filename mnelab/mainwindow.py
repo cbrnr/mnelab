@@ -670,17 +670,19 @@ class MainWindow(QMainWindow):
             # parameters
             freqs = np.arange(dialog.lower_frequency, dialog.upper_frequency,
                               dialog.freq_resolution)
+            n_cycles = freqs / dialog.n_cycles
             baseline_mode = dialog.baseline_mode
             t_baseline = [dialog.start_baseline, dialog.stop_baseline]
             t_epoch = [dialog.start_time, dialog.stop_time]
 
             # Run TF decomposition over all epochs
             if dialog.tfr_method == "morlet":
-                tfr = tfr_morlet(current_data, freqs=freqs, n_cycles=freqs,
+                tfr = tfr_morlet(current_data, freqs=freqs, n_cycles=n_cycles,
                                  use_fft=True, return_itc=False, average=False)
             else:
-                tfr = tfr_multitaper(current_data, freqs=freqs, n_cycles=freqs,
-                                     use_fft=True, return_itc=False,
+                tfr = tfr_multitaper(current_data, freqs=freqs,
+                                     n_cycles=n_cycles, use_fft=True,
+                                     return_itc=False,
                                      average=False)
 
             tfr.crop(t_epoch[0], t_epoch[1])
