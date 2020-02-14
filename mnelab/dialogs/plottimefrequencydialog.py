@@ -3,9 +3,8 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtWidgets import (QCheckBox, QDialog, QDialogButtonBox,
-                            QDoubleSpinBox,QGridLayout, QLabel, QListWidget,
-                            QListWidgetItem, QVBoxLayout)
+from qtpy.QtWidgets import (QCheckBox, QComboBox, QDialog, QDialogButtonBox,
+                            QDoubleSpinBox,QGridLayout, QLabel, QVBoxLayout)
 from qtpy.QtCore import Qt, Slot
 
 
@@ -95,13 +94,11 @@ class PlotTFDialog(QDialog):
         self._stop_baseline.setSuffix(" s")
         grid.addWidget(self._stop_baseline, 3, 4, 1, 2)
 
-        self._baseline_mode = QListWidget()
-        for mode in modes:
-            item = QListWidgetItem(mode)
-            item.setTextAlignment(Qt.AlignHCenter)
-            self._baseline_mode.addItem(item)
-        self._baseline_mode.setCurrentRow(0)
-        self._baseline_mode.setSelectionMode(QListWidget.SingleSelection)
+        self._baseline_mode = QComboBox()
+        self._baseline_mode.insertItems(0, modes)
+        # for it, mode in enumerate(modes):
+        #     self._baseline_mode.insertItem(it, text=mode)
+        self._baseline_mode.setCurrentIndex(0)
         grid.addWidget(self._baseline_mode, 4, 2, 1, 4)
 
         # Cluster
@@ -159,8 +156,7 @@ class PlotTFDialog(QDialog):
 
     @property
     def baseline_mode(self):
-        mode = [item.data(0) for item in self._baseline_mode.selectedItems()]
-        return mode[0] if mode else None
+        return self._baseline_mode.currentText()
 
     @property
     def cluster(self):
