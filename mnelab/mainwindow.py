@@ -14,8 +14,7 @@ import matplotlib.pyplot as plt
 import mne
 from mne.io.pick import channel_type
 from mne.viz.utils import center_cmap
-from mne.time_frequency import tfr_multitaper
-from mne.stats import permutation_cluster_1samp_test as pcluster_test
+from mne.time_frequency import tfr_multitaper, tfr_morlet
 from qtpy.QtCore import (Qt, Slot, QStringListModel, QModelIndex, QSettings,
                          QEvent, QObject)
 from qtpy.QtGui import QKeySequence, QDropEvent, QIcon
@@ -656,12 +655,13 @@ class MainWindow(QMainWindow):
     def plot_timefrequency(self):
         """Plot Time-frequency maps"""
         current_data = self.model.current["data"]
+        methods = ["multitaper", "morlet"]
         t_range = [current_data.tmin, current_data.tmax]
         f_range = [1., current_data.info["sfreq"] / 2.]
         baseline_modi = ['mean', 'ratio', 'logratio', 'percent',
                          'zscore', 'zlogratio']
 
-        dialog = PlotTFDialog(self, t_range, f_range, baseline_modi)
+        dialog = PlotTFDialog(self, methods, t_range, f_range, baseline_modi)
 
         if dialog.exec_():
             calc = CalcDialog(self, "Time/Frequency maps",
@@ -675,12 +675,13 @@ class MainWindow(QMainWindow):
             t_epoch = [dialog.start_time, dialog.stop_time]
 
             # Run TF decomposition over all epochs
-            tfr = tfr_multitaper(current_data,
-                                 freqs=freqs,
-                                 n_cycles=freqs,
-                                 use_fft=True,
-                                 return_itc=False,
-                                 average=False)
+            if dialog.tfr_method == "morlet":
+                tfr = tfr_morlet(current_data, freqs=freqs, n_cycles=freqs,
+                                 use_fft=True, return_itc=False, average=False)
+            else:
+                tfr = tfr_multitaper(current_data, freqs=freqs, n_cycles=freqs,
+                                     use_fft=True, return_itc=False,
+                                     average=False)
 
             tfr.crop(t_epoch[0], t_epoch[1])
             if dialog.apply_baseline:
