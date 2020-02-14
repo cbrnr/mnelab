@@ -655,9 +655,7 @@ class MainWindow(QMainWindow):
 
     def plot_timefrequency(self):
         """Plot Time-frequency maps"""
-
         current_data = self.model.current["data"]
-
         t_range = [current_data.tmin, current_data.tmax]
         f_range = [1., current_data.info["sfreq"] / 2.]
         baseline_modi = ['mean', 'ratio', 'logratio', 'percent',
@@ -666,22 +664,15 @@ class MainWindow(QMainWindow):
         dialog = PlotTFDialog(self, t_range, f_range, baseline_modi)
 
         if dialog.exec_():
+            calc = CalcDialog(self, "Time/Frequency maps",
+                              "Calculating Time/Frequency maps.")
+
             # parameters
-            if current_data.info["nchan"] <= 3:
-                n_rows = 1
-                n_cols = current_data.info["nchan"]
-            else:
-                n_rows = int(np.ceil(np.sqrt(current_data.info["nchan"])))
-                n_cols = int(np.ceil(current_data.info["nchan"] / n_rows))
-            col_widths = list(n_cols*[10])
-            col_widths.append(1)
             freqs = np.arange(dialog.lower_frequency, dialog.upper_frequency,
                               dialog.freq_resolution)
             baseline_mode = dialog.baseline_mode
             t_baseline = [dialog.start_baseline, dialog.stop_baseline]
-            time = [dialog.start_time, dialog.stop_time]
-            cluster_params = dict(n_permutations=100, step_down_p=0.05, seed=1,
-                                  buffer_size=None)  # for cluster test
+            t_epoch = [dialog.start_time, dialog.stop_time]
 
             # Run TF decomposition over all epochs
             tfr = tfr_multitaper(current_data,
@@ -691,23 +682,60 @@ class MainWindow(QMainWindow):
                                  return_itc=False,
                                  average=False)
 
-            tfr.crop(time[0], time[1])
+            tfr.crop(t_epoch[0], t_epoch[1])
             if dialog.apply_baseline:
                 tfr.apply_baseline(t_baseline, mode=baseline_mode)
 
-            for event in current_data.event_id:
+            procs = []
+            if dialog.cluster:
+                pool = pebble.ProcessPool()
+                for event in current_data.event_id:
+                    tfr_ev = tfr[event]
+                    for ch in range(current_data.info["nchan"]):
+                        # calculate masks
+                        process = pool.schedule(
+                            function=cluster_tf_maps,
+                            args=(tfr_ev, ch))
+                        procs.append(process)
+                procs[-1].add_done_callback(lambda x: calc.accept())
+
+                if not calc.exec_():
+                    pool.stop()
+                    pool.join()
+                    return
+                else:
+                    pool.stop()
+                    pool.join()
+
+            # plot the results
+            if current_data.info["nchan"] <= 3:
+                n_rows = 1
+                n_cols = current_data.info["nchan"]
+            else:
+                n_rows = int(np.ceil(np.sqrt(current_data.info["nchan"])))
+                n_cols = int(np.ceil(current_data.info["nchan"] / n_rows))
+            col_widths = list(n_cols * [10])
+            col_widths.append(1)
+
+            if current_data.info["nchan"] <= 3:
+                n_rows = 1
+                n_cols = current_data.info["nchan"]
+            else:
+                n_rows = int(np.ceil(np.sqrt(current_data.info["nchan"])))
+                n_cols = int(np.ceil(current_data.info["nchan"] / n_rows))
+            col_widths = list(n_cols * [10])
+            col_widths.append(1)
+
+            for event_it, event in enumerate(current_data.event_id):
+                fig, axes = plt.subplots(n_rows, n_cols + 1, figsize=(12, 12),
+                                         gridspec_kw={
+                                             "width_ratios": col_widths})
                 # select desired epochs for visualization
                 tfr_ev = tfr[event]
                 tfr_avg = tfr_ev.average()
                 vmin = np.min(tfr_avg._data)
                 vmax = np.max(tfr_avg._data)
-
-                fig, axes = plt.subplots(n_rows, n_cols+1, figsize=(12, 12),
-                                         gridspec_kw={"width_ratios": col_widths})
                 cmap = center_cmap(plt.cm.RdBu, vmin, vmax)
-
-                mask = np.ones(tfr_avg._data.shape[1:]) == 1
-
                 for ch in range(current_data.info["nchan"]):
                     if n_rows == 1:
                         ax = axes[ch]
@@ -715,33 +743,18 @@ class MainWindow(QMainWindow):
                         ax = axes[int(ch / n_cols)][int(np.mod(ch, n_cols))]
 
                     if dialog.cluster:
-                        # positive clusters
-                        _, c1, p1, _ = pcluster_test(tfr_ev.data[:, ch, ...],
-                                                     tail=1, **cluster_params)
-                        # negative clusters
-                        _, c2, p2, _ = pcluster_test(tfr_ev.data[:, ch, ...],
-                                                     tail=-1, **cluster_params)
+                        mask = procs[event_it * current_data.info["nchan"] +
+                                     ch].result()
+                        tfr_avg.plot([ch], vmin=vmin, vmax=vmax,
+                                     cmap=(cmap, False), axes=ax,
+                                     colorbar=False, show=True, mask=mask,
+                                     mask_style="mask")
+                    else:
+                        tfr_avg.plot([ch], vmin=vmin, vmax=vmax,
+                                     cmap=(cmap, False), axes=ax,
+                                     colorbar=False, show=True)
 
-                        c = []
-                        if bool(len(c1)) and bool(len(c2)):
-                            c = np.stack(c1 + c2, axis=2)  # combined clusters
-                        elif bool(len(c1)):
-                            c = np.swapaxes(c1, 1, 2).T
-                        elif bool(len(c2)):
-                            c = np.swapaxes(c2, 1, 2).T
-
-                        if len(c) > 0:
-                            p = np.concatenate((p1, p2))  # combined p-values
-                            mask = c[..., p <= 0.05].any(axis=-1)
-                        else:
-                            mask = np.ones(tfr_avg._data.shape[1:]) == 1
-
-                    # plot TFR (ERDS map with masking)
-                    tfr_avg.plot([ch], vmin=vmin, vmax=vmax,
-                                 cmap=(cmap, False), axes=ax, colorbar=False,
-                                 show=True, mask=mask, mask_style="mask")
-
-                    ax.set_title(self.model.current['data'].ch_names[ch],
+                    ax.set_title(current_data.ch_names[ch],
                                  fontsize=10)
                     ax.axvline(0, linewidth=1, color="black", linestyle=":")
                     if not ax.is_first_col():
@@ -753,10 +766,11 @@ class MainWindow(QMainWindow):
                         ax.set_xticklabels("")
 
                 if n_rows == 1:
-                    fig.colorbar(axes[0].images[1], cax=axes[-1])
+                    fig.colorbar(axes[0].images[-1], cax=axes[-1])
                 else:
                     for row in range(n_rows):
-                        fig.colorbar(axes[row][0].images[1], cax=axes[row][-1])
+                        fig.colorbar(axes[row][0].images[-1],
+                                     cax=axes[row][-1])
 
                 fig.suptitle("ERDS ({})".format(event))
                 win = fig.canvas.manager.window
