@@ -575,6 +575,8 @@ class Model:
         for idx, d in enumerate(self.data):
             if idx == self.index:  # skip current data set
                 continue
+            if not (d["dtype"] == "raw" or d["dtype"] == "epochs"):
+                continue
             if d["dtype"] != self.current["dtype"]:
                 continue
             if d["data"].info["nchan"] != data.info["nchan"]:
@@ -583,7 +585,8 @@ class Model:
                 continue
             if d["data"].info["bads"] != data.info["bads"]:
                 continue
-            if not all(d["data"]._cals == data._cals):
+            if d["dtype"] == "raw" and \
+                not all(d["data"]._cals == data._cals):
                 continue
             if not np.isclose(d["data"].info["sfreq"], data.info["sfreq"]):
                 continue
@@ -598,11 +601,20 @@ class Model:
     @data_changed
     def append_data(self, names):
         """Append the given raw data sets."""
+        files = [self.current["data"]]
         for d in self.data:
             if d["name"] in names and d["data"] is not None:
-                self.current["data"].append(d["data"], preload=True)
+                files.append(d["data"])
+
+        names.insert(0, self.current["name"])
+        if self.current["dtype"] == "raw":
+            self.current["data"] = mne.concatenate_raws(files)
+            self.history.append(f"mne.concatenate_raws({names})")
+        elif self.current["dtype"] == "epochs":
+            self.current["data"] = mne.concatenate_epochs(files)
+            self.history.append(f"mne.concatenate_epochs({names})")
         self.current["name"] += " (appended)"
-        self.history.append(f"data.append({names})")
+
 
     @data_changed
     def apply_ica(self):

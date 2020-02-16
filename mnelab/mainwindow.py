@@ -366,7 +366,9 @@ class MainWindow(QMainWindow):
             self.actions["crop"].setEnabled(
                 enabled and self.model.current["dtype"] == "raw")
             append = bool(self.model.get_compatibles())
-            self.actions["append_data"].setEnabled(enabled and append)
+            self.actions["append_data"].setEnabled(enabled and append and
+               (self.model.current["dtype"] == "raw" or
+                self.model.current["dtype"] == "epochs"))
             self.actions["meta_info"].setEnabled(
                 enabled and
                 self.model.current["ftype"] == "Extensible Data Format")
