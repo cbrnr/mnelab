@@ -2,83 +2,64 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
-                            QSpinBox, QComboBox, QDialogButtonBox, QCheckBox)
+from qtpy.QtWidgets import (QCheckBox, QComboBox, QDialog, QDialogButtonBox,
+                            QFormLayout, QLabel, QSpinBox)
 from qtpy.QtCore import Qt, Slot
 
 
 class RunICADialog(QDialog):
-    def __init__(self, parent, nchan, have_picard=True, have_sklearn=True):
+    def __init__(self, parent, nchan, methods):
         super().__init__(parent)
         self.setWindowTitle("Run ICA")
-        vbox = QVBoxLayout(self)
-        grid = QGridLayout()
-        grid.addWidget(QLabel("Method:"), 0, 0)
-        self.method = QComboBox()
-        self.methods = {"Infomax": "infomax"}
-        if have_sklearn:
-            self.methods["FastICA"] = "fastica"
-        if have_picard:
-            self.methods["Picard"] = "picard"
-        self.method.addItems(self.methods.keys())
-        if have_picard:
-            self.method.setCurrentText("Picard")
-        else:
-            self.method.setCurrentText("Infomax")
-        min_len = max(len(key) for key in self.methods.keys())
-        self.method.setMinimumContentsLength(min_len)
-        grid.addWidget(self.method, 0, 1)
 
-        self.extended_label = QLabel("Extended:")
-        grid.addWidget(self.extended_label, 1, 0)
+        form = QFormLayout(self)
+        self.method = QComboBox()
+        self.method.addItems(methods)
+        self.method.setCurrentIndex(int("Picard" in methods))
+
+        self.method.currentIndexChanged.connect(self.toggle_options)
+        form.addRow(QLabel("Method:"), self.method)
+
         self.extended = QCheckBox()
         self.extended.setChecked(True)
-        grid.addWidget(self.extended, 1, 1)
+        form.addRow(QLabel("Extended:"), self.extended)
 
-        self.ortho_label = QLabel("Orthogonal:")
-        grid.addWidget(self.ortho_label, 2, 0)
         self.ortho = QCheckBox()
         self.ortho.setChecked(False)
-        grid.addWidget(self.ortho, 2, 1)
+        form.addRow(QLabel("Orthogonal:"), self.ortho)
 
-        self.toggle_options()
-        self.method.currentIndexChanged.connect(self.toggle_options)
-
-        grid.addWidget(QLabel("Number of components:"), 3, 0)
         self.n_components = QSpinBox()
-        self.n_components.setMinimum(0)
-        self.n_components.setMaximum(nchan)
+        self.n_components.setRange(0, nchan)
         self.n_components.setValue(nchan)
         self.n_components.setAlignment(Qt.AlignRight)
-        grid.addWidget(self.n_components, 3, 1)
-        grid.addWidget(QLabel("Exclude bad segments:"), 4, 0)
+        form.addRow(QLabel("Number of components:"), self.n_components)
+
         self.exclude_bad_segments = QCheckBox()
         self.exclude_bad_segments.setChecked(True)
-        grid.addWidget(self.exclude_bad_segments)
-        vbox.addLayout(grid)
+        form.addRow(QLabel("Exclude bad segments:"), self.exclude_bad_segments)
+
         buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
                                      QDialogButtonBox.Cancel)
-        vbox.addWidget(buttonbox)
+        form.addRow(buttonbox)
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)
-        vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+        form.setSizeConstraint(QFormLayout.SetFixedSize)
+
+        self.toggle_options()
 
     @Slot()
     def toggle_options(self):
         """Toggle extended options.
         """
         if self.method.currentText() == "Picard":
-            self.extended_label.show()
-            self.extended.show()
-            self.ortho_label.show()
-            self.ortho.show()
+            self.extended.setEnabled(True)
+            self.ortho.setEnabled(True)
         elif self.method.currentText() == "Infomax":
-            self.extended_label.show()
-            self.extended.show()
-            self.ortho_label.hide()
-            self.ortho.hide()
+            self.extended.setEnabled(True)
+            self.ortho.setChecked(False)
+            self.ortho.setEnabled(False)
         else:
-            self.extended_label.hide()
-            self.extended.hide()
-            self.ortho_label.hide()
-            self.ortho.hide()
+            self.extended.setChecked(False)
+            self.extended.setEnabled(False)
+            self.ortho.setChecked(False)
+            self.ortho.setEnabled(False)

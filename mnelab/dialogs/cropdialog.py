@@ -2,8 +2,9 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QDoubleSpinBox,
-                            QDialogButtonBox, QCheckBox)
+from qtpy.QtWidgets import (QCheckBox, QDialog, QDialogButtonBox,
+                            QDoubleSpinBox, QFormLayout)
+
 from qtpy.QtCore import Slot
 
 
@@ -11,36 +12,33 @@ class CropDialog(QDialog):
     def __init__(self, parent, start, stop):
         super().__init__(parent)
         self.setWindowTitle("Crop data")
-        vbox = QVBoxLayout(self)
-        grid = QGridLayout()
+
+        form = QFormLayout(self)
         self.start_checkbox = QCheckBox("Start time:")
         self.start_checkbox.setChecked(True)
         self.start_checkbox.stateChanged.connect(self.toggle_start)
-        grid.addWidget(self.start_checkbox, 0, 0)
         self._start = QDoubleSpinBox()
         self._start.setMaximum(999999)
         self._start.setValue(start)
         self._start.setDecimals(2)
         self._start.setSuffix(" s")
-        grid.addWidget(self._start, 0, 1)
+        form.addRow(self.start_checkbox, self._start)
 
         self.stop_checkbox = QCheckBox("Stop time:")
         self.stop_checkbox.setChecked(True)
         self.stop_checkbox.stateChanged.connect(self.toggle_stop)
-        grid.addWidget(self.stop_checkbox, 1, 0)
         self._stop = QDoubleSpinBox()
         self._stop.setMaximum(999999)
         self._stop.setValue(stop)
         self._stop.setDecimals(2)
         self._stop.setSuffix(" s")
-        grid.addWidget(self._stop, 1, 1)
-        vbox.addLayout(grid)
+        form.addRow(self.stop_checkbox, self._stop)
         buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
                                      QDialogButtonBox.Cancel)
-        vbox.addWidget(buttonbox)
+        form.addRow(buttonbox)
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)
-        vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+        form.setSizeConstraint(QFormLayout.SetFixedSize)
 
     @property
     def start(self):

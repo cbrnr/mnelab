@@ -4,8 +4,8 @@
 # License: BSD (3-clause)
 
 from qtpy.QtCore import Qt, Slot
-from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
-                            QDialogButtonBox, QListWidget, QAbstractItemView)
+from qtpy.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox,
+                            QGridLayout, QLabel, QListWidget)
 
 
 class AppendDialog(QDialog):
@@ -13,9 +13,7 @@ class AppendDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle(title)
 
-        vbox = QVBoxLayout(self)
-        grid = QGridLayout()
-
+        grid = QGridLayout(self)
         grid.addWidget(QLabel("Source"), 0, 0, Qt.AlignCenter)
         grid.addWidget(QLabel("Destination"), 0, 2, Qt.AlignCenter)
 
@@ -35,15 +33,14 @@ class AppendDialog(QDialog):
         self.destination.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.destination.setDefaultDropAction(Qt.DropAction.MoveAction)
         grid.addWidget(self.destination, 1, 2)
-        vbox.addLayout(grid)
 
         self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
                                           QDialogButtonBox.Cancel)
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
 
-        vbox.addWidget(self.buttonbox)
-        vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+        grid.addWidget(self.buttonbox, 2, 1, 1, 3)
+        grid.setSizeConstraint(QGridLayout.SetFixedSize)
         self.destination.model().rowsInserted.connect(self.toggle_buttons)
         self.destination.model().rowsRemoved.connect(self.toggle_buttons)
         self.toggle_buttons()

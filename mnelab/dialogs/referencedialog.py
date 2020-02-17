@@ -2,32 +2,32 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLineEdit,
-                            QDialogButtonBox, QRadioButton)
+from qtpy.QtWidgets import (QDialog, QDialogButtonBox, QFormLayout,
+                            QLineEdit, QRadioButton)
 
 
 class ReferenceDialog(QDialog):
     def __init__(self, parent):
         super().__init__(parent)
         self.setWindowTitle("Set reference")
-        vbox = QVBoxLayout(self)
-        grid = QGridLayout()
+
+        form = QFormLayout(self)
         self.average = QRadioButton("Average")
-        self.channels = QRadioButton("Channel(s):")
-        self.average.toggled.connect(self.toggle)
+        self.average.setChecked(True)
+        form.addRow(self.average)
+
         self.channellist = QLineEdit()
         self.channellist.setEnabled(False)
-        self.average.setChecked(True)
-        grid.addWidget(self.average, 0, 0)
-        grid.addWidget(self.channels, 1, 0)
-        grid.addWidget(self.channellist, 1, 1)
-        vbox.addLayout(grid)
+        form.addRow(QRadioButton("Channel(s):"), self.channellist)
+
         buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
                                      QDialogButtonBox.Cancel)
-        vbox.addWidget(buttonbox)
+        form.addRow(buttonbox)
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)
-        vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+        form.setSizeConstraint(QFormLayout.SetFixedSize)
+
+        self.average.toggled.connect(self.toggle)
 
     def toggle(self):
         if self.average.isChecked():
