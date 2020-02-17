@@ -585,8 +585,6 @@ class Model:
                 continue
             if d["data"].info["bads"] != data.info["bads"]:
                 continue
-            if d["dtype"] == "raw" and any(d["data"]._cals != data._cals):
-                continue
             if not np.isclose(d["data"].info["sfreq"], data.info["sfreq"]):
                 continue
             if not np.isclose(d["data"].info["highpass"],
@@ -594,6 +592,16 @@ class Model:
                 continue
             if not np.isclose(d["data"].info["lowpass"], data.info["lowpass"]):
                 continue
+            if d["dtype"] == "raw" and any(d["data"]._cals != data._cals):
+                continue
+            if d["dtype"] == "epochs":
+                if d["data"].tmin != data.tmin:
+                    continue
+                if d["data"].tmax != data.tmax:
+                    continue
+                if d["data"].baseline != data.baseline:
+                    continue
+
             compatibles.append(d)
         return compatibles
 
@@ -602,7 +610,7 @@ class Model:
         """Append the given raw data sets."""
         files = [self.current["data"]]
         for d in self.data:
-            if d["name"] in names and d["data"] is not None:
+            if d["name"] in names:
                 files.append(d["data"])
 
         names.insert(0, self.current["name"])
