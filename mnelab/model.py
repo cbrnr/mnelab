@@ -575,7 +575,7 @@ class Model:
         for idx, d in enumerate(self.data):
             if idx == self.index:  # skip current data set
                 continue
-            if not (d["dtype"] == "raw" or d["dtype"] == "epochs"):
+            if d["dtype"] not in ("raw", "epochs"):
                 continue
             if d["dtype"] != self.current["dtype"]:
                 continue
@@ -585,8 +585,7 @@ class Model:
                 continue
             if d["data"].info["bads"] != data.info["bads"]:
                 continue
-            if d["dtype"] == "raw" and \
-                not all(d["data"]._cals == data._cals):
+            if d["dtype"] == "raw" and any(d["data"]._cals != data._cals):
                 continue
             if not np.isclose(d["data"].info["sfreq"], data.info["sfreq"]):
                 continue
