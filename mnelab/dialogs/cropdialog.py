@@ -5,7 +5,7 @@
 from qtpy.QtWidgets import (QCheckBox, QDialog, QDialogButtonBox,
                             QDoubleSpinBox, QFormLayout, QSizePolicy)
 
-from qtpy.QtCore import Slot
+from qtpy.QtCore import Qt, Slot
 
 
 class CropDialog(QDialog):
@@ -14,6 +14,7 @@ class CropDialog(QDialog):
         self.setWindowTitle("Crop data")
 
         form = QFormLayout(self)
+        form.setAlignment(Qt.AlignCenter)
         label_size = QSizePolicy.Expanding
         self.start_checkbox = QCheckBox("Start time:")
         self.start_checkbox.setSizePolicy(label_size, label_size)
