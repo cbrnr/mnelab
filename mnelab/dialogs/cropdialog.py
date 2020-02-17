@@ -14,7 +14,9 @@ class CropDialog(QDialog):
         self.setWindowTitle("Crop data")
 
         form = QFormLayout(self)
+        label_size = QSizePolicy.Expanding
         self.start_checkbox = QCheckBox("Start time:")
+        self.start_checkbox.setSizePolicy(label_size, label_size)
         self.start_checkbox.setChecked(True)
         self.start_checkbox.stateChanged.connect(self.toggle_start)
         self._start = QDoubleSpinBox()
@@ -26,6 +28,7 @@ class CropDialog(QDialog):
 
         self.stop_checkbox = QCheckBox("Stop time:")
         self.stop_checkbox.setChecked(True)
+        self.stop_checkbox.setSizePolicy(label_size, label_size)
         self.stop_checkbox.stateChanged.connect(self.toggle_stop)
         self._stop = QDoubleSpinBox()
         self._stop.setMaximum(999999)
