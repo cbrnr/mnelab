@@ -3,7 +3,7 @@
 # License: BSD (3-clause)
 
 from qtpy.QtWidgets import (QCheckBox, QDialog, QDialogButtonBox,
-                            QDoubleSpinBox, QFormLayout)
+                            QDoubleSpinBox, QFormLayout, QSizePolicy)
 
 from qtpy.QtCore import Slot
 
