@@ -4,7 +4,7 @@
 # License: BSD (3-clause)
 
 from qtpy.QtWidgets import (QCheckBox, QComboBox, QDialog, QDialogButtonBox,
-                            QDoubleSpinBox,QGridLayout, QLabel, QVBoxLayout)
+                            QDoubleSpinBox,QGridLayout, QLabel)
 from qtpy.QtCore import Qt, Slot
 
 
@@ -13,8 +13,8 @@ class PlotTFDialog(QDialog):
                  title="Time/Frequency settings"):
         super().__init__(parent)
         self.setWindowTitle(title)
-        vbox = QVBoxLayout(self)
-        grid = QGridLayout()
+
+        grid = QGridLayout(self)
 
         # Method
         grid.addWidget(QLabel("Method:"), 0, 0)
@@ -122,14 +122,13 @@ class PlotTFDialog(QDialog):
         self.cluster_checkbox.setChecked(False)
         grid.addWidget(self.cluster_checkbox, 7, 1)
 
-        vbox.addLayout(grid)
         buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
                                      QDialogButtonBox.Cancel)
-        vbox.addWidget(buttonbox)
+        grid.addWidget(buttonbox, 8, 1, 1, 6)
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)
 
-        vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+        grid.setSizeConstraint(QGridLayout.SetFixedSize)
 
     @property
     def tfr_method(self):
