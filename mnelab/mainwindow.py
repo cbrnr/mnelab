@@ -692,9 +692,7 @@ class MainWindow(QMainWindow):
 
     def filter_data(self):
         """Filter data."""
-
-        f_range = [0., self.model.current["data"].info["sfreq"] / 2.]
-        dialog = FilterDialog(self, f_range)
+        dialog = FilterDialog(self)
         if dialog.exec_():
             self.auto_duplicate()
             self.model.filter(dialog.low, dialog.high)
