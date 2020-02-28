@@ -2,42 +2,36 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtWidgets import (QDialog, QDialogButtonBox, QDoubleSpinBox,
-                            QFormLayout, QLabel)
+from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
+                            QLineEdit, QDialogButtonBox)
 
 
 class FilterDialog(QDialog):
-    def __init__(self, parent, f_range):
+    def __init__(self, parent):
         super().__init__(parent)
         self.setWindowTitle("Filter data")
-
-        form = QFormLayout(self)
-        self.lowedit = QDoubleSpinBox()
-        self.lowedit.setRange(f_range[0], f_range[1])
-        self.lowedit.setValue(f_range[0])
-        self.lowedit.setDecimals(1)
-        self.lowedit.setSuffix(" Hz")
-        form.addRow(QLabel("Low cutoff frequency:"), self.lowedit)
-
-        self.highedit = QDoubleSpinBox()
-        self.highedit.setRange(f_range[0], f_range[1])
-        self.highedit.setValue(f_range[0])
-        self.highedit.setDecimals(1)
-        self.highedit.setSuffix(" Hz")
-
-        form.addRow(QLabel("High cutoff frequency:"), self.highedit)
-
+        vbox = QVBoxLayout(self)
+        grid = QGridLayout()
+        grid.addWidget(QLabel("Low cutoff frequency (Hz):"), 0, 0)
+        self.lowedit = QLineEdit()
+        grid.addWidget(self.lowedit, 0, 1)
+        grid.addWidget(QLabel("High cutoff frequency (Hz):"), 1, 0)
+        self.highedit = QLineEdit()
+        grid.addWidget(self.highedit, 1, 1)
+        vbox.addLayout(grid)
         buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
                                      QDialogButtonBox.Cancel)
-        form.addRow(buttonbox)
+        vbox.addWidget(buttonbox)
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)
-        form.setSizeConstraint(QFormLayout.SetFixedSize)
+        vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
 
     @property
     def low(self):
-        return self.lowedit.value()
+        low = self.lowedit.text()
+        return float(low) if low else None
 
     @property
     def high(self):
-        return self.highedit.value()
+        high = self.highedit.text()
+        return float(high) if high else None
