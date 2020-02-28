@@ -19,8 +19,6 @@ class RunICADialog(QDialog):
         self.method.addItems(methods)
         self.method.setCurrentIndex(0)
         self.method.currentIndexChanged.connect(self.toggle_options)
-        # min_len = max(len(key) for key in self.methods.keys())
-        # self.method.setMinimumContentsLength(min_len)
         grid.addWidget(self.method, 0, 1)
 
         self.extended_label = QLabel("Extended:")
