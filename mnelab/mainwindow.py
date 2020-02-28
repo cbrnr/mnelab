@@ -621,32 +621,43 @@ class MainWindow(QMainWindow):
 
     def run_ica(self):
         """Run ICA calculation."""
-        dialog = RunICADialog(self, self.model.current["data"].info["nchan"],
-                              have["picard"], have["sklearn"])
+
+        methods = ["Infomax"]
+        if have["picard"]:
+            methods.insert(0, "Picard")
+        if have["sklearn"]:
+            methods.append("FastICA")
+
+        dialog = RunICADialog(self,
+                              self.model.current["data"].info["nchan"],
+                              methods)
 
         if dialog.exec_():
             calc = CalcDialog(self, "Calculating ICA", "Calculating ICA.")
-            method = dialog.method.currentText()
+
+            method = dialog.method.currentText().lower()
             exclude_bad_segments = dialog.exclude_bad_segments.isChecked()
+
             fit_params = {}
-
-            if not dialog.extended.isHidden():
+            if dialog.extended.isEnabled():
                 fit_params["extended"] = dialog.extended.isChecked()
-
-            if not dialog.ortho.isHidden():
+            if dialog.ortho.isEnabled():
                 fit_params["ortho"] = dialog.ortho.isChecked()
 
-            ica = mne.preprocessing.ICA(method=dialog.methods[method],
+            ica = mne.preprocessing.ICA(method=method,
                                         fit_params=fit_params)
-            self.model.history.append(f"ica = mne.preprocessing.ICA("
-                                      f"method={dialog.methods[method]}, "
-                                      f"fit_params={fit_params})")
+            history = f"ica = mne.preprocessing.ICA(method='{method}'"
+            if fit_params:
+                history += f", fit_params={fit_params})"
+            else:
+                history += ")"
+            self.model.history.append(history)
 
-            kwds = {"reject_by_annotation": exclude_bad_segments}
             pool = pebble.ProcessPool(max_workers=1)
             process = pool.schedule(function=ica.fit,
                                     args=(self.model.current["data"],),
-                                    kwargs=kwds)
+                                    kwargs={"reject_by_annotation":
+                                            exclude_bad_segments})
             process.add_done_callback(lambda x: calc.accept())
             pool.close()
 
