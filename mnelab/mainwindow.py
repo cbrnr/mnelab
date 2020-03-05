@@ -2,7 +2,7 @@
 #
 # License: BSD (3-clause)
 
-import pebble
+import multiprocessing as mp
 from sys import version_info
 import traceback
 from os.path import isfile, isdir
@@ -653,24 +653,22 @@ class MainWindow(QMainWindow):
                 history += ")"
             self.model.history.append(history)
 
-            pool = pebble.ProcessPool(max_workers=1)
-            process = pool.schedule(function=ica.fit,
-                                    args=(self.model.current["data"],),
-                                    kwargs={"reject_by_annotation":
-                                            exclude_bad_segments})
-            process.add_done_callback(lambda x: calc.accept())
+            pool = mp.Pool(processes=1)
+            res = pool.apply_async(func=ica.fit,
+                                   args=(self.model.current["data"],),
+                                   kwds={"reject_by_annotation":
+                                         exclude_bad_segments},
+                                   callback=lambda x: calc.accept())
             pool.close()
 
             if not calc.exec_():
-                pool.stop()
-                pool.join()
+                pool.terminate()
             else:
-                self.model.current["ica"] = process.result()
+                self.model.current["ica"] = res.get(timeout=1)
                 self.model.history.append(f"ica.fit(inst=raw, "
                                           f"reject_by_annotation="
                                           f"{exclude_bad_segments})")
                 self.data_changed()
-                pool.join()
 
     def apply_ica(self):
         """Apply current fitted ICA."""
