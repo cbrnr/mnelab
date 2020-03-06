@@ -2,7 +2,7 @@
 #
 # License: BSD (3-clause)
 
-import pebble
+import multiprocessing as mp
 from sys import version_info
 import traceback
 from os.path import isfile, isdir
@@ -18,12 +18,12 @@ from qtpy.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                             QStatusBar, QToolBar)
 from mne.io.pick import channel_type
 
-from .dialogs import (AnnotationsDialog, CalcDialog, ChannelPropertiesDialog,
-                      CropDialog, AppendDialog, EpochDialog, ErrorMessageBox,
-                      EventsDialog, FilterDialog, FindEventsDialog, HistoryDialog,
-                      InterpolateBadsDialog, MontageDialog, PickChannelsDialog,
-                      ReferenceDialog, RunICADialog, XDFStreamsDialog,
-                      MetaInfoDialog)
+from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog,
+                      ChannelPropertiesDialog, CropDialog, EpochDialog,
+                      ErrorMessageBox, EventsDialog, FilterDialog,
+                      FindEventsDialog, HistoryDialog, InterpolateBadsDialog,
+                      MetaInfoDialog, MontageDialog, PickChannelsDialog,
+                      ReferenceDialog, RunICADialog, XDFStreamsDialog)
 from .widgets.infowidget import InfoWidget
 from .model import (LabelsNotFoundError, InvalidAnnotationsError,
                     UnknownFileTypeError)
@@ -366,8 +366,9 @@ class MainWindow(QMainWindow):
             self.actions["crop"].setEnabled(
                 enabled and self.model.current["dtype"] == "raw")
             append = bool(self.model.get_compatibles())
-            self.actions["append_data"].setEnabled(enabled and append and
-               (self.model.current["dtype"] in ("raw", "epochs")))
+            self.actions["append_data"].setEnabled(
+                enabled and append and
+                (self.model.current["dtype"] in ("raw", "epochs")))
             self.actions["meta_info"].setEnabled(
                 enabled and
                 self.model.current["ftype"] == "Extensible Data Format")
@@ -653,24 +654,22 @@ class MainWindow(QMainWindow):
                 history += ")"
             self.model.history.append(history)
 
-            pool = pebble.ProcessPool(max_workers=1)
-            process = pool.schedule(function=ica.fit,
-                                    args=(self.model.current["data"],),
-                                    kwargs={"reject_by_annotation":
-                                            exclude_bad_segments})
-            process.add_done_callback(lambda x: calc.accept())
+            pool = mp.Pool(processes=1)
+            res = pool.apply_async(func=ica.fit,
+                                   args=(self.model.current["data"],),
+                                   kwds={"reject_by_annotation":
+                                         exclude_bad_segments},
+                                   callback=lambda x: calc.accept())
             pool.close()
 
             if not calc.exec_():
-                pool.stop()
-                pool.join()
+                pool.terminate()
             else:
-                self.model.current["ica"] = process.result()
+                self.model.current["ica"] = res.get(timeout=1)
                 self.model.history.append(f"ica.fit(inst=raw, "
                                           f"reject_by_annotation="
                                           f"{exclude_bad_segments})")
                 self.data_changed()
-                pool.join()
 
     def apply_ica(self):
         """Apply current fitted ICA."""
