@@ -18,12 +18,12 @@ from qtpy.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                             QStatusBar, QToolBar)
 from mne.io.pick import channel_type
 
-from .dialogs import (AnnotationsDialog, CalcDialog, ChannelPropertiesDialog,
-                      CropDialog, AppendDialog, EpochDialog, ErrorMessageBox,
-                      EventsDialog, FilterDialog, FindEventsDialog, HistoryDialog,
-                      InterpolateBadsDialog, MontageDialog, PickChannelsDialog,
-                      ReferenceDialog, RunICADialog, XDFStreamsDialog,
-                      MetaInfoDialog)
+from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog,
+                      ChannelPropertiesDialog, CropDialog, EpochDialog,
+                      ErrorMessageBox, EventsDialog, FilterDialog,
+                      FindEventsDialog, HistoryDialog, InterpolateBadsDialog,
+                      MetaInfoDialog, MontageDialog, PickChannelsDialog,
+                      ReferenceDialog, RunICADialog, XDFStreamsDialog)
 from .widgets.infowidget import InfoWidget
 from .model import (LabelsNotFoundError, InvalidAnnotationsError,
                     UnknownFileTypeError)
@@ -366,8 +366,9 @@ class MainWindow(QMainWindow):
             self.actions["crop"].setEnabled(
                 enabled and self.model.current["dtype"] == "raw")
             append = bool(self.model.get_compatibles())
-            self.actions["append_data"].setEnabled(enabled and append and
-               (self.model.current["dtype"] in ("raw", "epochs")))
+            self.actions["append_data"].setEnabled(
+                enabled and append and
+                (self.model.current["dtype"] in ("raw", "epochs")))
             self.actions["meta_info"].setEnabled(
                 enabled and
                 self.model.current["ftype"] == "Extensible Data Format")
