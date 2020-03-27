@@ -3,6 +3,9 @@
 - Add support for appending continuous raw data ([#108](https://github.com/cbrnr/mnelab/pull/108) by [Lukas Stranger](https://github.com/stralu) and [Clemens Brunner](https://github.com/cbrnr))
 - Add support for appending epoched data ([#135](https://github.com/cbrnr/mnelab/pull/135) by [Lukas Stranger](https://github.com/stralu))
 
+### Fixed
+- Fix loading of BrainVision files that have an extension other than .eeg ([#142](https://github.com/cbrnr/mnelab/pull/142) by [Clemens Brunner](https://github.com/cbrnr))
+
 ### Changed
 - Use [QtPy](https://github.com/spyder-ide/qtpy) to support both PyQt5 and PySide2 ([#118](https://github.com/cbrnr/mnelab/pull/118) by [Clemens Brunner](https://github.com/cbrnr))
 - Remove resource file and include icons directly ([#125](https://github.com/cbrnr/mnelab/pull/125) by [Clemens Brunner](https://github.com/cbrnr))

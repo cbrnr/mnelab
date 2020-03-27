@@ -140,7 +140,7 @@ class Model:
             raise UnknownFileTypeError(f"Unknown file type for {fname}.")
 
         if ext == ".vhdr":
-            fsize = getsize(join(split(fname)[0], name + ".eeg")) / 1024 ** 2
+            fsize = getsize(data.filenames[0]) / 1024 ** 2
         else:
             fsize = getsize(fname) / 1024 ** 2
 
