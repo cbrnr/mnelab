@@ -3,6 +3,7 @@ from mne.stats import permutation_cluster_1samp_test as pcluster_test
 
 
 def cluster_tf_maps(tfr_ev, ch):
+    print(f"Computing permutation test for channel {ch}...")
     cluster_params = dict(n_permutations=100, step_down_p=0.05, seed=1,
                           buffer_size=None)  # for cluster test
 

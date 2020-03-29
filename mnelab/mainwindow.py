@@ -689,26 +689,40 @@ class MainWindow(QMainWindow):
             if dialog.apply_baseline:
                 tfr.apply_baseline(t_baseline, mode=baseline_mode)
 
-            procs = []
+            # procs = []
+            # if dialog.cluster:
+            #     pool = pebble.ProcessPool()
+            #     for event in current_data.event_id:
+            #         tfr_ev = tfr[event]
+            #         for ch in range(current_data.info["nchan"]):
+            #             # calculate masks
+            #             process = pool.schedule(
+            #                 function=cluster_tf_maps,
+            #                 args=(tfr_ev, ch))
+            #             procs.append(process)
+            #     procs[-1].add_done_callback(lambda x: calc.accept())
+            #
+            #     if not calc.exec_():
+            #         pool.stop()
+            #         pool.join()
+            #         return
+            #     else:
+            #         pool.stop()
+            #         pool.join()
+
             if dialog.cluster:
-                pool = pebble.ProcessPool()
+                pool = mp.Pool()
                 for event in current_data.event_id:
                     tfr_ev = tfr[event]
-                    for ch in range(current_data.info["nchan"]):
-                        # calculate masks
-                        process = pool.schedule(
-                            function=cluster_tf_maps,
-                            args=(tfr_ev, ch))
-                        procs.append(process)
-                procs[-1].add_done_callback(lambda x: calc.accept())
+                    with mp.Pool() as pool:
+                        pool.map_async(lambda x: cluster_tf_maps(tfr_ev, x),
+                                       range(current_data.info["nchan"]),
+                                       callback=lambda x: calc.accept())
 
                 if not calc.exec_():
-                    pool.stop()
-                    pool.join()
+                    pool.terminate()
                     return
-                else:
-                    pool.stop()
-                    pool.join()
+                pool.close()
 
             # plot the results
             if current_data.info["nchan"] <= 3:
