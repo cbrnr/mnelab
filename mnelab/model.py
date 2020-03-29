@@ -139,10 +139,7 @@ class Model:
         else:
             raise UnknownFileTypeError(f"Unknown file type for {fname}.")
 
-        if ext == ".vhdr":
-            fsize = getsize(data.filenames[0]) / 1024 ** 2
-        else:
-            fsize = getsize(fname) / 1024 ** 2
+        fsize = getsize(data.filenames[0]) / 1024 ** 2
 
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
                                      ftype=ftype, fsize=fsize, data=data,
