@@ -141,7 +141,7 @@ def read_raw_xdf(fname, stream_id):
     # convert from microvolts to volts if necessary
     scale = np.array([1e-6 if u == "microvolts" else 1 for u in units])
     raw = mne.io.RawArray((stream["time_series"] * scale).T, info)
-
+    raw._filenames = [fname]
     first_samp = stream["time_stamps"][0]
     markers = match_streaminfos(resolve_streams(fname), [{"type": "Markers"}])
     for stream_id in markers:
