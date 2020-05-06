@@ -28,7 +28,8 @@ from .widgets.infowidget import InfoWidget
 from .model import (LabelsNotFoundError, InvalidAnnotationsError,
                     UnknownFileTypeError)
 from .utils import (IMPORT_FORMATS, EXPORT_FORMATS, have, split_fname,
-                    parse_xdf, parse_chunks, get_xml, image_path)
+                    parse_xdf, parse_chunks, get_xml, image_path,
+                    has_locations)
 
 
 __version__ = "0.6.0.dev0"
@@ -200,9 +201,9 @@ class MainWindow(QMainWindow):
         icon = QIcon(image_path("plot_psd.svg"))
         self.actions["plot_psd"] = plot_menu.addAction(
             icon, "&Power spectral density...", self.plot_psd)
-        icon = QIcon(image_path("plot_montage.svg"))
-        self.actions["plot_montage"] = plot_menu.addAction(icon, "&Montage...",
-                                                           self.plot_montage)
+        icon = QIcon(image_path("plot_locations.svg"))
+        self.actions["plot_locations"] = plot_menu.addAction(
+            icon, "&Channel locations...", self.plot_locations)
         plot_menu.addSeparator()
         self.actions["plot_ica_components"] = plot_menu.addAction(
             "ICA &components...", self.plot_ica_components)
@@ -264,7 +265,7 @@ class MainWindow(QMainWindow):
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.actions["plot_data"])
         self.toolbar.addAction(self.actions["plot_psd"])
-        self.toolbar.addAction(self.actions["plot_montage"])
+        self.toolbar.addAction(self.actions["plot_locations"])
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.actions["filter"])
         self.toolbar.addAction(self.actions["find_events"])
@@ -346,16 +347,16 @@ class MainWindow(QMainWindow):
                 annot = False
             self.actions["export_annotations"].setEnabled(enabled and annot)
             self.actions["annotations"].setEnabled(enabled and annot)
-            montage = bool(self.model.current["montage"])
-            self.actions["plot_montage"].setEnabled(enabled and montage)
+            locations = has_locations(self.model.current["data"].info)
+            self.actions["plot_locations"].setEnabled(enabled and locations)
             ica = bool(self.model.current["ica"])
             self.actions["apply_ica"].setEnabled(enabled and ica)
             self.actions["export_ica"].setEnabled(enabled and ica)
             self.actions["plot_ica_components"].setEnabled(enabled and ica and
-                                                           montage)
+                                                           locations)
             self.actions["plot_ica_sources"].setEnabled(enabled and ica)
-            self.actions["interpolate_bads"].setEnabled(enabled and montage and
-                                                        bads)
+            self.actions["interpolate_bads"].setEnabled(enabled and
+                                                        locations and bads)
             self.actions["events"].setEnabled(enabled and events)
             self.actions["events_from_annotations"].setEnabled(enabled and
                                                                annot)
@@ -495,8 +496,7 @@ class MainWindow(QMainWindow):
         """Set montage."""
         montages = mne.channels.get_builtin_montages()
         # TODO: currently it is not possible to remove an existing montage
-        dialog = MontageDialog(self, montages,
-                               selected=self.model.current["montage"])
+        dialog = MontageDialog(self, montages)
         if dialog.exec_():
             name = dialog.montages.selectedItems()[0].data(0)
             montage = mne.channels.make_standard_montage(name)
@@ -603,7 +603,7 @@ class MainWindow(QMainWindow):
         win.setWindowTitle("Power spectral density")
         fig.show()
 
-    def plot_montage(self):
+    def plot_locations(self):
         """Plot current montage."""
         fig = self.model.current["data"].plot_sensors(show_names=True,
                                                       show=False)
