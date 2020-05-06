@@ -9,7 +9,7 @@ import matplotlib
 from qtpy.QtWidgets import QApplication
 from qtpy.QtCore import Qt
 
-from mnelab import MainWindow, Model
+from . import MainWindow, Model
 
 
 def _run():

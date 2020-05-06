@@ -3,6 +3,7 @@
 # License: BSD (3-clause)
 
 from os.path import getsize, join, split, splitext
+from pathlib import Path
 from collections import Counter, defaultdict
 from functools import wraps
 from copy import deepcopy
@@ -12,8 +13,9 @@ from numpy.core.records import fromarrays
 from scipy.io import savemat
 import mne
 
-from .utils import (IMPORT_FORMATS, EXPORT_FORMATS, read_raw_xdf, split_fname,
+from .utils import (EXPORT_FORMATS, read_raw_xdf, split_fname,
                     has_locations)
+from .io.readers import read_raw
 
 
 class LabelsNotFoundError(Exception):
@@ -113,104 +115,12 @@ class Model:
     @data_changed
     def load(self, fname, *args, **kwargs):
         """Load data set from file."""
-        name, ext, ftype = split_fname(fname, IMPORT_FORMATS)
-
-        if ext == ".edf":
-            data, dtype = self._load_edf(fname), "raw"
-        elif ext == ".bdf":
-            data, dtype = self._load_bdf(fname), "raw"
-        elif ext == ".gdf":
-            data, dtype = self._load_gdf(fname), "raw"
-        elif ext in (".fif", ".fif.gz"):
-            data, dtype = self._load_fif(fname)
-        elif ext == ".vhdr":
-            data, dtype = self._load_brainvision(fname), "raw"
-        elif ext == ".set":
-            data, dtype = self._load_eeglab(fname), "raw"
-        elif ext == ".cnt":
-            data, dtype = self._load_cnt(fname), "raw"
-        elif ext == ".mff":
-            # fname is really a directory, so remove any trailing slashes
-            fname = fname.rstrip("/").rstrip("\\")
-            data, dtype = self._load_egi(fname), "raw"
-        elif ext == ".nxe":
-            data, dtype = self._load_nxe(fname), "raw"
-        elif ext in (".xdf", ".xdfz", ".xdf.gz"):
-            data, dtype = self._load_xdf(fname, *args, **kwargs), "raw"
-        else:
-            raise UnknownFileTypeError(f"Unknown file type for {fname}.")
-
-        fsize = getsize(data.filenames[0]) / 1024 ** 2
-
+        data = read_raw(fname, *args, **kwargs)
+        fsize = getsize(data.filenames[0]) / 1024**2  # convert to MB
+        name, ext = Path(fname).stem, "".join(Path(fname).suffixes)
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
-                                     ftype=ftype, fsize=fsize, data=data,
-                                     dtype=dtype))
-
-    def _load_edf(self, fname):
-        data = mne.io.read_raw_edf(fname, preload=True)
-        self.history.append(f"data = mne.io.read_raw_edf('{fname}', "
-                            f"preload=True)")
-        return data
-
-    def _load_bdf(self, fname):
-        data = mne.io.read_raw_bdf(fname, preload=True)
-        self.history.append(f"data = mne.io.read_raw_bdf('{fname}', "
-                            f"preload=True)")
-        return data
-
-    def _load_gdf(self, fname):
-        data = mne.io.read_raw_gdf(fname, preload=True)
-        self.history.append(f"data = mne.io.read_raw_gdf('{fname}', "
-                            f"preload=True)")
-        return data
-
-    def _load_fif(self, fname):
-        try:
-            data = mne.io.read_raw_fif(fname, preload=True)
-            self.history.append(f"data = mne.io.read_raw_fif('{fname}', "
-                                f"preload=True)")
-            return data, "raw"
-        except ValueError:
-            try:
-                data = mne.read_epochs(fname, preload=True)
-                self.history.append(f"data = mne.read_epochs('{fname}', "
-                                    f"preload=True)")
-                return data, "epochs"
-            except ValueError:
-                data = mne.read_evokeds(fname)
-                self.history.append(f"data = mne.read_evokeds('{fname}', "
-                                    f"preload=True)")
-                return data, "evoked"
-
-    def _load_brainvision(self, fname):
-        data = mne.io.read_raw_brainvision(fname, preload=True)
-        self.history.append(f"data = mne.io.read_raw_brainvision('{fname}', "
-                            f"preload=True)")
-        return data
-
-    def _load_eeglab(self, fname):
-        data = mne.io.read_raw_eeglab(fname, preload=True)
-        self.history.append(f"data = mne.io.read_raw_eeglab('{fname}', "
-                            f"preload=True)")
-        return data
-
-    def _load_cnt(self, fname):
-        data = mne.io.read_raw_cnt(fname, preload=True)
-        self.history.append(f"data = mne.io.read_raw_cnt('{fname}', "
-                            f"preload=True)")
-        return data
-
-    def _load_egi(self, fname):
-        data = mne.io.read_raw_egi(fname, preload=True)
-        self.history.append(f"data = mne.io.read_raw_egi('{fname}', "
-                            f"preload=True)")
-        return data
-
-    def _load_nxe(self, fname):
-        data = mne.io.read_raw_eximia(fname, preload=True)
-        self.history.append(f"data = mne.io.read_raw_eximia('{fname}', "
-                            f"preload=True)")
-        return data
+                                     ftype=ext.upper()[1:], fsize=fsize,
+                                     data=data, dtype="raw"))
 
     @staticmethod
     def _load_xdf(fname, stream_id):
