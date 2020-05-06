@@ -41,7 +41,7 @@ setup(
     keywords='EEG MEG MNE GUI electrophysiology',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
     python_requires='>=3.6, <4',
-    install_requires=['mne>=0.19',
+    install_requires=['mne>=0.20',
                       'numpy>=1.14',
                       'scipy>=1.0',
                       'matplotlib>=2.1',
