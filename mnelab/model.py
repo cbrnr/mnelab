@@ -148,9 +148,6 @@ class Model:
                                      ftype=ftype, fsize=fsize, data=data,
                                      dtype=dtype))
 
-        if ext == ".hdr":
-            self.current["montage"] = True
-
     def _load_edf(self, fname):
         data = mne.io.read_raw_edf(fname, preload=True)
         self.history.append(f"data = mne.io.read_raw_edf('{fname}', "
