@@ -12,7 +12,8 @@ from numpy.core.records import fromarrays
 from scipy.io import savemat
 import mne
 
-from .utils import IMPORT_FORMATS, EXPORT_FORMATS, read_raw_xdf, split_fname
+from .utils import (IMPORT_FORMATS, EXPORT_FORMATS, read_raw_xdf, split_fname,
+                    has_locations)
 
 
 class LabelsNotFoundError(Exception):
@@ -452,7 +453,7 @@ class Model:
         dtype = self.current["dtype"].capitalize()
         reference = self.current["reference"]
         events = self.current["events"]
-        montage = self.current["montage"]
+        locations = has_locations(self.current["data"].info)
         ica = self.current["ica"]
 
         length = f"{len(data.times) / data.info['sfreq']:.6g} s"
@@ -516,7 +517,7 @@ class Model:
                 "Events": events,
                 "Annotations": annots,
                 "Reference": reference if reference else "-",
-                "Montage": montage if montage is not None else "-",
+                "Locations": "Yes" if locations else "-",
                 "ICA": ica}
 
     @data_changed
@@ -538,8 +539,7 @@ class Model:
 
     @data_changed
     def set_montage(self, montage):
-        self.current["montage"] = montage
-        self.current["data"].set_montage(montage, raise_if_subset=False)
+        self.current["data"].set_montage(montage)
         self.history.append(f"data.set_montage('{montage}', "
                             f"raise_if_subset=False)")
 
