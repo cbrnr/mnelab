@@ -137,6 +137,8 @@ class Model:
             data, dtype = self._load_nxe(fname), "raw"
         elif ext in (".xdf", ".xdfz", ".xdf.gz"):
             data, dtype = self._load_xdf(fname, *args, **kwargs), "raw"
+        elif ext == ".hdr":
+            data, dtype = self._load_nirx(fname), "raw"
         else:
             raise UnknownFileTypeError(f"Unknown file type for {fname}.")
 
@@ -145,6 +147,9 @@ class Model:
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
                                      ftype=ftype, fsize=fsize, data=data,
                                      dtype=dtype))
+
+        if ext == ".hdr":
+            self.current["montage"] = True
 
     def _load_edf(self, fname):
         data = mne.io.read_raw_edf(fname, preload=True)
@@ -209,6 +214,12 @@ class Model:
     def _load_nxe(self, fname):
         data = mne.io.read_raw_eximia(fname, preload=True)
         self.history.append(f"data = mne.io.read_raw_eximia('{fname}', "
+                            f"preload=True)")
+        return data
+
+    def _load_nirx(self, fname):
+        data = mne.io.read_raw_nirx(fname, preload=True)
+        self.history.append(f"data = mne.io.read_raw_nirx('{fname}', "
                             f"preload=True)")
         return data
 
