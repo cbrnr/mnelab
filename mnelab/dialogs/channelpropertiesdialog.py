@@ -7,10 +7,10 @@ from qtpy.QtWidgets import (QDialog, QVBoxLayout, QDialogButtonBox, QComboBox,
 from qtpy.QtGui import QStandardItemModel, QStandardItem
 from qtpy.QtCore import Qt, QSortFilterProxyModel, Slot
 
-from mne.io.pick import channel_type, get_channel_types
+from mne.io.pick import channel_type, get_channel_type_constants
 
 
-channel_types = [k.upper() for k in get_channel_types().keys()]
+channel_types = [k.upper() for k in get_channel_type_constants().keys()]
 
 
 class ChannelPropertiesDialog(QDialog):
