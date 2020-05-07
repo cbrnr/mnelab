@@ -655,6 +655,16 @@ class Model:
         self.current["name"] += " (epoched)"
 
     @data_changed
+    def convert_od(self):
+        self.current["data"] = mne.preprocessing.nirs.optical_density(self.current["data"])
+        self.history.append(f'data = mne.preprocessing.nirs.optical_density(data)')
+
+    @data_changed
+    def convert_beer_lambert(self):
+        self.current["data"] = mne.preprocessing.nirs.beer_lambert_law(self.current["data"])
+        self.history.append(f'data = mne.preprocessing.nirs.beer_lambert_law(data)')
+
+    @data_changed
     def set_reference(self, ref):
         self.current["reference"] = ref
         if ref == "average":

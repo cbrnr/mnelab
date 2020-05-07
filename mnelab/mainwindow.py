@@ -194,6 +194,12 @@ class MainWindow(QMainWindow):
             "Appen&d data...",
             self.append_data)
 
+        edit_menu.addSeparator()
+        self.actions["convert_od"] = edit_menu.addAction("Convert &to optical density",
+                                                         self.convert_od)
+        self.actions["convert_bl"] = edit_menu.addAction("Convert &to haemoglobin",
+                                                         self.convert_bl)
+
         plot_menu = self.menuBar().addMenu("&Plot")
         icon = QIcon(image_path("plot_data.svg"))
         self.actions["plot_data"] = plot_menu.addAction(icon, "&Data...",
@@ -753,6 +759,15 @@ class MainWindow(QMainWindow):
                 msgbox = ErrorMessageBox(self, "Could not create epochs",
                                          str(e), traceback.format_exc())
                 msgbox.show()
+
+
+    def convert_od(self):
+        """Convert to optical density."""
+        self.model.convert_od()
+
+    def convert_bl(self):
+        """Convert to haemoglobin."""
+        self.model.convert_beer_lambert()
 
     def set_reference(self):
         """Set reference."""
