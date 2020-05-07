@@ -195,10 +195,10 @@ class MainWindow(QMainWindow):
             self.append_data)
 
         edit_menu.addSeparator()
-        self.actions["convert_od"] = edit_menu.addAction("Convert &to optical density",
-                                                         self.convert_od)
-        self.actions["convert_bl"] = edit_menu.addAction("Convert &to haemoglobin",
-                                                         self.convert_bl)
+        self.actions["convert_od"] = edit_menu.addAction(
+                "Convert &to optical density", self.convert_od)
+        self.actions["convert_bl"] = edit_menu.addAction(
+                "Convert &to haemoglobin", self.convert_bl)
 
         plot_menu = self.menuBar().addMenu("&Plot")
         icon = QIcon(image_path("plot_data.svg"))
@@ -379,6 +379,12 @@ class MainWindow(QMainWindow):
             self.actions["meta_info"].setEnabled(
                 enabled and
                 self.model.current["ftype"] == "Extensible Data Format")
+            self.actions["convert_od"].setEnabled(
+                    len(mne.pick_types(self.model.current["data"].info,
+                        fnirs="fnirs_raw")))
+            self.actions["convert_bl"].setEnabled(
+                    len(mne.pick_types(self.model.current["data"].info,
+                        fnirs="fnirs_od")))
         # add to recent files
         if len(self.model) > 0:
             self._add_recent(self.model.current["fname"])
