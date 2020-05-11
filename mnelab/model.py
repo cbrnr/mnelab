@@ -44,7 +44,8 @@ class Model:
         self.index = -1  # index of currently active data set
         self.history = ["from copy import deepcopy",
                         "import mne",
-                        "",
+                        "from mnelab.io import read_raw"
+                        "\n",
                         "datasets = []"]
 
     @data_changed
@@ -109,6 +110,7 @@ class Model:
     def load(self, fname, *args, **kwargs):
         """Load data set from file."""
         data = read_raw(fname, *args, preload=True, **kwargs)
+        self.history.append(f'data = read_raw("{fname}", preload=True)')
         fsize = getsize(data.filenames[0]) / 1024**2  # convert to MB
         name, ext = Path(fname).stem, "".join(Path(fname).suffixes)
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
