@@ -120,8 +120,8 @@ if have["pyedflib"]:
                     ".bdf": write_edf})
 
 WRITE_FORMATS = {"Elekta Neuromag": ".fif",
-                  "Elekta Neuromag (compressed)": ".fif.gz",
-                  "EEGLAB": ".set"}
+                 "Elekta Neuromag (compressed)": ".fif.gz",
+                 "EEGLAB": ".set"}
 if have["pyedflib"]:
     WRITE_FORMATS["European Data Format"] = ".edf"
     WRITE_FORMATS["BioSemi Data Format"] = ".bdf"
