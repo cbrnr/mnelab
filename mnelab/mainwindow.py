@@ -7,16 +7,17 @@ from sys import version_info
 import traceback
 from os.path import isfile, isdir
 from functools import partial
-import numpy as np
+from pathlib import Path
 
+import numpy as np
 import mne
+from mne.io.pick import channel_type
 from qtpy.QtCore import (Qt, Slot, QStringListModel, QModelIndex, QSettings,
                          QEvent, QObject)
 from qtpy.QtGui import QKeySequence, QDropEvent, QIcon
 from qtpy.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                             QMessageBox, QListView, QAction, QLabel, QFrame,
                             QStatusBar, QToolBar)
-from mne.io.pick import channel_type
 
 from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog,
                       ChannelPropertiesDialog, CropDialog, EpochDialog,
@@ -27,9 +28,9 @@ from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog,
 from .widgets.infowidget import InfoWidget
 from .model import (LabelsNotFoundError, InvalidAnnotationsError,
                     UnknownFileTypeError)
-from .utils import (IMPORT_FORMATS, EXPORT_FORMATS, have, split_fname,
-                    parse_xdf, parse_chunks, get_xml, image_path,
-                    has_locations)
+from .utils import have, has_locations, image_path
+from .io import EXPORT_FORMATS
+from .io.xdf import get_xml, parse_xdf, parse_chunks
 
 
 __version__ = "0.6.0.dev0"
@@ -372,7 +373,7 @@ class MainWindow(QMainWindow):
                 (self.model.current["dtype"] in ("raw", "epochs")))
             self.actions["meta_info"].setEnabled(
                 enabled and
-                self.model.current["ftype"] == "Extensible Data Format")
+                self.model.current["ftype"] in ["XDF", "XDFZ", "XDF.GZ"])
         # add to recent files
         if len(self.model) > 0:
             self._add_recent(self.model.current["fname"])
@@ -380,8 +381,7 @@ class MainWindow(QMainWindow):
     def open_data(self, fname=None):
         """Open raw file."""
         if fname is None:
-            fname = QFileDialog.getOpenFileName(self, "Open raw",
-                                                filter="*")[0]
+            fname = QFileDialog.getOpenFileName(self, "Open raw")[0]
         if fname:
             if not (isfile(fname) or isdir(fname)):
                 self._remove_recent(fname)
@@ -389,7 +389,7 @@ class MainWindow(QMainWindow):
                                      f"File {fname} does not exist anymore.")
                 return
 
-            name, ext, ftype = split_fname(fname, IMPORT_FORMATS)
+            ext = "".join(Path(fname).suffixes)
 
             if ext in [".xdf", ".xdfz", ".xdf.gz"]:
                 streams = parse_chunks(parse_xdf(fname))
@@ -454,6 +454,7 @@ class MainWindow(QMainWindow):
                 self.model.remove_data()
 
     def meta_info(self):
+        """Show XDF meta info."""
         xml = get_xml(self.model.current["fname"])
         dialog = MetaInfoDialog(self, xml)
         dialog.exec_()

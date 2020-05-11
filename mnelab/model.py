@@ -7,15 +7,12 @@ from pathlib import Path
 from collections import Counter, defaultdict
 from functools import wraps
 from copy import deepcopy
-from datetime import datetime
+
 import numpy as np
-from numpy.core.records import fromarrays
-from scipy.io import savemat
 import mne
 
-from .utils import (EXPORT_FORMATS, read_raw_xdf, split_fname,
-                    has_locations)
-from .io.readers import read_raw
+from .utils import has_locations
+from .io import read_raw, write_raw
 
 
 class LabelsNotFoundError(Exception):
@@ -115,17 +112,12 @@ class Model:
     @data_changed
     def load(self, fname, *args, **kwargs):
         """Load data set from file."""
-        data = read_raw(fname, *args, **kwargs)
+        data = read_raw(fname, *args, preload=True, **kwargs)
         fsize = getsize(data.filenames[0]) / 1024**2  # convert to MB
         name, ext = Path(fname).stem, "".join(Path(fname).suffixes)
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
                                      ftype=ext.upper()[1:], fsize=fsize,
                                      data=data, dtype="raw"))
-
-    @staticmethod
-    def _load_xdf(fname, stream_id):
-        data = read_raw_xdf(fname, stream_id=stream_id)
-        return data
 
     @data_changed
     def find_events(self, stim_channel, consecutive=True, initial_event=True,
@@ -153,109 +145,11 @@ class Model:
 
     def export_data(self, fname, ffilter):
         """Export raw to file."""
-        name, ext, ftype = split_fname(fname, EXPORT_FORMATS)
+        ext = "".join(Path(fname).suffixes)
         if ext != ffilter:
             ext = ffilter
             fname += ext
-
-        if ext in (".fif", ".fif.gz"):
-            self.current["data"].save(fname)
-        elif ext == ".set":
-            self._export_set(fname)
-        elif ext in (".edf", ".bdf"):
-            self._export_edf(fname)
-        elif ext == ".eeg":
-            self._export_bv(fname)
-
-    def _export_set(self, fname):
-        """Export raw to EEGLAB file."""
-        data = self.current["data"].get_data() * 1e6  # convert to microvolts
-        fs = self.current["data"].info["sfreq"]
-        times = self.current["data"].times
-        ch_names = self.current["data"].info["ch_names"]
-        chanlocs = fromarrays([ch_names], names=["labels"])
-        events = fromarrays([self.current["data"].annotations.description,
-                             self.current["data"].annotations.onset * fs + 1,
-                             self.current["data"].annotations.duration * fs],
-                            names=["type", "latency", "duration"])
-        savemat(fname, dict(EEG=dict(data=data,
-                                     setname=fname,
-                                     nbchan=data.shape[0],
-                                     pnts=data.shape[1],
-                                     trials=1,
-                                     srate=fs,
-                                     xmin=times[0],
-                                     xmax=times[-1],
-                                     chanlocs=chanlocs,
-                                     event=events,
-                                     icawinv=[],
-                                     icasphere=[],
-                                     icaweights=[])),
-                appendmat=False)
-
-    def _export_edf(self, fname):
-        """Export raw to EDF/BDF file (requires pyEDFlib)."""
-        import pyedflib
-        name, ext = splitext(split(fname)[-1])
-        if ext == ".edf":
-            filetype = pyedflib.FILETYPE_EDFPLUS
-            dmin, dmax = -32768, 32767
-        elif ext == ".bdf":
-            filetype = pyedflib.FILETYPE_BDFPLUS
-            dmin, dmax = -8388608, 8388607
-        data = self.current["data"].get_data() * 1e6  # convert to microvolts
-        fs = self.current["data"].info["sfreq"]
-        nchan = self.current["data"].info["nchan"]
-        ch_names = self.current["data"].info["ch_names"]
-        if self.current["data"].info["meas_date"] is not None:
-            meas_date = self.current['data'].info["meas_date"][0]
-        else:
-            meas_date = None
-        prefilter = (f"{self.current['data'].info['highpass']}Hz - "
-                     f"{self.current['data'].info['lowpass']}")
-        pmin, pmax = data.min(axis=1), data.max(axis=1)
-        f = pyedflib.EdfWriter(fname, nchan, filetype)
-        channel_info = []
-        data_list = []
-        for i in range(nchan):
-            channel_info.append(dict(label=ch_names[i],
-                                     dimension="uV",
-                                     sample_rate=fs,
-                                     physical_min=pmin[i],
-                                     physical_max=pmax[i],
-                                     digital_min=dmin,
-                                     digital_max=dmax,
-                                     transducer="",
-                                     prefilter=prefilter))
-            data_list.append(data[i])
-        f.setTechnician("Exported by MNELAB")
-        f.setSignalHeaders(channel_info)
-        if meas_date is not None:
-            f.setStartdatetime(datetime.utcfromtimestamp(meas_date))
-        # note that currently, only blocks of whole seconds can be written
-        f.writeSamples(data_list)
-        if self.current["data"].annotations is not None:
-            for ann in self.current["data"].annotations:
-                f.writeAnnotation(ann["onset"], ann["duration"],
-                                  ann["description"])
-
-    def _export_bv(self, fname):
-        """Export data to BrainVision EEG/VHDR/VMRK file (requires pybv)."""
-        import pybv
-        head, tail = split(fname)
-        name, ext = splitext(tail)
-        data = self.current["data"].get_data()
-        fs = self.current["data"].info["sfreq"]
-        ch_names = self.current["data"].info["ch_names"]
-        events = None
-        if not isinstance(self.current["events"], np.ndarray):
-            if self.current["data"].annotations:
-                events = mne.events_from_annotations(self.current["data"])[0]
-                dur = self.current["data"].annotations.duration * fs
-                events = np.column_stack([events[:, [0, 2]], dur.astype(int)])
-        else:
-            events = self.current["events"][:, [0, 2]]
-        pybv.write_brainvision(data, fs, ch_names, name, head, events=events)
+        write_raw(fname, self.current["data"])
 
     def export_bads(self, fname):
         """Export bad channels info to a CSV file."""
