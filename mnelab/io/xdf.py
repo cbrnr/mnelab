@@ -156,7 +156,7 @@ def resolve_streams(fname):
     return parse_chunks(parse_xdf(fname))
 
 
-def read_raw_xdf(fname, stream_id):
+def read_raw_xdf(fname, stream_id, *args, **kwargs):
     """Read XDF file.
 
     Parameters
