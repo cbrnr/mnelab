@@ -26,8 +26,7 @@ from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog,
                       MetaInfoDialog, MontageDialog, PickChannelsDialog,
                       ReferenceDialog, RunICADialog, XDFStreamsDialog)
 from .widgets.infowidget import InfoWidget
-from .model import (LabelsNotFoundError, InvalidAnnotationsError,
-                    UnknownFileTypeError)
+from .model import LabelsNotFoundError, InvalidAnnotationsError
 from .utils import have, has_locations, image_path
 from .io import EXPORT_FORMATS
 from .io.xdf import get_xml, parse_xdf, parse_chunks
@@ -419,7 +418,7 @@ class MainWindow(QMainWindow):
                     self.model.load(fname)
                 except FileNotFoundError as e:
                     QMessageBox.critical(self, "File not found", str(e))
-                except UnknownFileTypeError as e:
+                except ValueError as e:
                     QMessageBox.critical(self, "Unknown file type", str(e))
 
     def open_file(self, f, text, ffilter="*"):

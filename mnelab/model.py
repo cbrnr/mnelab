@@ -27,10 +27,6 @@ class AddReferenceError(Exception):
     pass
 
 
-class UnknownFileTypeError(Exception):
-    pass
-
-
 def data_changed(f):
     """Call self.view.data_changed method after function call."""
     @wraps(f)
