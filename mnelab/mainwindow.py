@@ -28,7 +28,7 @@ from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog,
 from .widgets.infowidget import InfoWidget
 from .model import LabelsNotFoundError, InvalidAnnotationsError
 from .utils import have, has_locations, image_path
-from .io import EXPORT_FORMATS
+from .io import WRITE_FORMATS
 from .io.xdf import get_xml, parse_xdf, parse_chunks
 
 
@@ -144,7 +144,7 @@ class MainWindow(QMainWindow):
                                    "*.fif *.fif.gz"))
         file_menu.addSeparator()
         self.export_menu = file_menu.addMenu("Export data")
-        for name, ext in EXPORT_FORMATS.items():
+        for name, ext in WRITE_FORMATS.items():
             self.actions["export_data_" + ext] = self.export_menu.addAction(
                 f"{name} ({ext[1:].upper()})...",
                 partial(self.export_file, model.export_data, "Export data",

@@ -119,14 +119,14 @@ if have["pyedflib"]:
     writers.update({".edf": write_edf,
                     ".bdf": write_edf})
 
-EXPORT_FORMATS = {"Elekta Neuromag": ".fif",
+WRITE_FORMATS = {"Elekta Neuromag": ".fif",
                   "Elekta Neuromag (compressed)": ".fif.gz",
                   "EEGLAB": ".set"}
 if have["pyedflib"]:
-    EXPORT_FORMATS["European Data Format"] = ".edf"
-    EXPORT_FORMATS["BioSemi Data Format"] = ".bdf"
+    WRITE_FORMATS["European Data Format"] = ".edf"
+    WRITE_FORMATS["BioSemi Data Format"] = ".bdf"
 if have["pybv"]:
-    EXPORT_FORMATS["BrainVision"] = ".eeg"
+    WRITE_FORMATS["BrainVision"] = ".eeg"
 
 def write_raw(fname, raw):
     ext = "".join(Path(fname).suffixes)
