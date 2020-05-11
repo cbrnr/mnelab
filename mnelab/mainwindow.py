@@ -145,8 +145,9 @@ class MainWindow(QMainWindow):
         file_menu.addSeparator()
         self.export_menu = file_menu.addMenu("Export data")
         for name, ext in WRITE_FORMATS.items():
-            self.actions["export_data_" + ext] = self.export_menu.addAction(
-                f"{name} ({ext[1:].upper()})...",
+            action = "export_data" + ext.replace(".", "_")
+            self.actions[action] = self.export_menu.addAction(
+                f"{ext[1:].upper()} ({name})...",
                 partial(self.export_file, model.export_data, "Export data",
                         ext))
         self.actions["export_bads"] = file_menu.addAction(
@@ -307,6 +308,7 @@ class MainWindow(QMainWindow):
 
         self.setAcceptDrops(True)
         self.data_changed()
+        print(self.actions.keys())
 
     def data_changed(self):
         # update sidebar
