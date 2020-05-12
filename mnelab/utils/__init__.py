@@ -5,4 +5,4 @@
 from .dependencies import have
 from .utils import has_locations, image_path
 
-__all__ = [have, image_path]
+__all__ = [have, has_locations, image_path]
