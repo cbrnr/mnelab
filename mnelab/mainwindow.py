@@ -308,7 +308,6 @@ class MainWindow(QMainWindow):
 
         self.setAcceptDrops(True)
         self.data_changed()
-        print(self.actions.keys())
 
     def data_changed(self):
         # update sidebar
