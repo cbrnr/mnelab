@@ -98,7 +98,6 @@ def write_bv(fname, raw, events=None):
     data = raw.get_data()
     fs = raw.info["sfreq"]
     ch_names = raw.info["ch_names"]
-    events = None
     if events is None:
         if raw.annotations:
             events = mne.events_from_annotations(raw)[0]
@@ -110,23 +109,15 @@ def write_bv(fname, raw, events=None):
 
 
 # supported write file formats
-writers = {".fif": write_fif,
-           ".fif.gz": write_fif,
-           ".set": write_set}
+writers = {".fif": [write_fif, "Elekta Neuromag"],
+           ".fif.gz": [write_fif, "Elekta Neuromag"],
+           ".set": [write_set, "EEGLAB"]}
 if have["pybv"]:
-    writers.update({".eeg": write_bv})
+    writers.update({".eeg": [write_bv, "BrainVision"]})
 if have["pyedflib"]:
-    writers.update({".edf": write_edf,
-                    ".bdf": write_edf})
+    writers.update({".edf": [write_edf, "European Data Format"],
+                    ".bdf": [write_edf, "Biosemi Data Format"]})
 
-WRITE_FORMATS = {"Elekta Neuromag": ".fif",
-                 "Elekta Neuromag (compressed)": ".fif.gz",
-                 "EEGLAB": ".set"}
-if have["pyedflib"]:
-    WRITE_FORMATS["European Data Format"] = ".edf"
-    WRITE_FORMATS["BioSemi Data Format"] = ".bdf"
-if have["pybv"]:
-    WRITE_FORMATS["BrainVision"] = ".eeg"
 
 def write_raw(fname, raw):
     ext = "".join(Path(fname).suffixes)

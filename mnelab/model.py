@@ -420,7 +420,6 @@ class Model:
             self.history.append(f"mne.concatenate_epochs({names})")
         self.current["name"] += " (appended)"
 
-
     @data_changed
     def apply_ica(self):
         self.current["ica"].apply(self.current["data"])
