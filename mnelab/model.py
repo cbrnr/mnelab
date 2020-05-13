@@ -63,13 +63,9 @@ class Model:
     @data_changed
     def remove_data(self):
         """Remove data set at current index."""
-        try:
-            self.data.pop(self.index)
-        except IndexError:
-            raise IndexError("Cannot remove data set from an empty list.")
-        else:
-            if self.index >= len(self.data):  # if last entry was removed
-                self.index = len(self.data) - 1  # reset index to last entry
+        self.data.pop(self.index)
+        if self.index >= len(self.data):  # if last entry was removed
+            self.index = len(self.data) - 1  # reset index to last entry
 
     @data_changed
     def duplicate_data(self):
