@@ -3,17 +3,16 @@
 # License: BSD (3-clause)
 
 from os.path import getsize, join, split, splitext
+from pathlib import Path
 from collections import Counter, defaultdict
 from functools import wraps
 from copy import deepcopy
-from datetime import datetime
+
 import numpy as np
-from numpy.core.records import fromarrays
-from scipy.io import savemat
 import mne
 
-from .utils import (IMPORT_FORMATS, EXPORT_FORMATS, read_raw_xdf, split_fname,
-                    has_locations)
+from .utils import has_locations
+from .io import read_raw, write_raw
 
 
 class LabelsNotFoundError(Exception):
@@ -25,10 +24,6 @@ class InvalidAnnotationsError(Exception):
 
 
 class AddReferenceError(Exception):
-    pass
-
-
-class UnknownFileTypeError(Exception):
     pass
 
 
@@ -49,7 +44,8 @@ class Model:
         self.index = -1  # index of currently active data set
         self.history = ["from copy import deepcopy",
                         "import mne",
-                        "",
+                        "from mnelab.io import read_raw"
+                        "\n",
                         "datasets = []"]
 
     @data_changed
@@ -67,13 +63,9 @@ class Model:
     @data_changed
     def remove_data(self):
         """Remove data set at current index."""
-        try:
-            self.data.pop(self.index)
-        except IndexError:
-            raise IndexError("Cannot remove data set from an empty list.")
-        else:
-            if self.index >= len(self.data):  # if last entry was removed
-                self.index = len(self.data) - 1  # reset index to last entry
+        self.data.pop(self.index)
+        if self.index >= len(self.data):  # if last entry was removed
+            self.index = len(self.data) - 1  # reset index to last entry
 
     @data_changed
     def duplicate_data(self):
@@ -113,117 +105,13 @@ class Model:
     @data_changed
     def load(self, fname, *args, **kwargs):
         """Load data set from file."""
-        name, ext, ftype = split_fname(fname, IMPORT_FORMATS)
-
-        if ext == ".edf":
-            data, dtype = self._load_edf(fname), "raw"
-        elif ext == ".bdf":
-            data, dtype = self._load_bdf(fname), "raw"
-        elif ext == ".gdf":
-            data, dtype = self._load_gdf(fname), "raw"
-        elif ext in (".fif", ".fif.gz"):
-            data, dtype = self._load_fif(fname)
-        elif ext == ".vhdr":
-            data, dtype = self._load_brainvision(fname), "raw"
-        elif ext == ".set":
-            data, dtype = self._load_eeglab(fname), "raw"
-        elif ext == ".cnt":
-            data, dtype = self._load_cnt(fname), "raw"
-        elif ext == ".mff":
-            # fname is really a directory, so remove any trailing slashes
-            fname = fname.rstrip("/").rstrip("\\")
-            data, dtype = self._load_egi(fname), "raw"
-        elif ext == ".nxe":
-            data, dtype = self._load_nxe(fname), "raw"
-        elif ext in (".xdf", ".xdfz", ".xdf.gz"):
-            data, dtype = self._load_xdf(fname, *args, **kwargs), "raw"
-        elif ext == ".hdr":
-            data, dtype = self._load_nirx(fname), "raw"
-        else:
-            raise UnknownFileTypeError(f"Unknown file type for {fname}.")
-
-        fsize = getsize(data.filenames[0]) / 1024 ** 2
-
+        data = read_raw(fname, *args, preload=True, **kwargs)
+        self.history.append(f'data = read_raw("{fname}", preload=True)')
+        fsize = getsize(data.filenames[0]) / 1024**2  # convert to MB
+        name, ext = Path(fname).stem, "".join(Path(fname).suffixes)
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
-                                     ftype=ftype, fsize=fsize, data=data,
-                                     dtype=dtype))
-
-    def _load_edf(self, fname):
-        data = mne.io.read_raw_edf(fname, preload=True)
-        self.history.append(f"data = mne.io.read_raw_edf('{fname}', "
-                            f"preload=True)")
-        return data
-
-    def _load_bdf(self, fname):
-        data = mne.io.read_raw_bdf(fname, preload=True)
-        self.history.append(f"data = mne.io.read_raw_bdf('{fname}', "
-                            f"preload=True)")
-        return data
-
-    def _load_gdf(self, fname):
-        data = mne.io.read_raw_gdf(fname, preload=True)
-        self.history.append(f"data = mne.io.read_raw_gdf('{fname}', "
-                            f"preload=True)")
-        return data
-
-    def _load_fif(self, fname):
-        try:
-            data = mne.io.read_raw_fif(fname, preload=True)
-            self.history.append(f"data = mne.io.read_raw_fif('{fname}', "
-                                f"preload=True)")
-            return data, "raw"
-        except ValueError:
-            try:
-                data = mne.read_epochs(fname, preload=True)
-                self.history.append(f"data = mne.read_epochs('{fname}', "
-                                    f"preload=True)")
-                return data, "epochs"
-            except ValueError:
-                data = mne.read_evokeds(fname)
-                self.history.append(f"data = mne.read_evokeds('{fname}', "
-                                    f"preload=True)")
-                return data, "evoked"
-
-    def _load_brainvision(self, fname):
-        data = mne.io.read_raw_brainvision(fname, preload=True)
-        self.history.append(f"data = mne.io.read_raw_brainvision('{fname}', "
-                            f"preload=True)")
-        return data
-
-    def _load_eeglab(self, fname):
-        data = mne.io.read_raw_eeglab(fname, preload=True)
-        self.history.append(f"data = mne.io.read_raw_eeglab('{fname}', "
-                            f"preload=True)")
-        return data
-
-    def _load_cnt(self, fname):
-        data = mne.io.read_raw_cnt(fname, preload=True)
-        self.history.append(f"data = mne.io.read_raw_cnt('{fname}', "
-                            f"preload=True)")
-        return data
-
-    def _load_egi(self, fname):
-        data = mne.io.read_raw_egi(fname, preload=True)
-        self.history.append(f"data = mne.io.read_raw_egi('{fname}', "
-                            f"preload=True)")
-        return data
-
-    def _load_nxe(self, fname):
-        data = mne.io.read_raw_eximia(fname, preload=True)
-        self.history.append(f"data = mne.io.read_raw_eximia('{fname}', "
-                            f"preload=True)")
-        return data
-
-    def _load_nirx(self, fname):
-        data = mne.io.read_raw_nirx(fname, preload=True)
-        self.history.append(f"data = mne.io.read_raw_nirx('{fname}', "
-                            f"preload=True)")
-        return data
-
-    @staticmethod
-    def _load_xdf(fname, stream_id):
-        data = read_raw_xdf(fname, stream_id=stream_id)
-        return data
+                                     ftype=ext.upper()[1:], fsize=fsize,
+                                     data=data, dtype="raw"))
 
     @data_changed
     def find_events(self, stim_channel, consecutive=True, initial_event=True,
@@ -251,109 +139,11 @@ class Model:
 
     def export_data(self, fname, ffilter):
         """Export raw to file."""
-        name, ext, ftype = split_fname(fname, EXPORT_FORMATS)
+        ext = "".join(Path(fname).suffixes)
         if ext != ffilter:
             ext = ffilter
             fname += ext
-
-        if ext in (".fif", ".fif.gz"):
-            self.current["data"].save(fname)
-        elif ext == ".set":
-            self._export_set(fname)
-        elif ext in (".edf", ".bdf"):
-            self._export_edf(fname)
-        elif ext == ".eeg":
-            self._export_bv(fname)
-
-    def _export_set(self, fname):
-        """Export raw to EEGLAB file."""
-        data = self.current["data"].get_data() * 1e6  # convert to microvolts
-        fs = self.current["data"].info["sfreq"]
-        times = self.current["data"].times
-        ch_names = self.current["data"].info["ch_names"]
-        chanlocs = fromarrays([ch_names], names=["labels"])
-        events = fromarrays([self.current["data"].annotations.description,
-                             self.current["data"].annotations.onset * fs + 1,
-                             self.current["data"].annotations.duration * fs],
-                            names=["type", "latency", "duration"])
-        savemat(fname, dict(EEG=dict(data=data,
-                                     setname=fname,
-                                     nbchan=data.shape[0],
-                                     pnts=data.shape[1],
-                                     trials=1,
-                                     srate=fs,
-                                     xmin=times[0],
-                                     xmax=times[-1],
-                                     chanlocs=chanlocs,
-                                     event=events,
-                                     icawinv=[],
-                                     icasphere=[],
-                                     icaweights=[])),
-                appendmat=False)
-
-    def _export_edf(self, fname):
-        """Export raw to EDF/BDF file (requires pyEDFlib)."""
-        import pyedflib
-        name, ext = splitext(split(fname)[-1])
-        if ext == ".edf":
-            filetype = pyedflib.FILETYPE_EDFPLUS
-            dmin, dmax = -32768, 32767
-        elif ext == ".bdf":
-            filetype = pyedflib.FILETYPE_BDFPLUS
-            dmin, dmax = -8388608, 8388607
-        data = self.current["data"].get_data() * 1e6  # convert to microvolts
-        fs = self.current["data"].info["sfreq"]
-        nchan = self.current["data"].info["nchan"]
-        ch_names = self.current["data"].info["ch_names"]
-        if self.current["data"].info["meas_date"] is not None:
-            meas_date = self.current['data'].info["meas_date"][0]
-        else:
-            meas_date = None
-        prefilter = (f"{self.current['data'].info['highpass']}Hz - "
-                     f"{self.current['data'].info['lowpass']}")
-        pmin, pmax = data.min(axis=1), data.max(axis=1)
-        f = pyedflib.EdfWriter(fname, nchan, filetype)
-        channel_info = []
-        data_list = []
-        for i in range(nchan):
-            channel_info.append(dict(label=ch_names[i],
-                                     dimension="uV",
-                                     sample_rate=fs,
-                                     physical_min=pmin[i],
-                                     physical_max=pmax[i],
-                                     digital_min=dmin,
-                                     digital_max=dmax,
-                                     transducer="",
-                                     prefilter=prefilter))
-            data_list.append(data[i])
-        f.setTechnician("Exported by MNELAB")
-        f.setSignalHeaders(channel_info)
-        if meas_date is not None:
-            f.setStartdatetime(datetime.utcfromtimestamp(meas_date))
-        # note that currently, only blocks of whole seconds can be written
-        f.writeSamples(data_list)
-        if self.current["data"].annotations is not None:
-            for ann in self.current["data"].annotations:
-                f.writeAnnotation(ann["onset"], ann["duration"],
-                                  ann["description"])
-
-    def _export_bv(self, fname):
-        """Export data to BrainVision EEG/VHDR/VMRK file (requires pybv)."""
-        import pybv
-        head, tail = split(fname)
-        name, ext = splitext(tail)
-        data = self.current["data"].get_data()
-        fs = self.current["data"].info["sfreq"]
-        ch_names = self.current["data"].info["ch_names"]
-        events = None
-        if not isinstance(self.current["events"], np.ndarray):
-            if self.current["data"].annotations:
-                events = mne.events_from_annotations(self.current["data"])[0]
-                dur = self.current["data"].annotations.duration * fs
-                events = np.column_stack([events[:, [0, 2]], dur.astype(int)])
-        else:
-            events = self.current["events"][:, [0, 2]]
-        pybv.write_brainvision(data, fs, ch_names, name, head, events=events)
+        write_raw(fname, self.current["data"])
 
     def export_bads(self, fname):
         """Export bad channels info to a CSV file."""
@@ -625,7 +415,6 @@ class Model:
             self.current["data"] = mne.concatenate_epochs(files)
             self.history.append(f"mne.concatenate_epochs({names})")
         self.current["name"] += " (appended)"
-
 
     @data_changed
     def apply_ica(self):
