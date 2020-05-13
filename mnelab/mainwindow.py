@@ -7,16 +7,17 @@ from sys import version_info
 import traceback
 from os.path import isfile, isdir
 from functools import partial
-import numpy as np
+from pathlib import Path
 
+import numpy as np
 import mne
+from mne.io.pick import channel_type
 from qtpy.QtCore import (Qt, Slot, QStringListModel, QModelIndex, QSettings,
                          QEvent, QObject)
 from qtpy.QtGui import QKeySequence, QDropEvent, QIcon
 from qtpy.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                             QMessageBox, QListView, QAction, QLabel, QFrame,
                             QStatusBar, QToolBar)
-from mne.io.pick import channel_type
 
 from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog,
                       ChannelPropertiesDialog, CropDialog, EpochDialog,
@@ -25,11 +26,10 @@ from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog,
                       MetaInfoDialog, MontageDialog, PickChannelsDialog,
                       ReferenceDialog, RunICADialog, XDFStreamsDialog)
 from .widgets.infowidget import InfoWidget
-from .model import (LabelsNotFoundError, InvalidAnnotationsError,
-                    UnknownFileTypeError)
-from .utils import (IMPORT_FORMATS, EXPORT_FORMATS, have, split_fname,
-                    parse_xdf, parse_chunks, get_xml, image_path,
-                    has_locations)
+from .model import LabelsNotFoundError, InvalidAnnotationsError
+from .utils import have, has_locations, image_path
+from .io import writers
+from .io.xdf import get_xml, get_streams
 
 
 __version__ = "0.6.0.dev0"
@@ -144,9 +144,10 @@ class MainWindow(QMainWindow):
                                    "*.fif *.fif.gz"))
         file_menu.addSeparator()
         self.export_menu = file_menu.addMenu("Export data")
-        for name, ext in EXPORT_FORMATS.items():
-            self.actions["export_data_" + ext] = self.export_menu.addAction(
-                f"{name} ({ext[1:].upper()})...",
+        for ext, description in writers.items():
+            action = "export_data" + ext.replace(".", "_")
+            self.actions[action] = self.export_menu.addAction(
+                f"{ext[1:].upper()} ({description[1]})...",
                 partial(self.export_file, model.export_data, "Export data",
                         ext))
         self.actions["export_bads"] = file_menu.addAction(
@@ -372,7 +373,7 @@ class MainWindow(QMainWindow):
                 (self.model.current["dtype"] in ("raw", "epochs")))
             self.actions["meta_info"].setEnabled(
                 enabled and
-                self.model.current["ftype"] == "Extensible Data Format")
+                self.model.current["ftype"] in ["XDF", "XDFZ", "XDF.GZ"])
         # add to recent files
         if len(self.model) > 0:
             self._add_recent(self.model.current["fname"])
@@ -380,8 +381,7 @@ class MainWindow(QMainWindow):
     def open_data(self, fname=None):
         """Open raw file."""
         if fname is None:
-            fname = QFileDialog.getOpenFileName(self, "Open raw",
-                                                filter="*")[0]
+            fname = QFileDialog.getOpenFileName(self, "Open raw")[0]
         if fname:
             if not (isfile(fname) or isdir(fname)):
                 self._remove_recent(fname)
@@ -389,12 +389,11 @@ class MainWindow(QMainWindow):
                                      f"File {fname} does not exist anymore.")
                 return
 
-            name, ext, ftype = split_fname(fname, IMPORT_FORMATS)
+            ext = "".join(Path(fname).suffixes)
 
             if ext in [".xdf", ".xdfz", ".xdf.gz"]:
-                streams = parse_chunks(parse_xdf(fname))
                 rows, disabled = [], []
-                for idx, s in enumerate(streams):
+                for idx, s in enumerate(get_streams(fname)):
                     rows.append([s["stream_id"], s["name"], s["type"],
                                  s["channel_count"], s["channel_format"],
                                  s["nominal_srate"]])
@@ -419,7 +418,7 @@ class MainWindow(QMainWindow):
                     self.model.load(fname)
                 except FileNotFoundError as e:
                     QMessageBox.critical(self, "File not found", str(e))
-                except UnknownFileTypeError as e:
+                except ValueError as e:
                     QMessageBox.critical(self, "Unknown file type", str(e))
 
     def open_file(self, f, text, ffilter="*"):
@@ -454,6 +453,7 @@ class MainWindow(QMainWindow):
                 self.model.remove_data()
 
     def meta_info(self):
+        """Show XDF meta info."""
         xml = get_xml(self.model.current["fname"])
         dialog = MetaInfoDialog(self, xml)
         dialog.exec_()
