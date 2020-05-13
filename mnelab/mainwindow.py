@@ -29,7 +29,7 @@ from .widgets.infowidget import InfoWidget
 from .model import LabelsNotFoundError, InvalidAnnotationsError
 from .utils import have, has_locations, image_path
 from .io import writers
-from .io.xdf import get_xml, parse_xdf, parse_chunks
+from .io.xdf import get_xml
 
 
 __version__ = "0.6.0.dev0"
@@ -392,6 +392,7 @@ class MainWindow(QMainWindow):
             ext = "".join(Path(fname).suffixes)
 
             if ext in [".xdf", ".xdfz", ".xdf.gz"]:
+                from pyxdf.pyxdf import parse_chunks, parse_xdf
                 streams = parse_chunks(parse_xdf(fname))
                 rows, disabled = [], []
                 for idx, s in enumerate(streams):
