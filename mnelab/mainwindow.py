@@ -781,6 +781,7 @@ class MainWindow(QMainWindow):
 
     def apply_tddr(self):
         """Apply TDDR processing to data."""
+        self.auto_duplicate()
         self.model.apply_tddr()
 
     def convert_bl(self):

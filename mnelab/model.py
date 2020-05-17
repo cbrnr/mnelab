@@ -455,6 +455,7 @@ class Model:
     def apply_tddr(self):
         self.current["data"] = mne.preprocessing.nirs.\
             temporal_derivative_distribution_repair(self.current["data"])
+        self.current["name"] += f" (TDDR)"
         self.history.append(
             f'data = mne.preprocessing.nirs.'
             f'temporal_derivative_distribution_repair(data)')
