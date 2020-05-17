@@ -227,6 +227,9 @@ class MainWindow(QMainWindow):
         self.actions["convert_od"] = self.export_menu.addAction(
                 "Convert &to optical density", self.convert_od)
         self.export_menu.addSeparator()
+        self.actions["apply_tddr"] = self.export_menu.addAction(
+                "Apply &TDDR", self.apply_tddr)
+        self.export_menu.addSeparator()
         self.actions["convert_bl"] = self.export_menu.addAction(
                 "Convert &to haemoglobin", self.convert_bl)
 
@@ -385,6 +388,9 @@ class MainWindow(QMainWindow):
             self.actions["convert_od"].setEnabled(
                     len(mne.pick_types(self.model.current["data"].info,
                         fnirs="fnirs_raw")))
+            self.actions["apply_tddr"].setEnabled(
+                    len(mne.pick_types(self.model.current["data"].info,
+                        fnirs="fnirs_od")))
             self.actions["convert_bl"].setEnabled(
                     len(mne.pick_types(self.model.current["data"].info,
                         fnirs="fnirs_od")))
@@ -582,6 +588,7 @@ class MainWindow(QMainWindow):
         nchan = self.model.current["data"].info["nchan"]
         fig = self.model.current["data"].plot(events=events, n_channels=nchan,
                                               title=self.model.current["name"],
+                                              duration=600,
                                               scalings="auto", show=False)
         if events is not None:
             hist = f"data.plot(events=events, n_channels={nchan})"
@@ -770,10 +777,16 @@ class MainWindow(QMainWindow):
 
     def convert_od(self):
         """Convert to optical density."""
+        self.auto_duplicate()
         self.model.convert_od()
+
+    def apply_tddr(self):
+        """Apply TDDR processing to data."""
+        self.model.apply_tddr()
 
     def convert_bl(self):
         """Convert to haemoglobin."""
+        self.auto_duplicate()
         self.model.convert_beer_lambert()
 
     def set_reference(self):

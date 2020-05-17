@@ -447,13 +447,23 @@ class Model:
     def convert_od(self):
         self.current["data"] = mne.preprocessing.nirs.optical_density(
             self.current["data"])
+        self.current["name"] += f" (OD)"
         self.history.append(
             f'data = mne.preprocessing.nirs.optical_density(data)')
+
+    @data_changed
+    def apply_tddr(self):
+        self.current["data"] = mne.preprocessing.nirs.\
+            temporal_derivative_distribution_repair(self.current["data"])
+        self.history.append(
+            f'data = mne.preprocessing.nirs.'
+            f'temporal_derivative_distribution_repair(data)')
 
     @data_changed
     def convert_beer_lambert(self):
         self.current["data"] = mne.preprocessing.nirs.beer_lambert_law(
             self.current["data"])
+        self.current["name"] += f" (BL)"
         self.history.append(
             f'data = mne.preprocessing.nirs.beer_lambert_law(data)')
 
