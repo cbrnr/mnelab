@@ -766,7 +766,6 @@ class MainWindow(QMainWindow):
                                          str(e), traceback.format_exc())
                 msgbox.show()
 
-
     def convert_od(self):
         """Convert to optical density."""
         self.model.convert_od()

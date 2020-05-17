@@ -445,13 +445,17 @@ class Model:
 
     @data_changed
     def convert_od(self):
-        self.current["data"] = mne.preprocessing.nirs.optical_density(self.current["data"])
-        self.history.append(f'data = mne.preprocessing.nirs.optical_density(data)')
+        self.current["data"] = mne.preprocessing.nirs.optical_density(
+            self.current["data"])
+        self.history.append(
+            f'data = mne.preprocessing.nirs.optical_density(data)')
 
     @data_changed
     def convert_beer_lambert(self):
-        self.current["data"] = mne.preprocessing.nirs.beer_lambert_law(self.current["data"])
-        self.history.append(f'data = mne.preprocessing.nirs.beer_lambert_law(data)')
+        self.current["data"] = mne.preprocessing.nirs.beer_lambert_law(
+            self.current["data"])
+        self.history.append(
+            f'data = mne.preprocessing.nirs.beer_lambert_law(data)')
 
     @data_changed
     def set_reference(self, ref):
