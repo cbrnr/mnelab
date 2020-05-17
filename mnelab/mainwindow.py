@@ -588,7 +588,6 @@ class MainWindow(QMainWindow):
         nchan = self.model.current["data"].info["nchan"]
         fig = self.model.current["data"].plot(events=events, n_channels=nchan,
                                               title=self.model.current["name"],
-                                              duration=600,
                                               scalings="auto", show=False)
         if events is not None:
             hist = f"data.plot(events=events, n_channels={nchan})"
@@ -787,7 +786,7 @@ class MainWindow(QMainWindow):
     def convert_bl(self):
         """Convert to haemoglobin."""
         self.auto_duplicate()
-        self.model.convert_beer_lambert()
+        self.model.convert_beer_ambert()
 
     def set_reference(self):
         """Set reference."""
