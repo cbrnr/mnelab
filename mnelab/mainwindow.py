@@ -786,7 +786,7 @@ class MainWindow(QMainWindow):
     def convert_bl(self):
         """Convert to haemoglobin."""
         self.auto_duplicate()
-        self.model.convert_beer_ambert()
+        self.model.convert_beer_lambert()
 
     def set_reference(self):
         """Set reference."""
