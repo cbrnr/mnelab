@@ -195,12 +195,6 @@ class MainWindow(QMainWindow):
             "Appen&d data...",
             self.append_data)
 
-        edit_menu.addSeparator()
-        self.actions["convert_od"] = edit_menu.addAction(
-                "Convert &to optical density", self.convert_od)
-        self.actions["convert_bl"] = edit_menu.addAction(
-                "Convert &to haemoglobin", self.convert_bl)
-
         plot_menu = self.menuBar().addMenu("&Plot")
         icon = QIcon(image_path("plot_data.svg"))
         self.actions["plot_data"] = plot_menu.addAction(icon, "&Data...",
@@ -228,6 +222,14 @@ class MainWindow(QMainWindow):
         self.actions["events_from_annotations"] = tools_menu.addAction(
             "Create events from annotations", self.events_from_annotations
         )
+        tools_menu.addSeparator()
+        self.export_menu = tools_menu.addMenu("NIRS")
+        self.actions["convert_od"] = self.export_menu.addAction(
+                "Convert &to optical density", self.convert_od)
+        self.export_menu.addSeparator()
+        self.actions["convert_bl"] = self.export_menu.addAction(
+                "Convert &to haemoglobin", self.convert_bl)
+
         tools_menu.addSeparator()
         icon = QIcon(image_path("run_ica.svg"))
         self.actions["run_ica"] = tools_menu.addAction(icon, "Run &ICA...",
