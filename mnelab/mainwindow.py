@@ -223,15 +223,15 @@ class MainWindow(QMainWindow):
             "Create events from annotations", self.events_from_annotations
         )
         tools_menu.addSeparator()
-        self.export_menu = tools_menu.addMenu("NIRS")
-        self.actions["convert_od"] = self.export_menu.addAction(
-                "Convert &to optical density", self.convert_od)
-        self.export_menu.addSeparator()
-        self.actions["apply_tddr"] = self.export_menu.addAction(
+        self.nirs_menu = tools_menu.addMenu("NIRS")
+        self.actions["convert_od"] = self.nirs_menu.addAction(
+                "Convert to &optical density", self.convert_od)
+        self.nirs_menu.addSeparator()
+        self.actions["apply_tddr"] = self.nirs_menu.addAction(
                 "Apply &TDDR", self.apply_tddr)
-        self.export_menu.addSeparator()
-        self.actions["convert_bl"] = self.export_menu.addAction(
-                "Convert &to haemoglobin", self.convert_bl)
+        self.nirs_menu.addSeparator()
+        self.actions["convert_bl"] = self.nirs_menu.addAction(
+                "Convert to &haemoglobin", self.convert_bl)
 
         tools_menu.addSeparator()
         icon = QIcon(image_path("run_ica.svg"))
