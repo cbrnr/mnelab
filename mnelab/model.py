@@ -10,7 +10,8 @@ from copy import deepcopy
 
 import numpy as np
 import mne
-from mne.preprocessing.nirs import temporal_derivative_distribution_repair as tddr
+from mne.preprocessing.nirs import \
+    temporal_derivative_distribution_repair as tddr
 
 from .utils import has_locations
 from .io import read_raw, write_raw
@@ -454,7 +455,7 @@ class Model:
 
     @data_changed
     def apply_tddr(self):
-        self.current["data"] = mne.preprocessing.nirs.tddr(self.current["data"])
+        self.current["data"] = tddr(self.current["data"])
         self.current["name"] += f" (TDDR)"
         self.history.append(
             f"data = mne.preprocessing.nirs."
