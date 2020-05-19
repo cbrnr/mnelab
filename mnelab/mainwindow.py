@@ -223,14 +223,14 @@ class MainWindow(QMainWindow):
             "Create events from annotations", self.events_from_annotations
         )
         tools_menu.addSeparator()
-        self.nirs_menu = tools_menu.addMenu("NIRS")
-        self.actions["convert_od"] = self.nirs_menu.addAction(
+        nirs_menu = tools_menu.addMenu("NIRS")
+        self.actions["convert_od"] = nirs_menu.addAction(
                 "Convert to &optical density", self.convert_od)
-        self.nirs_menu.addSeparator()
-        self.actions["apply_tddr"] = self.nirs_menu.addAction(
+        nirs_menu.addSeparator()
+        self.actions["apply_tddr"] = nirs_menu.addAction(
                 "Apply &TDDR", self.apply_tddr)
-        self.nirs_menu.addSeparator()
-        self.actions["convert_bl"] = self.nirs_menu.addAction(
+        nirs_menu.addSeparator()
+        self.actions["convert_bl"] = nirs_menu.addAction(
                 "Convert to &haemoglobin", self.convert_bl)
 
         tools_menu.addSeparator()
