@@ -10,8 +10,6 @@ from copy import deepcopy
 
 import numpy as np
 import mne
-from mne.preprocessing.nirs import \
-    temporal_derivative_distribution_repair as tddr
 
 from .utils import has_locations
 from .io import read_raw, write_raw
@@ -452,14 +450,6 @@ class Model:
         self.current["name"] += f" (OD)"
         self.history.append(
             f"data = mne.preprocessing.nirs.optical_density(data)")
-
-    @data_changed
-    def apply_tddr(self):
-        self.current["data"] = tddr(self.current["data"])
-        self.current["name"] += f" (TDDR)"
-        self.history.append(
-            f"data = mne.preprocessing.nirs."
-            f"temporal_derivative_distribution_repair(data)")
 
     @data_changed
     def convert_beer_lambert(self):
