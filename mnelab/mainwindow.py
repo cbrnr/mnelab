@@ -223,6 +223,13 @@ class MainWindow(QMainWindow):
             "Create events from annotations", self.events_from_annotations
         )
         tools_menu.addSeparator()
+        nirs_menu = tools_menu.addMenu("NIRS")
+        self.actions["convert_od"] = nirs_menu.addAction(
+                "Convert to &optical density", self.convert_od)
+        self.actions["convert_bl"] = nirs_menu.addAction(
+                "Convert to &haemoglobin", self.convert_bl)
+
+        tools_menu.addSeparator()
         icon = QIcon(image_path("run_ica.svg"))
         self.actions["run_ica"] = tools_menu.addAction(icon, "Run &ICA...",
                                                        self.run_ica)
@@ -374,6 +381,12 @@ class MainWindow(QMainWindow):
             self.actions["meta_info"].setEnabled(
                 enabled and
                 self.model.current["ftype"] in ["XDF", "XDFZ", "XDF.GZ"])
+            self.actions["convert_od"].setEnabled(
+                    len(mne.pick_types(self.model.current["data"].info,
+                        fnirs="fnirs_raw")))
+            self.actions["convert_bl"].setEnabled(
+                    len(mne.pick_types(self.model.current["data"].info,
+                        fnirs="fnirs_od")))
         # add to recent files
         if len(self.model) > 0:
             self._add_recent(self.model.current["fname"])
@@ -753,6 +766,16 @@ class MainWindow(QMainWindow):
                 msgbox = ErrorMessageBox(self, "Could not create epochs",
                                          str(e), traceback.format_exc())
                 msgbox.show()
+
+    def convert_od(self):
+        """Convert to optical density."""
+        self.auto_duplicate()
+        self.model.convert_od()
+
+    def convert_bl(self):
+        """Convert to haemoglobin."""
+        self.auto_duplicate()
+        self.model.convert_beer_lambert()
 
     def set_reference(self):
         """Set reference."""
