@@ -16,3 +16,16 @@ def image_path(fname):
     """Return absolute path to image fname."""
     root = Path(__file__).parent.parent
     return str((root / "images" / Path(fname)).resolve())
+
+
+def interface_style():
+    """Return current platform interface style (light or dark)."""
+    try:  # currently only works on macOS
+        from Foundation import NSUserDefaults as NSUD
+    except ImportError:
+        return None
+    style = NSUD.standardUserDefaults().stringForKey_("AppleInterfaceStyle")
+    if style == "Dark":
+        return "dark"
+    else:
+        return "light"
