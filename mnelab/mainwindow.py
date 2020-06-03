@@ -32,7 +32,7 @@ from .io import writers
 from .io.xdf import get_xml, get_streams
 
 
-__version__ = "0.6.0.dev0"
+__version__ = "0.5.5"
 
 MAX_RECENT = 6  # maximum number of recent files
 

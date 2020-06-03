@@ -1,4 +1,4 @@
-## [Unreleased] - XXXX-XX-XX
+## [0.5.5] - 2020-06-03
 ### Added
 - Add support for appending continuous raw data ([#108](https://github.com/cbrnr/mnelab/pull/108) by [Lukas Stranger](https://github.com/stralu) and [Clemens Brunner](https://github.com/cbrnr))
 - Add support for appending epoched data ([#135](https://github.com/cbrnr/mnelab/pull/135) by [Lukas Stranger](https://github.com/stralu))
