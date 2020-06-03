@@ -101,11 +101,14 @@ class MainWindow(QMainWindow):
         if settings["state"]:
             self.restoreState(settings["state"])
 
+        QIcon.setThemeSearchPaths([str(Path(__file__).parent / "icons")])
+        self.event(QEvent(QEvent.PaletteChange))  # trigger theme setting
+
         self.actions = {}  # contains all actions
 
         # initialize menus
         file_menu = self.menuBar().addMenu("&File")
-        icon = QIcon(image_path("open_file.svg"))
+        icon = QIcon.fromTheme("open-file")
         self.actions["open_file"] = file_menu.addAction(
             icon, "&Open...", self.open_data, QKeySequence.Open)
         self.recent_menu = file_menu.addMenu("Open recent")
@@ -121,7 +124,7 @@ class MainWindow(QMainWindow):
             "Close all",
             self.close_all)
         file_menu.addSeparator()
-        icon = QIcon(image_path("meta_info.svg"))
+        icon = QIcon.fromTheme("meta-info")
         self.actions["meta_info"] = file_menu.addAction(icon,
                                                         "Show information...",
                                                         self.meta_info)
@@ -174,7 +177,7 @@ class MainWindow(QMainWindow):
         self.actions["pick_chans"] = edit_menu.addAction(
             "P&ick channels...",
             self.pick_channels)
-        icon = QIcon(image_path("chan_props.svg"))
+        icon = QIcon.fromTheme("chan-props")
         self.actions["chan_props"] = edit_menu.addAction(
             icon, "Channel &properties...", self.channel_properties)
         self.actions["set_montage"] = edit_menu.addAction("Set &montage...",
@@ -196,13 +199,13 @@ class MainWindow(QMainWindow):
             self.append_data)
 
         plot_menu = self.menuBar().addMenu("&Plot")
-        icon = QIcon(image_path("plot_data.svg"))
+        icon = QIcon.fromTheme("plot-data")
         self.actions["plot_data"] = plot_menu.addAction(icon, "&Data...",
                                                         self.plot_data)
-        icon = QIcon(image_path("plot_psd.svg"))
+        icon = QIcon.fromTheme("plot-psd")
         self.actions["plot_psd"] = plot_menu.addAction(
             icon, "&Power spectral density...", self.plot_psd)
-        icon = QIcon(image_path("plot_locations.svg"))
+        icon = QIcon.fromTheme("plot-locations")
         self.actions["plot_locations"] = plot_menu.addAction(
             icon, "&Channel locations...", self.plot_locations)
         plot_menu.addSeparator()
@@ -212,10 +215,10 @@ class MainWindow(QMainWindow):
             "ICA &sources...", self.plot_ica_sources)
 
         tools_menu = self.menuBar().addMenu("&Tools")
-        icon = QIcon(image_path("filter.svg"))
+        icon = QIcon.fromTheme("filter-data")
         self.actions["filter"] = tools_menu.addAction(icon, "&Filter data...",
                                                       self.filter_data)
-        icon = QIcon(image_path("find_events.svg"))
+        icon = QIcon.fromTheme("find-events")
         self.actions["find_events"] = tools_menu.addAction(icon,
                                                            "Find &events...",
                                                            self.find_events)
@@ -230,7 +233,7 @@ class MainWindow(QMainWindow):
                 "Convert to &haemoglobin", self.convert_bl)
 
         tools_menu.addSeparator()
-        icon = QIcon(image_path("run_ica.svg"))
+        icon = QIcon.fromTheme("run-ica")
         self.actions["run_ica"] = tools_menu.addAction(icon, "Run &ICA...",
                                                        self.run_ica)
         self.actions["apply_ica"] = tools_menu.addAction("Apply &ICA",
@@ -240,7 +243,7 @@ class MainWindow(QMainWindow):
                                                 "Interpolate bad channels...",
                                                 self.interpolate_bads)
         tools_menu.addSeparator()
-        icon = QIcon(image_path("epoch_data.svg"))
+        icon = QIcon.fromTheme("epoch-data")
         self.actions["epoch_data"] = tools_menu.addAction(
             icon, "Create Epochs...", self.epoch_data)
 
@@ -974,8 +977,11 @@ class MainWindow(QMainWindow):
         return QObject.eventFilter(self, source, event)
 
     def event(self, ev):
-        # print(f"Received event {ev}")
-        if ev.type() == QEvent.PaletteChange:
-            style = interface_style()
-            print(f"**** Dark/light mode changed, current theme: {style} ****")
+        """Catch system events."""
+        if ev.type() == QEvent.PaletteChange:  # detect theme switches
+            style = interface_style()  # light or dark
+            if style is not None:
+                QIcon.setThemeName(style)
+            else:
+                QIcon.setThemeName("light")  # fallback
         return super().event(ev)
