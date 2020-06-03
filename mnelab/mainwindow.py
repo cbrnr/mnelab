@@ -27,7 +27,7 @@ from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog,
                       ReferenceDialog, RunICADialog, XDFStreamsDialog)
 from .widgets.infowidget import InfoWidget
 from .model import LabelsNotFoundError, InvalidAnnotationsError
-from .utils import have, has_locations, image_path
+from .utils import have, has_locations, image_path, interface_style
 from .io import writers
 from .io.xdf import get_xml, get_streams
 
@@ -972,3 +972,10 @@ class MainWindow(QMainWindow):
             if self.bads != bads:
                 self.model.history.append(f"data.info['bads'] = {bads}")
         return QObject.eventFilter(self, source, event)
+
+    def event(self, ev):
+        # print(f"Received event {ev}")
+        if ev.type() == QEvent.PaletteChange:
+            style = interface_style()
+            print(f"**** Dark/light mode changed, current theme: {style} ****")
+        return super().event(ev)
