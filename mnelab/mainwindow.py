@@ -660,10 +660,10 @@ class MainWindow(QMainWindow):
         methods = ["multitaper", "morlet"]
         t_range = [current_data.tmin, current_data.tmax]
         f_range = [1., current_data.info["sfreq"] / 2.]
-        baseline_modi = ['mean', 'ratio', 'logratio', 'percent',
-                         'zscore', 'zlogratio']
+        baseline_modes = ['mean', 'ratio', 'logratio', 'percent',
+                          'zscore', 'zlogratio']
 
-        dialog = PlotTFDialog(self, methods, t_range, f_range, baseline_modi)
+        dialog = PlotTFDialog(self, methods, t_range, f_range, baseline_modes)
 
         if dialog.exec_():
             calc = CalcDialog(self, "Time/Frequency maps",
