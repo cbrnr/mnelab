@@ -22,15 +22,17 @@ from qtpy.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                             QMessageBox, QListView, QAction, QLabel, QFrame,
                             QStatusBar, QToolBar)
 
-from .dialogs import (AnnotationsDialog, CalcDialog, ChannelPropertiesDialog,
-                      CropDialog, AppendDialog, EpochDialog, ErrorMessageBox,
-                      EventsDialog, FilterDialog, FindEventsDialog, HistoryDialog,
-                      InterpolateBadsDialog, MontageDialog, PickChannelsDialog, PlotTFDialog,
-                      ReferenceDialog, RunICADialog, XDFStreamsDialog,
-                      MetaInfoDialog)
+from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog,
+                      ChannelPropertiesDialog, CropDialog, EpochDialog,
+                      ErrorMessageBox, EventsDialog, FilterDialog,
+                      FindEventsDialog, HistoryDialog, InterpolateBadsDialog,
+                      MetaInfoDialog, MontageDialog, PickChannelsDialog,
+                      PlotTFDialog, ReferenceDialog, RunICADialog,
+                      XDFStreamsDialog)
 from .widgets.infowidget import InfoWidget
 from .model import LabelsNotFoundError, InvalidAnnotationsError
-from .utils import have, has_locations, image_path, interface_style
+from .utils import (have, has_locations, image_path, interface_style,
+                    cluster_tf_maps)
 from .io import writers
 from .io.xdf import get_xml, get_streams
 
