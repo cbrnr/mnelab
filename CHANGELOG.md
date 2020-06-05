@@ -3,6 +3,7 @@
 ## [0.5.6] - 2020-06-12
 ### Added
 - Add support for automatic light/dark mode switching on macOS ([#152](https://github.com/cbrnr/mnelab/pull/152) by [Clemens Brunner](https://github.com/cbrnr))
+- Add time/frequency map calculation ([#133](https://github.com/cbrnr/mnelab/pull/133) by [Lukas Stranger](https://github.com/stralu) and [Clemens Brunner](https://github.com/cbrnr))
 
 ### Fixed
 - Fix bug that prevented exporting data ([#156](https://github.com/cbrnr/mnelab/pull/156) by [Clemens Brunner](https://github.com/cbrnr))
