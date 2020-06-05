@@ -4,7 +4,7 @@
 # License: BSD (3-clause)
 
 from qtpy.QtWidgets import (QCheckBox, QComboBox, QDialog, QDialogButtonBox,
-                            QDoubleSpinBox,QGridLayout, QLabel)
+                            QDoubleSpinBox, QGridLayout, QLabel)
 from qtpy.QtCore import Qt, Slot
 
 
@@ -50,7 +50,6 @@ class PlotTFDialog(QDialog):
         self._ufreq.setDecimals(1)
         self._ufreq.setSuffix(" Hz")
         grid.addWidget(self._ufreq, 2, 5)
-
 
         # Time
         grid.addWidget(QLabel("Time (in s):"), 3, 0)
