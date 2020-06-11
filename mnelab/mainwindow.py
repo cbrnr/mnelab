@@ -229,6 +229,10 @@ class MainWindow(QMainWindow):
         nirs_menu = tools_menu.addMenu("NIRS")
         self.actions["convert_od"] = nirs_menu.addAction(
                 "Convert to &optical density", self.convert_od)
+        nirs_menu.addSeparator()
+        self.actions["apply_tddr"] = nirs_menu.addAction(
+                "Apply &TDDR", self.apply_tddr)
+        nirs_menu.addSeparator()
         self.actions["convert_bl"] = nirs_menu.addAction(
                 "Convert to &haemoglobin", self.convert_bl)
 
@@ -388,6 +392,9 @@ class MainWindow(QMainWindow):
                     len(mne.pick_types(self.model.current["data"].info,
                         fnirs="fnirs_raw")))
             self.actions["convert_bl"].setEnabled(
+                    len(mne.pick_types(self.model.current["data"].info,
+                        fnirs="fnirs_od")))
+            self.actions["apply_tddr"].setEnabled(
                     len(mne.pick_types(self.model.current["data"].info,
                         fnirs="fnirs_od")))
         # add to recent files
@@ -779,6 +786,11 @@ class MainWindow(QMainWindow):
         """Convert to haemoglobin."""
         self.auto_duplicate()
         self.model.convert_beer_lambert()
+
+    def apply_tddr(self):
+        """Apply TDDR processing to data."""
+        self.auto_duplicate()
+        self.model.apply_tddr()
 
     def set_reference(self):
         """Set reference."""
