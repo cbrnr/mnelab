@@ -10,7 +10,7 @@ from qtpy.QtCore import Qt, Slot
 
 class PlotTFDialog(QDialog):
     def __init__(self, parent, methods, t_range, f_range, modes,
-                 title="Time/Frequency settings"):
+                 title="Time/frequency map"):
         super().__init__(parent)
         self.setWindowTitle(title)
 

@@ -17,7 +17,7 @@ from .interpolatebadsdialog import InterpolateBadsDialog
 from .metainfodialog import MetaInfoDialog
 from .montagedialog import MontageDialog
 from .pickchannelsdialog import PickChannelsDialog
-from .plottimefrequencydialog import PlotTFDialog
+from .timefrequencydialog import PlotTFDialog
 from .referencedialog import ReferenceDialog
 from .runicadialog import RunICADialog
 from .xdfstreamsdialog import XDFStreamsDialog
