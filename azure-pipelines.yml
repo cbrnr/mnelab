@@ -5,8 +5,8 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   steps:
-  - script: sudo apt install libxkbcommon-x11-0
-    displayName: 'Install libxkbcommon-x11-0'
+  - script: sudo apt install libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
+    displayName: 'Install system packages'
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '3.8'
@@ -64,8 +64,8 @@ jobs:
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
-  - script: sudo apt install libxkbcommon-x11-0
-    displayName: 'Install libxkbcommon-x11-0'
+  - script: sudo apt install libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
+    displayName: 'Install system packages'
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '3.6'
@@ -85,8 +85,8 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   steps:
-  - script: sudo apt install libxkbcommon-x11-0
-    displayName: 'Install libxkbcommon-x11-0'
+  - script: sudo apt install libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
+    displayName: 'Install system packages'
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '3.8'
