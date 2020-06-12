@@ -109,19 +109,23 @@ def write_bv(fname, raw, events=None):
 
 
 # supported write file formats
-writers = {".fif": [write_fif, "Elekta Neuromag"],
-           ".fif.gz": [write_fif, "Elekta Neuromag"],
-           ".set": [write_set, "EEGLAB"]}
+# this dict contains each supported file extension as a key
+# the corresponding value is a list with three elements: (1) the writer
+# function, (2) the full file format name, and (3) a (comma-separated) string
+# indicating the supported objects (currently either raw or epoch)
+writers = {".fif": [write_fif, "Elekta Neuromag", "raw,epoch"],
+           ".fif.gz": [write_fif, "Elekta Neuromag", "raw,epoch"],
+           ".set": [write_set, "EEGLAB", "raw"]}
 if have["pybv"]:
-    writers.update({".eeg": [write_bv, "BrainVision"]})
+    writers.update({".eeg": [write_bv, "BrainVision", "raw"]})
 if have["pyedflib"]:
-    writers.update({".edf": [write_edf, "European Data Format"],
-                    ".bdf": [write_edf, "Biosemi Data Format"]})
+    writers.update({".edf": [write_edf, "European Data Format", "raw"],
+                    ".bdf": [write_edf, "Biosemi Data Format", "raw"]})
 
 
 def write_raw(fname, raw):
     ext = "".join(Path(fname).suffixes)
     if ext in writers:
-        writers[ext](fname, raw)
+        writers[ext][0](fname, raw)
     else:
         raise ValueError(f"Unknown file type {ext}.")

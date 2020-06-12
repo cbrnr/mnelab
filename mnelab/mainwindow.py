@@ -390,6 +390,14 @@ class MainWindow(QMainWindow):
             self.actions["convert_bl"].setEnabled(
                     len(mne.pick_types(self.model.current["data"].info,
                         fnirs="fnirs_od")))
+            # disable unsupported exporters for epochs (all must support raw)
+            if self.model.current["dtype"] == "epochs":
+                for ext, description in writers.items():
+                    action = "export_data" + ext.replace(".", "_")
+                    if "epoch" in description[2]:
+                        self.actions[action].setEnabled(True)
+                    else:
+                        self.actions[action].setEnabled(False)
         # add to recent files
         if len(self.model) > 0:
             self._add_recent(self.model.current["fname"])
