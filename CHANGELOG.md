@@ -1,3 +1,5 @@
+## [Unreleased] - XXXX-XX-XX
+
 ## [0.5.6] - 2020-06-12
 ### Added
 - Add support for automatic light/dark mode switching on macOS ([#152](https://github.com/cbrnr/mnelab/pull/152) by [Clemens Brunner](https://github.com/cbrnr))
