@@ -2,6 +2,9 @@
 ### Added
 - Add support for automatic light/dark mode switching on macOS ([#152](https://github.com/cbrnr/mnelab/pull/152) by [Clemens Brunner](https://github.com/cbrnr))
 
+### Fixed
+- Fix bug that prevented exporting data ([#156](https://github.com/cbrnr/mnelab/pull/156) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [0.5.5] - 2020-06-03
 ### Added
 - Add support for appending continuous raw data ([#108](https://github.com/cbrnr/mnelab/pull/108) by [Lukas Stranger](https://github.com/stralu) and [Clemens Brunner](https://github.com/cbrnr))
