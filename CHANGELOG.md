@@ -1,5 +1,10 @@
 ## [Unreleased] - XXXX-XX-XX
 
+
+## [0.5.7] - 2020-07-13
+### Fixed
+- Include missing icons in package ([#158](https://github.com/cbrnr/mnelab/pull/158) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [0.5.6] - 2020-06-12
 ### Added
 - Add support for automatic light/dark mode switching on macOS ([#152](https://github.com/cbrnr/mnelab/pull/152) by [Clemens Brunner](https://github.com/cbrnr))
