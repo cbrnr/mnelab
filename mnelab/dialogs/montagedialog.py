@@ -55,6 +55,5 @@ class MontageDialog(QDialog):
         win = fig.canvas.manager.window
         win.setWindowModality(Qt.WindowModal)
         win.setWindowTitle("Montage")
-        win.findChild(QStatusBar).hide()
         win.findChild(QToolBar).hide()
         fig.show()
