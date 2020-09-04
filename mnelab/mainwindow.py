@@ -600,6 +600,7 @@ class MainWindow(QMainWindow):
         self.model.history.append(hist)
         win = fig.canvas.manager.window
         win.setWindowTitle(self.model.current["name"])
+        win.statusBar().hide()  # not necessary since matplotlib 3.3
         win.installEventFilter(self)  # detect if the figure is closed
 
         # prevent closing the window with the escape key
@@ -632,7 +633,7 @@ class MainWindow(QMainWindow):
                                                       show=False)
         win = fig.canvas.manager.window
         win.setWindowTitle("Montage")
-        win.findChild(QToolBar).hide()
+        win.statusBar().hide()  # not necessary since matplotlib 3.3
         fig.show()
 
     def plot_ica_components(self):
