@@ -5,7 +5,6 @@
 import multiprocessing as mp
 from sys import version_info
 import traceback
-from os.path import isfile, isdir
 from functools import partial
 from pathlib import Path
 
@@ -19,8 +18,7 @@ from qtpy.QtCore import (Qt, Slot, QStringListModel, QModelIndex, QSettings,
                          QEvent, QObject)
 from qtpy.QtGui import QKeySequence, QDropEvent, QIcon
 from qtpy.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
-                            QMessageBox, QListView, QAction, QLabel, QFrame,
-                            QStatusBar, QToolBar)
+                            QMessageBox, QListView, QAction, QLabel, QFrame)
 
 from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog,
                       ChannelPropertiesDialog, CropDialog, EpochDialog,
@@ -417,7 +415,7 @@ class MainWindow(QMainWindow):
         if fname is None:
             fname = QFileDialog.getOpenFileName(self, "Open raw")[0]
         if fname:
-            if not (isfile(fname) or isdir(fname)):
+            if not (Path(fname).is_file() or Path(fname).is_dir()):
                 self._remove_recent(fname)
                 QMessageBox.critical(self, "File does not exist",
                                      f"File {fname} does not exist anymore.")
@@ -610,7 +608,7 @@ class MainWindow(QMainWindow):
         self.model.history.append(hist)
         win = fig.canvas.manager.window
         win.setWindowTitle(self.model.current["name"])
-        win.findChild(QStatusBar).hide()
+        win.statusBar().hide()  # not necessary since matplotlib 3.3
         win.installEventFilter(self)  # detect if the figure is closed
 
         # prevent closing the window with the escape key
@@ -643,8 +641,7 @@ class MainWindow(QMainWindow):
                                                       show=False)
         win = fig.canvas.manager.window
         win.setWindowTitle("Montage")
-        win.findChild(QStatusBar).hide()
-        win.findChild(QToolBar).hide()
+        win.statusBar().hide()  # not necessary since matplotlib 3.3
         fig.show()
 
     def plot_ica_components(self):
