@@ -5,7 +5,6 @@
 import multiprocessing as mp
 from sys import version_info
 import traceback
-from os.path import isfile, isdir
 from functools import partial
 from pathlib import Path
 
@@ -406,7 +405,7 @@ class MainWindow(QMainWindow):
         if fname is None:
             fname = QFileDialog.getOpenFileName(self, "Open raw")[0]
         if fname:
-            if not (isfile(fname) or isdir(fname)):
+            if not (Path(fname).is_file() or Path(fname).is_dir()):
                 self._remove_recent(fname)
                 QMessageBox.critical(self, "File does not exist",
                                      f"File {fname} does not exist anymore.")
