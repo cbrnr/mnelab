@@ -16,8 +16,7 @@ from qtpy.QtCore import (Qt, Slot, QStringListModel, QModelIndex, QSettings,
                          QEvent, QObject)
 from qtpy.QtGui import QKeySequence, QDropEvent, QIcon
 from qtpy.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
-                            QMessageBox, QListView, QAction, QLabel, QFrame,
-                            QStatusBar, QToolBar)
+                            QMessageBox, QListView, QAction, QLabel, QFrame)
 
 from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog,
                       ChannelPropertiesDialog, CropDialog, EpochDialog,
