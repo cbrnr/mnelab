@@ -3,8 +3,7 @@
 # License: BSD (3-clause)
 
 from qtpy.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QListWidget,
-                            QDialogButtonBox, QPushButton, QStatusBar,
-                            QToolBar)
+                            QDialogButtonBox, QPushButton)
 from qtpy.QtCore import Slot, Qt
 
 from mne.channels import make_standard_montage
@@ -55,6 +54,5 @@ class MontageDialog(QDialog):
         win = fig.canvas.manager.window
         win.setWindowModality(Qt.WindowModal)
         win.setWindowTitle("Montage")
-        win.findChild(QStatusBar).hide()
-        win.findChild(QToolBar).hide()
+        win.statusBar().hide()  # not necessary since matplotlib 3.3
         fig.show()
