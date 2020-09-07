@@ -7,6 +7,7 @@ from sys import version_info
 import traceback
 from functools import partial
 from pathlib import Path
+from itertools import repeat
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -688,33 +689,35 @@ class MainWindow(QMainWindow):
             if dialog.apply_baseline:
                 tfr.apply_baseline(t_baseline, mode=baseline_mode)
 
-            # Non-distributed cluster algorithm
+            # # Non-distributed cluster algorithm
+            # if dialog.cluster:
+            #     masks = []
+            #     for event in current_data.event_id:
+            #         tfr_ev = tfr[event]
+            #         masks.extend(list(map(lambda x:
+            #                 cluster_tf_maps(tfr_ev, x),
+            #                 range(current_data.info["nchan"]))))
+
+            # Distributed cluster algorithm
             if dialog.cluster:
+                pool = mp.Pool()
                 masks = []
+
+                def cb(mask):
+                    """Callback for cluster async call"""
+                    masks.extend(mask)
+                    calc.accept()
+
                 for event in current_data.event_id:
                     tfr_ev = tfr[event]
-                    masks = masks + list(map(lambda x:
-                            cluster_tf_maps(tfr_ev, x),
-                            range(current_data.info["nchan"])))
-
-            # # Distributed cluster algorithm
-            # # TODO: Not working, map_async cannot pickle a lambda.
-            # if dialog.cluster:
-            #     print("DEBUG: Enter cluster algorithm")
-            #     pool = mp.Pool()
-            #
-            #     for event in current_data.event_id:
-            #         print(f"DEBUG: working on event: {event}")
-            #         tfr_ev = tfr[event]
-            #         res = pool.map_async(lambda x: cluster_tf_maps(tfr_ev, x),
-            #                              range(current_data.info["nchan"]),
-            #                              callback=calc.accept
-            #                             )
-            #         masks = masks + res.get()
-            #     pool.close()
-            #     if not calc.exec_():
-            #         pool.terminate()
-            #         return
+                    res = pool.map_async(cluster_tf_maps,
+                                        zip(repeat(tfr_ev, current_data.info["nchan"]),
+                                        range(current_data.info["nchan"])),
+                                        callback=cb)
+                pool.close()
+                if not calc.exec_():
+                    pool.terminate()
+                    return
 
             # plot the results
             if current_data.info["nchan"] <= 3:
