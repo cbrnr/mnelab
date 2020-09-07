@@ -689,11 +689,13 @@ class MainWindow(QMainWindow):
                 tfr.apply_baseline(t_baseline, mode=baseline_mode)
 
             # Non-distributed cluster algorithm
-            masks = []
-            for event in current_data.event_id:
-                tfr_ev = tfr[event]
-                masks = masks + list(map(lambda x:cluster_tf_maps(tfr_ev, x),
-                        range(current_data.info["nchan"])))
+            if dialog.cluster:
+                masks = []
+                for event in current_data.event_id:
+                    tfr_ev = tfr[event]
+                    masks = masks + list(map(lambda x:
+                            cluster_tf_maps(tfr_ev, x),
+                            range(current_data.info["nchan"])))
 
             # # Distributed cluster algorithm
             # # TODO: Not working, map_async cannot pickle a lambda.
@@ -708,7 +710,7 @@ class MainWindow(QMainWindow):
             #                              range(current_data.info["nchan"]),
             #                              callback=calc.accept
             #                             )
-            #         print(res.get())
+            #         masks = masks + res.get()
             #     pool.close()
             #     if not calc.exec_():
             #         pool.terminate()
