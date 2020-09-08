@@ -16,7 +16,7 @@ from mne.io.pick import channel_type
 from mne.viz.utils import center_cmap
 from mne.time_frequency import tfr_multitaper, tfr_morlet
 from qtpy.QtCore import (Qt, Slot, QStringListModel, QModelIndex, QSettings,
-                         QEvent, QObject)
+                         QEvent, QObject, QSize, QPoint)
 from qtpy.QtGui import QKeySequence, QDropEvent, QIcon
 from qtpy.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                             QMessageBox, QListView, QAction, QLabel, QFrame)
@@ -47,35 +47,21 @@ def read_settings():
     Returns
     -------
     settings : dict
-        The restored settings values are returned in a dictionary for further
-        processing.
+        Settings values.
     """
-    settings = QSettings()
-
-    recent = settings.value("recent")
-    if not recent:
-        recent = []  # default is empty list
-
-    toolbar = settings.value("toolbar")
-    if toolbar is None:  # default is True
-        toolbar = True
-
-    statusbar = settings.value("statusbar")
-    if statusbar is None:  # default is True
-        statusbar = True
-
-    geometry = settings.value("geometry")
-    state = settings.value("state")
-
-    return {"recent": recent, "statusbar": statusbar, "geometry": geometry,
-            "state": state, "toolbar": toolbar}
+    settings = {}
+    settings["recent"] = QSettings().value("recent", [])
+    settings["toolbar"] = QSettings().value("toolbar", True)
+    settings["statusbar"] = QSettings().value("statusbar", True)
+    settings["size"] = QSettings().value("size", QSize(700, 500))
+    settings["pos"] = QSettings().value("pos", QPoint(100, 100))
+    return settings
 
 
 def write_settings(**kwargs):
     """Write application settings."""
-    settings = QSettings()
     for key, value in kwargs.items():
-        settings.setValue(key, value)
+        QSettings().setValue(key, value)
 
 
 class MainWindow(QMainWindow):
@@ -96,17 +82,12 @@ class MainWindow(QMainWindow):
         # restore settings
         settings = read_settings()
         self.recent = settings["recent"]  # list of recent files
-        if settings["geometry"]:
-            self.restoreGeometry(settings["geometry"])
-        else:
-            self.setGeometry(300, 300, 1000, 750)  # default window size
-            self.move(QApplication.screens()[0].geometry().center() -
-                      self.rect().center())
-        if settings["state"]:
-            self.restoreState(settings["state"])
+        self.resize(settings["size"])
+        self.move(settings["pos"])
 
+        # trigger theme setting
         QIcon.setThemeSearchPaths([str(Path(__file__).parent / "icons")])
-        self.event(QEvent(QEvent.PaletteChange))  # trigger theme setting
+        self.event(QEvent(QEvent.PaletteChange))
 
         self.actions = {}  # contains all actions
 
@@ -1112,7 +1093,7 @@ class MainWindow(QMainWindow):
         event : QEvent
             Close event.
         """
-        write_settings(geometry=self.saveGeometry(), state=self.saveState())
+        write_settings(size=self.size(), pos=self.pos())
         if self.model.history:
             print("\nCommand History")
             print("===============")
