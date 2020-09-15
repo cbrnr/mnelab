@@ -204,6 +204,9 @@ class MainWindow(QMainWindow):
         self.actions["events_from_annotations"] = tools_menu.addAction(
             "Create events from annotations", self.events_from_annotations
         )
+        self.actions["annotations_from_events"] = tools_menu.addAction(
+            "Create annotations from events", self.annotations_from_events
+        )
         tools_menu.addSeparator()
         nirs_menu = tools_menu.addMenu("NIRS")
         self.actions["convert_od"] = nirs_menu.addAction(
@@ -350,6 +353,8 @@ class MainWindow(QMainWindow):
             self.actions["events"].setEnabled(enabled and events)
             self.actions["events_from_annotations"].setEnabled(enabled and
                                                                annot)
+            self.actions["annotations_from_events"].setEnabled(enabled and
+                                                               events)
             self.actions["find_events"].setEnabled(
                 enabled and self.model.current["dtype"] == "raw")
             self.actions["epoch_data"].setEnabled(
@@ -729,6 +734,9 @@ class MainWindow(QMainWindow):
 
     def events_from_annotations(self):
         self.model.events_from_annotations()
+
+    def annotations_from_events(self):
+        self.model.annotations_from_events()
 
     def epoch_data(self):
         """Epoch raw data."""

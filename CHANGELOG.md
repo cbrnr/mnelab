@@ -1,4 +1,6 @@
 ## [Unreleased] - XXXX-XX-XX
+### Added
+- Add option to convert events to annotations ([#166](https://github.com/cbrnr/mnelab/pull/166) by [Alberto Barradas](https://github.com/abcsds))
 
 
 ## [0.5.7] - 2020-07-13
