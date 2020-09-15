@@ -266,7 +266,7 @@ class Model:
         locations = has_locations(self.current["data"].info)
         ica = self.current["ica"]
 
-        length = f"{len(data.times) / data.info['sfreq']:.6g} s"
+        length = f"{data.times[-1] - data.times[0]:.6g} s"
         samples = f"{len(data.times)}"
         if self.current["dtype"] == "epochs":  # add epoch count
             length = f"{self.current['data'].events.shape[0]} x {length}"
