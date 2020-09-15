@@ -139,13 +139,15 @@ class Model:
 
     @data_changed
     def annotations_from_events(self):
-        """Convert annotations to events."""
-        annots = mne.annotations_from_events(self.current["events"],
-                                             self.current["data"].info["sfreq"])
+        """Convert events to annotations."""
+        annots = mne.annotations_from_events(
+            self.current["events"],
+            self.current["data"].info["sfreq"]
+        )
         if len(annots) > 0:
             self.current["data"].set_annotations(annots)
             self.history.append("annots = mne.events_from_annotations(data)")
-            self.history.append("data   = data.set_annotations(annots)")
+            self.history.append("data = data.set_annotations(annots)")
 
     def export_data(self, fname, ffilter):
         """Export raw to file."""
