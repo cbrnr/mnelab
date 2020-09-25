@@ -132,6 +132,8 @@ class Model:
     def events_from_annotations(self):
         """Convert annotations to events."""
         events, mappings = mne.events_from_annotations(self.current["data"])
+        # Mappings for annots are swapped {str: int} should be {int: str}
+        mappings = dict((v, k) for k, v in mappings.items())
         if events.shape[0] > 0:
             self.current["events"] = events
             self.current["event_mappings"] = mappings
@@ -154,15 +156,15 @@ class Model:
             )
         if len(annots) > 0:
             self.current["data"].set_annotations(annots)
-            self.history.append("""
-if event_mappings is None:
-    annots = mne.annotations_from_events(data, data.info["sfreq"])
-else:
-    annots = mne.annotations_from_events(data,
-                                         data.info["sfreq"],
-                                         event_mappings)
-data = data.set_annotations(annots)
-""")
+            if "event_mappings" in self.current:
+                self.history.append(
+                    "annots = mne.annotations_from_events(data, "
+                    'data.info["sfreq"], event_mappings)')
+            else:
+                self.history.append(
+                    "annots = mne.annotations_from_events(data, "
+                    'data.info["sfreq"])')
+            self.history.append("data = data.set_annotations(annots)")
 
     def export_data(self, fname, ffilter):
         """Export raw to file."""
