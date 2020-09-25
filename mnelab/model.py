@@ -138,32 +138,29 @@ class Model:
             self.current["events"] = events
             self.current["event_mappings"] = mappings
             self.history.append("events, event_mappings = "
-                                "mne.events_from_annotations(data)")
+                                "mne.events_from_annotations(data)"
+                                "mappings = dict((v, k) for k, v in mappings.items())")
 
     @data_changed
     def annotations_from_events(self):
         """Convert events to annotations."""
         if "event_mappings" in self.current:
-            annots = mne.annotations_from_events(
-                self.current["events"],
-                self.current["data"].info["sfreq"],
-                event_desc=self.current["event_mappings"]
-            )
+            mappings = self.current["event_mappings"]
         else:
-            annots = mne.annotations_from_events(
-                self.current["events"],
-                self.current["data"].info["sfreq"],
-            )
+            mappings = None
+        annots = mne.annotations_from_events(self.current["events"],
+                                             self.current["data"].info["sfreq"],
+                                             event_desc=mappings
+                                             )
         if len(annots) > 0:
             self.current["data"].set_annotations(annots)
+            hist = ('annots = mne.annotations_from_events(data,'
+                    'data.info["sfreq"],')
             if "event_mappings" in self.current:
-                self.history.append(
-                    "annots = mne.annotations_from_events(data, "
-                    'data.info["sfreq"], event_mappings)')
+                hist += "event_mappings)"
             else:
-                self.history.append(
-                    "annots = mne.annotations_from_events(data, "
-                    'data.info["sfreq"])')
+                hist += ')'
+            self.history.append(hist)
             self.history.append("data = data.set_annotations(annots)")
 
     def export_data(self, fname, ffilter):
