@@ -131,23 +131,38 @@ class Model:
     @data_changed
     def events_from_annotations(self):
         """Convert annotations to events."""
-        events, _ = mne.events_from_annotations(self.current["data"])
+        events, mappings = mne.events_from_annotations(self.current["data"])
         if events.shape[0] > 0:
             self.current["events"] = events
-            self.history.append("events, _ = "
+            self.current["event_mappings"] = mappings
+            self.history.append("events, event_mappings = "
                                 "mne.events_from_annotations(data)")
 
     @data_changed
     def annotations_from_events(self):
         """Convert events to annotations."""
-        annots = mne.annotations_from_events(
-            self.current["events"],
-            self.current["data"].info["sfreq"]
-        )
+        if "event_mappings" in self.current:
+            annots = mne.annotations_from_events(
+                self.current["events"],
+                self.current["data"].info["sfreq"],
+                event_desc=self.current["event_mappings"]
+            )
+        else:
+            annots = mne.annotations_from_events(
+                self.current["events"],
+                self.current["data"].info["sfreq"],
+            )
         if len(annots) > 0:
             self.current["data"].set_annotations(annots)
-            self.history.append("annots = mne.events_from_annotations(data)")
-            self.history.append("data = data.set_annotations(annots)")
+            self.history.append("""
+if event_mappings is None:
+    annots = mne.annotations_from_events(data, data.info["sfreq"])
+else:
+    annots = mne.annotations_from_events(data,
+                                         data.info["sfreq"],
+                                         event_mappings)
+data = data.set_annotations(annots)
+""")
 
     def export_data(self, fname, ffilter):
         """Export raw to file."""
