@@ -21,7 +21,7 @@ MNELAB requires Python >= 3.6. In addition, the following Python packages are re
 - [numpy](http://www.numpy.org/) >= 1.14.0
 - [scipy](https://www.scipy.org/scipylib/index.html) >= 1.0.0
 - [matplotlib](https://matplotlib.org/) >= 2.1.0
-- [mne](https://github.com/mne-tools/mne-python) >= 0.20.0
+- [mne](https://github.com/mne-tools/mne-python) >= 0.21.0
 - [pyobjc-framework-Cocoa](https://pyobjc.readthedocs.io/en/latest/) >= 5.2.0 (macOS only)
 - python.app (only when using Anaconda or Miniconda Python on macOS)
 
