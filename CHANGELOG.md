@@ -4,6 +4,7 @@
 
 ### Added
 - Add option to convert events to annotations ([#166](https://github.com/cbrnr/mnelab/pull/166) by [Alberto Barradas](https://github.com/abcsds))
+- Retain annotation descriptions when converting to events ([#170](https://github.com/cbrnr/mnelab/pull/170) by [Alberto Barradas](https://github.com/abcsds) and [Clemens Brunner](https://github.com/cbrnr))
 
 
 ## [0.5.7] - 2020-07-13

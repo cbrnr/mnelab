@@ -131,34 +131,32 @@ class Model:
     @data_changed
     def events_from_annotations(self):
         """Convert annotations to events."""
-        events, event_mappings = mne.events_from_annotations(self.current["data"])
-        # Mappings for annots are swapped {str: int} should be {int: str}
-        event_mappings = dict((v, k) for k, v in event_mappings.items())
+        events, mapping = mne.events_from_annotations(self.current["data"])
         if events.shape[0] > 0:
+            # swap mapping for annots from {str: int} to {int: str}
+            mapping = {v: k for k, v in mapping.items()}
             self.current["events"] = events
-            self.current["event_mappings"] = event_mappings
-            self.history.append("events, event_mappings = "
+            self.current["event_mapping"] = mapping
+            self.history.append("events, mapping = "
                                 "mne.events_from_annotations(data)"
-                                "event_mappings = "
-                                "dict((v, k) for k, v in event_mappings.items())")
+                                "mapping = {v: k for k, v in mapping.items()}")
 
     @data_changed
     def annotations_from_events(self):
         """Convert events to annotations."""
-        if "event_mappings" in self.current:
-            event_mappings = self.current.get("event_mappings")
-        else:
-            event_mappings = None
-        annots = mne.annotations_from_events(self.current["events"],
-                                             self.current["data"].info["sfreq"],
-                                             event_desc=event_mappings)
+        mapping = self.current.get("event_mapping")
+        annots = mne.annotations_from_events(
+            self.current["events"],
+            self.current["data"].info["sfreq"],
+            event_desc=mapping
+        )
         if len(annots) > 0:
             self.current["data"].set_annotations(annots)
-            hist = ('annots = mne.annotations_from_events(data,'
+            hist = ("annots = mne.annotations_from_events(data, "
                     'data.info["sfreq"]')
-            if "event_mappings" in self.current:
-                hist += ", event_mappings"
-            hist += ')'
+            if mapping is not None:
+                hist += f", event_desc={mapping}"
+            hist += ")"
             self.history.append(hist)
             self.history.append("data = data.set_annotations(annots)")
 
