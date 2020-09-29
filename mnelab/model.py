@@ -137,9 +137,8 @@ class Model:
             mapping = {v: k for k, v in mapping.items()}
             self.current["events"] = events
             self.current["event_mapping"] = mapping
-            self.history.append("events, mapping = "
-                                "mne.events_from_annotations(data)"
-                                "mapping = {v: k for k, v in mapping.items()}")
+            self.history.append("events, _ = "
+                                "mne.events_from_annotations(data)")
 
     @data_changed
     def annotations_from_events(self):
@@ -152,7 +151,7 @@ class Model:
         )
         if len(annots) > 0:
             self.current["data"].set_annotations(annots)
-            hist = ("annots = mne.annotations_from_events(data, "
+            hist = ("annots = mne.annotations_from_events(events, "
                     'data.info["sfreq"]')
             if mapping is not None:
                 hist += f", event_desc={mapping}"
