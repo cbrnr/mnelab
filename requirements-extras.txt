@@ -1,0 +1,5 @@
+scikit-learn  # fastica
+python-picard  # picard
+pyEDFlib  # edf
+pyxdf  # xdf
+pybv  # brainvision

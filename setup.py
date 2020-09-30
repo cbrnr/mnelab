@@ -19,6 +19,17 @@ with open(path.join('mnelab', 'mainwindow.py'), 'r') as f:
             version = line.split('=')[1].strip().strip('"')
             break
 
+# get install requirements
+with open(path.join(here, "requirements.txt")) as f:
+    requires = f.read().splitlines()
+
+# get extra (optional) requirements
+extras_require = {}
+with open(path.join(here, "requirements-extras.txt")) as f:
+    for extra in f:
+        package, text = extra.split("#")
+        extras_require[text.strip()] = [package.strip()]
+
 setup(
     name='mnelab',
     version=version,
@@ -41,17 +52,8 @@ setup(
     keywords='EEG MEG MNE GUI electrophysiology',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
     python_requires='>=3.6, <4',
-    install_requires=['mne>=0.20',
-                      'numpy>=1.14',
-                      'scipy>=1.0',
-                      'matplotlib>=2.1',
-                      'QtPy>=1.9.0',
-                      'pyobjc-framework-Cocoa>=5.2;platform_system=="Darwin"'],
-    extras_require={"EDF export": ["pyedflib"],
-                    "PICARD": ["python-picard"],
-                    "FastICA": ["scikit-learn"],
-                    "XDF import": ["pyxdf"],
-                    "BrainVision export": ["pybv"]},
+    install_requires=requires,
+    extras_require=extras_require,
     license="BSD-3-Clause",
     include_package_data=True,
     entry_points={
