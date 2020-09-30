@@ -73,7 +73,7 @@ jobs:
   - script: |
       python -m pip install --upgrade pip setuptools wheel
       python -m pip install PySide2
-      python -m pip install -r requirements-oldest.txt
+      awk '{gsub(/>=/, "==")}1' requirements.txt | xargs python -m pip install
       python -m pip install pytest pytest-azurepipelines pytest-faulthandler pytest-qt pytest-xvfb
     displayName: 'Install dependencies'
   - script: python setup.py develop
@@ -95,7 +95,7 @@ jobs:
       python -m pip install --upgrade pip setuptools wheel
       python -m pip install PySide2
       python -m pip install -r requirements.txt
-      python -m pip install -r requirements-optional.txt
+      python -m pip install -r requirements-extras.txt
       python -m pip install pytest pytest-azurepipelines pytest-faulthandler pytest-qt pytest-xvfb
     displayName: 'Install dependencies'
   - script: python setup.py develop

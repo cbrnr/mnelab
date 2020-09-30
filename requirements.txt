@@ -1,6 +1,6 @@
-QtPy
-numpy
-scipy
-matplotlib
-mne
-pyobjc-framework-Cocoa; sys_platform == "darwin"
+mne>=0.20.0
+QtPy>=1.9.0
+numpy>=1.14.0
+scipy>=1.0.0
+matplotlib>=2.1.0
+pyobjc-framework-Cocoa>=5.2.0; platform_system=="Darwin"
