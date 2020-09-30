@@ -72,8 +72,8 @@ jobs:
     displayName: 'Use Python 3.6'
   - script: |
       python -m pip install --upgrade pip setuptools wheel
-      python -m pip install PySide2
-      awk '{gsub(/>=/, "==")}1' requirements.txt | xargs python -m pip install
+      python -m pip install PyQt5==5.10.0
+      awk '{gsub(/>=/, "==")}1' requirements.txt | awk '$0="\x27"$0"\x27"' | xargs python -m pip install
       python -m pip install pytest pytest-azurepipelines pytest-faulthandler pytest-qt pytest-xvfb
     displayName: 'Install dependencies'
   - script: python setup.py develop
