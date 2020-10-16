@@ -438,8 +438,17 @@ class MainWindow(QMainWindow):
 
     def export_file(self, f, text, ffilter="*",default_name=''):
         """Export to file."""
-        fname = QFileDialog.getSaveFileName(self, text, filter=ffilter)[0]
+        
+        if default_name != '' : 
+            default_name += "_"
+        
+        curent_file_path = os.path.dirname(self.model.current["data"].filenames[0])
+        curent_file_name = self.model.current["name"]
 
+        Dialog = QFileDialog.getSaveFileName(self,text,os.path.join(curent_file_path,default_name+curent_file_name),filter=ffilter)        
+        
+        fname = Dialog[0]
+        
         if fname:
             f(fname, ffilter)
 
