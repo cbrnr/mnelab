@@ -28,6 +28,8 @@ from .model import LabelsNotFoundError, InvalidAnnotationsError
 from .utils import have, has_locations, image_path, interface_style
 from .io import writers
 from .io.xdf import get_xml, get_streams
+import os
+
 
 
 __version__ = "0.6.0.dev0"
@@ -56,7 +58,6 @@ def write_settings(**kwargs):
     """Write application settings."""
     for key, value in kwargs.items():
         QSettings().setValue(key, value)
-
 
 class MainWindow(QMainWindow):
     """MNELAB main window."""
@@ -143,7 +144,7 @@ class MainWindow(QMainWindow):
         self.actions["export_annotations"] = file_menu.addAction(
             "Export &annotations...",
             lambda: self.export_file(model.export_annotations,
-                                     "Export annotations", "*.csv"))
+                                     "Export annotations","*.csv","annotation"))
         self.actions["export_ica"] = file_menu.addAction(
             "Export ICA...",
             lambda: self.export_file(model.export_ica,
@@ -435,9 +436,10 @@ class MainWindow(QMainWindow):
         if fname:
             f(fname)
 
-    def export_file(self, f, text, ffilter="*"):
+    def export_file(self, f, text, ffilter="*",default_name=''):
         """Export to file."""
         fname = QFileDialog.getSaveFileName(self, text, filter=ffilter)[0]
+
         if fname:
             f(fname, ffilter)
 
@@ -781,6 +783,8 @@ class MainWindow(QMainWindow):
             self.auto_duplicate()
             if dialog.average.isChecked():
                 self.model.set_reference("average")
+            elif dialog.bipolar.isChecked() : 
+                self.model.set_reference("bipolar")
             else:
                 ref = [c.strip() for c in dialog.channellist.text().split(",")]
                 self.model.set_reference(ref)

@@ -15,6 +15,7 @@ from .utils import has_locations
 from .io import read_raw, write_raw
 
 
+
 class LabelsNotFoundError(Exception):
     pass
 
@@ -139,7 +140,6 @@ class Model:
             self.current["event_mapping"] = mapping
             self.history.append("events, _ = "
                                 "mne.events_from_annotations(data)")
-
     @data_changed
     def annotations_from_events(self):
         """Convert events to annotations."""
@@ -158,6 +158,7 @@ class Model:
             hist += ")"
             self.history.append(hist)
             self.history.append("data = data.set_annotations(annots)")
+
 
     def export_data(self, fname, ffilter):
         """Export raw to file."""
@@ -488,6 +489,35 @@ class Model:
             self.current["name"] += " (average ref)"
             self.current["data"].set_eeg_reference(ref)
             self.history.append(f'data.set_eeg_reference("average")')
+        if ref == "bipolar" : 
+            self.current["name"] += " (original + bipolar ref)"
+
+            anodes = ["C3","O1","O1","T3","Cz","Pz","C4","O2","O2","T4"]
+            cathodes = ["Fp1","C3","T3","Fp1","Fz","Cz","Fp2","C4","T4","Fp2"]
+
+            anodes_ch_names = []
+
+            for anode in anodes : 
+                for ch_name in self.current["data"].info["ch_names"]: 
+                    if anode in ch_name : 
+                        anodes_ch_names.append(ch_name)
+
+            catodes_ch_names = []
+
+            for cathode in cathodes : 
+                for ch_name in self.current["data"].info["ch_names"]: 
+                    if cathode in ch_name : 
+                        catodes_ch_names.append(ch_name)
+
+
+            self.current["data"] = mne.set_bipolar_reference( self.current["data"],anode = anodes_ch_names, cathode=catodes_ch_names,drop_refs=False)
+
+            rename_dict = {x : x.strip().replace('EEG', '') for x in self.current["data"].info["ch_names"] if "EEG" in x}
+
+            mne.rename_channels(self.current["data"].info, rename_dict)
+
+            self.history.append(f'data.set_bipolar_reference({ref})')
+
         else:
             self.current["name"] += " (" + ",".join(ref) + ")"
             if set(ref) - set(self.current["data"].info["ch_names"]):
