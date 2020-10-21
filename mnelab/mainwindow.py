@@ -18,8 +18,8 @@ from qtpy.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                             QMessageBox, QListView, QAction, QLabel, QFrame)
 
 from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog,
-                      ChannelPropertiesDialog, CropDialog, EpochDialog,
-                      ErrorMessageBox, EventsDialog, FilterDialog,
+                      ChannelPropertiesDialog, CropDialog, ERDSDialog,
+                      EpochDialog, ErrorMessageBox, EventsDialog, FilterDialog,
                       FindEventsDialog, HistoryDialog, InterpolateBadsDialog,
                       MetaInfoDialog, MontageDialog, PickChannelsDialog,
                       ReferenceDialog, RunICADialog, XDFStreamsDialog)
@@ -28,6 +28,7 @@ from .model import LabelsNotFoundError, InvalidAnnotationsError
 from .utils import have, has_locations, image_path, interface_style
 from .io import writers
 from .io.xdf import get_xml, get_streams
+from .viz import plot_erds
 
 
 __version__ = "0.6.0.dev0"
@@ -187,6 +188,8 @@ class MainWindow(QMainWindow):
         icon = QIcon.fromTheme("plot-locations")
         self.actions["plot_locations"] = plot_menu.addAction(
             icon, "&Channel locations...", self.plot_locations)
+        self.actions["plot_erds"] = plot_menu.addAction(
+            "&ERDS maps...", self.plot_erds)
         plot_menu.addSeparator()
         self.actions["plot_ica_components"] = plot_menu.addAction(
             "ICA &components...", self.plot_ica_components)
@@ -345,6 +348,8 @@ class MainWindow(QMainWindow):
             ica = bool(self.model.current["ica"])
             self.actions["apply_ica"].setEnabled(enabled and ica)
             self.actions["export_ica"].setEnabled(enabled and ica)
+            self.actions["plot_erds"].setEnabled(
+                enabled and self.model.current["dtype"] == "epochs")
             self.actions["plot_ica_components"].setEnabled(enabled and ica and
                                                            locations)
             self.actions["plot_ica_sources"].setEnabled(enabled and ica)
@@ -626,6 +631,22 @@ class MainWindow(QMainWindow):
 
     def plot_ica_sources(self):
         self.model.current["ica"].plot_sources(inst=self.model.current["data"])
+
+    def plot_erds(self):
+        """Plot ERDS maps."""
+        data = self.model.current["data"]
+        t_range = [data.tmin, data.tmax]
+        f_range = [1, data.info["sfreq"] / 2]
+
+        dialog = ERDSDialog(self, t_range, f_range)
+
+        if dialog.exec_():
+            freqs = np.arange(dialog.f1, dialog.f2, dialog.step)
+            baseline = [dialog.b1, dialog.b2]
+            times = [dialog.t1, dialog.t2]
+            figs = plot_erds(data, freqs, freqs, baseline, times)
+            for fig in figs:
+                fig.show()
 
     def run_ica(self):
         """Run ICA calculation."""
