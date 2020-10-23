@@ -28,9 +28,6 @@ from .model import LabelsNotFoundError, InvalidAnnotationsError
 from .utils import have, has_locations, image_path, interface_style
 from .io import writers
 from .io.xdf import get_xml, get_streams
-import os
-
-
 
 __version__ = "0.6.0.dev0"
 
@@ -136,15 +133,15 @@ class MainWindow(QMainWindow):
         self.actions["export_bads"] = file_menu.addAction(
             "Export &bad channels...",
             lambda: self.export_file(model.export_bads, "Export bad channels",
-                                     "*.csv"))
+                                     "*.csv", "bad_channels"))
         self.actions["export_events"] = file_menu.addAction(
             "Export &events...",
             lambda: self.export_file(model.export_events, "Export events",
-                                     "*.csv"))
+                                     "*.csv", "events"))
         self.actions["export_annotations"] = file_menu.addAction(
             "Export &annotations...",
             lambda: self.export_file(model.export_annotations,
-                                     "Export annotations","*.csv","annotation"))
+                                     "Export annotations","*.csv","annotations"))
         self.actions["export_ica"] = file_menu.addAction(
             "Export ICA...",
             lambda: self.export_file(model.export_ica,
@@ -436,19 +433,19 @@ class MainWindow(QMainWindow):
         if fname:
             f(fname)
 
-    def export_file(self, f, text, ffilter="*",default_name=''):
+    def export_file(self, f, text, ffilter="*",suffix=''):
         """Export to file."""
         
-        if default_name != '' : 
-            default_name += "_"
+        if suffix != '' : 
+            suffix = "_"+suffix
         
-        curent_file_path = os.path.dirname(self.model.current["data"].filenames[0])
+        curent_file_path = Path(self.model.current["data"].filenames[0]).parent
         curent_file_name = self.model.current["name"]
 
-        Dialog = QFileDialog.getSaveFileName(self,text,os.path.join(curent_file_path,default_name+curent_file_name),filter=ffilter)        
+        Dialog = QFileDialog.getSaveFileName(self,text,str(curent_file_path.joinpath(curent_file_name+suffix)),filter=ffilter)        
         
         fname = Dialog[0]
-        
+
         if fname:
             f(fname, ffilter)
 

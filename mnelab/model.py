@@ -175,6 +175,7 @@ class Model:
         fname = join(split(fname)[0], name + ext)
         with open(fname, "w") as f:
             f.write(",".join(self.current["data"].info["bads"]))
+        print("Bad channels exported: ", fname)
 
     def export_events(self, fname):
         """Export events to a CSV file."""
@@ -183,6 +184,7 @@ class Model:
         fname = join(split(fname)[0], name + ext)
         np.savetxt(fname, self.current["events"][:, [0, 2]], fmt="%d",
                    delimiter=",", header="pos,type", comments="")
+        print("Events exported: ", fname)
 
     def export_annotations(self, fname):
         """Export annotations to a CSV file."""
@@ -195,6 +197,7 @@ class Model:
             for a in zip(anns.description, anns.onset, anns.duration):
                 f.write(",".join([a[0], str(a[1]), str(a[2])]))
                 f.write("\n")
+        print("Annotations exported: ", fname)
 
     def export_ica(self, fname):
         name, ext = splitext(split(fname)[-1])
