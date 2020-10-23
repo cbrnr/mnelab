@@ -28,6 +28,7 @@ from .model import LabelsNotFoundError, InvalidAnnotationsError
 from .utils import have, has_locations, image_path, interface_style
 from .io import writers
 from .io.xdf import get_xml, get_streams
+from inspect import signature
 
 
 __version__ = "0.6.0.dev0"
@@ -438,8 +439,15 @@ class MainWindow(QMainWindow):
     def export_file(self, f, text, ffilter="*"):
         """Export to file."""
         fname = QFileDialog.getSaveFileName(self, text, filter=ffilter)[0]
+        sig = signature(f)
+
+        args={"fname": fname}
+        for i in sig.parameters.items():
+            if(i[0]=="ffilter"):
+                args[i]=ffilter
+
         if fname:
-            f(fname, ffilter)
+            f(*args.values())
 
     def import_file(self, f, text, ffilter="*"):
         """Import file."""
