@@ -4,6 +4,8 @@
 
 from qtpy.QtWidgets import (QDialog, QVBoxLayout, QPlainTextEdit,
                             QDialogButtonBox)
+from qtpy.QtGui import QFont
+from ..utils import PythonHighlighter
 
 
 class HistoryDialog(QDialog):
@@ -12,6 +14,11 @@ class HistoryDialog(QDialog):
         self.setWindowTitle("History")
         layout = QVBoxLayout()
         text = QPlainTextEdit()
+        font = QFont()
+        font.setFamily("monospace")
+        font.setStyleHint(QFont.Monospace)
+        text.setFont(font)
+        highlighter = PythonHighlighter(text.document())
         text.setReadOnly(True)
         text.setPlainText(history)
         layout.addWidget(text)
