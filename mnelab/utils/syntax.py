@@ -1,3 +1,7 @@
+# Authors: Clemens Brunner <clemens.brunner@gmail.com>
+#
+# License: BSD (3-clause)
+
 import keyword
 from qtpy.QtGui import QSyntaxHighlighter, QTextCharFormat, QFont
 from qtpy.QtCore import Qt, QRegularExpression
