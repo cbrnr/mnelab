@@ -444,7 +444,10 @@ class MainWindow(QMainWindow):
         """Export to file."""
         fname = QFileDialog.getSaveFileName(self, text, filter=ffilter)[0]
         if fname:
-            f(fname, ffilter)
+            try:
+                f(fname, ffilter)
+            except TypeError:
+                f(fname)
 
     def import_file(self, f, text, ffilter="*"):
         """Import file."""

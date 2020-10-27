@@ -1,6 +1,8 @@
 ## [Unreleased] - XXXX-XX-XX
 ### Fixed
 - Show correct signal length in seconds ([#168](https://github.com/cbrnr/mnelab/pull/168) by [Clemens Brunner](https://github.com/cbrnr))
+- Fix export functionality ([#177](https://github.com/cbrnr/mnelab/pull/177) by [
+Guillaume Dollé](https://github.com/gdolle) and [Clemens Brunner](https://github.com/cbrnr))
 
 ### Added
 - Add option to convert events to annotations ([#166](https://github.com/cbrnr/mnelab/pull/166) by [Alberto Barradas](https://github.com/abcsds))
