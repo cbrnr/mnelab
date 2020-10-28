@@ -9,6 +9,7 @@ Guillaume Dollé](https://github.com/gdolle) and [Clemens Brunner](https://githu
 - Retain annotation descriptions when converting to events ([#170](https://github.com/cbrnr/mnelab/pull/170) by [Alberto Barradas](https://github.com/abcsds) and [Clemens Brunner](https://github.com/cbrnr))
 - Add support for basic ERDS maps ([#174](https://github.com/cbrnr/mnelab/pull/174) by [Clemens Brunner](https://github.com/cbrnr))
 - Add syntax highlighting in history dialog ([#179](https://github.com/cbrnr/mnelab/pull/179) by [Clemens Brunner](https://github.com/cbrnr))
+- Add copy to clipboard in History dialog ([#180](https://github.com/cbrnr/mnelab/pull/180) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### Changed
 - Required dependencies are now listed only in one place (requirements.txt) ([#172](https://github.com/cbrnr/mnelab/pull/172) by [Clemens Brunner](https://github.com/cbrnr))
