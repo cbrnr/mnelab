@@ -1,3 +1,5 @@
+## [Unreleased] - XXXX-XX-XX
+
 ## [0.6.0] - 2020-10-30
 ### Fixed
 - Show correct signal length in seconds ([#168](https://github.com/cbrnr/mnelab/pull/168) by [Clemens Brunner](https://github.com/cbrnr))
