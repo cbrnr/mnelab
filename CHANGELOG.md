@@ -1,4 +1,6 @@
-## [Unreleased] - XXXX-XX-XX
+## [0.6.1] - 2020-10-30
+### Fixed
+- Include requirements.txt in MANIFEST.in (by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [0.6.0] - 2020-10-30
 ### Fixed
