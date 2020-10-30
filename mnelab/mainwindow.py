@@ -31,7 +31,7 @@ from .io.xdf import get_xml, get_streams
 from .viz import plot_erds
 
 
-__version__ = "0.6.2"
+__version__ = "0.7.0.dev0"
 
 MAX_RECENT = 6  # maximum number of recent files
 
