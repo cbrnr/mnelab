@@ -8,6 +8,7 @@ from .channelpropertiesdialog import ChannelPropertiesDialog
 from .cropdialog import CropDialog
 from .appenddialog import AppendDialog
 from .epochdialog import EpochDialog
+from .erdsdialog import ERDSDialog
 from .errormessagebox import ErrorMessageBox
 from .eventsdialog import EventsDialog
 from .filterdialog import FilterDialog

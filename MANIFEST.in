@@ -1,3 +1,5 @@
 include LICENSE
+include requirements.txt
+include requirements-extras.txt
 recursive-include mnelab/images *
 recursive-include mnelab/icons *
