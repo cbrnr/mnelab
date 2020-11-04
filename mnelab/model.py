@@ -486,7 +486,7 @@ class Model:
             f"data = mne.preprocessing.nirs.beer_lambert_law(data)")
 
     @data_changed
-    def set_reference(self, ref):
+    def set_reference(self, ref, bichan=None):
         self.current["reference"] = ref
         if ref == "average":
             self.current["name"] += " (average ref)"
@@ -494,31 +494,24 @@ class Model:
             self.history.append(f'data.set_eeg_reference("average")')
         if ref == "bipolar" : 
             self.current["name"] += " (original + bipolar ref)"
-
-            anodes = ["C3","O1","O1","T3","Cz","Pz","C4","O2","O2","T4"]
-            cathodes = ["Fp1","C3","T3","Fp1","Fz","Cz","Fp2","C4","T4","Fp2"]
-
+                
+            anodes = [i[1:-1].split(', ').pop(0).rstrip("'\"").lstrip("\"'").strip() for i in bichan] 
+            cathodes = [i[1:-1].split(', ').pop(1).rstrip("'\"").lstrip("\"'").strip() for i in bichan]
             anodes_ch_names = []
+            cathodes_ch_names = []
 
             for anode in anodes : 
                 for ch_name in self.current["data"].info["ch_names"]: 
                     if anode in ch_name : 
                         anodes_ch_names.append(ch_name)
-
-            catodes_ch_names = []
-
             for cathode in cathodes : 
                 for ch_name in self.current["data"].info["ch_names"]: 
                     if cathode in ch_name : 
-                        catodes_ch_names.append(ch_name)
+                        cathodes_ch_names.append(ch_name)
 
-
-            self.current["data"] = mne.set_bipolar_reference( self.current["data"],anode = anodes_ch_names, cathode=catodes_ch_names,drop_refs=False)
-
-            rename_dict = {x : x.strip().replace('EEG', '') for x in self.current["data"].info["ch_names"] if "EEG" in x}
-
-            mne.rename_channels(self.current["data"].info, rename_dict)
-
+            self.current["data"] = mne.set_bipolar_reference( self.current["data"],anode = anodes_ch_names, cathode=cathodes_ch_names,drop_refs=False)
+            d = {x : x.strip() for x in self.current["data"].info["ch_names"] if "EEG" in x}
+            mne.rename_channels(self.current["data"].info, d)
             self.history.append(f'data.set_bipolar_reference({ref})')
 
         else:

@@ -18,6 +18,7 @@ from .interpolatebadsdialog import InterpolateBadsDialog
 from .metainfodialog import MetaInfoDialog
 from .montagedialog import MontageDialog
 from .pickchannelsdialog import PickChannelsDialog
+from .referencebipolardialog import ReferenceBipolarDialog
 from .referencedialog import ReferenceDialog
 from .runicadialog import RunICADialog
 from .xdfstreamsdialog import XDFStreamsDialog
@@ -26,5 +27,5 @@ from .xdfstreamsdialog import XDFStreamsDialog
 __all__ = [AnnotationsDialog, CalcDialog, ChannelPropertiesDialog, CropDialog,
            EpochDialog, ErrorMessageBox, EventsDialog, FilterDialog,
            FindEventsDialog, HistoryDialog, InterpolateBadsDialog,
-           MetaInfoDialog, MontageDialog, PickChannelsDialog, ReferenceDialog,
-           RunICADialog, XDFStreamsDialog]
+           MetaInfoDialog, MontageDialog, PickChannelsDialog, ReferenceBipolarDialog,
+           ReferenceDialog, RunICADialog, XDFStreamsDialog]

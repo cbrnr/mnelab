@@ -21,8 +21,9 @@ from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog,
                       ChannelPropertiesDialog, CropDialog, ERDSDialog,
                       EpochDialog, ErrorMessageBox, EventsDialog, FilterDialog,
                       FindEventsDialog, HistoryDialog, InterpolateBadsDialog,
-                      MetaInfoDialog, MontageDialog, PickChannelsDialog,
-                      ReferenceDialog, RunICADialog, XDFStreamsDialog)
+                      MetaInfoDialog, MontageDialog, PickChannelsDialog, 
+                      ReferenceBipolarDialog, ReferenceDialog, RunICADialog,
+                      XDFStreamsDialog)
 from .widgets.infowidget import InfoWidget
 from .model import LabelsNotFoundError, InvalidAnnotationsError
 from .utils import have, has_locations, image_path, interface_style
@@ -813,8 +814,13 @@ class MainWindow(QMainWindow):
             self.auto_duplicate()
             if dialog.average.isChecked():
                 self.model.set_reference("average")
-            elif dialog.bipolar.isChecked() : 
-                self.model.set_reference("bipolar")
+            elif dialog.bipolar.isChecked() :
+                channels = self.model.current["data"].info["ch_names"]
+                selected = None
+                dialog = ReferenceBipolarDialog(self, channels, selected=selected)
+                if dialog.exec_():
+                    selected = [dialog.selected.item(i).text() for i in range(dialog.selected.count())]
+                    self.model.set_reference("bipolar",selected)
             else:
                 ref = [c.strip() for c in dialog.channellist.text().split(",")]
                 self.model.set_reference(ref)
