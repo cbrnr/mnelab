@@ -7,6 +7,7 @@ from sys import version_info
 import traceback
 from functools import partial
 from pathlib import Path
+import re
 
 import numpy as np
 import mne
@@ -132,7 +133,7 @@ class MainWindow(QMainWindow):
             self.actions[action] = self.export_menu.addAction(
                 f"{ext[1:].upper()} ({description[1]})...",
                 partial(self.export_file, model.export_data, "Export data",
-                        ext))
+                        self.tr("*"+ext)))
         self.actions["export_bads"] = file_menu.addAction(
             "Export &bad channels...",
             lambda: self.export_file(model.export_bads, "Export bad channels",
@@ -443,11 +444,21 @@ class MainWindow(QMainWindow):
     def export_file(self, f, text, ffilter="*"):
         """Export to file."""
         fname = QFileDialog.getSaveFileName(self, text, filter=ffilter)[0]
-        if fname:
-            try:
-                f(fname, ffilter)
-            except TypeError:
-                f(fname)
+        if(fname):
+            if(ffilter!="*"):
+                fflist = re.split(" +",ffilter)
+                exts = [i.replace('*','') for i in fflist]
+
+                maxsuffixes = max([i.count('.') for i in exts])
+                suffixes = Path(fname).suffixes
+                for i in range(-maxsuffixes,0):
+                    ext = "".join(suffixes[i:])
+                    if(ext in exts):
+                        print("Export file: ", fname)
+                        return f(fname)
+                fname = fname + exts[0]
+                print("Export to file: ", fname)
+                return f(fname)
 
     def import_file(self, f, text, ffilter="*"):
         """Import file."""

@@ -159,12 +159,8 @@ class Model:
             self.history.append(hist)
             self.history.append("data = data.set_annotations(annots)")
 
-    def export_data(self, fname, ffilter):
+    def export_data(self, fname):
         """Export raw to file."""
-        ext = "".join(Path(fname).suffixes)
-        if ext != ffilter:
-            ext = ffilter
-            fname += ext
         write_raw(fname, self.current["data"])
 
     def export_bads(self, fname):
