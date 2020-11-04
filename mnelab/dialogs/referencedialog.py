@@ -13,7 +13,7 @@ class ReferenceDialog(QDialog):
         vbox = QVBoxLayout(self)
         grid = QGridLayout()
         self.average = QRadioButton("Average")
-        self.bipolar = QRadioButton("Bipolar (Longitudinale)")
+        self.bipolar = QRadioButton("Bipolar")
         self.channels = QRadioButton("Channel(s):")
         self.average.toggled.connect(self.toggle)
         self.bipolar.toggled.connect(self.toggle)
