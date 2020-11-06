@@ -4,7 +4,18 @@
 
 from setuptools import setup, find_packages
 from os import path
+from importlib import import_module
 
+# Manage alternative dependencies
+def optdep(*args, default=None):
+    for dep in args:
+        try:
+            import_module(dep)
+        except ImportError:
+            continue
+        else:
+            return dep
+    return default
 
 here = path.abspath(path.dirname(__file__))
 
@@ -22,6 +33,8 @@ with open(path.join('mnelab', 'mainwindow.py'), 'r') as f:
 # get install requirements
 with open(path.join(here, "requirements.txt")) as f:
     requires = f.read().splitlines()
+qtpkg=optdep("PySide2","PyQt5",default="PySide2")
+requires.append(qtpkg)
 
 # get extra (optional) requirements
 extras_require = {}
