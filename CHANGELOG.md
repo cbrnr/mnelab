@@ -1,5 +1,6 @@
 ## [Unreleased] - XXXX-XX-XX
-
+### Changed
+- PySide2 installed by default if wrapped Qt (PyQt5,PySide2) not found (by [#187](https://github.com/cbrnr/mnelab/pull/187))
 
 ## [0.6.2] - 2020-10-30
 ### Fixed
