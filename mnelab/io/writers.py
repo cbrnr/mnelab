@@ -13,7 +13,7 @@ from ..utils import have
 
 
 def write_fif(fname, raw):
-    raw.save(fname,overwrite=True)
+    raw.save(fname, overwrite=True)
 
 
 def write_set(fname, raw):
@@ -125,9 +125,9 @@ if have["pyedflib"]:
 
 
 def write_raw(fname, raw):
-    maxsuffixes = max([i.count('.') for i in writers.keys() ])
+    maxsuffixes = max([i.count('.') for i in writers.keys()])
     suffixes = Path(fname).suffixes
-    for i in range(-maxsuffixes,0):
+    for i in range(-maxsuffixes, 0):
         ext = "".join(suffixes[i:])
         if(ext in writers.keys()):
             return writers[ext][0](fname, raw)
