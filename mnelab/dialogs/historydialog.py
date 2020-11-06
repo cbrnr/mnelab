@@ -18,7 +18,7 @@ class HistoryDialog(QDialog):
         font.setFamily("monospace")
         font.setStyleHint(QFont.Monospace)
         text.setFont(font)
-        highlighter = PythonHighlighter(text.document())
+        highlighter = PythonHighlighter(text.document())  # noqa: F841
         text.setReadOnly(True)
         text.setPlainText(history)
         layout.addWidget(text)

@@ -469,17 +469,17 @@ class Model:
     def convert_od(self):
         self.current["data"] = mne.preprocessing.nirs.optical_density(
             self.current["data"])
-        self.current["name"] += f" (OD)"
+        self.current["name"] += " (OD)"
         self.history.append(
-            f"data = mne.preprocessing.nirs.optical_density(data)")
+            "data = mne.preprocessing.nirs.optical_density(data)")
 
     @data_changed
     def convert_beer_lambert(self):
         self.current["data"] = mne.preprocessing.nirs.beer_lambert_law(
             self.current["data"])
-        self.current["name"] += f" (BL)"
+        self.current["name"] += " (BL)"
         self.history.append(
-            f"data = mne.preprocessing.nirs.beer_lambert_law(data)")
+            "data = mne.preprocessing.nirs.beer_lambert_law(data)")
 
     @data_changed
     def set_reference(self, ref):
@@ -487,7 +487,7 @@ class Model:
         if ref == "average":
             self.current["name"] += " (average ref)"
             self.current["data"].set_eeg_reference(ref)
-            self.history.append(f'data.set_eeg_reference("average")')
+            self.history.append('data.set_eeg_reference("average")')
         else:
             self.current["name"] += " (" + ",".join(ref) + ")"
             if set(ref) - set(self.current["data"].info["ch_names"]):
