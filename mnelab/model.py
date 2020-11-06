@@ -15,7 +15,6 @@ from .utils import has_locations
 from .io import read_raw, write_raw
 
 
-
 class LabelsNotFoundError(Exception):
     pass
 
@@ -140,6 +139,7 @@ class Model:
             self.current["event_mapping"] = mapping
             self.history.append("events, _ = "
                                 "mne.events_from_annotations(data)")
+
     @data_changed
     def annotations_from_events(self):
         """Convert events to annotations."""
@@ -158,7 +158,6 @@ class Model:
             hist += ")"
             self.history.append(hist)
             self.history.append("data = data.set_annotations(annots)")
-
 
     def export_data(self, fname, ffilter):
         """Export raw to file."""
@@ -491,26 +490,33 @@ class Model:
         if ref == "average":
             self.current["name"] += " (average ref)"
             self.current["data"].set_eeg_reference(ref)
-            self.history.append(f'data.set_eeg_reference("average")')
-        if ref == "bipolar" : 
+            self.history.append('data.set_eeg_reference("average")')
+        if ref == "bipolar":
             self.current["name"] += " (original + bipolar ref)"
-                
-            anodes = [i[1:-1].split(', ').pop(0).rstrip("'\"").lstrip("\"'").strip() for i in bichan] 
-            cathodes = [i[1:-1].split(', ').pop(1).rstrip("'\"").lstrip("\"'").strip() for i in bichan]
+
+            anodes = [i[1:-1].split(', ').pop(0)
+                      .rstrip("'\"").lstrip("\"'").strip() for i in bichan]
+            cathodes = [i[1:-1].split(', ').pop(1)
+                        .rstrip("'\"").lstrip("\"'").strip() for i in bichan]
             anodes_ch_names = []
             cathodes_ch_names = []
 
-            for anode in anodes : 
-                for ch_name in self.current["data"].info["ch_names"]: 
-                    if anode in ch_name : 
+            for anode in anodes:
+                for ch_name in self.current["data"].info["ch_names"]:
+                    if anode in ch_name:
                         anodes_ch_names.append(ch_name)
-            for cathode in cathodes : 
-                for ch_name in self.current["data"].info["ch_names"]: 
-                    if cathode in ch_name : 
+            for cathode in cathodes:
+                for ch_name in self.current["data"].info["ch_names"]:
+                    if cathode in ch_name:
                         cathodes_ch_names.append(ch_name)
 
-            self.current["data"] = mne.set_bipolar_reference( self.current["data"],anode = anodes_ch_names, cathode=cathodes_ch_names,drop_refs=False)
-            d = {x : x.strip() for x in self.current["data"].info["ch_names"] if "EEG" in x}
+            self.current["data"] = mne.set_bipolar_reference(
+                self.current["data"],
+                anode=anodes_ch_names,
+                cathode=cathodes_ch_names,
+                drop_refs=False)
+            d = {x: x.strip() for x in
+                 self.current["data"].info["ch_names"] if "EEG" in x}
             mne.rename_channels(self.current["data"].info, d)
             self.history.append(f'data.set_bipolar_reference({ref})')
 

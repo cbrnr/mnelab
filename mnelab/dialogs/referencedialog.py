@@ -23,7 +23,7 @@ class ReferenceDialog(QDialog):
         grid.addWidget(self.average, 0, 0)
         grid.addWidget(self.channels, 1, 0)
         grid.addWidget(self.channellist, 1, 1)
-        grid.addWidget(self.bipolar,2,0)
+        grid.addWidget(self.bipolar, 2, 0)
         vbox.addLayout(grid)
         buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
                                      QDialogButtonBox.Cancel)

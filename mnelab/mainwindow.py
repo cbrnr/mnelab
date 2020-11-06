@@ -21,7 +21,7 @@ from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog,
                       ChannelPropertiesDialog, CropDialog, ERDSDialog,
                       EpochDialog, ErrorMessageBox, EventsDialog, FilterDialog,
                       FindEventsDialog, HistoryDialog, InterpolateBadsDialog,
-                      MetaInfoDialog, MontageDialog, PickChannelsDialog, 
+                      MetaInfoDialog, MontageDialog, PickChannelsDialog,
                       ReferenceBipolarDialog, ReferenceDialog, RunICADialog,
                       XDFStreamsDialog)
 from .widgets.infowidget import InfoWidget
@@ -57,6 +57,7 @@ def write_settings(**kwargs):
     """Write application settings."""
     for key, value in kwargs.items():
         QSettings().setValue(key, value)
+
 
 class MainWindow(QMainWindow):
     """MNELAB main window."""
@@ -143,7 +144,8 @@ class MainWindow(QMainWindow):
         self.actions["export_annotations"] = file_menu.addAction(
             "Export &annotations...",
             lambda: self.export_file(model.export_annotations,
-                                     "Export annotations","*.csv","annotations"))
+                                     "Export annotations", "*.csv",
+                                     "annotations"))
         self.actions["export_ica"] = file_menu.addAction(
             "Export ICA...",
             lambda: self.export_file(model.export_ica,
@@ -439,17 +441,20 @@ class MainWindow(QMainWindow):
         if fname:
             f(fname)
 
-    def export_file(self, f, text, ffilter="*",suffix=''):
+    def export_file(self, f, text, ffilter="*", suffix=''):
         """Export to file."""
-        
-        if suffix != '' : 
+
+        if suffix != '':
             suffix = "_"+suffix
-        
+
         curent_file_path = Path(self.model.current["data"].filenames[0]).parent
         curent_file_name = self.model.current["name"]
 
-        Dialog = QFileDialog.getSaveFileName(self,text,str(curent_file_path.joinpath(curent_file_name+suffix)),filter=ffilter)        
-        
+        Dialog = QFileDialog.getSaveFileName(self, text,
+                                             str(curent_file_path.joinpath(
+                                                 curent_file_name+suffix)),
+                                             filter=ffilter)
+
         fname = Dialog[0]
 
         if fname:
@@ -814,13 +819,15 @@ class MainWindow(QMainWindow):
             self.auto_duplicate()
             if dialog.average.isChecked():
                 self.model.set_reference("average")
-            elif dialog.bipolar.isChecked() :
+            elif dialog.bipolar.isChecked():
                 channels = self.model.current["data"].info["ch_names"]
                 selected = None
-                dialog = ReferenceBipolarDialog(self, channels, selected=selected)
+                dialog = ReferenceBipolarDialog(self, channels,
+                                                selected=selected)
                 if dialog.exec_():
-                    selected = [dialog.selected.item(i).text() for i in range(dialog.selected.count())]
-                    self.model.set_reference("bipolar",selected)
+                    selected = [dialog.selected.item(i).text()
+                                for i in range(dialog.selected.count())]
+                    self.model.set_reference("bipolar", selected)
             else:
                 ref = [c.strip() for c in dialog.channellist.text().split(",")]
                 self.model.set_reference(ref)
