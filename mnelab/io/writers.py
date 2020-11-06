@@ -94,7 +94,7 @@ def write_bv(fname, raw, events=None):
     """Export data to BrainVision EEG/VHDR/VMRK file (requires pybv)."""
     import pybv
 
-    name, ext = Path(fname).stem, "".join(Path(fname).suffixes)
+    name, _ = Path(fname).stem, "".join(Path(fname).suffixes)
     parent = Path(fname).parent
     data = raw.get_data()
     fs = raw.info["sfreq"]

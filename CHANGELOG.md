@@ -1,19 +1,19 @@
 ## [Unreleased] - XXXX-XX-XX
-
+### Changed
+- PySide2 installed by default if wrapped Qt bindings (PyQt5, PySide2) are not found ([#187](https://github.com/cbrnr/mnelab/pull/187) by [Guillaume Dollé](https://github.com/gdolle))
 
 ## [0.6.2] - 2020-10-30
 ### Fixed
-- Include requirements-extras.txt in MANIFEST.in (by [Clemens Brunner](https://github.com/cbrnr))
+- Include `requirements-extras.txt` in MANIFEST.in (by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [0.6.1] - 2020-10-30
 ### Fixed
-- Include requirements.txt in MANIFEST.in (by [Clemens Brunner](https://github.com/cbrnr))
+- Include `requirements.txt` in MANIFEST.in (by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [0.6.0] - 2020-10-30
 ### Fixed
 - Show correct signal length in seconds ([#168](https://github.com/cbrnr/mnelab/pull/168) by [Clemens Brunner](https://github.com/cbrnr))
-- Fix export functionality ([#177](https://github.com/cbrnr/mnelab/pull/177) by [
-Guillaume Dollé](https://github.com/gdolle) and [Clemens Brunner](https://github.com/cbrnr))
+- Fix export functionality ([#177](https://github.com/cbrnr/mnelab/pull/177) by [Guillaume Dollé](https://github.com/gdolle) and [Clemens Brunner](https://github.com/cbrnr))
 
 ### Added
 - Add option to convert events to annotations ([#166](https://github.com/cbrnr/mnelab/pull/166) by [Alberto Barradas](https://github.com/abcsds))

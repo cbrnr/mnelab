@@ -2,7 +2,7 @@
 #
 # License: BSD (3-clause)
 
-from .mainwindow import MainWindow, __version__
+from .mainwindow import MainWindow, __version__  # noqa: F401
 from .model import Model
 
 
