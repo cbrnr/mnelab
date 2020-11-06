@@ -7,8 +7,8 @@ from os import path
 from importlib import import_module
 
 
-# Manage alternative dependencies
 def optdep(*args, default=None):
+    """Manage alternative dependencies"""
     for dep in args:
         try:
             import_module(dep)
