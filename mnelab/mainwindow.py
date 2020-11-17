@@ -7,7 +7,6 @@ from sys import version_info
 import traceback
 from functools import partial
 from pathlib import Path
-import re
 
 import numpy as np
 import mne
