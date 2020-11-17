@@ -125,11 +125,11 @@ if have["pyedflib"]:
 
 
 def write_raw(fname, raw):
-    maxsuffixes = max([i.count('.') for i in writers.keys()])
+    maxsuffixes = max([ext.count(".") for ext in writers.keys()])
     suffixes = Path(fname).suffixes
     for i in range(-maxsuffixes, 0):
         ext = "".join(suffixes[i:])
-        if(ext in writers.keys()):
+        if ext in writers.keys():
             return writers[ext][0](fname, raw)
     else:
         raise ValueError(f"Unknown file type '{suffixes}'.")
