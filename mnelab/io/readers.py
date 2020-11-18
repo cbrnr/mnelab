@@ -64,10 +64,12 @@ def read_raw(fname, *args, **kwargs):
     This function supports reading different file formats. It uses the readers
     dict to dispatch the appropriate read function for a supported file type.
     """
-    ext = "".join(Path(fname).suffixes)
-    if ext in readers:
-        return readers[ext](fname, *args, **kwargs)
-    else:
-        raise ValueError(f"Unknown file type {ext}.")
-        # here we could inspect the file signature to determine its type, which
-        # would allow us to read file independently of their extensions
+    maxsuffixes = max([ext.count(".") for ext in supported])
+    suffixes = Path(fname).suffixes
+    for i in range(-maxsuffixes, 0):
+        ext = "".join(suffixes[i:])
+        if ext in readers.keys():
+            return readers[ext](fname, *args, **kwargs)
+    raise ValueError(f"Unknown file type {suffixes}.")
+    # here we could inspect the file signature to determine its type, which
+    # would allow us to read file independently of their extensions

@@ -13,7 +13,7 @@ from ..utils import have
 
 
 def write_fif(fname, raw):
-    raw.save(fname)
+    raw.save(fname, overwrite=True)
 
 
 def write_set(fname, raw):
@@ -47,7 +47,8 @@ def write_edf(fname, raw):
     """Export raw to EDF/BDF file (requires pyEDFlib)."""
     import pyedflib
 
-    ext = "".join(Path(fname).suffixes)
+    suffixes = Path(fname).suffixes
+    ext = "".join(suffixes[-1:])
     if ext == ".edf":
         filetype = pyedflib.FILETYPE_EDFPLUS
         dmin, dmax = -32768, 32767
@@ -124,8 +125,11 @@ if have["pyedflib"]:
 
 
 def write_raw(fname, raw):
-    ext = "".join(Path(fname).suffixes)
-    if ext in writers:
-        writers[ext][0](fname, raw)
+    maxsuffixes = max([ext.count(".") for ext in writers.keys()])
+    suffixes = Path(fname).suffixes
+    for i in range(-maxsuffixes, 0):
+        ext = "".join(suffixes[i:])
+        if ext in writers.keys():
+            return writers[ext][0](fname, raw)
     else:
-        raise ValueError(f"Unknown file type {ext}.")
+        raise ValueError(f"Unknown file type '{suffixes}'.")
