@@ -132,7 +132,7 @@ class MainWindow(QMainWindow):
             self.actions[action] = self.export_menu.addAction(
                 f"{ext[1:].upper()} ({description[1]})...",
                 partial(self.export_file, model.export_data, "Export data",
-                        ext))
+                        "*" + ext))
         self.actions["export_bads"] = file_menu.addAction(
             "Export &bad channels...",
             lambda: self.export_file(model.export_bads, "Export bad channels",
@@ -458,10 +458,17 @@ class MainWindow(QMainWindow):
         fname = Dialog[0]
 
         if fname:
-            try:
-                f(fname, ffilter)
-            except TypeError:
-                f(fname)
+            if ffilter != "*":
+                exts = [ext.replace("*", "") for ext in ffilter.split()]
+
+                maxsuffixes = max([ext.count(".") for ext in exts])
+                suffixes = Path(fname).suffixes
+                for i in range(-maxsuffixes, 0):
+                    ext = "".join(suffixes[i:])
+                    if ext in exts:
+                        return f(fname)
+                fname = fname + exts[0]
+                return f(fname)
 
     def import_file(self, f, text, ffilter="*"):
         """Import file."""
