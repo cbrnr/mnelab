@@ -987,8 +987,7 @@ class MainWindow(QMainWindow):
         """
         write_settings(size=self.size(), pos=self.pos())
         if self.model.history:
-            print("\nCommand History")
-            print("===============")
+            print("\n# Command History\n")
             print("\n".join(self.model.history))
         QApplication.quit()
 
