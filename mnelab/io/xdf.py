@@ -6,7 +6,7 @@ import numpy as np
 import mne
 
 
-def read_raw_xdf(fname, stream_id, *args, **kwargs):
+def read_raw_xdf(fname, stream_id=None, *args, **kwargs):
     """Read XDF file.
 
     Parameters
@@ -24,9 +24,24 @@ def read_raw_xdf(fname, stream_id, *args, **kwargs):
     from pyxdf import load_xdf, match_streaminfos, resolve_streams
 
     streams, header = load_xdf(fname)
-    for stream in streams:
-        if stream["info"]["stream_id"] == stream_id:
-            break  # stream found
+
+
+    eeg_stream_found = False
+    if stream_id is not None:
+        for stream in streams:
+            if stream["info"]["stream_id"] == stream_id:
+                eeg_stream_found = True
+                break  # stream found
+
+    if not eeg_stream_found:
+        # if the steam_id could not be found
+        for stream in streams:
+            eeg_streams = match_streaminfos(resolve_streams(fname), [{"type": "EEG"}])
+            if stream["info"]["stream_id"] in eeg_streams:
+                eeg_stream_found = True
+                break  # stream found
+
+    assert eeg_stream_found, 'No EEG stream found'
 
     n_chans = int(stream["info"]["channel_count"][0])
     fs = float(stream["info"]["nominal_srate"][0])
