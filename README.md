@@ -41,14 +41,7 @@ MNELAB comes with the following features that are not (yet) available in MNE:
 
 ### Installation
 #### pip
-First, install either PyQt5 or PySide2 (you do not need to install both packages):
-
-```
-pip install PyQt5
-pip install PySide2
-```
-
-Then install MNELAB:
+MNELAB requires either PyQt5 or PySide2 (if you don't have either of these packages installed, MNELAB will automatically install and use PySide2):
 
 ```
 pip install mnelab
