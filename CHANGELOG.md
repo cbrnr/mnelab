@@ -5,6 +5,9 @@
 ### Changed
 - PySide2 installed by default if wrapped Qt bindings (PyQt5, PySide2) are not found ([#187](https://github.com/cbrnr/mnelab/pull/187) by [Guillaume Dollé](https://github.com/gdolle))
 
+### Added
+- Add Python 3.9 support ([#190](https://github.com/cbrnr/mnelab/pull/190) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [0.6.2] - 2020-10-30
 ### Fixed
 - Include `requirements-extras.txt` in MANIFEST.in (by [Clemens Brunner](https://github.com/cbrnr))
