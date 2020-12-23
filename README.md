@@ -23,7 +23,7 @@ MNELAB requires Python >= 3.6 and the following packages:
 - [matplotlib](https://matplotlib.org/) >= 2.1.0
 - [mne](https://github.com/mne-tools/mne-python) >= 0.22.0
 - [pyobjc-framework-Cocoa](https://pyobjc.readthedocs.io/en/latest/) >= 5.2.0 (macOS only)
-- python.app (only when using Anaconda or Miniconda Python on macOS)
+- [python.app](https://anaconda.org/anaconda/python.app) (only when using Anaconda on macOS)
 
 Optional dependencies provide additional features if installed:
 - [scikit-learn]() (ICA computation with FastICA)
