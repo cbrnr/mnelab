@@ -24,7 +24,7 @@ jobs:
         pip install -r requirements-extras.txt
         pip install -e .
     - name: Install Linux dependencies
-      if: ${{ runner.os == Linux }}
+      if: ${{ runner.os == 'Linux' }}
       run: pip install pytest-xvfb
     - name: Test
       run: pytest
