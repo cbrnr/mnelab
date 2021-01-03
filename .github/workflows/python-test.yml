@@ -3,25 +3,26 @@ name: Python test
 on: [pull_request]
 
 jobs:
-  runs-on: ${{ matrix.os }}
-  strategy:
-    matrix:
-      os: [ubuntu-20.04, macos-11.0, windows-2019]
-      python-version: [3.6, 3.7, 3.8, 3.9]
-    steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install flake8 pytest pytest-qt
-        pip install -r requirements.txt
-        pip install -r requirements-extras.txt
-        pip install -e .
-    - name: Lint
-      run: flake8 . --count --statistics
-    - name: Test
-      run: pytest
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, macos-11.0, windows-2019]
+        python-version: [3.6, 3.7, 3.8, 3.9]
+      steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install flake8 pytest pytest-qt
+          pip install -r requirements.txt
+          pip install -r requirements-extras.txt
+          pip install -e .
+      - name: Lint
+        run: flake8 . --count --statistics
+      - name: Test
+        run: pytest
