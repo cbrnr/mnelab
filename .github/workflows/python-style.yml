@@ -1,4 +1,4 @@
-name: Python style
+name: style
 
 on: [pull_request]
 
