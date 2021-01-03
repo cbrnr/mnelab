@@ -1,6 +1,6 @@
 name: Python test
 
-on: [pull_request]
+on: [push]
 
 runs-on: ${{ matrix.os }}
 strategy:
