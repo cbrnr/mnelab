@@ -43,5 +43,5 @@ jobs:
       - name: Install packages
         run: |
           pip install $(ls dist/*.whl)
-          pip uninstall mnelab
+          pip uninstall -y mnelab
           pip install $(ls dist/*.tar.gz)
