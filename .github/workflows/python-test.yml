@@ -34,7 +34,7 @@ jobs:
         pip install -r requirements-dev.txt
         pip install -e .
     - name: Install extra dependencies
-      if: ${{ matrix.extras == extras }}
+      if: ${{ matrix.extras == 'extras' }}
       run: pip install -r requirements-extras.txt
     - name: Test
       run: pytest
