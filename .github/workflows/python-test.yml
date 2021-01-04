@@ -13,7 +13,7 @@ jobs:
         include:
           - os: ubuntu-20.04
             python-version: 3.9
-            extras: false
+            extras: [false]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
@@ -34,7 +34,7 @@ jobs:
         pip install -r requirements-dev.txt
         pip install -e .
     - name: Install extra dependencies
-      if: ${{ extras == true }}
+      if: ${{ matrix.extras == true }}
       run: pip install -r requirements-extras.txt
     - name: Test
       run: pytest
