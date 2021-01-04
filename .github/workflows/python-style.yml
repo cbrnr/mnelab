@@ -4,7 +4,6 @@ on: [pull_request]
 
 jobs:
   style:
-    name: Style
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
