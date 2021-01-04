@@ -21,6 +21,7 @@ jobs:
             extras: extras
             packages: oldest
     runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }} / Python ${{ matrix.python-version }} / ${{ matrix.extras }} / ${{ matrix.packages }}
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
