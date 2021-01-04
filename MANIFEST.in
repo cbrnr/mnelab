@@ -1,5 +1,10 @@
 include LICENSE
+include CHANGELOG.md
+include CONTRIBUTING.md
 include requirements.txt
 include requirements-extras.txt
+include requirements-dev.txt
+include mnelab.png
+recursive-include mnelab *.py
 recursive-include mnelab/images *
 recursive-include mnelab/icons *
