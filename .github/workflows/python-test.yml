@@ -4,12 +4,17 @@ on: [pull_request]
 
 jobs:
   test:
-    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-20.04, macos-11.0, windows-2019]
         python-version: [3.6, 3.7, 3.8, 3.9]
+        extras: true
+        include:
+          - os: ubuntu-20.04
+            python-version: 3.9
+            extras: false
+    runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python-version }}
@@ -26,8 +31,10 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install -r requirements-extras.txt
         pip install -r requirements-dev.txt
         pip install -e .
+    - name: Install extra dependencies
+      if: ${{ extras == true }}
+      run: pip install -r requirements-extras.txt
     - name: Test
       run: pytest
