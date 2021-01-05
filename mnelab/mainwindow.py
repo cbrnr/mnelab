@@ -12,7 +12,7 @@ import numpy as np
 import mne
 from mne.io.pick import channel_type
 from qtpy.QtCore import (Qt, Slot, QStringListModel, QModelIndex, QSettings,
-                         QEvent, QObject, QSize, QPoint)
+                         QEvent, QObject, QSize, QPoint, QMetaObject)
 from qtpy.QtGui import QKeySequence, QDropEvent, QIcon
 from qtpy.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                             QMessageBox, QListView, QAction, QLabel, QFrame)
@@ -693,15 +693,20 @@ class MainWindow(QMainWindow):
             self.model.history.append(history)
 
             pool = mp.Pool(processes=1)
+
+            def callback(x):
+                QMetaObject.invokeMethod(calc, "accept", Qt.QueuedConnection)
+
             res = pool.apply_async(func=ica.fit,
                                    args=(self.model.current["data"],),
                                    kwds={"reject_by_annotation":
                                          exclude_bad_segments},
-                                   callback=lambda x: calc.accept())
+                                   callback=callback)
             pool.close()
 
             if not calc.exec_():
                 pool.terminate()
+                print("ICA calculation aborted...")
             else:
                 self.model.current["ica"] = res.get(timeout=1)
                 self.model.history.append(f"ica.fit(inst=raw, "
