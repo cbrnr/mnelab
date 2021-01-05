@@ -1,4 +1,4 @@
-## [Unreleased] - XXXX-XX-XX
+## [0.6.3] - 2021-01-05
 ### Fixed
 - Fix export functionality ([#184](https://github.com/cbrnr/mnelab/pull/184) by [Guillaume Dollé](https://github.com/gdolle))
 - Fix ICA computation in separate process ([#192](https://github.com/cbrnr/mnelab/pull/192) by [Clemens Brunner](https://github.com/cbrnr))

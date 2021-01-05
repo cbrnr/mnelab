@@ -31,7 +31,7 @@ from .io.xdf import get_xml, get_streams
 from .viz import plot_erds
 
 
-__version__ = "0.7.0.dev0"
+__version__ = "0.6.3"
 
 MAX_RECENT = 6  # maximum number of recent files
 
@@ -852,7 +852,7 @@ class MainWindow(QMainWindow):
                 f'<nobr><p>MNE repository: '
                 f'<a href=https://{mne_url}>{mne_url}</a></p></nobr>'
                 f'<p>Licensed under the BSD 3-clause license.</p>'
-                f'<p>Copyright 2017-2020 by Clemens Brunner.</p>')
+                f'<p>Copyright 2017-2021 by Clemens Brunner.</p>')
         msg_box.setInformativeText(text)
         msg_box.exec_()
 
