@@ -1,6 +1,7 @@
 ## [Unreleased] - XXXX-XX-XX
 ### Fixed
 - Fix export functionality ([#184](https://github.com/cbrnr/mnelab/pull/184) by [Guillaume Dollé](https://github.com/gdolle))
+- Fix ICA computation in separate process ([#192](https://github.com/cbrnr/mnelab/pull/192) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### Changed
 - PySide2 installed by default if wrapped Qt bindings (PyQt5, PySide2) are not found ([#187](https://github.com/cbrnr/mnelab/pull/187) by [Guillaume Dollé](https://github.com/gdolle))
