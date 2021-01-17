@@ -5,14 +5,14 @@
 ![Downloads Conda](https://img.shields.io/conda/dn/conda-forge/mnelab?color=blue&label=downloads%20conda)
 ![License](https://img.shields.io/github/license/cbrnr/mnelab)
 
-![](https://raw.githubusercontent.com/cbrnr/mnelab/master/mnelab/images/mnelab_logo.png)
+![](https://raw.githubusercontent.com/cbrnr/mnelab/main/mnelab/images/mnelab_logo.png)
 
 MNELAB is a graphical user interface (GUI) for [MNE](https://github.com/mne-tools/mne-python), a Python package for EEG/MEG analysis.
 
-![](https://raw.githubusercontent.com/cbrnr/mnelab/master/mnelab.png)
+![](https://raw.githubusercontent.com/cbrnr/mnelab/main/mnelab.png)
 
 ### Changelog
-Check out the [changelog](https://github.com/cbrnr/mnelab/blob/master/CHANGELOG.md) to learn what we added, changed or fixed in the latest version.
+Check out the [changelog](https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md) to learn what we added, changed or fixed in the latest version.
 
 ### Dependencies
 MNELAB requires Python >= 3.6 and the following packages:
@@ -65,9 +65,9 @@ If you use [Arch Linux](https://www.archlinux.org/), you can install the [python
 #### Development version
 Follow these steps to use the latest development version of MNELAB:
 
-1. [Download the source code](https://github.com/cbrnr/mnelab/archive/master.zip) and unpack it into a folder of your choice.
+1. [Download the source code](https://github.com/cbrnr/mnelab/archive/main.zip) and unpack it into a folder of your choice.
 2. Install all dependencies listed above.
 3. Run `python -m mnelab` to start MNELAB (if this does not work try `python3 -m mnelab` because Python 2 is not supported).
 
 ### Contributing
-The [contributing guide](https://github.com/cbrnr/mnelab/blob/master/CONTRIBUTING.md) contains detailed instructions on how to contribute to MNELAB.
+The [contributing guide](https://github.com/cbrnr/mnelab/blob/main/CONTRIBUTING.md) contains detailed instructions on how to contribute to MNELAB.
