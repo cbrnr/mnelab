@@ -1,3 +1,7 @@
+## [Unreleased] - XXXX-XX-XX
+### Changed
+- Rename `master` branch to `main` ([#193](https://github.com/cbrnr/mnelab/pull/193) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [0.6.3] - 2021-01-05
 ### Fixed
 - Fix export functionality ([#184](https://github.com/cbrnr/mnelab/pull/184) by [Guillaume Dollé](https://github.com/gdolle))
