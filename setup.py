@@ -7,16 +7,29 @@ from os import path
 from importlib import import_module
 
 
-def optdep(*args, default=None):
-    """Manage alternative dependencies."""
+def optdep(*args):
+    """Manage optional dependencies.
+
+    Parameters
+    ----------
+    *args : str
+        Module names to check if they are installed.
+
+    Returns
+    -------
+    pkg : str | None
+        Package name that should be added to requires so that it will be
+        installed automatically. If any package in *args is installed, this
+        will return None. Otherwise, if no package is installed this will
+        return the first package in *args.
+    """
     for dep in args:
         try:
             import_module(dep)
         except ImportError:
             continue
-        else:
-            return dep
-    return default
+        return
+    return args[0]
 
 
 here = path.abspath(path.dirname(__file__))
@@ -36,8 +49,10 @@ with open(path.join('mnelab', 'mainwindow.py'), 'r') as f:
 with open(path.join(here, "requirements.txt")) as f:
     requires = f.read().splitlines()
 
-qtpkg = optdep("PySide2", "PyQt5", default="PySide2")
-requires.append(qtpkg)
+# check if either PySide2 or PyQt5 is installed; if not add PySide2 to requires
+qtpkg = optdep("PySide2", "PyQt5")
+if qtpkg is not None:
+    requires.append(qtpkg)
 
 # get extra (optional) requirements
 extras_require = {}
