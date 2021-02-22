@@ -47,6 +47,8 @@ Make sure you have either `PySide2` or `PyQt5` installed. If you have neither, w
 pip install mnelab
 ```
 
+If you want to install either `PySide2` or `PyQt5` alongside MNELAB with one go, you can also use either `pip install mnelab[pyside2]` or `pip install mnelab[pyqt5]`.
+
 You can start MNELAB in a terminal with `mnelab` or `python -m mnelab`.
 
 #### conda
