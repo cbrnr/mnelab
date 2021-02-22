@@ -1,6 +1,6 @@
 ## [Unreleased] - XXXX-XX-XX
 ### Fixed
-- Fix package installation in conda environments (properly detect if `PyQt5` is installed) ([#194](https://github.com/cbrnr/mnelab/pull/194) by [Clemens Brunner](https://github.com/cbrnr))
+- Remove auto-installation of `PySide2` when using `pip` ([#196](https://github.com/cbrnr/mnelab/pull/196) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### Changed
 - Rename `master` branch to `main` ([#193](https://github.com/cbrnr/mnelab/pull/193) by [Clemens Brunner](https://github.com/cbrnr))
