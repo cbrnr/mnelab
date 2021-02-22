@@ -26,11 +26,11 @@ MNELAB requires Python >= 3.6 and the following packages:
 - [python.app](https://anaconda.org/anaconda/python.app) (only when using Anaconda on macOS)
 
 Optional dependencies provide additional features if installed:
-- [scikit-learn]() (ICA computation with FastICA)
-- [python-picard](https://pierreablin.github.io/picard/) (ICA computation with PICARD)
-- [pyxdf](https://github.com/xdf-modules/xdf-Python) (XDF import)
-- [pyEDFlib](https://github.com/holgern/pyedflib) (EDF/BDF export)
-- [pybv](https://github.com/bids-standard/pybv) (BrainVision VHDR/VMRK/EEG export)
+- [scikit-learn](https://scikit-learn.org/stable/) >= 0.20.0 (ICA computation with FastICA)
+- [python-picard](https://pierreablin.github.io/picard/) >= 0.4.0 (ICA computation with PICARD)
+- [pyxdf](https://github.com/xdf-modules/xdf-Python) >= 1.16.0 (XDF import)
+- [pyEDFlib](https://github.com/holgern/pyedflib) >= 0.1.15 (EDF/BDF export)
+- [pybv](https://github.com/bids-standard/pybv) 0.4.0 (BrainVision VHDR/VMRK/EEG export)
 
 ### Additional features
 MNELAB comes with the following features that are not (yet) available in MNE:
