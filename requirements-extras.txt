@@ -1,5 +1,7 @@
-scikit-learn  # fastica
-python-picard  # picard
-pyEDFlib  # edf
-pyxdf  # xdf
-pybv  # brainvision
+scikit-learn>=0.20.0  # fastica
+python-picard>=0.4.0  # picard
+pyEDFlib>=0.1.15  # edf
+pyxdf>=1.16.0  # xdf
+pybv>=0.4.0  # brainvision
+PyQt5>=5.10.0  # pyqt5
+PySide2>=5.10.0  # pyside2
