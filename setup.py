@@ -58,7 +58,7 @@ setup(
     license="BSD-3-Clause",
     include_package_data=True,
     entry_points={
-        'gui_scripts': [
+        'console_scripts': [
             'mnelab=mnelab.__main__:main',
         ],
     }
