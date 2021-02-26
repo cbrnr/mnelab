@@ -64,9 +64,9 @@ def read_mat(fname, *args, **kwargs):
 
     # get data:
     X = matlab_dict.get('data')
-    if X is None or len(X.shape) is not 2:
-        raise TypeError(
-            f"Array at {fname} needs to be 2 dimensions:[channels,time points]")
+    msg = f"Array at {fname} needs to be 2 dimensions:[channels,time points]"
+    if X is None or len(X.shape) != 2:
+        raise TypeError(msg)
 
     # name channels:
     channels = matlab_dict.get("ch_names")
@@ -132,9 +132,10 @@ def read_numpy(fname, *args, **kwargs):
     # map numpy array:
     X = np.load(fname, mmap_mode='r+')
     # check for appropriate dimensions:
-    if len(X.shape) is not 2:
-        raise ValueError(
-            f"Array in {fname} needs to be 2 dimensions:[channels,time points]")
+    if len(X.shape) != 2:
+        msg = f"Array in {fname} needs to be 2 dimensions:"+
+               "[channels,time points]"
+        raise ValueError(msg)
     # load sample frequency:
     fs = kwargs.get("fs")
     if fs is None or fs == '':
