@@ -289,7 +289,7 @@ class Model:
         chans = sorted(dict(chans).items(),
                        key=lambda x: (x[0] == "stim", x[0]))
 
-        if events is not None:
+        if events is not None and events.shape[0] > 0:
             nevents = events.shape[0]
             unique = [str(e) for e in sorted(set(events[:, 2]))]
             if len(unique) > 20:  # do not show all events
