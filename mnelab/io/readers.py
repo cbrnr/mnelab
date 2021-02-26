@@ -11,6 +11,7 @@ from mnelab.io.mat import read_raw_mat
 from mnelab.io.xdf import read_raw_xdf
 
 
+
 def _read_unsupported(fname, **kwargs):
     ext = "".join(Path(fname).suffixes)
     msg = f"Unsupported file type ({ext})."
@@ -19,7 +20,8 @@ def _read_unsupported(fname, **kwargs):
         msg += f" Try reading a {suggest} file instead."
     raise ValueError(msg)
 
-def read_mat(fname,*args,**kwargs):
+
+def read_mat(fname, *args, **kwargs):
     """
     loads a recording from a .mat file.
 
@@ -45,52 +47,56 @@ def read_mat(fname,*args,**kwargs):
         ValueError - if the sample rate (fs) is not specified.
         TypeError - if the input array is not 2 dimensions or it's missing from the .mat file.
     """
-    #load .mat file:
+    # load .mat file:
     matlab_dict = sio.loadmat(fname)
 
-    #get data:
+    # get data:
     X = matlab_dict.get('data')
     if X is None or len(X.shape) is not 2:
-        raise TypeError(f"Array in {fname} needs to be 2 dimensions: [channels,time points]")
+        raise TypeError(
+            f"Array in {fname} needs to be 2 dimensions: [channels,time points]")
 
-    #name channels:
+    # name channels:
     channels = matlab_dict.get("ch_names")
     if channels is None:
         channels = [str(i) for i in range(X.shape[0])]
     else:
         channels = [elem[0] for elem in channels.reshape(-1)]
 
-    #get sample rate (Hz)
-    fs_mat = [matlab_dict.get("fs"),kwargs.get("fs")]
-    if (fs_mat[0] is None or fs_mat[0][0][0] is '') and (fs_mat[1] is None or fs_mat[1] is ''):
-        raise TypeError('Need to have a variable (fs) either saved in the .mat file or entered manually.')
-    elif fs_mat[0] is not None and  fs_mat[0][0][0] is not '':
+    # get sample rate (Hz)
+    fs_mat = [matlab_dict.get("fs"), kwargs.get("fs")]
+    if (fs_mat[0] is None or fs_mat[0][0][0] is '') and (
+            fs_mat[1] is None or fs_mat[1] is ''):
+        raise TypeError(
+            'Need to have a variable (fs) either saved in the .mat file or entered manually.')
+    elif fs_mat[0] is not None and fs_mat[0][0][0] is not '':
         fs = fs_mat[0][0][0]
     else:
         fs = fs_mat[1]
 
-    #check standardization flag:
-    standardize =  [matlab_dict.get("standardize"),kwargs.get("standardize")]
-    if (standardize[0] is not None and standardize[0].any()) or (standardize[1] is not None and standardize[1] is True):
-        mu = X.mean(-1).reshape(-1,1)
-        dev = X.std(-1).reshape(-1,1)
-        X = (X-mu)/dev
+    # check standardization flag:
+    standardize = [matlab_dict.get("standardize"), kwargs.get("standardize")]
+    if (standardize[0] is not None and standardize[0].any()) or (
+            standardize[1] is not None and standardize[1] is True):
+        mu = X.mean(-1).reshape(-1, 1)
+        dev = X.std(-1).reshape(-1, 1)
+        X = (X - mu) / dev
 
-    #Set channel types:
-    ch_type = [matlab_dict.get('ch_type'),kwargs.get("ch_type")]
+    # Set channel types:
+    ch_type = [matlab_dict.get('ch_type'), kwargs.get("ch_type")]
     if ch_type[0] is not None:
         ch_type = [elem[0] for elem in ch_type[0].reshape(-1)]
     elif ch_type[0] is None and ch_type[1] is not None:
         ch_type = ch_type[1]
-    else: #ch_type[0] is None and ch_type[1] is None
+    else:  # ch_type[0] is None and ch_type[1] is None
         ch_type = 'misc'
 
-    info = mne.create_info(channels,fs,ch_types=ch_type)
-    data = mne.io.RawArray(X,info=info)
+    info = mne.create_info(channels, fs, ch_types=ch_type)
+    data = mne.io.RawArray(X, info=info)
     return data
 
 
-def read_numpy(fname,*args,**kwargs):
+def read_numpy(fname, *args, **kwargs):
     """
     load a 2D recording from a .npy file.
     Assumes that the recording is saved in the format [channels, time points]
@@ -109,35 +115,36 @@ def read_numpy(fname,*args,**kwargs):
     -------------------
         ValueError -  if the input array is not 2 dimensions
         TypeError -   if the sample rate is not specified
-
     """
-    #map numpy array:
-    X = np.load(fname,mmap_mode = 'r+')
-    #check for appropriate dimensions:
+    # map numpy array:
+    X = np.load(fname, mmap_mode='r+')
+    # check for appropriate dimensions:
     if len(X.shape) is not 2:
-        raise ValueError(f"Array in {fname} needs to be 2 dimensions: [channels,time points]")
-    #load sample frequency:
+        raise ValueError(
+            f"Array in {fname} needs to be 2 dimensions: [channels,time points]")
+    # load sample frequency:
     fs = kwargs.get("fs")
     if fs is None or fs is '':
         raise TypeError('Need to set sample rate (fs)')
-    #check if data should be standardized:
+    # check if data should be standardized:
     standardize = kwargs.get("standardize")
     if standardize is not None and standardize is True:
-        mu = np.nanmean(X,axis=-1).reshape(-1,1)
-        dev = np.nanstd(X,axis=-1).reshape(-1,1)
-        X = (X-mu)/dev
-    #fill in nans with 0:
+        mu = np.nanmean(X, axis=-1).reshape(-1, 1)
+        dev = np.nanstd(X, axis=-1).reshape(-1, 1)
+        X = (X - mu) / dev
+    # fill in nans with 0:
     if np.isnan(X).any():
         X = np.nan_to_num(X)
-    #set channel types:
+    # set channel types:
     channels = [str(i) for i in range(X.shape[0])]
-    ch_type =  kwargs.get("ch_type")
+    ch_type = kwargs.get("ch_type")
     if ch_type is None:
         ch_type = 'misc'
-    #create Raw structure
-    info = mne.create_info(channels,fs,ch_types=ch_type)
-    data = mne.io.RawArray(X,info=info)
+    # create Raw structure
+    info = mne.create_info(channels, fs, ch_types=ch_type)
+    data = mne.io.RawArray(X, info=info)
     return data
+
 
 # supported read file formats
 supported = {
