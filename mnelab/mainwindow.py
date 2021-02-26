@@ -852,7 +852,7 @@ class MainWindow(QMainWindow):
                 f'<nobr><p>MNE repository: '
                 f'<a href=https://{mne_url}>{mne_url}</a></p></nobr>'
                 f'<p>Licensed under the BSD 3-clause license.</p>'
-                f'<p>Copyright 2017-2021 by Clemens Brunner.</p>')
+                f'<p>Copyright 2017&ndash;2021 by Clemens Brunner.</p>')
         msg_box.setInformativeText(text)
         msg_box.exec_()
 

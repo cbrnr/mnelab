@@ -6,23 +6,11 @@ from importlib import import_module
 from qtpy import API_NAME
 
 
-# required packages
-required = {API_NAME: "5.10.0"}
-required.update(qtpy="1.9.0",
-                numpy="1.14.0",
-                scipy="1.0.0",
-                matplotlib="2.0.0",
-                mne="0.19.0")
-
-# optional packages
-optional = dict(sklearn=None,
-                picard=None,
-                pyedflib=None,
-                pyxdf=None,
-                pybv=None)
+required = ["mne", "numpy", "scipy", "matplotlib", "qtpy", API_NAME]
+optional = ["sklearn", "picard", "pyedflib", "pyxdf", "pybv"]
 
 have = {}
-for package in {**required, **optional}:
+for package in required + optional:
     try:
         mod = import_module(package)
     except ModuleNotFoundError:
