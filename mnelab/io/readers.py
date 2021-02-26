@@ -133,8 +133,7 @@ def read_numpy(fname, *args, **kwargs):
     X = np.load(fname, mmap_mode='r+')
     # check for appropriate dimensions:
     if len(X.shape) != 2:
-        msg = f"Array in {fname} needs to be 2 dimensions:"+
-               "[channels,time points]"
+        msg = f"Array in {fname} shape: [channels,time points]"
         raise ValueError(msg)
     # load sample frequency:
     fs = kwargs.get("fs")
