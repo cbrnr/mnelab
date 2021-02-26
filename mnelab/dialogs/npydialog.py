@@ -1,13 +1,11 @@
 import sys
 from PyQt5.QtCore import Qt
-from qtpy.QtGui import QStandardItemModel, QStandardItem, QDoubleValidator
+from qtpy.QtGui import QDoubleValidator
 from qtpy.QtWidgets import (
-    QApplication,
     QCheckBox,
     QFormLayout,
     QLineEdit,
     QVBoxLayout,
-    QWidget,
     QComboBox,
     QSlider,
     QDialogButtonBox,
@@ -78,15 +76,17 @@ class NpyDialog(QDialog):
 
     def set_type(self):
         """
-        sets the channel type based off of the selected item in the dropdown menu.
+        sets the channel type based off of the selected item in the dropdown
+        menu.
         """
         self.settings['ch_type'] = self.ch_type_dropdown.currentText()
-        if self.settings['ch_type'] is "":
+        if self.settings['ch_type'] != "":
             self.settings['ch_type'] = "misc"
 
     def value_change(self):
         """
-        Sets the text bar to match the slider. Is only called when the slider is used.
+        Sets the text bar to match the slider. Is only called when the slider
+        is used.
         """
         self.fs.setText(str(self.fs_slider.value()))
 
@@ -98,7 +98,8 @@ class NpyDialog(QDialog):
 
     def set_values(self):
         """
-        Takes the settings from the text box and checkbox, and stores them in their respective settings.
+        Takes the settings from the text box and checkbox, and stores them in
+        their respective settings.
         In this case, sets the sample frequency and standardization flag.
         """
         fs = self.fs.text()
@@ -109,7 +110,8 @@ class NpyDialog(QDialog):
 
     def button_accept(self):
         """
-        function called when dialog is accepted. Sets all values before closing the dialog window.
+        function called when dialog is accepted. Sets all values before closing
+        the dialog window.
         """
         self.set_values()
         return self.accept()
