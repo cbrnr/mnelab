@@ -17,12 +17,27 @@ from qtpy.QtGui import QKeySequence, QDropEvent, QIcon
 from qtpy.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
                             QMessageBox, QListView, QAction, QLabel, QFrame)
 
-from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog,
-                      ChannelPropertiesDialog, CropDialog, ERDSDialog,
-                      EpochDialog, ErrorMessageBox, EventsDialog, FilterDialog,
-                      FindEventsDialog, HistoryDialog, InterpolateBadsDialog,
-                      MetaInfoDialog, MontageDialog, PickChannelsDialog,
-                      ReferenceDialog, RunICADialog, XDFStreamsDialog, NpyDialog)
+from .dialogs import (
+    AnnotationsDialog,
+    AppendDialog,
+    CalcDialog,
+    ChannelPropertiesDialog,
+    CropDialog,
+    ERDSDialog,
+    EpochDialog,
+    ErrorMessageBox,
+    EventsDialog,
+    FilterDialog,
+    FindEventsDialog,
+    HistoryDialog,
+    InterpolateBadsDialog,
+    MetaInfoDialog,
+    MontageDialog,
+    PickChannelsDialog,
+    ReferenceDialog,
+    RunICADialog,
+    XDFStreamsDialog,
+    NpyDialog)
 from .widgets.infowidget import InfoWidget
 from .model import LabelsNotFoundError, InvalidAnnotationsError
 from .utils import have, has_locations, image_path, interface_style
@@ -61,6 +76,7 @@ def write_settings(**kwargs):
 
 class MainWindow(QMainWindow):
     """MNELAB main window."""
+
     def __init__(self, model):
         """Initialize MNELAB main window.
 
@@ -213,9 +229,9 @@ class MainWindow(QMainWindow):
         tools_menu.addSeparator()
         nirs_menu = tools_menu.addMenu("NIRS")
         self.actions["convert_od"] = nirs_menu.addAction(
-                "Convert to &optical density", self.convert_od)
+            "Convert to &optical density", self.convert_od)
         self.actions["convert_bl"] = nirs_menu.addAction(
-                "Convert to &haemoglobin", self.convert_bl)
+            "Convert to &haemoglobin", self.convert_bl)
 
         tools_menu.addSeparator()
         icon = QIcon.fromTheme("run-ica")
@@ -225,8 +241,8 @@ class MainWindow(QMainWindow):
                                                          self.apply_ica)
         tools_menu.addSeparator()
         self.actions["interpolate_bads"] = tools_menu.addAction(
-                                                "Interpolate bad channels...",
-                                                self.interpolate_bads)
+            "Interpolate bad channels...",
+            self.interpolate_bads)
         tools_menu.addSeparator()
         icon = QIcon.fromTheme("epoch-data")
         self.actions["epoch_data"] = tools_menu.addAction(
@@ -374,11 +390,11 @@ class MainWindow(QMainWindow):
                 enabled and
                 self.model.current["ftype"] in ["XDF", "XDFZ", "XDF.GZ"])
             self.actions["convert_od"].setEnabled(
-                    len(mne.pick_types(self.model.current["data"].info,
-                        fnirs="fnirs_raw")))
+                len(mne.pick_types(self.model.current["data"].info,
+                                   fnirs="fnirs_raw")))
             self.actions["convert_bl"].setEnabled(
-                    len(mne.pick_types(self.model.current["data"].info,
-                        fnirs="fnirs_od")))
+                len(mne.pick_types(self.model.current["data"].info,
+                                   fnirs="fnirs_od")))
             # disable unsupported exporters for epochs (all must support raw)
             if self.model.current["dtype"] == "epochs":
                 for ext, description in writers.items():
@@ -427,18 +443,21 @@ class MainWindow(QMainWindow):
                     stream_id = dialog.model.data(dialog.model.index(row, 0))
                     self.model.load(fname, stream_id=stream_id)
 
-            elif ext in [".npy",".mat"]:
+            elif ext in [".npy", ".mat"]:
                 dialog = NpyDialog(self)
                 if dialog.exec_():
                     try:
                         kwargs = dialog.get_values()
-                        self.model.load(fname,**kwargs)
+                        self.model.load(fname, **kwargs)
                     except TypeError as e:
-                        e = str(e).replace("float()","field").replace("string or a ","")
-                        QMessageBox.critical(self,f"Missing Parameters",str(e))
+                        e = str(e).replace(
+                            "float()", "field").replace(
+                            "string or a ", "")
+                        QMessageBox.critical(
+                            self, f"Missing Parameters", str(e))
                     except ValueError as e:
-                        QMessageBox.critical(self, f"Invalid Matrix Dimensions at {fname}",  str(e))
-
+                        QMessageBox.critical(
+                            self, f"Invalid Matrix Dimensions at {fname}", str(e))
 
             else:  # all other file formats
                 try:
@@ -447,7 +466,6 @@ class MainWindow(QMainWindow):
                     QMessageBox.critical(self, "File not found", str(e))
                 except ValueError as e:
                     QMessageBox.critical(self, "Unknown file type", str(e))
-
 
     def open_file(self, f, text, ffilter="*"):
         """Open file."""
@@ -640,8 +658,6 @@ class MainWindow(QMainWindow):
         win = fig.canvas.manager.window
         win.setWindowTitle("Power spectral density")
         fig.show()
-
-
 
     def plot_locations(self):
         """Plot current montage."""

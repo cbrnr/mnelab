@@ -19,15 +19,16 @@ MAX_FS = 1000
 STEP_SIZE = 100
 MIN_ALLOWABLE_FS = 0.0001
 DECIMAL_PLACES = 4
-SUPPORTED_CHANNEL_TYPES = ["","ecg", "bio", "stim", "eog",
-                            "misc", "seeg", "ecog", "mag",
-                            "eeg", "ref_meg", "grad", "emg", "hbr", "hbo"]
+SUPPORTED_CHANNEL_TYPES = ["", "ecg", "bio", "stim", "eog",
+                           "misc", "seeg", "ecog", "mag",
+                           "eeg", "ref_meg", "grad", "emg", "hbr", "hbo"]
+
 
 class NpyDialog(QDialog):
-    def __init__(self,parent):
+    def __init__(self, parent):
         super().__init__(parent)
-        #initialize settings:
-        self.settings = {'ch_type':"misc",'fs':None,'standardize':False}
+        # initialize settings:
+        self.settings = {'ch_type': "misc", 'fs': None, 'standardize': False}
 
         self.setWindowTitle("Parameters")
         # Create layout for all items.
@@ -36,10 +37,14 @@ class NpyDialog(QDialog):
         top_form = QFormLayout()
         # Create a text box for reading the sample rate:
         self.fs = QLineEdit()
-        self.fs.setValidator(QDoubleValidator(MIN_ALLOWABLE_FS,sys.float_info.max,DECIMAL_PLACES))
-        top_form.addRow("Sample Rate (Hz):",self.fs)
+        self.fs.setValidator(
+            QDoubleValidator(
+                MIN_ALLOWABLE_FS,
+                sys.float_info.max,
+                DECIMAL_PLACES))
+        top_form.addRow("Sample Rate (Hz):", self.fs)
 
-        #initialize slider for fs:
+        # initialize slider for fs:
         self.fs_slider = QSlider(Qt.Horizontal)
         self.fs_slider.setMinimum(MIN_FS)
         self.fs_slider.setMaximum(MAX_FS)
@@ -49,21 +54,21 @@ class NpyDialog(QDialog):
         self.fs_slider.setSingleStep(STEP_SIZE)
         self.fs_slider.valueChanged.connect(self.value_change)
 
-        #initialize dropdown for selecting channel type:
+        # initialize dropdown for selecting channel type:
         self.ch_type_dropdown = QComboBox()
         self.ch_type_dropdown.addItems(SUPPORTED_CHANNEL_TYPES)
         self.ch_type_dropdown.activated.connect(self.set_type)
 
-        #initialize checkbox for controlling standardization:
+        # initialize checkbox for controlling standardization:
         self.standardize = QCheckBox("Standardize Data")
 
-        #initialize accept/deny buttons:
+        # initialize accept/deny buttons:
         self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
                                           QDialogButtonBox.Cancel)
         self.buttonbox.accepted.connect(self.button_accept)
         self.buttonbox.rejected.connect(self.reject)
 
-        #build dialog window:
+        # build dialog window:
         outer_form.addLayout(top_form)
         outer_form.addWidget(self.fs_slider)
         outer_form.addWidget(self.ch_type_dropdown)
@@ -78,7 +83,6 @@ class NpyDialog(QDialog):
         self.settings['ch_type'] = self.ch_type_dropdown.currentText()
         if self.settings['ch_type'] is "":
             self.settings['ch_type'] = "misc"
-
 
     def value_change(self):
         """
@@ -101,7 +105,7 @@ class NpyDialog(QDialog):
         if fs != "":
             fs = float(fs)
         self.settings['fs'] = fs
-        self.settings['standardize'] =  self.standardize.isChecked()
+        self.settings['standardize'] = self.standardize.isChecked()
 
     def button_accept(self):
         """
