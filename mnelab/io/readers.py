@@ -79,8 +79,8 @@ def read_mat(fname, *args, **kwargs):
     if (fs_mat[0] is None or fs_mat[0][0][0] == '') and (
             fs_mat[1] is None or fs_mat[1] == ''):
         raise TypeError(
-            'Need to have a variable (fs) either saved in the \n'+
-             '.mat file or entered manually.')
+            'Need to have a variable (fs) either saved in the \n' +
+            '.mat file or entered manually.')
     elif fs_mat[0] is not None and fs_mat[0][0][0] != '':
         fs = fs_mat[0][0][0]
     else:
