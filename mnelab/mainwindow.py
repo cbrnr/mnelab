@@ -622,6 +622,7 @@ class MainWindow(QMainWindow):
                 except ValueError as e:
                     QMessageBox.critical(self, "Unknown file type", str(e))
 
+
     def open_file(self, f, text, ffilter="*"):
         """Open file."""
         fname = QFileDialog.getOpenFileName(self, text, filter=ffilter)[0]
@@ -850,6 +851,8 @@ class MainWindow(QMainWindow):
         win = fig.canvas.manager.window
         win.setWindowTitle("Power spectral density")
         fig.show()
+
+
 
     def plot_locations(self):
         """Plot current montage."""
