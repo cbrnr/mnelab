@@ -21,10 +21,12 @@ from .pickchannelsdialog import PickChannelsDialog
 from .referencedialog import ReferenceDialog
 from .runicadialog import RunICADialog
 from .xdfstreamsdialog import XDFStreamsDialog
+from .npydialog import NpyDialog
 
 
 __all__ = [AnnotationsDialog, AppendDialog, CalcDialog,
            ChannelPropertiesDialog, CropDialog, EpochDialog, ERDSDialog,
            ErrorMessageBox, EventsDialog, FilterDialog, FindEventsDialog,
            HistoryDialog, InterpolateBadsDialog, MetaInfoDialog, MontageDialog,
-           PickChannelsDialog, ReferenceDialog, RunICADialog, XDFStreamsDialog]
+           PickChannelsDialog, ReferenceDialog, RunICADialog, XDFStreamsDialog,
+           NpyDialog]
