@@ -26,27 +26,38 @@ def read_mat(fname, *args, **kwargs):
     """
     loads a recording from a .mat file.
 
-    Assumes that the file contains basic metadata about the dataset, as specified below. It uses user input whenever the respective variables are not stored in the .mat
+    Assumes that the file contains basic metadata about the dataset,
+    as specified below. It uses user input whenever the respective variables
+    are not stored in the .mat
     file.
 
     Params:
-        fname - the path to the matlab worspace containing the data being plotted.
+        fname - the path to the matlab worspace containing the data
+        being plotted.
+
                 This method recognizes these fields from a .mat file:
 
-                'data'        - REQUIRED - the 2d numpy array containing the recorded data with dimensions [channels, time points]
-                'fs'          - REQUIRED - the sample frequency of the data in hz.
-                'ch_names'    - Optional - the names for each of the channels. Must be saved from a [1Xn_chans] cell array in the matlab
-                                workspace.
-                'ch_type'    -  Optional - required if ch_names are provided. List of channel types for each corresponding lead.
-                                Must be saved from a [1Xn_chans] cell array in the matlab
-                                workspace.
-                'standardize' - Optional -  flag indicating if the data is to be standardized before being plotted.
+                'data'        - REQUIRED - the 2d numpy array containing
+                                the recorded data with dimensions
+                                [channels, time points]
+                'fs'          - REQUIRED - the sample frequency
+                                of the data in hz.
+                'ch_names'    - Optional - the names for each of the channels.
+                                Must be saved from a [1Xn_chans] cell array
+                                in the matlab workspace.
+                'ch_type'    -  Optional - required if ch_names are provided.
+                                List of channel types for each
+                                corresponding lead. Must be saved from a
+                                [1Xn_chans] cell array in the matlab workspace.
+                'standardize' - Optional -  flag indicating if the data
+                                should be standardized before being plotted.
     Returns:
         the loaded RawArray
 
     Raises:
         ValueError - if the sample rate (fs) is not specified.
-        TypeError - if the input array is not 2 dimensions or it's missing from the .mat file.
+        TypeError - if the input array is not 2 dimensions
+                    or it's missing from the .mat file.
     """
     # load .mat file:
     matlab_dict = sio.loadmat(fname)
@@ -55,7 +66,7 @@ def read_mat(fname, *args, **kwargs):
     X = matlab_dict.get('data')
     if X is None or len(X.shape) is not 2:
         raise TypeError(
-            f"Array in {fname} needs to be 2 dimensions: [channels,time points]")
+            f"Array at {fname} needs to be 2 dimensions:[channels,time points]")
 
     # name channels:
     channels = matlab_dict.get("ch_names")
@@ -66,11 +77,12 @@ def read_mat(fname, *args, **kwargs):
 
     # get sample rate (Hz)
     fs_mat = [matlab_dict.get("fs"), kwargs.get("fs")]
-    if (fs_mat[0] is None or fs_mat[0][0][0] is '') and (
-            fs_mat[1] is None or fs_mat[1] is ''):
+    if (fs_mat[0] is None or fs_mat[0][0][0] == '') and (
+            fs_mat[1] is None or fs_mat[1] == ''):
         raise TypeError(
-            'Need to have a variable (fs) either saved in the .mat file or entered manually.')
-    elif fs_mat[0] is not None and fs_mat[0][0][0] is not '':
+            'Need to have a variable (fs) either saved in the \n'+
+             '.mat file or entered manually.')
+    elif fs_mat[0] is not None and fs_mat[0][0][0] != '':
         fs = fs_mat[0][0][0]
     else:
         fs = fs_mat[1]
@@ -122,10 +134,10 @@ def read_numpy(fname, *args, **kwargs):
     # check for appropriate dimensions:
     if len(X.shape) is not 2:
         raise ValueError(
-            f"Array in {fname} needs to be 2 dimensions: [channels,time points]")
+            f"Array in {fname} needs to be 2 dimensions:[channels,time points]")
     # load sample frequency:
     fs = kwargs.get("fs")
-    if fs is None or fs is '':
+    if fs is None or fs == '':
         raise TypeError('Need to set sample rate (fs)')
     # check if data should be standardized:
     standardize = kwargs.get("standardize")
