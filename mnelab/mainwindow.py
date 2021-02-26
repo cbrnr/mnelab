@@ -454,10 +454,11 @@ class MainWindow(QMainWindow):
                             "float()", "field").replace(
                             "string or a ", "")
                         QMessageBox.critical(
-                            self, f"Missing Parameters", str(e))
+                            self, "Missing Parameters", str(e))
                     except ValueError as e:
+                        msg = f"Invalid Matrix Dimensions at {fname}"
                         QMessageBox.critical(
-                            self, f"Invalid Matrix Dimensions at {fname}", str(e))
+                            self, msg, str(e))
 
             else:  # all other file formats
                 try:
