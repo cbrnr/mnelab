@@ -80,6 +80,9 @@ class MainWindow(QMainWindow):
         self.resize(settings["size"])
         self.move(settings["pos"])
 
+        # remove None entries from self.recent
+        self.recent = [recent for recent in self.recent if recent is not None]
+
         # trigger theme setting
         QIcon.setThemeSearchPaths([str(Path(__file__).parent / "icons")])
         self.event(QEvent(QEvent.PaletteChange))
