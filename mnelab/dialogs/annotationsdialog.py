@@ -52,10 +52,11 @@ class AnnotationsDialog(QDialog):
     @Slot()
     def toggle_buttons(self):
         """Toggle + and - buttons."""
-        if len(self.table.selectedItems()) == 3:  # one row (3 items) selected
+        n_items = len(self.table.selectedItems())
+        if n_items == 3:  # one row (3 items) selected
             self.add_button.setEnabled(True)
             self.remove_button.setEnabled(True)
-        elif len(self.table.selectedItems()) > 3:  # more than one row selected
+        elif n_items > 3:  # more than one row selected
             self.add_button.setEnabled(False)
             self.remove_button.setEnabled(True)
         else:  # no rows selected
@@ -74,5 +75,6 @@ class AnnotationsDialog(QDialog):
 
     def remove_event(self):
         rows = {index.row() for index in self.table.selectedIndexes()}
+        self.table.clearSelection()
         for row in sorted(rows, reverse=True):
             self.table.removeRow(row)
