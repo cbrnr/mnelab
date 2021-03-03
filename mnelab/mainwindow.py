@@ -22,14 +22,14 @@ from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog,
                       EpochDialog, ErrorMessageBox, EventsDialog, FilterDialog,
                       FindEventsDialog, HistoryDialog, InterpolateBadsDialog,
                       MetaInfoDialog, MontageDialog, PickChannelsDialog,
-                      ReferenceDialog, RunICADialog, XDFStreamsDialog)
+                      ReferenceBipolarDialog, ReferenceDialog, RunICADialog,
+                      XDFStreamsDialog)
 from .widgets.infowidget import InfoWidget
 from .model import LabelsNotFoundError, InvalidAnnotationsError
 from .utils import have, has_locations, image_path, interface_style
 from .io import writers
 from .io.xdf import get_xml, get_streams
 from .viz import plot_erds
-
 
 __version__ = "0.7.0.dev0"
 
@@ -139,15 +139,16 @@ class MainWindow(QMainWindow):
         self.actions["export_bads"] = file_menu.addAction(
             "Export &bad channels...",
             lambda: self.export_file(model.export_bads, "Export bad channels",
-                                     "*.csv"))
+                                     "*.csv", "bad_channels"))
         self.actions["export_events"] = file_menu.addAction(
             "Export &events...",
             lambda: self.export_file(model.export_events, "Export events",
-                                     "*.csv"))
+                                     "*.csv", "events"))
         self.actions["export_annotations"] = file_menu.addAction(
             "Export &annotations...",
             lambda: self.export_file(model.export_annotations,
-                                     "Export annotations", "*.csv"))
+                                     "Export annotations", "*.csv",
+                                     "annotations"))
         self.actions["export_ica"] = file_menu.addAction(
             "Export ICA...",
             lambda: self.export_file(model.export_ica,
@@ -443,9 +444,22 @@ class MainWindow(QMainWindow):
         if fname:
             f(fname)
 
-    def export_file(self, f, text, ffilter="*"):
+    def export_file(self, f, text, ffilter="*", suffix=''):
         """Export to file."""
-        fname = QFileDialog.getSaveFileName(self, text, filter=ffilter)[0]
+
+        if suffix != '':
+            suffix = "_"+suffix
+
+        curent_file_path = Path(self.model.current["data"].filenames[0]).parent
+        curent_file_name = self.model.current["name"]
+
+        Dialog = QFileDialog.getSaveFileName(self, text,
+                                             str(curent_file_path.joinpath(
+                                                 curent_file_name+suffix)),
+                                             filter=ffilter)
+
+        fname = Dialog[0]
+
         if fname:
             if ffilter != "*":
                 exts = [ext.replace("*", "") for ext in ffilter.split()]
@@ -820,6 +834,15 @@ class MainWindow(QMainWindow):
             self.auto_duplicate()
             if dialog.average.isChecked():
                 self.model.set_reference("average")
+            elif dialog.bipolar.isChecked():
+                channels = self.model.current["data"].info["ch_names"]
+                selected = None
+                dialog = ReferenceBipolarDialog(self, channels,
+                                                selected=selected)
+                if dialog.exec_():
+                    selected = [dialog.selected.item(i).text()
+                                for i in range(dialog.selected.count())]
+                    self.model.set_reference("bipolar", selected)
             else:
                 ref = [c.strip() for c in dialog.channellist.text().split(",")]
                 self.model.set_reference(ref)

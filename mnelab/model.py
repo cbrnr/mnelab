@@ -170,6 +170,7 @@ class Model:
         fname = join(split(fname)[0], name + ext)
         with open(fname, "w") as f:
             f.write(",".join(self.current["data"].info["bads"]))
+        print("Bad channels exported: ", fname)
 
     def export_events(self, fname):
         """Export events to a CSV file."""
@@ -178,6 +179,7 @@ class Model:
         fname = join(split(fname)[0], name + ext)
         np.savetxt(fname, self.current["events"][:, [0, 2]], fmt="%d",
                    delimiter=",", header="pos,type", comments="")
+        print("Events exported: ", fname)
 
     def export_annotations(self, fname):
         """Export annotations to a CSV file."""
@@ -190,6 +192,7 @@ class Model:
             for a in zip(anns.description, anns.onset, anns.duration):
                 f.write(",".join([a[0], str(a[1]), str(a[2])]))
                 f.write("\n")
+        print("Annotations exported: ", fname)
 
     def export_ica(self, fname):
         name, ext = splitext(split(fname)[-1])
@@ -478,12 +481,41 @@ class Model:
             "data = mne.preprocessing.nirs.beer_lambert_law(data)")
 
     @data_changed
-    def set_reference(self, ref):
+    def set_reference(self, ref, bichan=None):
         self.current["reference"] = ref
         if ref == "average":
             self.current["name"] += " (average ref)"
             self.current["data"].set_eeg_reference(ref)
             self.history.append('data.set_eeg_reference("average")')
+        if ref == "bipolar":
+            self.current["name"] += " (original + bipolar ref)"
+
+            anodes = [i[1:-1].split(', ').pop(0)
+                      .rstrip("'\"").lstrip("\"'").strip() for i in bichan]
+            cathodes = [i[1:-1].split(', ').pop(1)
+                        .rstrip("'\"").lstrip("\"'").strip() for i in bichan]
+            anodes_ch_names = []
+            cathodes_ch_names = []
+
+            for anode in anodes:
+                for ch_name in self.current["data"].info["ch_names"]:
+                    if anode in ch_name:
+                        anodes_ch_names.append(ch_name)
+            for cathode in cathodes:
+                for ch_name in self.current["data"].info["ch_names"]:
+                    if cathode in ch_name:
+                        cathodes_ch_names.append(ch_name)
+
+            self.current["data"] = mne.set_bipolar_reference(
+                self.current["data"],
+                anode=anodes_ch_names,
+                cathode=cathodes_ch_names,
+                drop_refs=False)
+            d = {x: x.strip() for x in
+                 self.current["data"].info["ch_names"] if "EEG" in x}
+            mne.rename_channels(self.current["data"].info, d)
+            self.history.append(f'data.set_bipolar_reference({ref})')
+
         else:
             self.current["name"] += " (" + ",".join(ref) + ")"
             if set(ref) - set(self.current["data"].info["ch_names"]):
