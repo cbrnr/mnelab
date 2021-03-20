@@ -34,9 +34,14 @@ def interface_style():
             return "light"
     elif sys.platform.startswith("win"):
         from winreg import OpenKey, QueryValueEx, HKEY_CURRENT_USER
-        s = r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"
+        s = r"SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize"
         with OpenKey(HKEY_CURRENT_USER, s) as key:
-            value = QueryValueEx(key, "AppsUseLightTheme")[0]
+            from winreg import QueryInfoKey, EnumValue
+            info = QueryInfoKey(key)
+            print(info)
+            for i in range(info[1]):
+                print(EnumValue(key, i))
+            value, _ = QueryValueEx(key, "AppsUseLightTheme")
         if value == 0:
             return "dark"
         else:
