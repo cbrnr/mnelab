@@ -36,12 +36,10 @@ def interface_style():
         from winreg import OpenKey, QueryValueEx, HKEY_CURRENT_USER
         s = r"SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize"
         with OpenKey(HKEY_CURRENT_USER, s) as key:
-            from winreg import QueryInfoKey, EnumValue
-            info = QueryInfoKey(key)
-            print(info)
-            for i in range(info[1]):
-                print(EnumValue(key, i))
-            value, _ = QueryValueEx(key, "AppsUseLightTheme")
+            try:
+                value, _ = QueryValueEx(key, "AppsUseLightTheme")
+            except FileNotFoundError:
+                return None
         if value == 0:
             return "dark"
         else:
