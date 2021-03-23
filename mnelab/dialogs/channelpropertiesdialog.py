@@ -54,8 +54,7 @@ class ChannelPropertiesDialog(QDialog):
 
         vbox = QVBoxLayout(self)
         vbox.addWidget(self.view)
-        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                          QDialogButtonBox.Cancel)
+        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         vbox.addWidget(self.buttonbox)
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
@@ -69,8 +68,8 @@ class ChannelPropertiesDialog(QDialog):
 class MySortFilterProxyModel(QSortFilterProxyModel):
     """Add ability to filter on Qt.UserRole if Qt.DisplayRole is None.
 
-    This is useful for the 'Bad' column, which stores its data (True/False) as
-    Qt.UserRole instead of the default Qt.DisplayRole.
+    This is useful for the 'Bad' column, which stores its data (True/False) as Qt.UserRole
+    instead of the default Qt.DisplayRole.
     """
     def lessThan(self, left, right):
         left_data = self.sourceModel().data(left)

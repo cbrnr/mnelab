@@ -2,8 +2,8 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
-                            QLineEdit, QDialogButtonBox)
+from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel, QLineEdit,
+                            QDialogButtonBox)
 
 
 class FilterDialog(QDialog):
@@ -19,8 +19,7 @@ class FilterDialog(QDialog):
         self.highedit = QLineEdit()
         grid.addWidget(self.highedit, 1, 1)
         vbox.addLayout(grid)
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                     QDialogButtonBox.Cancel)
+        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         vbox.addWidget(buttonbox)
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)

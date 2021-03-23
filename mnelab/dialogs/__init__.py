@@ -23,8 +23,8 @@ from .runicadialog import RunICADialog
 from .xdfstreamsdialog import XDFStreamsDialog
 
 
-__all__ = [AnnotationsDialog, AppendDialog, CalcDialog,
-           ChannelPropertiesDialog, CropDialog, EpochDialog, ERDSDialog,
-           ErrorMessageBox, EventsDialog, FilterDialog, FindEventsDialog,
-           HistoryDialog, InterpolateBadsDialog, MetaInfoDialog, MontageDialog,
-           PickChannelsDialog, ReferenceDialog, RunICADialog, XDFStreamsDialog]
+__all__ = [AnnotationsDialog, AppendDialog, CalcDialog, ChannelPropertiesDialog, CropDialog,
+           EpochDialog, ERDSDialog, ErrorMessageBox, EventsDialog, FilterDialog,
+           FindEventsDialog, HistoryDialog, InterpolateBadsDialog, MetaInfoDialog,
+           MontageDialog, PickChannelsDialog, ReferenceDialog, RunICADialog,
+           XDFStreamsDialog]

@@ -2,8 +2,8 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QDoubleSpinBox,
-                            QDialogButtonBox, QCheckBox)
+from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QDoubleSpinBox, QCheckBox,
+                            QDialogButtonBox)
 from qtpy.QtCore import Slot
 
 
@@ -35,8 +35,7 @@ class CropDialog(QDialog):
         self._stop.setSuffix(" s")
         grid.addWidget(self._stop, 1, 1)
         vbox.addLayout(grid)
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                     QDialogButtonBox.Cancel)
+        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         vbox.addWidget(buttonbox)
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)

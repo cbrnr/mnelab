@@ -2,8 +2,8 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLineEdit,
-                            QDialogButtonBox, QRadioButton)
+from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLineEdit, QDialogButtonBox,
+                            QRadioButton)
 
 
 class ReferenceDialog(QDialog):
@@ -22,8 +22,7 @@ class ReferenceDialog(QDialog):
         grid.addWidget(self.channels, 1, 0)
         grid.addWidget(self.channellist, 1, 1)
         vbox.addLayout(grid)
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                     QDialogButtonBox.Cancel)
+        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         vbox.addWidget(buttonbox)
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)

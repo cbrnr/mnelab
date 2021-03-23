@@ -34,8 +34,8 @@ def plot_erds(data, freqs, n_cycles, baseline, times=(None, None)):
         vmin, vmax = -1, 2  # default for ERDS maps
         cmap = center_cmap(plt.cm.RdBu, vmin, vmax)
         for ch, ax in enumerate(axes[..., :-1].flat):  # skip last column
-            tfr_avg.plot([ch], vmin=vmin, vmax=vmax, cmap=(cmap, False),
-                         axes=ax, colorbar=False, show=False)
+            tfr_avg.plot([ch], vmin=vmin, vmax=vmax, cmap=(cmap, False), axes=ax,
+                         colorbar=False, show=False)
             ax.set_title(data.ch_names[ch], fontsize=10)
             ax.axvline(0, linewidth=1, color="black", linestyle=":")
             ax.set(xlabel="t (s)", ylabel="f (Hz)")

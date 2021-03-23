@@ -2,8 +2,8 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
-                            QCheckBox, QDialogButtonBox, QSpinBox, QComboBox)
+from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel, QCheckBox, QSpinBox,
+                            QDialogButtonBox, QComboBox)
 
 
 MAX_INT = 2147483647
@@ -48,8 +48,7 @@ class FindEventsDialog(QDialog):
         grid.addWidget(self.shortesteventedit, 5, 1)
 
         vbox.addLayout(grid)
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                     QDialogButtonBox.Cancel)
+        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         vbox.addWidget(buttonbox)
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)

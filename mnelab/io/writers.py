@@ -111,9 +111,9 @@ def write_bv(fname, raw, events=None):
 
 # supported write file formats
 # this dict contains each supported file extension as a key
-# the corresponding value is a list with three elements: (1) the writer
-# function, (2) the full file format name, and (3) a (comma-separated) string
-# indicating the supported objects (currently either raw or epoch)
+# the corresponding value is a list with three elements: (1) the writer function, (2) the
+# full file format name, and (3) a (comma-separated) string indicating the supported objects
+# (currently either raw or epoch)
 writers = {".fif": [write_fif, "Elekta Neuromag", "raw,epoch"],
            ".fif.gz": [write_fif, "Elekta Neuromag", "raw,epoch"],
            ".set": [write_set, "EEGLAB", "raw"]}

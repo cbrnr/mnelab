@@ -3,9 +3,8 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
-                            QHBoxLayout, QDialogButtonBox, QComboBox,
-                            QCheckBox, QDoubleSpinBox)
+from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel, QHBoxLayout,
+                            QDialogButtonBox, QComboBox, QCheckBox, QDoubleSpinBox)
 
 
 class InterpolateBadsDialog(QDialog):
@@ -41,8 +40,7 @@ class InterpolateBadsDialog(QDialog):
         grid.addLayout(hbox, 2, 1)
 
         vbox.addLayout(grid)
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                     QDialogButtonBox.Cancel)
+        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         vbox.addWidget(buttonbox)
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)

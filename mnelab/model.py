@@ -110,20 +110,22 @@ class Model:
         fsize = getsize(data.filenames[0]) / 1024**2  # convert to MB
         name, ext = Path(fname).stem, "".join(Path(fname).suffixes)
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
-                                     ftype=ext.upper()[1:], fsize=fsize,
-                                     data=data, dtype="raw"))
+                                     ftype=ext.upper()[1:], fsize=fsize, data=data,
+                                     dtype="raw"))
 
     @data_changed
     def find_events(self, stim_channel, consecutive=True, initial_event=True,
                     uint_cast=True, min_duration=0, shortest_event=0):
         """Find events in raw data."""
-        events = mne.find_events(self.current["data"],
-                                 stim_channel=stim_channel,
-                                 consecutive=consecutive,
-                                 initial_event=initial_event,
-                                 uint_cast=uint_cast,
-                                 min_duration=min_duration,
-                                 shortest_event=shortest_event)
+        events = mne.find_events(
+            self.current["data"],
+            stim_channel=stim_channel,
+            consecutive=consecutive,
+            initial_event=initial_event,
+            uint_cast=uint_cast,
+            min_duration=min_duration,
+            shortest_event=shortest_event
+        )
         if events.shape[0] > 0:  # if events were found
             self.current["events"] = events
             self.history.append("events = mne.find_events(data)")
@@ -137,8 +139,7 @@ class Model:
             mapping = {v: k for k, v in mapping.items()}
             self.current["events"] = events
             self.current["event_mapping"] = mapping
-            self.history.append("events, _ = "
-                                "mne.events_from_annotations(data)")
+            self.history.append("events, _ = mne.events_from_annotations(data)")
 
     @data_changed
     def annotations_from_events(self):
@@ -151,8 +152,7 @@ class Model:
         )
         if len(annots) > 0:
             self.current["data"].set_annotations(annots)
-            hist = ("annots = mne.annotations_from_events(events, "
-                    'data.info["sfreq"]')
+            hist = ('annots = mne.annotations_from_events(events, data.info["sfreq"]')
             if mapping is not None:
                 hist += f", event_desc={mapping}"
             hist += ")"
@@ -176,8 +176,8 @@ class Model:
         name, ext = splitext(split(fname)[-1])
         ext = ext if ext else ".csv"  # automatically add extension
         fname = join(split(fname)[0], name + ext)
-        np.savetxt(fname, self.current["events"][:, [0, 2]], fmt="%d",
-                   delimiter=",", header="pos,type", comments="")
+        np.savetxt(fname, self.current["events"][:, [0, 2]], fmt="%d", delimiter=",",
+                   header="pos,type", comments="")
 
     def export_annotations(self, fname):
         """Export annotations to a CSV file."""
@@ -204,8 +204,8 @@ class Model:
             bads = f.read().replace(" ", "").strip().split(",")
             unknown = set(bads) - set(self.current["data"].info["ch_names"])
             if unknown:
-                msg = ("The following imported channel labels are not " +
-                       "present in the data: " + ",".join(unknown))
+                msg = ("The following imported channel labels are not in the data: " +
+                       ",".join(unknown))
                 raise LabelsNotFoundError(msg)
             else:
                 self.current["data"].info["bads"] = bads
@@ -240,8 +240,7 @@ class Model:
                     onset = float(ann[1].strip())
                     duration = float(ann[2].strip())
                     if onset > self.current["data"].n_times / fs:
-                        msg = ("One or more annotations are outside of the "
-                               "data range.")
+                        msg = ("One or more annotations are outside of the data range.")
                         raise InvalidAnnotationsError(msg)
                     else:
                         descs.append(ann[0].strip())
@@ -283,11 +282,12 @@ class Model:
             nchan = f"{data.info['nchan']} ({nbads} bad)"
         else:
             nchan = data.info["nchan"]
-        chans = Counter([mne.io.pick.channel_type(data.info, i)
-                         for i in range(data.info["nchan"])])
+        chans = Counter(
+            [mne.io.pick.channel_type(data.info, i) for i in range(data.info["nchan"])]
+        )
         # sort by channel type (always move "stim" to end of list)
-        chans = sorted(dict(chans).items(),
-                       key=lambda x: (x[0] == "stim", x[0]))
+        chans = sorted(dict(chans).items(), key=lambda x: (x[0] == "stim", x[0]))
+        chans = ", ".join([" ".join([str(v), k.upper()]) for k, v in chans])
 
         if events is not None and events.shape[0] > 0:
             nevents = events.shape[0]
@@ -325,8 +325,7 @@ class Model:
                 "Data type": dtype,
                 "Size on disk": size_disk,
                 "Size in memory": f"{data.get_data().nbytes / 1024**2:.2f} MB",
-                "Channels": f"{nchan} (" + ", ".join(
-                    [" ".join([str(v), k.upper()]) for k, v in chans]) + ")",
+                "Channels": f"{nchan} (" + chans + ")",
                 "Samples": samples,
                 "Sampling frequency": f"{data.info['sfreq']:.6g} Hz",
                 "Length": length,
@@ -356,8 +355,7 @@ class Model:
     @data_changed
     def set_montage(self, montage):
         self.current["data"].set_montage(montage)
-        self.history.append(f"data.set_montage('{montage}', "
-                            f"raise_if_subset=False)")
+        self.history.append(f"data.set_montage('{montage}', raise_if_subset=False)")
 
     @data_changed
     def filter(self, low, high):
@@ -374,8 +372,8 @@ class Model:
     def get_compatibles(self):
         """Return a list of data sets that are compatible with the current one.
 
-        This function is useful for checking which data sets can be appended to
-        the current data set.
+        This function is useful for checking which data sets can be appended to the current
+        data set.
 
         Returns
         -------
@@ -399,8 +397,7 @@ class Model:
                 continue
             if not np.isclose(d["data"].info["sfreq"], data.info["sfreq"]):
                 continue
-            if not np.isclose(d["data"].info["highpass"],
-                              data.info["highpass"]):
+            if not np.isclose(d["data"].info["highpass"], data.info["highpass"]):
                 continue
             if not np.isclose(d["data"].info["lowpass"], data.info["lowpass"]):
                 continue
@@ -413,7 +410,6 @@ class Model:
                     continue
                 if d["data"].baseline != data.baseline:
                     continue
-
             compatibles.append(d)
         return compatibles
 
@@ -437,25 +433,22 @@ class Model:
     @data_changed
     def apply_ica(self):
         self.current["ica"].apply(self.current["data"])
-        self.history.append(f"ica.apply(inst=data, "
-                            f"exclude={self.current['ica'].exclude})")
+        self.history.append(f"ica.apply(inst=data, exclude={self.current['ica'].exclude})")
         self.current["name"] += " (ICA)"
 
     @data_changed
     def interpolate_bads(self, reset_bads, mode, origin):
         self.current["data"].interpolate_bads(reset_bads, mode, origin)
-        self.history.append(f'data.interpolate_bads(reset_bads={reset_bads}, '
-                            f'mode={mode}, origin={origin})')
+        self.history.append(f"data.interpolate_bads(reset_bads={reset_bads}, mode={mode}, "
+                            f"origin={origin})")
         self.current["name"] += " (interpolated)"
 
     @data_changed
     def epoch_data(self, events, tmin, tmax, baseline):
-        epochs = mne.Epochs(self.current["data"], self.current["events"],
-                            event_id=events, tmin=tmin, tmax=tmax,
-                            baseline=baseline, preload=True)
-        self.history.append(f'data = mne.Epochs(data, events, '
-                            f'event_id={events}, tmin={tmin}, tmax={tmax}, '
-                            f'baseline={baseline}, preload=True)')
+        epochs = mne.Epochs(self.current["data"], self.current["events"], event_id=events,
+                            tmin=tmin, tmax=tmax, baseline=baseline, preload=True)
+        self.history.append(f"data = mne.Epochs(data, events, event_id={events}, "
+                            f"tmin={tmin}, tmax={tmax}, baseline={baseline}, preload=True)")
         self.current["data"] = epochs
         self.current["dtype"] = "epochs"
         self.current["events"] = self.current["data"].events
@@ -463,19 +456,15 @@ class Model:
 
     @data_changed
     def convert_od(self):
-        self.current["data"] = mne.preprocessing.nirs.optical_density(
-            self.current["data"])
+        self.current["data"] = mne.preprocessing.nirs.optical_density(self.current["data"])
         self.current["name"] += " (OD)"
-        self.history.append(
-            "data = mne.preprocessing.nirs.optical_density(data)")
+        self.history.append("data = mne.preprocessing.nirs.optical_density(data)")
 
     @data_changed
     def convert_beer_lambert(self):
-        self.current["data"] = mne.preprocessing.nirs.beer_lambert_law(
-            self.current["data"])
+        self.current["data"] = mne.preprocessing.nirs.beer_lambert_law(self.current["data"])
         self.current["name"] += " (BL)"
-        self.history.append(
-            "data = mne.preprocessing.nirs.beer_lambert_law(data)")
+        self.history.append("data = mne.preprocessing.nirs.beer_lambert_law(data)")
 
     @data_changed
     def set_reference(self, ref):
@@ -489,18 +478,17 @@ class Model:
             if set(ref) - set(self.current["data"].info["ch_names"]):
                 # add new reference channel(s) to data
                 try:
-                    mne.add_reference_channels(self.current["data"], ref,
-                                               copy=False)
+                    mne.add_reference_channels(self.current["data"], ref, copy=False)
                 except RuntimeError:
-                    raise AddReferenceError("Cannot add reference channels "
-                                            "to average reference signals.")
+                    raise AddReferenceError("Cannot add reference channels to average "
+                                            "reference signals.")
                 else:
-                    self.history.append(f'mne.add_reference_channels(data, '
-                                        f'{ref}, copy=False)')
+                    self.history.append(f"mne.add_reference_channels(data, {ref}, "
+                                        f"copy=False)")
             else:
                 # re-reference to existing channel(s)
                 self.current["data"].set_eeg_reference(ref)
-                self.history.append(f'data.set_eeg_reference({ref})')
+                self.history.append(f"data.set_eeg_reference({ref})")
 
     @data_changed
     def set_events(self, events):
@@ -508,5 +496,4 @@ class Model:
 
     @data_changed
     def set_annotations(self, onset, duration, description):
-        self.current["data"].set_annotations(mne.Annotations(onset, duration,
-                                                             description))
+        self.current["data"].set_annotations(mne.Annotations(onset, duration, description))
