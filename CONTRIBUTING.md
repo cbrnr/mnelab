@@ -33,7 +33,7 @@ Once you have committed all of your changes, you can push them to your remote fo
 Once you have an open pull request, add an entry to the top of `CHANGELOG.md` in the most suitable section: "Added" lists new features, "Fixed" lists bug fixes, and "Changed" lists all other (mostly internal) changes. Finally, make sure to mention your pull request and your name.
 
 ### Coding style
-MNELAB adheres to [PEP8](https://www.python.org/dev/peps/pep-0008/) wherever possible. However, because PyQt5 and PySide2 are based on the C++-based Qt library, most of their names use camel case (violating PEP8 recommendations) instead of snake case. In your own code, please follow PEP8 naming conventions whenever possible.
+MNELAB adheres to [PEP8](https://www.python.org/dev/peps/pep-0008/) wherever possible (with the noteable exception that we use a maximum line length of 92 characters as opposed to the recommended 79 characters). Because PyQt5 and PySide2 are based on the C++-based Qt library, most of their names use camel case (violating PEP8 recommendations) instead of snake case. In your own code, please follow PEP8 naming conventions whenever possible.
 
 MNELAB uses double quotes for strings by default unless this is not possible (e.g. use `"string"` instead of `'string'`, but `'this is "weird"'` uses single quotes because the string itself contains double quotes).
 
