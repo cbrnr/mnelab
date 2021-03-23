@@ -27,8 +27,7 @@ class MontageDialog(QDialog):
         self.view_button.clicked.connect(self.view_montage)
         hbox.addWidget(self.view_button)
         hbox.addStretch()
-        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                          QDialogButtonBox.Cancel)
+        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         hbox.addWidget(self.buttonbox)
         vbox.addLayout(hbox)
         self.buttonbox.accepted.connect(self.accept)

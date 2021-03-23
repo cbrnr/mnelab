@@ -11,18 +11,17 @@ from pathlib import Path
 import numpy as np
 import mne
 from mne.io.pick import channel_type
-from qtpy.QtCore import (Qt, Slot, QStringListModel, QModelIndex, QSettings,
-                         QEvent, QObject, QSize, QPoint, QMetaObject)
+from qtpy.QtCore import (Qt, Slot, QStringListModel, QModelIndex, QSettings, QEvent, QSize,
+                         QPoint, QObject, QMetaObject)
 from qtpy.QtGui import QKeySequence, QDropEvent, QIcon
-from qtpy.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter,
-                            QMessageBox, QListView, QAction, QLabel, QFrame)
+from qtpy.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter, QMessageBox,
+                            QListView, QAction, QLabel, QFrame)
 
-from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog,
-                      ChannelPropertiesDialog, CropDialog, ERDSDialog,
-                      EpochDialog, ErrorMessageBox, EventsDialog, FilterDialog,
-                      FindEventsDialog, HistoryDialog, InterpolateBadsDialog,
-                      MetaInfoDialog, MontageDialog, PickChannelsDialog,
-                      ReferenceDialog, RunICADialog, XDFStreamsDialog)
+from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog, ChannelPropertiesDialog,
+                      CropDialog, ERDSDialog, EpochDialog, ErrorMessageBox, EventsDialog,
+                      FilterDialog, FindEventsDialog, HistoryDialog, InterpolateBadsDialog,
+                      MetaInfoDialog, MontageDialog, PickChannelsDialog, ReferenceDialog,
+                      RunICADialog, XDFStreamsDialog)
 from .widgets.infowidget import InfoWidget
 from .model import LabelsNotFoundError, InvalidAnnotationsError
 from .utils import have, has_locations, image_path, interface_style
@@ -92,120 +91,109 @@ class MainWindow(QMainWindow):
         # initialize menus
         file_menu = self.menuBar().addMenu("&File")
         icon = QIcon.fromTheme("open-file")
-        self.actions["open_file"] = file_menu.addAction(
-            icon, "&Open...", self.open_data, QKeySequence.Open)
+        self.actions["open_file"] = file_menu.addAction(icon, "&Open...", self.open_data,
+                                                        QKeySequence.Open)
         self.recent_menu = file_menu.addMenu("Open recent")
         self.recent_menu.aboutToShow.connect(self._update_recent_menu)
         self.recent_menu.triggered.connect(self._load_recent)
         if not self.recent:
             self.recent_menu.setEnabled(False)
-        self.actions["close_file"] = file_menu.addAction(
-            "&Close",
-            self.model.remove_data,
-            QKeySequence.Close)
-        self.actions["close_all"] = file_menu.addAction(
-            "Close all",
-            self.close_all)
+        self.actions["close_file"] = file_menu.addAction("&Close", self.model.remove_data,
+                                                         QKeySequence.Close)
+        self.actions["close_all"] = file_menu.addAction("Close all", self.close_all)
         file_menu.addSeparator()
         icon = QIcon.fromTheme("meta-info")
-        self.actions["meta_info"] = file_menu.addAction(icon,
-                                                        "Show information...",
+        self.actions["meta_info"] = file_menu.addAction(icon, "Show information...",
                                                         self.meta_info)
         file_menu.addSeparator()
         self.actions["import_bads"] = file_menu.addAction(
             "Import bad channels...",
-            lambda: self.import_file(model.import_bads, "Import bad channels",
-                                     "*.csv"))
+            lambda: self.import_file(model.import_bads, "Import bad channels", "*.csv")
+        )
         self.actions["import_events"] = file_menu.addAction(
             "Import events...",
-            lambda: self.import_file(model.import_events, "Import events",
-                                     "*.csv"))
+            lambda: self.import_file(model.import_events, "Import events", "*.csv")
+        )
         self.actions["import_annotations"] = file_menu.addAction(
             "Import annotations...",
-            lambda: self.import_file(model.import_annotations,
-                                     "Import annotations", "*.csv"))
+            lambda: self.import_file(model.import_annotations, "Import annotations",
+                                     "*.csv")
+        )
         self.actions["import_ica"] = file_menu.addAction(
             "Import &ICA...",
-            lambda: self.open_file(model.import_ica, "Import ICA",
-                                   "*.fif *.fif.gz"))
+            lambda: self.open_file(model.import_ica, "Import ICA", "*.fif *.fif.gz")
+        )
         file_menu.addSeparator()
         self.export_menu = file_menu.addMenu("Export data")
         for ext, description in writers.items():
             action = "export_data" + ext.replace(".", "_")
             self.actions[action] = self.export_menu.addAction(
                 f"{ext[1:].upper()} ({description[1]})...",
-                partial(self.export_file, model.export_data, "Export data",
-                        "*" + ext))
+                partial(self.export_file, model.export_data, "Export data", "*" + ext)
+            )
         self.actions["export_bads"] = file_menu.addAction(
             "Export &bad channels...",
-            lambda: self.export_file(model.export_bads, "Export bad channels",
-                                     "*.csv"))
+            lambda: self.export_file(model.export_bads, "Export bad channels", "*.csv")
+        )
         self.actions["export_events"] = file_menu.addAction(
             "Export &events...",
-            lambda: self.export_file(model.export_events, "Export events",
-                                     "*.csv"))
+            lambda: self.export_file(model.export_events, "Export events", "*.csv")
+        )
         self.actions["export_annotations"] = file_menu.addAction(
             "Export &annotations...",
-            lambda: self.export_file(model.export_annotations,
-                                     "Export annotations", "*.csv"))
+            lambda: self.export_file(model.export_annotations, "Export annotations",
+                                     "*.csv")
+        )
         self.actions["export_ica"] = file_menu.addAction(
             "Export ICA...",
-            lambda: self.export_file(model.export_ica,
-                                     "Export ICA", "*.fif *.fif.gz"))
+            lambda: self.export_file(model.export_ica, "Export ICA", "*.fif *.fif.gz")
+        )
         file_menu.addSeparator()
-        self.actions["quit"] = file_menu.addAction("&Quit", self.close,
-                                                   QKeySequence.Quit)
+        self.actions["quit"] = file_menu.addAction("&Quit", self.close, QKeySequence.Quit)
 
         edit_menu = self.menuBar().addMenu("&Edit")
-        self.actions["pick_chans"] = edit_menu.addAction(
-            "P&ick channels...",
-            self.pick_channels)
+        self.actions["pick_chans"] = edit_menu.addAction("P&ick channels...",
+                                                         self.pick_channels)
         icon = QIcon.fromTheme("chan-props")
-        self.actions["chan_props"] = edit_menu.addAction(
-            icon, "Channel &properties...", self.channel_properties)
+        self.actions["chan_props"] = edit_menu.addAction(icon, "Channel &properties...",
+                                                         self.channel_properties)
         self.actions["set_montage"] = edit_menu.addAction("Set &montage...",
                                                           self.set_montage)
         edit_menu.addSeparator()
         self.actions["set_ref"] = edit_menu.addAction("Set &reference...",
                                                       self.set_reference)
         edit_menu.addSeparator()
-        self.actions["annotations"] = edit_menu.addAction(
-            "&Annotations...",
-            self.edit_annotations)
-        self.actions["events"] = edit_menu.addAction("&Events...",
-                                                     self.edit_events)
+        self.actions["annotations"] = edit_menu.addAction("&Annotations...",
+                                                          self.edit_annotations)
+        self.actions["events"] = edit_menu.addAction("&Events...", self.edit_events)
 
         edit_menu.addSeparator()
         self.actions["crop"] = edit_menu.addAction("&Crop data...", self.crop)
-        self.actions["append_data"] = edit_menu.addAction(
-            "Appen&d data...",
-            self.append_data)
+        self.actions["append_data"] = edit_menu.addAction("Appen&d data...",
+                                                          self.append_data)
 
         plot_menu = self.menuBar().addMenu("&Plot")
         icon = QIcon.fromTheme("plot-data")
-        self.actions["plot_data"] = plot_menu.addAction(icon, "&Data...",
-                                                        self.plot_data)
+        self.actions["plot_data"] = plot_menu.addAction(icon, "&Data...", self.plot_data)
         icon = QIcon.fromTheme("plot-psd")
-        self.actions["plot_psd"] = plot_menu.addAction(
-            icon, "&Power spectral density...", self.plot_psd)
+        self.actions["plot_psd"] = plot_menu.addAction(icon, "&Power spectral density...",
+                                                       self.plot_psd)
         icon = QIcon.fromTheme("plot-locations")
-        self.actions["plot_locations"] = plot_menu.addAction(
-            icon, "&Channel locations...", self.plot_locations)
-        self.actions["plot_erds"] = plot_menu.addAction(
-            "&ERDS maps...", self.plot_erds)
+        self.actions["plot_locations"] = plot_menu.addAction(icon, "&Channel locations...",
+                                                             self.plot_locations)
+        self.actions["plot_erds"] = plot_menu.addAction("&ERDS maps...", self.plot_erds)
         plot_menu.addSeparator()
-        self.actions["plot_ica_components"] = plot_menu.addAction(
-            "ICA &components...", self.plot_ica_components)
-        self.actions["plot_ica_sources"] = plot_menu.addAction(
-            "ICA &sources...", self.plot_ica_sources)
+        self.actions["plot_ica_components"] = plot_menu.addAction("ICA &components...",
+                                                                  self.plot_ica_components)
+        self.actions["plot_ica_sources"] = plot_menu.addAction("ICA &sources...",
+                                                               self.plot_ica_sources)
 
         tools_menu = self.menuBar().addMenu("&Tools")
         icon = QIcon.fromTheme("filter-data")
         self.actions["filter"] = tools_menu.addAction(icon, "&Filter data...",
                                                       self.filter_data)
         icon = QIcon.fromTheme("find-events")
-        self.actions["find_events"] = tools_menu.addAction(icon,
-                                                           "Find &events...",
+        self.actions["find_events"] = tools_menu.addAction(icon, "Find &events...",
                                                            self.find_events)
         self.actions["events_from_annotations"] = tools_menu.addAction(
             "Create events from annotations", self.events_from_annotations
@@ -215,31 +203,27 @@ class MainWindow(QMainWindow):
         )
         tools_menu.addSeparator()
         nirs_menu = tools_menu.addMenu("NIRS")
-        self.actions["convert_od"] = nirs_menu.addAction(
-                "Convert to &optical density", self.convert_od)
-        self.actions["convert_bl"] = nirs_menu.addAction(
-                "Convert to &haemoglobin", self.convert_bl)
+        self.actions["convert_od"] = nirs_menu.addAction("Convert to &optical density",
+                                                         self.convert_od)
+        self.actions["convert_bl"] = nirs_menu.addAction("Convert to &haemoglobin",
+                                                         self.convert_bl)
 
         tools_menu.addSeparator()
         icon = QIcon.fromTheme("run-ica")
-        self.actions["run_ica"] = tools_menu.addAction(icon, "Run &ICA...",
-                                                       self.run_ica)
-        self.actions["apply_ica"] = tools_menu.addAction("Apply &ICA",
-                                                         self.apply_ica)
+        self.actions["run_ica"] = tools_menu.addAction(icon, "Run &ICA...", self.run_ica)
+        self.actions["apply_ica"] = tools_menu.addAction("Apply &ICA", self.apply_ica)
         tools_menu.addSeparator()
         self.actions["interpolate_bads"] = tools_menu.addAction(
-                                                "Interpolate bad channels...",
-                                                self.interpolate_bads)
+            "Interpolate bad channels...", self.interpolate_bads
+        )
         tools_menu.addSeparator()
         icon = QIcon.fromTheme("epoch-data")
-        self.actions["epoch_data"] = tools_menu.addAction(
-            icon, "Create Epochs...", self.epoch_data)
+        self.actions["epoch_data"] = tools_menu.addAction(icon, "Create Epochs...",
+                                                          self.epoch_data)
 
         view_menu = self.menuBar().addMenu("&View")
-        self.actions["history"] = view_menu.addAction("&History...",
-                                                      self.show_history)
-        self.actions["toolbar"] = view_menu.addAction("&Toolbar",
-                                                      self._toggle_toolbar)
+        self.actions["history"] = view_menu.addAction("&History...", self.show_history)
+        self.actions["toolbar"] = view_menu.addAction("&Toolbar", self._toggle_toolbar)
         self.actions["toolbar"].setCheckable(True)
         self.actions["statusbar"] = view_menu.addAction("&Statusbar",
                                                         self._toggle_statusbar)
@@ -247,12 +231,11 @@ class MainWindow(QMainWindow):
 
         help_menu = self.menuBar().addMenu("&Help")
         self.actions["about"] = help_menu.addAction("&About", self.show_about)
-        self.actions["about_qt"] = help_menu.addAction("About &Qt",
-                                                       self.show_about_qt)
+        self.actions["about_qt"] = help_menu.addAction("About &Qt", self.show_about_qt)
 
         # actions that are always enabled
-        self.always_enabled = ["open_file", "about", "about_qt", "quit",
-                               "toolbar", "statusbar"]
+        self.always_enabled = ["open_file", "about", "about_qt", "quit", "toolbar",
+                               "statusbar"]
 
         # set up toolbar
         self.toolbar = self.addToolBar("toolbar")
@@ -353,35 +336,34 @@ class MainWindow(QMainWindow):
             self.actions["export_ica"].setEnabled(enabled and ica)
             self.actions["plot_erds"].setEnabled(
                 enabled and self.model.current["dtype"] == "epochs")
-            self.actions["plot_ica_components"].setEnabled(enabled and ica and
-                                                           locations)
+            self.actions["plot_ica_components"].setEnabled(enabled and ica and locations)
             self.actions["plot_ica_sources"].setEnabled(enabled and ica)
-            self.actions["interpolate_bads"].setEnabled(enabled and
-                                                        locations and bads)
+            self.actions["interpolate_bads"].setEnabled(enabled and locations and bads)
             self.actions["events"].setEnabled(enabled and events)
-            self.actions["events_from_annotations"].setEnabled(enabled and
-                                                               annot)
-            self.actions["annotations_from_events"].setEnabled(enabled and
-                                                               events)
+            self.actions["events_from_annotations"].setEnabled(enabled and annot)
+            self.actions["annotations_from_events"].setEnabled(enabled and events)
             self.actions["find_events"].setEnabled(
-                enabled and self.model.current["dtype"] == "raw")
+                enabled and self.model.current["dtype"] == "raw"
+            )
             self.actions["epoch_data"].setEnabled(
-                enabled and events and self.model.current["dtype"] == "raw")
+                enabled and events and self.model.current["dtype"] == "raw"
+            )
             self.actions["crop"].setEnabled(
-                enabled and self.model.current["dtype"] == "raw")
+                enabled and self.model.current["dtype"] == "raw"
+            )
             append = bool(self.model.get_compatibles())
             self.actions["append_data"].setEnabled(
-                enabled and append and
-                (self.model.current["dtype"] in ("raw", "epochs")))
+                enabled and append and (self.model.current["dtype"] in ("raw", "epochs"))
+            )
             self.actions["meta_info"].setEnabled(
-                enabled and
-                self.model.current["ftype"] in ["XDF", "XDFZ", "XDF.GZ"])
+                enabled and self.model.current["ftype"] in ["XDF", "XDFZ", "XDF.GZ"]
+            )
             self.actions["convert_od"].setEnabled(
-                    len(mne.pick_types(self.model.current["data"].info,
-                        fnirs="fnirs_raw")))
+                len(mne.pick_types(self.model.current["data"].info, fnirs="fnirs_raw"))
+            )
             self.actions["convert_bl"].setEnabled(
-                    len(mne.pick_types(self.model.current["data"].info,
-                        fnirs="fnirs_od")))
+                len(mne.pick_types(self.model.current["data"].info, fnirs="fnirs_od"))
+            )
             # disable unsupported exporters for epochs (all must support raw)
             if self.model.current["dtype"] == "epochs":
                 for ext, description in writers.items():
@@ -410,11 +392,9 @@ class MainWindow(QMainWindow):
             if ext in [".xdf", ".xdfz", ".xdf.gz"]:
                 rows, disabled = [], []
                 for idx, s in enumerate(get_streams(fname)):
-                    rows.append([s["stream_id"], s["name"], s["type"],
-                                 s["channel_count"], s["channel_format"],
-                                 s["nominal_srate"]])
-                    is_marker = (s["nominal_srate"] == 0 or
-                                 s["channel_format"] == "string")
+                    rows.append([s["stream_id"], s["name"], s["type"], s["channel_count"],
+                                 s["channel_format"], s["nominal_srate"]])
+                    is_marker = (s["nominal_srate"] == 0 or s["channel_format"] == "string")
                     if is_marker:  # disable marker streams
                         disabled.append(idx)
 
@@ -423,8 +403,7 @@ class MainWindow(QMainWindow):
                     selected = enabled[0]
                 else:
                     selected = None
-                dialog = XDFStreamsDialog(self, rows, selected=selected,
-                                          disabled=disabled)
+                dialog = XDFStreamsDialog(self, rows, selected=selected, disabled=disabled)
                 if dialog.exec_():
                     row = dialog.view.selectionModel().selectedRows()[0].row()
                     stream_id = dialog.model.data(dialog.model.index(row, 0))
@@ -472,8 +451,7 @@ class MainWindow(QMainWindow):
 
     def close_all(self):
         """Close all currently open data sets."""
-        msg = QMessageBox.question(self, "Close all data sets",
-                                   "Close all data sets?")
+        msg = QMessageBox.question(self, "Close all data sets", "Close all data sets?")
         if msg == QMessageBox.Yes:
             while len(self.model) > 0:
                 self.model.remove_data()
@@ -531,9 +509,10 @@ class MainWindow(QMainWindow):
             if set(ch_names) & set(montage.ch_names):
                 self.model.set_montage(name)
             else:
-                QMessageBox.critical(self, "No matching channel names",
-                                     "Channel names defined in the montage do "
-                                     "not match any channel name in the data.")
+                QMessageBox.critical(
+                    self, "No matching channel names", "Channel names defined in the "
+                    "montage do not match any channel name in the data."
+                )
 
     def edit_annotations(self):
         fs = self.model.current["data"].info["sfreq"]
@@ -631,16 +610,14 @@ class MainWindow(QMainWindow):
 
     def plot_locations(self):
         """Plot current montage."""
-        fig = self.model.current["data"].plot_sensors(show_names=True,
-                                                      show=False)
+        fig = self.model.current["data"].plot_sensors(show_names=True, show=False)
         win = fig.canvas.manager.window
         win.setWindowTitle("Montage")
         win.statusBar().hide()  # not necessary since matplotlib 3.3
         fig.show()
 
     def plot_ica_components(self):
-        self.model.current["ica"].plot_components(
-            inst=self.model.current["data"])
+        self.model.current["ica"].plot_components(inst=self.model.current["data"])
 
     def plot_ica_sources(self):
         self.model.current["ica"].plot_sources(inst=self.model.current["data"])
@@ -670,9 +647,7 @@ class MainWindow(QMainWindow):
         if have["sklearn"]:
             methods.append("FastICA")
 
-        dialog = RunICADialog(self,
-                              self.model.current["data"].info["nchan"],
-                              methods)
+        dialog = RunICADialog(self, self.model.current["data"].info["nchan"], methods)
 
         if dialog.exec_():
             calc = CalcDialog(self, "Calculating ICA", "Calculating ICA.")
@@ -686,8 +661,7 @@ class MainWindow(QMainWindow):
             if dialog.ortho.isEnabled():
                 fit_params["ortho"] = dialog.ortho.isChecked()
 
-            ica = mne.preprocessing.ICA(method=method,
-                                        fit_params=fit_params)
+            ica = mne.preprocessing.ICA(method=method, fit_params=fit_params)
             history = f"ica = mne.preprocessing.ICA(method='{method}'"
             if fit_params:
                 history += f", fit_params={fit_params})"
@@ -700,11 +674,12 @@ class MainWindow(QMainWindow):
             def callback(x):
                 QMetaObject.invokeMethod(calc, "accept", Qt.QueuedConnection)
 
-            res = pool.apply_async(func=ica.fit,
-                                   args=(self.model.current["data"],),
-                                   kwds={"reject_by_annotation":
-                                         exclude_bad_segments},
-                                   callback=callback)
+            res = pool.apply_async(
+                func=ica.fit,
+                args=(self.model.current["data"],),
+                kwds={"reject_by_annotation": exclude_bad_segments},
+                callback=callback
+            )
             pool.close()
 
             if not calc.exec_():
@@ -712,8 +687,7 @@ class MainWindow(QMainWindow):
                 print("ICA calculation aborted...")
             else:
                 self.model.current["ica"] = res.get(timeout=1)
-                self.model.history.append(f"ica.fit(inst=raw, "
-                                          f"reject_by_annotation="
+                self.model.history.append(f"ica.fit(inst=raw, reject_by_annotation="
                                           f"{exclude_bad_segments})")
                 self.data_changed()
 
@@ -728,16 +702,14 @@ class MainWindow(QMainWindow):
         if dialog.exec_():
             duplicated = self.auto_duplicate()
             try:
-                self.model.interpolate_bads(dialog.reset_bads, dialog.mode,
-                                            dialog.origin)
+                self.model.interpolate_bads(dialog.reset_bads, dialog.mode, dialog.origin)
             except ValueError as e:
                 if duplicated:  # undo
                     self.model.remove_data()
                     self.model.index -= 1
                     self.data_changed()
-                msgbox = ErrorMessageBox(self,
-                                         "Could not interpolate bad channels",
-                                         str(e), traceback.format_exc())
+                msgbox = ErrorMessageBox(self, "Could not interpolate bad channels", str(e),
+                                         traceback.format_exc())
                 msgbox.show()
 
     def filter_data(self):
@@ -764,12 +736,14 @@ class MainWindow(QMainWindow):
             uint_cast = dialog.uint_cast.isChecked()
             min_dur = dialog.minduredit.value()
             shortest_event = dialog.shortesteventedit.value()
-            self.model.find_events(stim_channel=stim_channel,
-                                   consecutive=consecutive,
-                                   initial_event=initial_event,
-                                   uint_cast=uint_cast,
-                                   min_duration=min_dur,
-                                   shortest_event=shortest_event)
+            self.model.find_events(
+                stim_channel=stim_channel,
+                consecutive=consecutive,
+                initial_event=initial_event,
+                uint_cast=uint_cast,
+                min_duration=min_dur,
+                shortest_event=shortest_event
+            )
 
     def events_from_annotations(self):
         self.model.events_from_annotations()
@@ -781,8 +755,7 @@ class MainWindow(QMainWindow):
         """Epoch raw data."""
         dialog = EpochDialog(self, self.model.current["events"])
         if dialog.exec_():
-            events = [int(item.text()) for item
-                      in dialog.events.selectedItems()]
+            events = [int(item.text()) for item in dialog.events.selectedItems()]
             tmin = dialog.tmin.value()
             tmax = dialog.tmax.value()
 
@@ -799,8 +772,8 @@ class MainWindow(QMainWindow):
                     self.model.remove_data()
                     self.model.index -= 1
                     self.data_changed()
-                msgbox = ErrorMessageBox(self, "Could not create epochs",
-                                         str(e), traceback.format_exc())
+                msgbox = ErrorMessageBox(self, "Could not create epochs", str(e),
+                                         traceback.format_exc())
                 msgbox.show()
 
     def convert_od(self):
@@ -832,8 +805,7 @@ class MainWindow(QMainWindow):
     def show_about(self):
         """Show About dialog."""
         msg_box = QMessageBox(self)
-        text = (f"<img src='{image_path('mnelab_logo.png')}'>"
-                f"<p>MNELAB {__version__}</p>")
+        text = (f"<img src='{image_path('mnelab_logo.png')}'><p>MNELAB {__version__}</p>")
         msg_box.setText(text)
 
         mnelab_url = "github.com/cbrnr/mnelab"
@@ -845,17 +817,14 @@ class MainWindow(QMainWindow):
                 pkgs.append(f"{key}&nbsp;({value})")
             else:
                 pkgs.append(f"{key}&nbsp;(not installed)")
-
-        text = (f'<nobr><p>This program uses Python '
-                f'{".".join(str(k) for k in version_info[:3])} and the '
-                f'following packages:</p></nobr>'
-                f'<p>{", ".join(pkgs)}</p>'
-                f'<nobr><p>MNELAB repository: '
-                f'<a href=https://{mnelab_url}>{mnelab_url}</a></p></nobr>'
-                f'<nobr><p>MNE repository: '
-                f'<a href=https://{mne_url}>{mne_url}</a></p></nobr>'
-                f'<p>Licensed under the BSD 3-clause license.</p>'
-                f'<p>Copyright 2017&ndash;2021 by Clemens Brunner.</p>')
+        version = ".".join(str(k) for k in version_info[:3])
+        text = (f"<nobr><p>This program uses Python {version} and the following packages:"
+                f"</p></nobr><p>{', '.join(pkgs)}</p>"
+                f"<nobr><p>MNELAB repository: <a href=https://{mnelab_url}>{mnelab_url}</a>"
+                f"</p></nobr><nobr><p>MNE repository: "
+                f"<a href=https://{mne_url}>{mne_url}</a></p></nobr>"
+                f"<p>Licensed under the BSD 3-clause license.</p>"
+                f"<p>Copyright 2017&ndash;2021 by Clemens Brunner.</p>")
         msg_box.setInformativeText(text)
         msg_box.exec_()
 
@@ -866,17 +835,16 @@ class MainWindow(QMainWindow):
     def auto_duplicate(self):
         """Automatically duplicate current data set.
 
-        If the current data set is stored in a file (i.e. was loaded directly
-        from a file), a new data set is automatically created. If the current
-        data set is not stored in a file (i.e. was created by operations in
-        MNELAB), a dialog box asks the user if the current data set should be
-        overwritten or duplicated.
+        If the current data set is stored in a file (i.e. was loaded directly from a file),
+        a new data set is automatically created. If the current data set is not stored in a
+        file (i.e. was created by operations in MNELAB), a dialog box asks the user if the
+        current data set should be overwritten or duplicated.
 
         Returns
         -------
         duplicated : bool
-            True if the current data set was automatically duplicated, False if
-            the current data set was overwritten.
+            True if the current data set was automatically duplicated, False if the current
+            data set was overwritten.
         """
         # if current data is stored in a file create a new data set
         if self.model.current["fname"]:

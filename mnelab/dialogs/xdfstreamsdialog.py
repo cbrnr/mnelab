@@ -2,8 +2,8 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtWidgets import (QDialog, QVBoxLayout, QDialogButtonBox,
-                            QAbstractItemView, QTableView)
+from qtpy.QtWidgets import (QDialog, QVBoxLayout, QDialogButtonBox, QAbstractItemView,
+                            QTableView)
 from qtpy.QtGui import QStandardItemModel, QStandardItem
 from qtpy.QtCore import Qt
 
@@ -14,8 +14,8 @@ class XDFStreamsDialog(QDialog):
         self.setWindowTitle("Select XDF Stream")
 
         self.model = QStandardItemModel()
-        self.model.setHorizontalHeaderLabels(["ID", "Name", "Type", "Channels",
-                                              "Format", "Sampling Rate"])
+        self.model.setHorizontalHeaderLabels(["ID", "Name", "Type", "Channels", "Format",
+                                              "Sampling Rate"])
 
         for index, stream in enumerate(rows):
             items = []
@@ -43,8 +43,7 @@ class XDFStreamsDialog(QDialog):
 
         vbox = QVBoxLayout(self)
         vbox.addWidget(self.view)
-        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                          QDialogButtonBox.Cancel)
+        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         vbox.addWidget(self.buttonbox)
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)

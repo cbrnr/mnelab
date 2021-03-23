@@ -26,9 +26,7 @@ class HistoryDialog(QDialog):
         clipboardbutton = QPushButton("Copy to clipboard")
         buttonbox.addButton(clipboardbutton, QDialogButtonBox.ActionRole)
         clipboard = QGuiApplication.clipboard()
-        clipboardbutton.clicked.connect(
-            lambda: clipboard.setText(history + "\n")
-        )
+        clipboardbutton.clicked.connect(lambda: clipboard.setText(history + "\n"))
         layout.addWidget(buttonbox)
         self.setLayout(layout)
         buttonbox.accepted.connect(self.accept)

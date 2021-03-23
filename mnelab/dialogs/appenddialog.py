@@ -4,8 +4,8 @@
 # License: BSD (3-clause)
 
 from qtpy.QtCore import Qt, Slot
-from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel,
-                            QDialogButtonBox, QListWidget, QAbstractItemView)
+from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel, QDialogButtonBox,
+                            QListWidget, QAbstractItemView)
 
 
 class AppendDialog(QDialog):
@@ -37,8 +37,7 @@ class AppendDialog(QDialog):
         grid.addWidget(self.destination, 1, 2)
         vbox.addLayout(grid)
 
-        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                          QDialogButtonBox.Cancel)
+        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
 

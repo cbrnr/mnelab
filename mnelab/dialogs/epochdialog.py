@@ -3,8 +3,8 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtWidgets import (QDialog, QGridLayout, QLabel, QDialogButtonBox,
-                            QListWidget, QCheckBox, QDoubleSpinBox)
+from qtpy.QtWidgets import (QDialog, QGridLayout, QLabel, QDialogButtonBox, QListWidget,
+                            QCheckBox, QDoubleSpinBox)
 from qtpy.QtCore import Slot, Qt
 
 from numpy import unique
@@ -55,8 +55,7 @@ class EpochDialog(QDialog):
         self.b.setAlignment(Qt.AlignRight)
         grid.addWidget(self.a, 2, 1, 1, 1)
         grid.addWidget(self.b, 2, 2, 1, 1)
-        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                          QDialogButtonBox.Cancel)
+        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
         grid.addWidget(self.buttonbox, 3, 0, 1, -1)

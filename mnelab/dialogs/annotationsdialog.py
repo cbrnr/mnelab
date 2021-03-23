@@ -34,8 +34,7 @@ class AnnotationsDialog(QDialog):
         hbox = QHBoxLayout()
         self.add_button = QPushButton("+")
         self.remove_button = QPushButton("-")
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                     QDialogButtonBox.Cancel)
+        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         hbox.addWidget(self.add_button)
         hbox.addWidget(self.remove_button)
         hbox.addStretch()

@@ -2,8 +2,8 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtWidgets import (QDialog, QDialogButtonBox, QLabel, QDoubleSpinBox,
-                            QGridLayout, QVBoxLayout)
+from qtpy.QtWidgets import (QDialog, QDialogButtonBox, QLabel, QDoubleSpinBox, QGridLayout,
+                            QVBoxLayout)
 
 
 class ERDSDialog(QDialog):
@@ -72,8 +72,7 @@ class ERDSDialog(QDialog):
         grid.addWidget(self._b2, 3, 2)
 
         vbox.addLayout(grid)
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                     QDialogButtonBox.Cancel)
+        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         vbox.addWidget(buttonbox)
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)

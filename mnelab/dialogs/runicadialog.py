@@ -2,8 +2,8 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtWidgets import (QCheckBox, QComboBox, QDialog, QDialogButtonBox,
-                            QLabel, QSpinBox, QVBoxLayout, QGridLayout)
+from qtpy.QtWidgets import (QCheckBox, QComboBox, QDialog, QDialogButtonBox, QLabel,
+                            QSpinBox, QVBoxLayout, QGridLayout)
 from qtpy.QtCore import Qt, Slot
 
 
@@ -50,8 +50,7 @@ class RunICADialog(QDialog):
 
         vbox.addLayout(grid)
 
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                     QDialogButtonBox.Cancel)
+        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         vbox.addWidget(buttonbox)
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)

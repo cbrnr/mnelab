@@ -21,8 +21,7 @@ class PickChannelsDialog(QDialog):
             if self.channels.item(i).data(0) in selected:
                 self.channels.item(i).setSelected(True)
         vbox.addWidget(self.channels)
-        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok |
-                                          QDialogButtonBox.Cancel)
+        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         vbox.addWidget(self.buttonbox)
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
