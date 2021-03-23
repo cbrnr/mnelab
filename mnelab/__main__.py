@@ -51,13 +51,13 @@ def _run_pythonw():
     import subprocess
 
     cwd = pathlib.Path.cwd()
-    python_path = pathlib.Path(sys.exec_prefix) / 'bin' / 'pythonw'
+    python_path = pathlib.Path(sys.exec_prefix) / "bin" / "pythonw"
 
     if not python_path.exists():
-        msg = ('pythonw executable not found. Please install python.app via conda.')
-        raise RuntimeError(msg)
+        raise RuntimeError("pythonw executable not found. "
+                           "Please install python.app via conda.")
 
-    cmd = [python_path, '-m', 'mnelab']
+    cmd = [python_path, "-m", "mnelab"]
 
     # Append command line arguments.
     if len(sys.argv) > 1:
@@ -71,7 +71,7 @@ def _run_pythonw():
 
 
 def main():
-    # Ensure we're always using a "framework build" on macOS
+    # ensure we're always using a framework build when using conda on macOS
     _MACOS_CONDA = sys.platform == "darwin" and "CONDA_PREFIX" in os.environ
     _RUNNING_PYTHONW = "MNELAB_RUNNING_PYTHONW" in os.environ
 

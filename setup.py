@@ -9,14 +9,14 @@ from os import path
 here = path.abspath(path.dirname(__file__))
 
 # get the long description from the README file
-with open(path.join(here, 'README.md'), encoding='utf-8') as f:
+with open(path.join(here, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
 # get the version (without importing)
-with open(path.join('mnelab', 'mainwindow.py'), 'r') as f:
+with open(path.join("mnelab", "mainwindow.py"), "r") as f:
     for line in f:
-        if line.strip().startswith('__version__'):
-            version = line.split('=')[1].strip().strip('"')
+        if line.strip().startswith("__version__"):
+            version = line.split("=")[1].strip().strip('"')
             break
 
 # get install requirements
@@ -31,35 +31,31 @@ with open(path.join(here, "requirements-extras.txt")) as f:
         extras_require[text.strip()] = [package.strip()]
 
 setup(
-    name='mnelab',
+    name="mnelab",
     version=version,
-    description='A graphical user interface for MNE',
+    description="A graphical user interface for MNE",
     long_description=long_description,
-    long_description_content_type='text/markdown',
-    url='https://github.com/cbrnr/mnelab',
-    author='Clemens Brunner',
-    author_email='clemens.brunner@gmail.com',
+    long_description_content_type="text/markdown",
+    url="https://github.com/cbrnr/mnelab",
+    author="Clemens Brunner",
+    author_email="clemens.brunner@gmail.com",
     classifiers=[
-        'Development Status :: 3 - Alpha',
-        'Intended Audience :: Science/Research',
-        'Topic :: Scientific/Engineering',
-        'License :: OSI Approved :: BSD License',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9'
+        "Development Status :: 3 - Alpha",
+        "Intended Audience :: Science/Research",
+        "Topic :: Scientific/Engineering",
+        "License :: OSI Approved :: BSD License",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9"
     ],
-    keywords='EEG MEG MNE GUI electrophysiology',
-    packages=find_packages(exclude=['contrib', 'docs', 'tests']),
-    python_requires='>=3.6, <4',
+    keywords="EEG MEG MNE GUI electrophysiology",
+    packages=find_packages(exclude=["contrib", "docs", "tests"]),
+    python_requires=">=3.6, <4",
     install_requires=requires,
     extras_require=extras_require,
     license="BSD-3-Clause",
     include_package_data=True,
-    entry_points={
-        'console_scripts': [
-            'mnelab=mnelab.__main__:main',
-        ],
-    }
+    entry_points={"console_scripts": ["mnelab=mnelab.__main__:main"]}
 )

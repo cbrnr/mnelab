@@ -86,8 +86,8 @@ def write_edf(fname, raw):
         f.setStartdatetime(meas_date)
     # note that currently, only blocks of whole seconds can be written
     f.writeSamples(data_list)
-    for ann in raw.annotations:
-        f.writeAnnotation(ann["onset"], ann["duration"], ann["description"])
+    for annot in raw.annotations:
+        f.writeAnnotation(annot["onset"], annot["duration"], annot["description"])
 
 
 def write_bv(fname, raw, events=None):
