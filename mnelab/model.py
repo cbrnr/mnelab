@@ -240,7 +240,7 @@ class Model:
                     onset = float(ann[1].strip())
                     duration = float(ann[2].strip())
                     if onset > self.current["data"].n_times / fs:
-                        msg = ("One or more annotations are outside of the data range.")
+                        msg = "One or more annotations are outside the data range."
                         raise InvalidAnnotationsError(msg)
                     else:
                         descs.append(ann[0].strip())

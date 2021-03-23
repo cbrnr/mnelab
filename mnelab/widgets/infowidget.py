@@ -2,7 +2,7 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtWidgets import (QWidget, QVBoxLayout, QGridLayout, QLabel, QSizePolicy)
+from qtpy.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QLabel, QSizePolicy
 
 
 class InfoWidget(QWidget):
