@@ -28,8 +28,7 @@ class InfoWidget(QWidget):
         Parameters
         ----------
         values : dict
-            Each key/value pair in this dict will be displayed in a row,
-            separated by a colon.
+            Each key/value pair in this dict is displayed in a row separated by a colon.
         """
         self.clear()
         if values:
@@ -41,8 +40,7 @@ class InfoWidget(QWidget):
                 self.grid.addWidget(right, row, 1)
 
     def clear(self):
-        """Clear all values.
-        """
+        """Clear all values."""
         item = self.grid.takeAt(0)
         while item:
             item.widget().deleteLater()

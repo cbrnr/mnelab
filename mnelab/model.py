@@ -91,8 +91,7 @@ class Model:
         """Return current data set."""
         if self.index > -1:
             return self.data[self.index]
-        else:
-            return None
+        return None
 
     @current.setter
     def current(self, value):
@@ -135,7 +134,7 @@ class Model:
         """Convert annotations to events."""
         events, mapping = mne.events_from_annotations(self.current["data"])
         if events.shape[0] > 0:
-            # swap mapping for annots from {str: int} to {int: str}
+            # swap mapping for annotations from {str: int} to {int: str}
             mapping = {v: k for k, v in mapping.items()}
             self.current["events"] = events
             self.current["event_mapping"] = mapping
@@ -184,14 +183,15 @@ class Model:
         name, ext = splitext(split(fname)[-1])
         ext = ext if ext else ".csv"  # automatically add extension
         fname = join(split(fname)[0], name + ext)
-        anns = self.current["data"].annotations
+        annots = self.current["data"].annotations
         with open(fname, "w") as f:
             f.write("type,onset,duration\n")
-            for a in zip(anns.description, anns.onset, anns.duration):
+            for a in zip(annots.description, annots.onset, annots.duration):
                 f.write(",".join([a[0], str(a[1]), str(a[2])]))
                 f.write("\n")
 
     def export_ica(self, fname):
+        """Export ICA solution to file."""
         name, ext = splitext(split(fname)[-1])
         ext = ext if ext else ".fif"  # automatically add extension
         fname = join(split(fname)[0], name + ext)
@@ -204,9 +204,8 @@ class Model:
             bads = f.read().replace(" ", "").strip().split(",")
             unknown = set(bads) - set(self.current["data"].info["ch_names"])
             if unknown:
-                msg = ("The following imported channel labels are not in the data: " +
-                       ",".join(unknown))
-                raise LabelsNotFoundError(msg)
+                raise LabelsNotFoundError("The following imported channel labels are not "
+                                          "contained in the data: " + ",".join(unknown))
             else:
                 self.current["data"].info["bads"] = bads
 
@@ -235,15 +234,15 @@ class Model:
         with open(fname) as f:
             f.readline()  # skip header
             for line in f:
-                ann = line.split(",")
-                if len(ann) == 3:  # type, onset, duration
-                    onset = float(ann[1].strip())
-                    duration = float(ann[2].strip())
+                annot = line.split(",")
+                if len(annot) == 3:  # type, onset, duration
+                    onset = float(annot[1].strip())
+                    duration = float(annot[2].strip())
                     if onset > self.current["data"].n_times / fs:
-                        msg = "One or more annotations are outside the data range."
-                        raise InvalidAnnotationsError(msg)
+                        raise InvalidAnnotationsError("One or more annotations are outside "
+                                                      "the data range.")
                     else:
-                        descs.append(ann[0].strip())
+                        descs.append(annot[0].strip())
                         onsets.append(onset)
                         durations.append(duration)
         annotations = mne.Annotations(onsets, durations, descs)
@@ -251,6 +250,7 @@ class Model:
 
     @data_changed
     def import_ica(self, fname):
+        """Import ICA solution from file."""
         self.current["ica"] = mne.preprocessing.read_ica(fname)
 
     def get_info(self):
@@ -372,8 +372,7 @@ class Model:
     def get_compatibles(self):
         """Return a list of data sets that are compatible with the current one.
 
-        This function is useful for checking which data sets can be appended to the current
-        data set.
+        This function checks which data sets can be appended to the current data set.
 
         Returns
         -------

@@ -66,8 +66,8 @@ class MainWindow(QMainWindow):
         Parameters
         ----------
         model : mnelab.model.Model instance
-            The main window needs to connect to a model containing all data
-            sets. This decouples the GUI from the data (model/view).
+            The main window needs to connect to a model containing all data sets. This
+            decouples the GUI from the data (model/view).
         """
         super().__init__()
         self.model = model  # data model
@@ -335,7 +335,8 @@ class MainWindow(QMainWindow):
             self.actions["apply_ica"].setEnabled(enabled and ica)
             self.actions["export_ica"].setEnabled(enabled and ica)
             self.actions["plot_erds"].setEnabled(
-                enabled and self.model.current["dtype"] == "epochs")
+                enabled and self.model.current["dtype"] == "epochs"
+            )
             self.actions["plot_ica_components"].setEnabled(enabled and ica and locations)
             self.actions["plot_ica_sources"].setEnabled(enabled and ica)
             self.actions["interpolate_bads"].setEnabled(enabled and locations and bads)
@@ -973,7 +974,7 @@ class MainWindow(QMainWindow):
             self.data_changed()
             bads = self.model.current["data"].info["bads"]
             if self.bads != bads:
-                self.model.history.append(f"data.info['bads'] = {bads}")
+                self.model.history.append(f'data.info["bads"] = {bads}')
         return QObject.eventFilter(self, source, event)
 
     def event(self, ev):

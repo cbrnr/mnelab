@@ -56,8 +56,7 @@ class AppendDialog(QDialog):
 
     @Slot()
     def toggle_buttons(self):
-        """Toggle OK button.
-        """
+        """Toggle OK button."""
         if self.destination.count() > 0:
             self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(True)
         else:
