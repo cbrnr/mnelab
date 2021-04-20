@@ -3,6 +3,7 @@
 - Remove auto-installation of `PySide2` when using `pip` ([#196](https://github.com/cbrnr/mnelab/pull/196) by [Clemens Brunner](https://github.com/cbrnr))
 - Starting MNELAB with the `mnelab` command in a terminal now also works on Windows ([#197](https://github.com/cbrnr/mnelab/pull/197) by [Clemens Brunner](https://github.com/cbrnr))
 - Removing annotations and events is now as fast as it should be ([#206](https://github.com/cbrnr/mnelab/pull/206) and [#207](https://github.com/cbrnr/mnelab/pull/207) by [Clemens Brunner](https://github.com/cbrnr))
+- Supported files can now be opened even if their extension is not all lower case (e.g. EDF) ([#212](https://github.com/cbrnr/mnelab/pull/212) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### Changed
 - Rename `master` branch to `main` ([#193](https://github.com/cbrnr/mnelab/pull/193) by [Clemens Brunner](https://github.com/cbrnr))
