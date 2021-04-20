@@ -67,7 +67,7 @@ def read_raw(fname, *args, **kwargs):
     maxsuffixes = max([ext.count(".") for ext in supported])
     suffixes = Path(fname).suffixes
     for i in range(-maxsuffixes, 0):
-        ext = "".join(suffixes[i:])
+        ext = "".join(suffixes[i:]).lower()
         if ext in readers.keys():
             return readers[ext](fname, *args, **kwargs)
     raise ValueError(f"Unknown file type {suffixes}.")
