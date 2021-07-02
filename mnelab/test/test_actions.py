@@ -11,7 +11,6 @@ def test_initial_actions(qtbot):
     model = Model()
     view = MainWindow(model)
     model.view = view
-    qtbot.addWidget(view)
 
     for name, action in view.actions.items():
         if name in view.always_enabled:
