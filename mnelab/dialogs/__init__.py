@@ -18,6 +18,7 @@ from mnelab.dialogs.history import HistoryDialog
 from mnelab.dialogs.interpolate_bads import InterpolateBadsDialog
 from mnelab.dialogs.mat import MatDialog
 from mnelab.dialogs.montage import MontageDialog
+from mnelab.dialogs.npydialog import NpyDialog
 from mnelab.dialogs.pick_channels import PickChannelsDialog
 from mnelab.dialogs.plot_evoked import (
     PlotEvokedComparisonDialog,
