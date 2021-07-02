@@ -614,6 +614,10 @@ class MainWindow(QMainWindow):
                         fs=dialog.fs,
                         transpose=dialog.transpose,
                     )
+            elif ext == ".npy":
+                dialog = NpyDialog(self)
+                if dialog.exec_():
+                    self.model.load(fname, dialog.fs)
             else:  # all other file formats
                 try:
                     self.model.load(fname)
