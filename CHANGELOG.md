@@ -118,6 +118,9 @@
 - Fix export to BrainVision files for newer versions of `pybv` ([#226](https://github.com/cbrnr/mnelab/pull/226) by [Clemens Brunner](https://github.com/cbrnr))
 - XDF files containing channels in microvolts are now correctly scaled during import ([#227](https://github.com/cbrnr/mnelab/pull/227) by [Clemens Brunner](https://github.com/cbrnr))
 
+### Added
+- Add support for importing .npy files ([#213](https://github.com/cbrnr/mnelab/pull/213) by [jgcaffari1](https://github.com/jgcaffari1) and [Clemens Brunner](https://github.com/cbrnr))
+
 ## [0.6.3] - 2021-01-05
 ### Added
 - Add Python 3.9 support ([#190](https://github.com/cbrnr/mnelab/pull/190) by [Clemens Brunner](https://github.com/cbrnr))
