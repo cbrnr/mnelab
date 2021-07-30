@@ -15,4 +15,5 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
+          name: wheel
           path: ~/.wheelhouse/mnelab*.whl
