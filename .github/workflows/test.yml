@@ -16,10 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: List packages
-      run: |
-        pip list
-        pip list -o
     - name: Build wheel
       run: pip wheel -w ~/.wheelhouse .
     - uses: actions/upload-artifact@v2
@@ -45,7 +41,7 @@ jobs:
     - name: Install packages
       run: |
         pip install $(echo mnelab*.whl)
-        pip install pytest
         pip install PyQt5
+        pip install pytest pytest-qt
     - name: Run tests
       run: pytest
