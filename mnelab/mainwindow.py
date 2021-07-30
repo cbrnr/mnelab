@@ -17,7 +17,7 @@ from qtpy.QtGui import QKeySequence, QDropEvent, QIcon
 from qtpy.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter, QMessageBox,
                             QListView, QAction, QLabel, QFrame)
 
-from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog, ChannelPropertiesDialog,  # whatever, this is just a test
+from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog, ChannelPropertiesDialog,
                       CropDialog, ERDSDialog, EpochDialog, ErrorMessageBox, EventsDialog,
                       FilterDialog, FindEventsDialog, HistoryDialog, InterpolateBadsDialog,
                       MetaInfoDialog, MontageDialog, PickChannelsDialog, ReferenceDialog,
@@ -151,7 +151,7 @@ class MainWindow(QMainWindow):
         self.actions["quit"] = file_menu.addAction("&Quit", self.close, QKeySequence.Quit)
 
         edit_menu = self.menuBar().addMenu("&Edit")
-        self.actions["pick_chans"] = edit_menu.addAction("P&ick channels...",       
+        self.actions["pick_chans"] = edit_menu.addAction("P&ick channels...",
                                                          self.pick_channels)
         icon = QIcon.fromTheme("chan-props")
         self.actions["chan_props"] = edit_menu.addAction(icon, "Channel &properties...",
