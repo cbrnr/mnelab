@@ -3,8 +3,8 @@ name: Test
 on: pull_request
 
 jobs:
-  pre-commit:
-    name: Pre-commit checks
+  style:
+    name: Style
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -38,5 +38,5 @@ jobs:
     - uses: actions/download-artifact@v2
       with:
         name: wheel
-    - name: ls
-      run: ls -al
+    - name: Install wheel
+      run: pip install $(echo ~/mnelab*.whl)
