@@ -2,7 +2,8 @@
 #
 # License: BSD (3-clause)
 
-from .mainwindow import MainWindow, __version__  # noqa
+from .version import __version__  # noqa
+from .mainwindow import MainWindow
 from .model import Model
 
 
