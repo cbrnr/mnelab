@@ -39,4 +39,4 @@ jobs:
       with:
         name: wheel
     - name: Install wheel
-      run: pip install $(echo ~/mnelab*.whl)
+      run: pip install $(echo mnelab*.whl)
