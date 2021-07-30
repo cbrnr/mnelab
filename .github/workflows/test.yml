@@ -1,0 +1,24 @@
+name: Test
+
+on: pull_request
+
+jobs:
+  pre-commit:
+    name: Pre-commit checks
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checout@v2
+    - uses: actions/setup-python@v2
+    - uses: pre-commit/action@v2.0.3
+
+  build-wheel:
+    name: Build wheel
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build wheel
+      run: pip wheel -w ~/.wheelhouse .
+    - uses: actions/upload-artifact@v2
+      with:
+        name: wheel
+        path: ~/.wheelhouse/mnelab*.whl
