@@ -360,8 +360,8 @@ class MainWindow(QMainWindow):
             )
             self.actions["convert_od"].setEnabled(
                 len(mne.pick_types(
-                    self.model.current["data"].info,fnirs="fnirs_cw_amplitude")
-                )
+                    self.model.current["data"].info, fnirs="fnirs_cw_amplitude")
+                    )
             )
             self.actions["convert_bl"].setEnabled(
                 len(mne.pick_types(self.model.current["data"].info, fnirs="fnirs_od"))
