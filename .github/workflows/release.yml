@@ -1,10 +1,9 @@
 name: Release
 
 on:
-  pull_request:
+  release:
+    types: [published]
   workflow_dispatch:
-#  release:
-#    types: [published]
 
 jobs:
   style:
@@ -55,4 +54,3 @@ jobs:
         with:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
-          repository_url: https://test.pypi.org/legacy/
