@@ -17,7 +17,7 @@ from qtpy.QtGui import QKeySequence, QDropEvent, QIcon
 from qtpy.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter, QMessageBox,
                             QListView, QAction, QLabel, QFrame)
 
-from .version import __version__
+from . import __version__
 from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog, ChannelPropertiesDialog,
                       CropDialog, ERDSDialog, EpochDialog, ErrorMessageBox, EventsDialog,
                       FilterDialog, FindEventsDialog, HistoryDialog, InterpolateBadsDialog,
