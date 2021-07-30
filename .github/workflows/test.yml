@@ -34,7 +34,7 @@ jobs:
     - uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install
-      run: pip install ~/.wheelhouse/mnelab-0.7.0.dev0-py3-none-any.whl
-    - name: Test
-      run: pytest
+    - uses: actions/download-artifact@v2
+    - name: ls
+      run: ls -al
+
