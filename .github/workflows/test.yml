@@ -22,3 +22,19 @@ jobs:
       with:
         name: wheel
         path: ~/.wheelhouse/mnelab*.whl
+
+  test:
+    strategy:
+      matrix:
+        python-version: [3.6, 3.7, 3.8, 3.9]
+    name: Run tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install
+      run: pip install ~/.wheelhouse/mnelab*.whl
+    - name: Test
+      run: pytest
