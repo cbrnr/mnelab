@@ -17,6 +17,7 @@ from qtpy.QtGui import QKeySequence, QDropEvent, QIcon
 from qtpy.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter, QMessageBox,
                             QListView, QAction, QLabel, QFrame)
 
+from . import __version__
 from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog, ChannelPropertiesDialog,
                       CropDialog, ERDSDialog, EpochDialog, ErrorMessageBox, EventsDialog,
                       FilterDialog, FindEventsDialog, HistoryDialog, InterpolateBadsDialog,
@@ -29,8 +30,6 @@ from .io import writers
 from .io.xdf import get_xml, get_streams
 from .viz import plot_erds
 
-
-__version__ = "0.7.0.dev0"
 
 MAX_RECENT = 6  # maximum number of recent files
 

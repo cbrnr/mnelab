@@ -2,7 +2,9 @@
 #
 # License: BSD (3-clause)
 
-from .mainwindow import MainWindow, __version__  # noqa: F401
+__version__ = "0.7.0.dev0"
+
+from .mainwindow import MainWindow
 from .model import Model
 
 
