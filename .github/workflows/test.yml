@@ -35,6 +35,6 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install
-      run: pip install $(echo ~/.wheelhouse/mnelab*.whl)
+      run: pip install ~/.wheelhouse/mnelab-0.7.0.dev0-py3-none-any.whl
     - name: Test
       run: pytest
