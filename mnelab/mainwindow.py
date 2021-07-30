@@ -28,8 +28,9 @@ from .utils import have, has_locations, image_path, interface_style
 from .io import writers
 from .io.xdf import get_xml, get_streams
 from .viz import plot_erds
-from . import __version__
 
+
+__version__ = "0.7.0.dev0"
 
 MAX_RECENT = 6  # maximum number of recent files
 
