@@ -359,9 +359,11 @@ class MainWindow(QMainWindow):
                 enabled and self.model.current["ftype"] in ["XDF", "XDFZ", "XDF.GZ"]
             )
             self.actions["convert_od"].setEnabled(
-                len(mne.pick_types(
-                    self.model.current["data"].info, fnirs="fnirs_cw_amplitude")
+                len(
+                    mne.pick_types(
+                        self.model.current["data"].info, fnirs="fnirs_cw_amplitude"
                     )
+                )
             )
             self.actions["convert_bl"].setEnabled(
                 len(mne.pick_types(self.model.current["data"].info, fnirs="fnirs_od"))
