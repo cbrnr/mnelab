@@ -31,7 +31,8 @@ supported = {".edf": mne.io.read_raw_edf,
              ".cnt": mne.io.read_raw_cnt,
              ".mff": mne.io.read_raw_egi,
              ".nxe": mne.io.read_raw_eximia,
-             ".hdr": mne.io.read_raw_nirx}
+             ".hdr": mne.io.read_raw_nirx,
+             ".snirf": mne.io.read_raw_snirf}
 
 if have["pyxdf"]:
     supported.update({".xdf": read_raw_xdf,
