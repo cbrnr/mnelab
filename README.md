@@ -1,9 +1,7 @@
+![Python](https://img.shields.io/pypi/pyversions/mnelab.svg?logo=python)
 [![PyPI Version](https://img.shields.io/pypi/v/mnelab)](https://pypi.org/project/mnelab/)
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/mnelab)](https://anaconda.org/conda-forge/mnelab)
-![Python](https://img.shields.io/badge/python-3.6&ndash;3.9-green.svg)
-![Downloads PyPI](https://img.shields.io/pypi/dm/mnelab?color=blue&label=downloads%20pypi)
-![Downloads Conda](https://img.shields.io/conda/dn/conda-forge/mnelab?color=blue&label=downloads%20conda)
-![License](https://img.shields.io/github/license/cbrnr/mnelab)
+[![License](https://img.shields.io/github/license/cbrnr/mnelab)](LICENSE)
 
 ![](https://raw.githubusercontent.com/cbrnr/mnelab/main/mnelab/images/mnelab_logo.png)
 
@@ -32,19 +30,18 @@ Optional dependencies provide additional features if installed:
 - [pyEDFlib](https://github.com/holgern/pyedflib) >= 0.1.15 (EDF/BDF export)
 - [pybv](https://github.com/bids-standard/pybv) 0.4.0 (BrainVision VHDR/VMRK/EEG export)
 
-### Additional features
-MNELAB comes with the following features that are not (yet) available in MNE:
-- Export to EDF/BDF (requires [pyEDFlib](https://github.com/holgern/pyedflib))
-- Export to EEGLAB SET
-- Export to BrainVision VHDR/VMRK/EEG (requires [pybv](https://github.com/bids-standard/pybv))
-- Import [XDF](https://github.com/sccn/xdf/wiki/Specifications) files (requires [pyxdf](https://github.com/xdf-modules/xdf-Python))
-
 ### Installation
 #### pip
 Make sure you have either `PySide2` or `PyQt5` installed. If you have neither, we recommend `PySide2`, which you can install with `pip install PySide2`. Then install MNELAB with:
 
 ```
 pip install mnelab
+```
+
+To use all MNELAB features, all optional dependencies should also be installed:
+
+```
+pip install scikit-learn python-picard pyxdf pyEDFlib pybv
 ```
 
 If you want to install either `PySide2` or `PyQt5` alongside MNELAB with one go, you can also use either `pip install mnelab[pyside2]` or `pip install mnelab[pyqt5]`.
