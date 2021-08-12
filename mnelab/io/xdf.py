@@ -27,6 +27,8 @@ def read_raw_xdf(fname, stream_id, *args, **kwargs):
     for stream in streams:
         if stream["info"]["stream_id"] == stream_id:
             break  # stream found
+    else:  # stream not found
+        raise IOError(f"Stream ID {stream_id} not found.")
 
     n_chans = int(stream["info"]["channel_count"][0])
     fs = float(stream["info"]["nominal_srate"][0])
