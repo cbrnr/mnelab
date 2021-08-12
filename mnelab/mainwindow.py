@@ -23,7 +23,7 @@ from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog, ChannelProper
                       FilterDialog, FindEventsDialog, HistoryDialog, InterpolateBadsDialog,
                       MetaInfoDialog, MontageDialog, PickChannelsDialog, ReferenceDialog,
                       RunICADialog, XDFStreamsDialog)
-from .widgets.infowidget import InfoWidget
+from .widgets import InfoWidget
 from .model import LabelsNotFoundError, InvalidAnnotationsError
 from .utils import have, has_locations, image_path, interface_style
 from .io import writers
