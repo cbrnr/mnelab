@@ -6,4 +6,5 @@ from .dependencies import have
 from .utils import has_locations, image_path, interface_style
 from .syntax import PythonHighlighter
 
-__all__ = [have, has_locations, image_path, interface_style, PythonHighlighter]
+
+__all__ = ["have", "has_locations", "image_path", "interface_style", "PythonHighlighter"]
