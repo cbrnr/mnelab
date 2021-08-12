@@ -2,8 +2,7 @@
 #
 # License: BSD (3-clause)
 
-__version__ = "0.7.0.dev0"
-
+from .version import __version__
 from .mainwindow import MainWindow
 from .model import Model
 
