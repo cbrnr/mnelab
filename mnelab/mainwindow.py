@@ -17,7 +17,6 @@ from qtpy.QtGui import QKeySequence, QDropEvent, QIcon
 from qtpy.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter, QMessageBox,
                             QListView, QAction, QLabel, QFrame)
 
-from . import __version__
 from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog, ChannelPropertiesDialog,
                       CropDialog, ERDSDialog, EpochDialog, ErrorMessageBox, EventsDialog,
                       FilterDialog, FindEventsDialog, HistoryDialog, InterpolateBadsDialog,
@@ -808,6 +807,8 @@ class MainWindow(QMainWindow):
 
     def show_about(self):
         """Show About dialog."""
+        from . import __version__
+
         msg_box = QMessageBox(self)
         text = (f"<img src='{image_path('mnelab_logo.png')}'><p>MNELAB {__version__}</p>")
         msg_box.setText(text)
