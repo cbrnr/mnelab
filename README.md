@@ -21,7 +21,6 @@ MNELAB requires Python >= 3.6 and the following packages:
 - [scipy](https://www.scipy.org/scipylib/index.html) >= 1.0.0
 - [matplotlib](https://matplotlib.org/) >= 2.1.0
 - [pyobjc-framework-Cocoa](https://pyobjc.readthedocs.io/en/latest/) >= 5.2.0 (macOS only)
-- [python.app](https://anaconda.org/anaconda/python.app) (only when using Anaconda on macOS)
 
 Optional dependencies provide additional features if installed:
 - [scikit-learn](https://scikit-learn.org/stable/) >= 0.20.0 (ICA computation with FastICA)
@@ -31,7 +30,6 @@ Optional dependencies provide additional features if installed:
 - [pybv](https://github.com/bids-standard/pybv) 0.4.0 (BrainVision VHDR/VMRK/EEG export)
 
 ### Installation
-#### pip
 Make sure you have either `PySide2` or `PyQt5` installed. If you have neither, we recommend `PySide2`, which you can install with `pip install PySide2`. Then install MNELAB with:
 
 ```
@@ -44,22 +42,9 @@ To use all MNELAB features, all optional dependencies should also be installed:
 pip install scikit-learn python-picard pyxdf pyEDFlib pybv
 ```
 
-If you want to install either `PySide2` or `PyQt5` alongside MNELAB with one go, you can also use either `pip install mnelab[pyside2]` or `pip install mnelab[pyqt5]`.
-
 You can start MNELAB in a terminal with `mnelab` or `python -m mnelab`.
 
-#### conda
-An unofficial but regularly updated conda package can be installed from [conda-forge](https://conda-forge.org/).
-We strongly suggest to install MNELAB into its own dedicated environment:
-
-```
-conda create -y -n mnelab -c conda-forge mnelab
-```
-
-You can start MNELAB in a terminal with `conda activate mnelab` followed by `mnelab` or `python -m mnelab`. Any issues with this conda package should be reported to the package [issue tracker](https://github.com/conda-forge/mnelab-feedstock/issues).
-
-#### Arch Linux
-If you use [Arch Linux](https://www.archlinux.org/), you can install the [python-mnelab](https://aur.archlinux.org/packages/python-mnelab/) AUR package (note that this also requires the [python-mne](https://aur.archlinux.org/packages/python-mne/) AUR package).
+If you use [Arch Linux](https://www.archlinux.org/), you can alternatively install the [python-mnelab](https://aur.archlinux.org/packages/python-mnelab/) AUR package (note that this also requires the [python-mne](https://aur.archlinux.org/packages/python-mne/) AUR package).
 
 ### Contributing
 The [contributing guide](https://github.com/cbrnr/mnelab/blob/main/CONTRIBUTING.md) contains detailed instructions on how to contribute to MNELAB.
