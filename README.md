@@ -42,7 +42,7 @@ To use all MNELAB features, all optional dependencies should also be installed:
 pip install scikit-learn python-picard pyxdf pyEDFlib pybv
 ```
 
-You can start MNELAB in a terminal with `mnelab` or `python -m mnelab`. On Windows, make sure to use Command Prompt (`cmd.exe`), because the `mnelab` command does not work in Git Bash.
+You can start MNELAB in a terminal with `mnelab` or `python -m mnelab`. On Windows, make sure to use Command Prompt (`cmd.exe`) or PowerShell (`powershell.exe`) &ndash; the `mnelab` command does not work in Git Bash.
 
 If you use [Arch Linux](https://www.archlinux.org/), you can alternatively install the [python-mnelab](https://aur.archlinux.org/packages/python-mnelab/) AUR package (note that this also requires the [python-mne](https://aur.archlinux.org/packages/python-mne/) AUR package).
 
