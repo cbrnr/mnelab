@@ -16,7 +16,7 @@ __version__ = "0.7.0.dev0"
 
 
 def main():
-    mp.set_start_method("spawn", force=True)  # required for Linux/macOS
+    mp.set_start_method("spawn", force=True)  # required for Linux
     app_name = "MNELAB"
     if sys.platform.startswith("darwin"):
         # set bundle name on macOS (app name shown in the menu bar)
