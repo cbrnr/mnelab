@@ -19,16 +19,11 @@ def main():
     mp.set_start_method("spawn", force=True)  # required for Linux/macOS
     app_name = "MNELAB"
     if sys.platform.startswith("darwin"):
-        try:  # set bundle name on macOS (app name shown in the menu bar)
-            from Foundation import NSBundle
-        except ImportError:
-            pass
-        else:
-            bundle = NSBundle.mainBundle()
-            if bundle:
-                info = bundle.localizedInfoDictionary() or bundle.infoDictionary()
-                if info:
-                    info["CFBundleName"] = app_name
+        # set bundle name on macOS (app name shown in the menu bar)
+        from Foundation import NSBundle
+        bundle = NSBundle.mainBundle()
+        info = bundle.localizedInfoDictionary() or bundle.infoDictionary()
+        info["CFBundleName"] = app_name
 
     matplotlib.use("Qt5Agg")
     app = QApplication(sys.argv)
