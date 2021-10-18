@@ -38,8 +38,7 @@ def read_raw_xdf(fname, stream_id, *args, **kwargs):
             labels.append(str(ch["label"][0]))
             if ch["type"]:
                 types.append(ch["type"][0])
-            if ch["unit"]:
-                units.append(ch["unit"][0])
+            units.append(ch["unit"] if ch["unit"] else "NA")
     except (TypeError, IndexError):  # no channel labels found
         pass
     if not labels:
