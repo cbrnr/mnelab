@@ -47,7 +47,7 @@ def read_raw_xdf(fname, stream_id, *args, **kwargs):
         units = ["NA" for _ in range(n_chans)]
     info = mne.create_info(ch_names=labels, sfreq=fs, ch_types="eeg")
     # convert from microvolts to volts if necessary
-    scale = np.array([1e-6 if u == "microvolts" else 1 for u in units])
+    scale = np.array([1e-6 if u[0] == "microvolts" else 1 for u in units])
     raw = mne.io.RawArray((stream["time_series"] * scale).T, info)
     raw._filenames = [fname]
     first_samp = stream["time_stamps"][0]
