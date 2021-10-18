@@ -106,7 +106,8 @@ def write_bv(fname, raw, events=None):
             events = np.column_stack([events[:, [0, 2]], dur.astype(int)])
     else:
         events = events[:, [0, 2]]
-    pybv.write_brainvision(data, fs, ch_names, name, parent, events=events)
+    pybv.write_brainvision(data=data, sfreq=fs, ch_names=ch_names, fname_base=name,
+                           folder_out=parent, events=events)
 
 
 # supported write file formats
