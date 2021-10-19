@@ -1,3 +1,5 @@
+## [UNRELEASED] - XXXX-XX-XX
+
 ## [0.6.4] - 2021-10-19
 ### Fixed
 - Remove auto-installation of `PySide2` when using `pip` ([#196](https://github.com/cbrnr/mnelab/pull/196) by [Clemens Brunner](https://github.com/cbrnr))
