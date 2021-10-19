@@ -45,5 +45,11 @@ You can start MNELAB in a terminal with `mnelab` or `python -m mnelab`. On Windo
 
 If you use [Arch Linux](https://www.archlinux.org/), you can alternatively install the [python-mnelab](https://aur.archlinux.org/packages/python-mnelab/) AUR package (note that this also requires the [python-mne](https://aur.archlinux.org/packages/python-mne/) AUR package).
 
+Instead of the latest release, you can also install the latest development version as follows:
+
+```
+pip install git+https://github.com/cbrnr/mnelab
+```
+
 ### Contributing
 The [contributing guide](https://github.com/cbrnr/mnelab/blob/main/CONTRIBUTING.md) contains detailed instructions on how to contribute to MNELAB.
