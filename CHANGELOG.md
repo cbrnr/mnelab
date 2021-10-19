@@ -1,7 +1,6 @@
-## [Unreleased] - XXXX-XX-XX
+## [0.6.4] - 2021-10-19
 ### Fixed
 - Remove auto-installation of `PySide2` when using `pip` ([#196](https://github.com/cbrnr/mnelab/pull/196) by [Clemens Brunner](https://github.com/cbrnr))
-- Starting MNELAB with the `mnelab` command in a terminal now also works on Windows ([#197](https://github.com/cbrnr/mnelab/pull/197) by [Clemens Brunner](https://github.com/cbrnr))
 - Removing annotations and events is now as fast as it should be ([#206](https://github.com/cbrnr/mnelab/pull/206) and [#207](https://github.com/cbrnr/mnelab/pull/207) by [Clemens Brunner](https://github.com/cbrnr))
 - Supported files can now be opened even if their extension is not all lower case (e.g. EDF) ([#212](https://github.com/cbrnr/mnelab/pull/212) by [Clemens Brunner](https://github.com/cbrnr))
 - XDF files with missing channel units can now be imported ([#225](https://github.com/cbrnr/mnelab/pull/225) by [Clemens Brunner](https://github.com/cbrnr))
@@ -11,6 +10,7 @@
 ### Changed
 - Rename `master` branch to `main` ([#193](https://github.com/cbrnr/mnelab/pull/193) by [Clemens Brunner](https://github.com/cbrnr))
 - Simplify dependencies ([#199](https://github.com/cbrnr/mnelab/pull/199) by [Clemens Brunner](https://github.com/cbrnr))
+- Switch to `setup.cfg` ([#216](https://github.com/cbrnr/mnelab/pull/216) by [Clemens Brunner](https://github.com/cbrnr))
 - Remove instructions and workarounds specific to `conda` environments ([#223](https://github.com/cbrnr/mnelab/pull/223) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [0.6.3] - 2021-01-05

@@ -42,8 +42,8 @@ Whenever possible, use f-strings to format strings instead of `str.format` or th
 ## Making a PyPI release
 Follow these steps to make a new [PyPI](https://pypi.org/project/mnelab/) release (requires write permissions for GitHub and PyPI project sites):
 
-- Remove the `.dev0` suffix from the `__version__` string in `mnelab/mainwindow.py` (and adapt the version to be released if necessary)
-- Update the section in `CHANGELOG.md` corresponding to the new release with the current date
+- Remove the `.dev0` suffix from the `__version__` string in `mnelab/__init__.py` (and adapt the version to be released if necessary)
+- Update the section in `CHANGELOG.md` corresponding to the new release with the version and current date
 - Commit these changes and push
 - Create a new release on GitHub and use the version as the tag name (make sure to prepend the version with a `v`)
 - A GitHub Action takes care of upload the release to PyPI
