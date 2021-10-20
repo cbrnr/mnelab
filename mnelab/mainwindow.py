@@ -172,12 +172,12 @@ class MainWindow(QMainWindow):
 
         plot_menu = self.menuBar().addMenu("&Plot")
         icon = QIcon.fromTheme("plot-data")
-        self.actions["plot_data"] = plot_menu.addAction(icon, "&Data...", self.plot_data)
+        self.actions["plot_data"] = plot_menu.addAction(icon, "&Data", self.plot_data)
         icon = QIcon.fromTheme("plot-psd")
-        self.actions["plot_psd"] = plot_menu.addAction(icon, "&Power spectral density...",
+        self.actions["plot_psd"] = plot_menu.addAction(icon, "&Power spectral density",
                                                        self.plot_psd)
         icon = QIcon.fromTheme("plot-locations")
-        self.actions["plot_locations"] = plot_menu.addAction(icon, "&Channel locations...",
+        self.actions["plot_locations"] = plot_menu.addAction(icon, "&Channel locations",
                                                              self.plot_locations)
         self.actions["plot_erds"] = plot_menu.addAction("&ERDS maps...", self.plot_erds)
         plot_menu.addSeparator()
