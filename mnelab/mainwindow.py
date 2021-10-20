@@ -216,7 +216,7 @@ class MainWindow(QMainWindow):
         )
         tools_menu.addSeparator()
         icon = QIcon.fromTheme("epoch-data")
-        self.actions["epoch_data"] = tools_menu.addAction(icon, "Create Epochs...",
+        self.actions["epoch_data"] = tools_menu.addAction(icon, "Create epochs...",
                                                           self.epoch_data)
 
         view_menu = self.menuBar().addMenu("&View")
