@@ -55,7 +55,8 @@ def write_edf(fname, raw):
     elif ext == ".bdf":
         filetype = pyedflib.FILETYPE_BDFPLUS
         dmin, dmax = -8388608, 8388607
-    data = raw.get_data() * 1e6  # convert to microvolts
+
+    data = raw.get_data()
     fs = raw.info["sfreq"]
     nchan = raw.info["nchan"]
     ch_names = raw.info["ch_names"]
@@ -63,24 +64,38 @@ def write_edf(fname, raw):
         meas_date = raw.info["meas_date"]
     else:
         meas_date = None
-    prefilter = (f"{raw.info['highpass']}Hz - "
-                 f"{raw.info['lowpass']}")
-    pmin, pmax = data.min(axis=1), data.max(axis=1)
+    hp, lp = raw.info["highpass"], raw.info["lowpass"]
+    hp = "DC" if hp == 0 else f"{hp:.0f} Hz"
+    lp = f"{lp:.0f} Hz"
     f = pyedflib.EdfWriter(fname, nchan, filetype)
     channel_info = []
     data_list = []
-    for i in range(nchan):
+    for i, kind in enumerate(raw.get_channel_types()):
+        if kind == "eeg":
+            data[i] *= 1e6  # convert to microvolts
+            dimension = "uV"
+            prefilter = f"HP: {hp}; LP: {lp}"
+            pmin, pmax = data[i].min(), data[i].max()
+            transducer = "Electrode"
+        elif kind == "stim":
+            dimension = "Boolean"
+            prefilter = "No filtering"
+            pmin, pmax = dmin, dmax
+            transducer = "Triggers and status"
+        else:
+            raise NotImplementedError(f"Channel type {kind} not supported (currently only "
+                                      f"EEG and STIM channels work)")
         channel_info.append(dict(label=ch_names[i],
-                                 dimension="uV",
+                                 dimension=dimension,
                                  sample_rate=fs,
-                                 physical_min=pmin[i],
-                                 physical_max=pmax[i],
+                                 physical_min=pmin,
+                                 physical_max=pmax,
                                  digital_min=dmin,
                                  digital_max=dmax,
-                                 transducer="",
+                                 transducer=transducer,
                                  prefilter=prefilter))
         data_list.append(data[i])
-    f.setTechnician("Exported by MNELAB")
+    f.setTechnician("MNELAB")
     f.setSignalHeaders(channel_info)
     if raw.info["meas_date"] is not None:
         f.setStartdatetime(meas_date)
