@@ -103,6 +103,7 @@ def write_edf(fname, raw):
     f.writeSamples(data_list)
     for annot in raw.annotations:
         f.writeAnnotation(annot["onset"], annot["duration"], annot["description"])
+    f.close()
 
 
 def write_bv(fname, raw, events=None):

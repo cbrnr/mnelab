@@ -1,6 +1,7 @@
 ## [UNRELEASED] - XXXX-XX-XX
 ### Fixed
 - Fix EDF/BDF export of data containing stim channels ([#230](https://github.com/cbrnr/mnelab/pull/230) by [Clemens Brunner](https://github.com/cbrnr))
+- Close EDF/BDF file in export ([#232](https://github.com/cbrnr/mnelab/pull/232) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [0.6.4] - 2021-10-19
 ### Fixed
