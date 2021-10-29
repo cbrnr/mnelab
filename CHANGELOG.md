@@ -3,6 +3,9 @@
 - Fix EDF/BDF export of data containing stim channels ([#230](https://github.com/cbrnr/mnelab/pull/230) by [Clemens Brunner](https://github.com/cbrnr))
 - Close EDF/BDF file in export ([#232](https://github.com/cbrnr/mnelab/pull/232) by [Clemens Brunner](https://github.com/cbrnr))
 
+### Changed
+- Remove support for Python 3.6 and 3.7 and add support for Python 3.10 ([#233](https://github.com/cbrnr/mnelab/pull/233) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [0.6.4] - 2021-10-19
 ### Fixed
 - Remove auto-installation of `PySide2` when using `pip` ([#196](https://github.com/cbrnr/mnelab/pull/196) by [Clemens Brunner](https://github.com/cbrnr))
