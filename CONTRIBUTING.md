@@ -50,4 +50,4 @@ Follow these steps to make a new [PyPI](https://pypi.org/project/mnelab/) releas
 
 This concludes the new release. Now prepare the source for the next planned release as follows:
 
-- Update the `__version__` string in `mainwindow.py` to the next planned release and append `.dev0` (don't forget to push this change)
+- Update the `__version__` string in to the next planned release and append `.dev0` (don't forget to push this change)
