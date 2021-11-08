@@ -12,7 +12,7 @@ MNELAB is a graphical user interface (GUI) for [MNE](https://github.com/mne-tool
 Check out the [changelog](https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md) to learn what we added, changed or fixed in the latest release.
 
 ### Dependencies
-MNELAB requires Python >= 3.6 and the following packages:
+MNELAB requires Python >= 3.8 and the following packages:
 - [mne](https://github.com/mne-tools/mne-python) >= 0.22.0
 - [QtPy](https://github.com/spyder-ide/qtpy) >= 1.9.0
 - [PyQt5](https://www.riverbankcomputing.com/software/pyqt/download5) >= 5.10.0 or [PySide2](https://www.qt.io/qt-for-python) >= 5.10.0
