@@ -9,7 +9,7 @@ MNELAB is a graphical user interface (GUI) for [MNE](https://github.com/mne-tool
 ![](https://raw.githubusercontent.com/cbrnr/mnelab/main/mnelab.png)
 
 ### Changelog
-Check out the [changelog](https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md) to learn what we added, changed or fixed in the latest release.
+Check out the [changelog](https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md) to learn what we added, changed, or fixed in the latest release.
 
 ### Dependencies
 MNELAB requires Python >= 3.8 and the following packages:
