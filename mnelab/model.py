@@ -104,8 +104,13 @@ class Model:
     @data_changed
     def load(self, fname, *args, **kwargs):
         """Load data set from file."""
-        data = read_raw(fname, *args, preload=True, **kwargs)
-        self.history.append(f'data = read_raw("{fname}", preload=True)')
+        data = read_raw(fname, *args, **kwargs, preload=True)
+        argstr = ", " + f"{', '.join(f'{v}' for v in args)}" if args else ""
+        if kwargs:
+            kwargstr = ", " + f"{', '.join(f'{k}={v}' for k, v in kwargs.items())}"
+        else:
+            kwargstr = ""
+        self.history.append(f'data = read_raw("{fname}"{argstr}{kwargstr}, preload=True)')
         fsize = getsize(data.filenames[0]) / 1024**2  # convert to MB
         name, ext = Path(fname).stem, "".join(Path(fname).suffixes)
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,

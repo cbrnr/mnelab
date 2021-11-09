@@ -471,11 +471,11 @@ class MainWindow(QMainWindow):
         dialog = PickChannelsDialog(self, channels, selected=channels)
         if dialog.exec_():
             picks = [item.data(0) for item in dialog.channels.selectedItems()]
-            drops = set(channels) - set(picks)
+            drops = list(set(channels) - set(picks))
             if drops:
                 self.auto_duplicate()
                 self.model.drop_channels(drops)
-                self.model.history.append(f"raw.drop({drops})")
+                self.model.history.append(f"data.drop_channels({drops})")
 
     def channel_properties(self):
         """Show channel properties dialog."""
