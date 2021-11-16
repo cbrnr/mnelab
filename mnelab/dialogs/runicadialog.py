@@ -2,9 +2,9 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtWidgets import (QCheckBox, QComboBox, QDialog, QDialogButtonBox, QLabel,
-                            QSpinBox, QVBoxLayout, QGridLayout)
-from qtpy.QtCore import Qt, Slot
+from PySide6.QtCore import Qt, Slot
+from PySide6.QtWidgets import (QCheckBox, QComboBox, QDialog, QDialogButtonBox, QGridLayout,
+                               QLabel, QSpinBox, QVBoxLayout)
 
 
 class RunICADialog(QDialog):

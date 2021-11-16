@@ -3,6 +3,7 @@
 # License: BSD (3-clause)
 
 import math
+
 import matplotlib.pyplot as plt
 from mne.time_frequency import tfr_multitaper
 from mne.viz.utils import center_cmap

@@ -2,8 +2,8 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtWidgets import (QDialog, QDialogButtonBox, QLabel, QDoubleSpinBox, QGridLayout,
-                            QVBoxLayout)
+from PySide6.QtWidgets import (QDialog, QDialogButtonBox, QDoubleSpinBox, QGridLayout,
+                               QLabel, QVBoxLayout)
 
 
 class ERDSDialog(QDialog):

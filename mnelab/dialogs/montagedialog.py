@@ -2,11 +2,10 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QListWidget,
-                            QDialogButtonBox, QPushButton)
-from qtpy.QtCore import Slot, Qt
-
 from mne.channels import make_standard_montage
+from PySide6.QtCore import Qt, Slot
+from PySide6.QtWidgets import (QDialog, QDialogButtonBox, QHBoxLayout, QListWidget,
+                               QPushButton, QVBoxLayout)
 
 
 class MontageDialog(QDialog):

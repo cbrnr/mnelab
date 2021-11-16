@@ -2,13 +2,11 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtWidgets import (QDialog, QVBoxLayout, QDialogButtonBox, QComboBox,
-                            QAbstractItemView, QTableView, QStyledItemDelegate)
-from qtpy.QtGui import QStandardItemModel, QStandardItem
-from qtpy.QtCore import Qt, QSortFilterProxyModel, Slot
-
 from mne.io.pick import channel_type, get_channel_type_constants
-
+from PySide6.QtCore import QSortFilterProxyModel, Qt, Slot
+from PySide6.QtGui import QStandardItem, QStandardItemModel
+from PySide6.QtWidgets import (QAbstractItemView, QComboBox, QDialog, QDialogButtonBox,
+                               QStyledItemDelegate, QTableView, QVBoxLayout)
 
 channel_types = [k.upper() for k in get_channel_type_constants().keys()]
 

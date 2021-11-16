@@ -3,33 +3,32 @@
 # License: BSD (3-clause)
 
 import multiprocessing as mp
-from sys import version_info
 import traceback
 from functools import partial
 from pathlib import Path
+from sys import version_info
 
-import numpy as np
 import mne
+import numpy as np
 from mne.io.pick import channel_type
+from PySide6.QtCore import (QEvent, QMetaObject, QModelIndex, QObject, QPoint, QSettings,
+                            QSize, QStringListModel, Qt, Slot)
+from PySide6.QtGui import QAction, QDropEvent, QIcon, QKeySequence
+from PySide6.QtWidgets import (QApplication, QFileDialog, QFrame, QLabel, QListView,
+                               QMainWindow, QMessageBox, QSplitter)
 from pyxdf import resolve_streams
-from qtpy.QtCore import (Qt, Slot, QStringListModel, QModelIndex, QSettings, QEvent, QSize,
-                         QPoint, QObject, QMetaObject)
-from qtpy.QtGui import QKeySequence, QDropEvent, QIcon
-from qtpy.QtWidgets import (QApplication, QMainWindow, QFileDialog, QSplitter, QMessageBox,
-                            QListView, QAction, QLabel, QFrame)
 
 from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog, ChannelPropertiesDialog,
-                      CropDialog, ERDSDialog, EpochDialog, ErrorMessageBox, EventsDialog,
+                      CropDialog, EpochDialog, ERDSDialog, ErrorMessageBox, EventsDialog,
                       FilterDialog, FindEventsDialog, HistoryDialog, InterpolateBadsDialog,
                       MetaInfoDialog, MontageDialog, PickChannelsDialog, ReferenceDialog,
                       RunICADialog, XDFChunksDialog, XDFStreamsDialog)
-from .widgets import InfoWidget
-from .model import LabelsNotFoundError, InvalidAnnotationsError
-from .utils import have, has_locations, image_path, interface_style
 from .io import writers
 from .io.xdf import get_xml, list_chunks
+from .model import InvalidAnnotationsError, LabelsNotFoundError
+from .utils import has_locations, have, image_path, interface_style
 from .viz import plot_erds
-
+from .widgets import InfoWidget
 
 MAX_RECENT = 6  # maximum number of recent files
 
@@ -411,7 +410,7 @@ class MainWindow(QMainWindow):
                 else:
                     selected = None
                 dialog = XDFStreamsDialog(self, rows, selected=selected, disabled=disabled)
-                if dialog.exec_():
+                if dialog.exec():
                     row = dialog.view.selectionModel().selectedRows()[0].row()
                     stream_id = dialog.model.data(dialog.model.index(row, 0))
                     srate = "effective" if dialog.effective_srate else "nominal"
@@ -483,13 +482,13 @@ class MainWindow(QMainWindow):
         """Show XDF meta info."""
         xml = get_xml(self.model.current["fname"])
         dialog = MetaInfoDialog(self, xml)
-        dialog.exec_()
+        dialog.exec()
 
     def pick_channels(self):
         """Pick channels in current data set."""
         channels = self.model.current["data"].info["ch_names"]
         dialog = PickChannelsDialog(self, channels, selected=channels)
-        if dialog.exec_():
+        if dialog.exec():
             picks = [item.data(0) for item in dialog.channels.selectedItems()]
             drops = list(set(channels) - set(picks))
             if drops:
@@ -501,7 +500,7 @@ class MainWindow(QMainWindow):
         """Show channel properties dialog."""
         info = self.model.current["data"].info
         dialog = ChannelPropertiesDialog(self, info)
-        if dialog.exec_():
+        if dialog.exec():
             dialog.model.sort(0)
             bads = []
             renamed = {}
@@ -524,7 +523,7 @@ class MainWindow(QMainWindow):
         montages = mne.channels.get_builtin_montages()
         # TODO: currently it is not possible to remove an existing montage
         dialog = MontageDialog(self, montages)
-        if dialog.exec_():
+        if dialog.exec():
             name = dialog.montages.selectedItems()[0].data(0)
             montage = mne.channels.make_standard_montage(name)
             ch_names = self.model.current["data"].info["ch_names"]
@@ -545,7 +544,7 @@ class MainWindow(QMainWindow):
         dur = (dur * fs).astype(int).tolist()
         desc = self.model.current["data"].annotations.description.tolist()
         dialog = AnnotationsDialog(self, pos, dur, desc)
-        if dialog.exec_():
+        if dialog.exec():
             rows = dialog.table.rowCount()
             onset, duration, description = [], [], []
             for i in range(rows):
@@ -561,7 +560,7 @@ class MainWindow(QMainWindow):
         pos = self.model.current["events"][:, 0].tolist()
         desc = self.model.current["events"][:, 2].tolist()
         dialog = EventsDialog(self, pos, desc)
-        if dialog.exec_():
+        if dialog.exec():
             rows = dialog.table.rowCount()
             events = np.zeros((rows, 3), dtype=int)
             for i in range(rows):
@@ -575,7 +574,7 @@ class MainWindow(QMainWindow):
         fs = self.model.current["data"].info["sfreq"]
         length = self.model.current["data"].n_times / fs
         dialog = CropDialog(self, 0, length)
-        if dialog.exec_():
+        if dialog.exec():
             self.auto_duplicate()
             self.model.crop(dialog.start or 0, dialog.stop)
 
@@ -583,7 +582,7 @@ class MainWindow(QMainWindow):
         """Concatenate raw data objects to current one."""
         compatibles = self.model.get_compatibles()
         dialog = AppendDialog(self, compatibles)
-        if dialog.exec_():
+        if dialog.exec():
             self.auto_duplicate()
             self.model.append_data(dialog.names)
 
@@ -653,7 +652,7 @@ class MainWindow(QMainWindow):
 
         dialog = ERDSDialog(self, t_range, f_range)
 
-        if dialog.exec_():
+        if dialog.exec():
             freqs = np.arange(dialog.f1, dialog.f2, dialog.step)
             baseline = [dialog.b1, dialog.b2]
             times = [dialog.t1, dialog.t2]
@@ -672,7 +671,7 @@ class MainWindow(QMainWindow):
 
         dialog = RunICADialog(self, self.model.current["data"].info["nchan"], methods)
 
-        if dialog.exec_():
+        if dialog.exec():
             calc = CalcDialog(self, "Calculating ICA", "Calculating ICA.")
 
             method = dialog.method.currentText().lower()
@@ -705,7 +704,7 @@ class MainWindow(QMainWindow):
             )
             pool.close()
 
-            if not calc.exec_():
+            if not calc.exec():
                 pool.terminate()
                 print("ICA calculation aborted...")
             else:
@@ -722,7 +721,7 @@ class MainWindow(QMainWindow):
     def interpolate_bads(self):
         """Interpolate bad channels"""
         dialog = InterpolateBadsDialog(self)
-        if dialog.exec_():
+        if dialog.exec():
             duplicated = self.auto_duplicate()
             try:
                 self.model.interpolate_bads(dialog.reset_bads, dialog.mode, dialog.origin)
@@ -738,7 +737,7 @@ class MainWindow(QMainWindow):
     def filter_data(self):
         """Filter data."""
         dialog = FilterDialog(self)
-        if dialog.exec_():
+        if dialog.exec():
             self.auto_duplicate()
             self.model.filter(dialog.low, dialog.high)
 
@@ -752,7 +751,7 @@ class MainWindow(QMainWindow):
                 default_stim = i
                 break
         dialog = FindEventsDialog(self, info["ch_names"], default_stim)
-        if dialog.exec_():
+        if dialog.exec():
             stim_channel = dialog.stimchan.currentText()
             consecutive = dialog.consecutive.isChecked()
             initial_event = dialog.initial_event.isChecked()
@@ -777,7 +776,7 @@ class MainWindow(QMainWindow):
     def epoch_data(self):
         """Epoch raw data."""
         dialog = EpochDialog(self, self.model.current["events"])
-        if dialog.exec_():
+        if dialog.exec():
             events = [int(item.text()) for item in dialog.events.selectedItems()]
             tmin = dialog.tmin.value()
             tmax = dialog.tmax.value()
@@ -812,7 +811,7 @@ class MainWindow(QMainWindow):
     def set_reference(self):
         """Set reference."""
         dialog = ReferenceDialog(self)
-        if dialog.exec_():
+        if dialog.exec():
             self.auto_duplicate()
             if dialog.average.isChecked():
                 self.model.set_reference("average")
@@ -823,7 +822,7 @@ class MainWindow(QMainWindow):
     def show_history(self):
         """Show history."""
         dialog = HistoryDialog(self, "\n".join(self.model.history))
-        dialog.exec_()
+        dialog.exec()
 
     def show_about(self):
         """Show About dialog."""
@@ -851,7 +850,7 @@ class MainWindow(QMainWindow):
                 f"<p>Licensed under the BSD 3-clause license.</p>"
                 f"<p>Copyright 2017&ndash;2021 by Clemens Brunner.</p>")
         msg_box.setInformativeText(text)
-        msg_box.exec_()
+        msg_box.exec()
 
     def show_about_qt(self):
         """Show About Qt dialog."""

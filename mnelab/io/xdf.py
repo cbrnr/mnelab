@@ -1,9 +1,9 @@
-from collections import defaultdict
 import struct
 import xml.etree.ElementTree as ETree
+from collections import defaultdict
 
-import numpy as np
 import mne
+import numpy as np
 from pyxdf import load_xdf, match_streaminfos, resolve_streams
 from pyxdf.pyxdf import open_xdf, _read_varlen_int
 

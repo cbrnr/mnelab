@@ -2,8 +2,8 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLineEdit, QDialogButtonBox,
-                            QRadioButton)
+from PySide6.QtWidgets import (QDialog, QDialogButtonBox, QGridLayout, QLineEdit,
+                               QRadioButton, QVBoxLayout)
 
 
 class ReferenceDialog(QDialog):
