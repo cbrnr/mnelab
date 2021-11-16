@@ -6,7 +6,7 @@ import numpy as np
 import mne
 
 
-def read_raw_xdf(fname, stream_id, *args, **kwargs):
+def read_raw_xdf(fname, stream_id, srate="effective", *args, **kwargs):
     """Read XDF file.
 
     Parameters
@@ -15,6 +15,8 @@ def read_raw_xdf(fname, stream_id, *args, **kwargs):
         Name of the XDF file.
     stream_id : int
         ID (number) of the stream to load.
+    srate : {"nominal", "effective"}
+        Use either nominal or effective sampling rate.
 
     Returns
     -------
@@ -23,7 +25,11 @@ def read_raw_xdf(fname, stream_id, *args, **kwargs):
     """
     from pyxdf import load_xdf, match_streaminfos, resolve_streams
 
-    streams, header = load_xdf(fname)
+    if srate not in ("nominal", "effective"):
+        raise ValueError(f"The 'srate' parameter must be either 'nominal' or 'effective' "
+                         f"(got {srate}).")
+
+    streams, _ = load_xdf(fname)
     for stream in streams:
         if stream["info"]["stream_id"] == stream_id:
             break  # stream found
@@ -31,7 +37,7 @@ def read_raw_xdf(fname, stream_id, *args, **kwargs):
         raise IOError(f"Stream ID {stream_id} not found.")
 
     n_chans = int(stream["info"]["channel_count"][0])
-    fs = float(stream["info"]["nominal_srate"][0])
+    fs = float(np.array(stream["info"][f"{srate}_srate"]).item())
     labels, types, units = [], [], []
     try:
         for ch in stream["info"]["desc"][0]["channels"][0]["channel"]:

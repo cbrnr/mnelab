@@ -410,7 +410,8 @@ class MainWindow(QMainWindow):
                 if dialog.exec_():
                     row = dialog.view.selectionModel().selectedRows()[0].row()
                     stream_id = dialog.model.data(dialog.model.index(row, 0))
-                    self.model.load(fname, stream_id=stream_id)
+                    srate = "effective" if dialog.effective_srate else "nominal"
+                    self.model.load(fname, stream_id=stream_id, srate=srate)
             else:  # all other file formats
                 try:
                     self.model.load(fname)

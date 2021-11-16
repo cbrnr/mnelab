@@ -107,7 +107,7 @@ class Model:
         data = read_raw(fname, *args, **kwargs, preload=True)
         argstr = ", " + f"{', '.join(f'{v}' for v in args)}" if args else ""
         if kwargs:
-            kwargstr = ", " + f"{', '.join(f'{k}={v}' for k, v in kwargs.items())}"
+            kwargstr = ", " + f"{', '.join(f'{k}={repr(v)}' for k, v in kwargs.items())}"
         else:
             kwargstr = ""
         self.history.append(f'data = read_raw("{fname}"{argstr}{kwargstr}, preload=True)')
