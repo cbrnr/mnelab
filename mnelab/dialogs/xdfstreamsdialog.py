@@ -3,7 +3,7 @@
 # License: BSD (3-clause)
 
 from qtpy.QtWidgets import (QDialog, QVBoxLayout, QDialogButtonBox, QAbstractItemView,
-                            QTableView)
+                            QTableView, QCheckBox)
 from qtpy.QtGui import QStandardItemModel, QStandardItem
 from qtpy.QtCore import Qt
 
@@ -43,12 +43,19 @@ class XDFStreamsDialog(QDialog):
 
         vbox = QVBoxLayout(self)
         vbox.addWidget(self.view)
+        self._effective_srate = QCheckBox("Use effective sampling rate")
+        self._effective_srate.setChecked(True)
+        vbox.addWidget(self._effective_srate)
         self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         vbox.addWidget(self.buttonbox)
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
 
         self.resize(775, 650)
-        self.view.setColumnWidth(0, 100)
+        self.view.setColumnWidth(0, 80)
         self.view.setColumnWidth(1, 200)
-        self.view.setColumnWidth(2, 120)
+        self.view.setColumnWidth(2, 140)
+
+    @property
+    def effective_srate(self):
+        return self._effective_srate.isChecked()
