@@ -3,11 +3,10 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtWidgets import (QDialog, QGridLayout, QLabel, QDialogButtonBox, QListWidget,
-                            QCheckBox, QDoubleSpinBox)
-from qtpy.QtCore import Slot, Qt
-
 from numpy import unique
+from PySide6.QtCore import Qt, Slot
+from PySide6.QtWidgets import (QCheckBox, QDialog, QDialogButtonBox, QDoubleSpinBox,
+                               QGridLayout, QLabel, QListWidget)
 
 
 class EpochDialog(QDialog):

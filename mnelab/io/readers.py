@@ -2,8 +2,8 @@
 #
 # License: BSD (3-clause)
 
-from pathlib import Path
 from functools import partial
+from pathlib import Path
 
 import mne
 

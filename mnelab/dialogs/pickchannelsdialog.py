@@ -2,8 +2,8 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtWidgets import QDialog, QVBoxLayout, QListWidget, QDialogButtonBox
-from qtpy.QtCore import Slot
+from PySide6.QtCore import Slot
+from PySide6.QtWidgets import QDialog, QDialogButtonBox, QListWidget, QVBoxLayout
 
 
 class PickChannelsDialog(QDialog):

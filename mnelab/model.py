@@ -2,17 +2,17 @@
 #
 # License: BSD (3-clause)
 
+from collections import Counter, defaultdict
+from copy import deepcopy
+from functools import wraps
 from os.path import getsize, join, split, splitext
 from pathlib import Path
-from collections import Counter, defaultdict
-from functools import wraps
-from copy import deepcopy
 
-import numpy as np
 import mne
+import numpy as np
 
-from .utils import has_locations
 from .io import read_raw, write_raw
+from .utils import has_locations
 
 
 class LabelsNotFoundError(Exception):

@@ -2,10 +2,9 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QPushButton,
-                            QDialogButtonBox, QTableWidget, QTableWidgetItem,
-                            QAbstractItemView)
-from qtpy.QtCore import Qt, Slot
+from PySide6.QtCore import Qt, Slot
+from PySide6.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox, QHBoxLayout,
+                               QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout)
 
 
 class IntTableWidgetItem(QTableWidgetItem):

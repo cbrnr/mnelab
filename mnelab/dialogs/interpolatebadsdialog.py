@@ -3,8 +3,9 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel, QHBoxLayout,
-                            QDialogButtonBox, QComboBox, QCheckBox, QDoubleSpinBox)
+from PySide6.QtWidgets import (QCheckBox, QComboBox, QDialog, QDialogButtonBox,
+                               QDoubleSpinBox, QGridLayout, QHBoxLayout, QLabel,
+                               QVBoxLayout)
 
 
 class InterpolateBadsDialog(QDialog):

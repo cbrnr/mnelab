@@ -1,9 +1,9 @@
-from collections import defaultdict
 import struct
 import xml.etree.ElementTree as ETree
+from collections import defaultdict
 
-import numpy as np
 import mne
+import numpy as np
 
 
 def read_raw_xdf(fname, stream_id, srate="effective", prefix_markers=False, *args,
@@ -88,7 +88,7 @@ def get_xml(fname):
     xml : dict
         XML stream headers and footers.
     """
-    from pyxdf.pyxdf import open_xdf, _read_varlen_int
+    from pyxdf.pyxdf import _read_varlen_int, open_xdf
     with open_xdf(fname) as f:
         xml = defaultdict(dict)
         while True:

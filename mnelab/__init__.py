@@ -2,15 +2,15 @@
 #
 # License: BSD (3-clause)
 
-import sys
 import multiprocessing as mp
+import sys
+
 import matplotlib
-from qtpy.QtWidgets import QApplication
-from qtpy.QtCore import Qt
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QApplication
 
 from .mainwindow import MainWindow
 from .model import Model
-
 
 __version__ = "0.7.0.dev0"
 
@@ -25,7 +25,7 @@ def main():
         info = bundle.localizedInfoDictionary() or bundle.infoDictionary()
         info["CFBundleName"] = app_name
 
-    matplotlib.use("Qt5Agg")
+    matplotlib.use("QtAgg")
     app = QApplication(sys.argv)
     app.setApplicationName(app_name)
     app.setOrganizationName("cbrnr")
@@ -38,4 +38,4 @@ def main():
         for f in sys.argv[1:]:
             model.load(f)
     model.view.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

@@ -3,10 +3,10 @@
 # License: BSD (3-clause)
 
 from .annotationsdialog import AnnotationsDialog
+from .appenddialog import AppendDialog
 from .calcdialog import CalcDialog
 from .channelpropertiesdialog import ChannelPropertiesDialog
 from .cropdialog import CropDialog
-from .appenddialog import AppendDialog
 from .epochdialog import EpochDialog
 from .erdsdialog import ERDSDialog
 from .errormessagebox import ErrorMessageBox
@@ -21,7 +21,6 @@ from .pickchannelsdialog import PickChannelsDialog
 from .referencedialog import ReferenceDialog
 from .runicadialog import RunICADialog
 from .xdfstreamsdialog import XDFStreamsDialog
-
 
 __all__ = ["AnnotationsDialog", "AppendDialog", "CalcDialog", "ChannelPropertiesDialog",
            "CropDialog", "EpochDialog", "ERDSDialog", "ErrorMessageBox", "EventsDialog",

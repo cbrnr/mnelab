@@ -3,8 +3,9 @@
 # License: BSD (3-clause)
 
 import keyword
-from qtpy.QtGui import QSyntaxHighlighter, QTextCharFormat, QFont
-from qtpy.QtCore import Qt, QRegularExpression
+
+from PySide6.QtCore import QRegularExpression, Qt
+from PySide6.QtGui import QFont, QSyntaxHighlighter, QTextCharFormat
 
 
 class PythonHighlighter(QSyntaxHighlighter):
