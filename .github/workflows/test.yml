@@ -46,7 +46,7 @@ jobs:
     - name: Install Python packages
       run: |
         pip install $(echo mnelab*.whl)
-        pip install PyQt5
         pip install pytest pytest-qt pytest-xvfb
+        pip list
     - name: Run tests
       run: pytest
