@@ -3,7 +3,7 @@
 # License: BSD (3-clause)
 
 from PyQt6.QtWidgets import (QDialog, QDialogButtonBox, QGridLayout, QLabel, QLineEdit,
-                               QVBoxLayout)
+                             QVBoxLayout)
 
 
 class FilterDialog(QDialog):

@@ -4,7 +4,7 @@
 
 from PyQt6.QtCore import Slot
 from PyQt6.QtWidgets import (QCheckBox, QDialog, QDialogButtonBox, QDoubleSpinBox,
-                               QGridLayout, QVBoxLayout)
+                             QGridLayout, QVBoxLayout)
 
 
 class CropDialog(QDialog):

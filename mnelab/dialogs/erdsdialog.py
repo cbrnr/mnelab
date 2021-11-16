@@ -3,7 +3,7 @@
 # License: BSD (3-clause)
 
 from PyQt6.QtWidgets import (QDialog, QDialogButtonBox, QDoubleSpinBox, QGridLayout,
-                               QLabel, QVBoxLayout)
+                             QLabel, QVBoxLayout)
 
 
 class ERDSDialog(QDialog):

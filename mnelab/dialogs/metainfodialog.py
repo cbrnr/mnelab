@@ -5,7 +5,7 @@
 import xml.etree.ElementTree as ETree
 
 from PyQt6.QtWidgets import (QDialog, QDialogButtonBox, QTreeWidget, QTreeWidgetItem,
-                               QVBoxLayout)
+                             QVBoxLayout)
 
 
 def populate_tree(parent, node):

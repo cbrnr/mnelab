@@ -6,7 +6,7 @@
 from numpy import unique
 from PyQt6.QtCore import Qt, Slot
 from PyQt6.QtWidgets import (QCheckBox, QDialog, QDialogButtonBox, QDoubleSpinBox,
-                               QGridLayout, QLabel, QListWidget)
+                             QGridLayout, QLabel, QListWidget)
 
 
 class EpochDialog(QDialog):

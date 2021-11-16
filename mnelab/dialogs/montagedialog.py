@@ -5,7 +5,7 @@
 from mne.channels import make_standard_montage
 from PyQt6.QtCore import Qt, Slot
 from PyQt6.QtWidgets import (QDialog, QDialogButtonBox, QHBoxLayout, QListWidget,
-                               QPushButton, QVBoxLayout)
+                             QPushButton, QVBoxLayout)
 
 
 class MontageDialog(QDialog):

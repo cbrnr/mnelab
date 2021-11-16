@@ -4,7 +4,7 @@
 
 from PyQt6.QtGui import QFont, QGuiApplication
 from PyQt6.QtWidgets import (QDialog, QDialogButtonBox, QPlainTextEdit, QPushButton,
-                               QVBoxLayout)
+                             QVBoxLayout)
 
 from ..utils import PythonHighlighter
 

@@ -4,7 +4,7 @@
 
 from PyQt6.QtCore import Qt, Slot
 from PyQt6.QtWidgets import (QCheckBox, QComboBox, QDialog, QDialogButtonBox, QGridLayout,
-                               QLabel, QSpinBox, QVBoxLayout)
+                             QLabel, QSpinBox, QVBoxLayout)
 
 
 class RunICADialog(QDialog):

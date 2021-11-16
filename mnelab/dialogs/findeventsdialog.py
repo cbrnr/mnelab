@@ -3,7 +3,7 @@
 # License: BSD (3-clause)
 
 from PyQt6.QtWidgets import (QCheckBox, QComboBox, QDialog, QDialogButtonBox, QGridLayout,
-                               QLabel, QSpinBox, QVBoxLayout)
+                             QLabel, QSpinBox, QVBoxLayout)
 
 MAX_INT = 2147483647
 
