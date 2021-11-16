@@ -11,10 +11,10 @@ from sys import version_info
 import mne
 import numpy as np
 from mne.io.pick import channel_type
-from PySide6.QtCore import (QEvent, QMetaObject, QModelIndex, QObject, QPoint, QSettings,
+from PyQt6.QtCore import (QEvent, QMetaObject, QModelIndex, QObject, QPoint, QSettings,
                             QSize, QStringListModel, Qt, Slot)
-from PySide6.QtGui import QAction, QDropEvent, QIcon, QKeySequence
-from PySide6.QtWidgets import (QApplication, QFileDialog, QFrame, QLabel, QListView,
+from PyQt6.QtGui import QAction, QDropEvent, QIcon, QKeySequence
+from PyQt6.QtWidgets import (QApplication, QFileDialog, QFrame, QLabel, QListView,
                                QMainWindow, QMessageBox, QSplitter)
 
 from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog, ChannelPropertiesDialog,

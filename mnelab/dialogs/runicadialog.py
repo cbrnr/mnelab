@@ -2,8 +2,8 @@
 #
 # License: BSD (3-clause)
 
-from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import (QCheckBox, QComboBox, QDialog, QDialogButtonBox, QGridLayout,
+from PyQt6.QtCore import Qt, Slot
+from PyQt6.QtWidgets import (QCheckBox, QComboBox, QDialog, QDialogButtonBox, QGridLayout,
                                QLabel, QSpinBox, QVBoxLayout)
 
 

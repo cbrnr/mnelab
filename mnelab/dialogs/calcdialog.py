@@ -2,7 +2,7 @@
 #
 # License: BSD (3-clause)
 
-from PySide6.QtWidgets import QDialog, QDialogButtonBox, QLabel, QVBoxLayout
+from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QLabel, QVBoxLayout
 
 
 class CalcDialog(QDialog):

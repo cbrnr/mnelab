@@ -3,8 +3,8 @@
 # License: BSD (3-clause)
 
 from mne.channels import make_standard_montage
-from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import (QDialog, QDialogButtonBox, QHBoxLayout, QListWidget,
+from PyQt6.QtCore import Qt, Slot
+from PyQt6.QtWidgets import (QDialog, QDialogButtonBox, QHBoxLayout, QListWidget,
                                QPushButton, QVBoxLayout)
 
 

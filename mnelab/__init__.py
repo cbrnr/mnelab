@@ -6,8 +6,8 @@ import multiprocessing as mp
 import sys
 
 import matplotlib
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QApplication
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QApplication
 
 from .mainwindow import MainWindow
 from .model import Model

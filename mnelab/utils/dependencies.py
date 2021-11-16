@@ -4,7 +4,7 @@
 
 from importlib import import_module
 
-required = ["mne", "numpy", "scipy", "matplotlib", "PySide6"]
+required = ["mne", "numpy", "scipy", "matplotlib", "PyQt6"]
 optional = ["sklearn", "picard", "pyedflib", "pyxdf", "pybv"]
 
 have = {}

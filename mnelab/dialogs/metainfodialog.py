@@ -4,7 +4,7 @@
 
 import xml.etree.ElementTree as ETree
 
-from PySide6.QtWidgets import (QDialog, QDialogButtonBox, QTreeWidget, QTreeWidgetItem,
+from PyQt6.QtWidgets import (QDialog, QDialogButtonBox, QTreeWidget, QTreeWidgetItem,
                                QVBoxLayout)
 
 

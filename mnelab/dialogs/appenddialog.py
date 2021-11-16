@@ -3,9 +3,9 @@
 #
 # License: BSD (3-clause)
 
-from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox, QGridLayout,
-                               QLabel, QListWidget, QPushButton, QVBoxLayout)
+from PyQt6.QtCore import Qt, Slot
+from PyQt6.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox, QGridLayout,
+                             QLabel, QListWidget, QPushButton, QVBoxLayout)
 
 
 class AppendDialog(QDialog):

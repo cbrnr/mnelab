@@ -3,7 +3,7 @@
 #
 # License: BSD (3-clause)
 
-from PySide6.QtWidgets import (QCheckBox, QComboBox, QDialog, QDialogButtonBox,
+from PyQt6.QtWidgets import (QCheckBox, QComboBox, QDialog, QDialogButtonBox,
                                QDoubleSpinBox, QGridLayout, QHBoxLayout, QLabel,
                                QVBoxLayout)
 

@@ -2,8 +2,8 @@
 #
 # License: BSD (3-clause)
 
-from PySide6.QtGui import QFont, QGuiApplication
-from PySide6.QtWidgets import (QDialog, QDialogButtonBox, QPlainTextEdit, QPushButton,
+from PyQt6.QtGui import QFont, QGuiApplication
+from PyQt6.QtWidgets import (QDialog, QDialogButtonBox, QPlainTextEdit, QPushButton,
                                QVBoxLayout)
 
 from ..utils import PythonHighlighter

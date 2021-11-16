@@ -2,7 +2,7 @@
 #
 # License: BSD (3-clause)
 
-from PySide6.QtWidgets import QGridLayout, QLabel, QSizePolicy, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QGridLayout, QLabel, QSizePolicy, QVBoxLayout, QWidget
 
 
 class InfoWidget(QWidget):

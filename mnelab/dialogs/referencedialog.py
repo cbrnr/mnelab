@@ -2,7 +2,7 @@
 #
 # License: BSD (3-clause)
 
-from PySide6.QtWidgets import (QDialog, QDialogButtonBox, QGridLayout, QLineEdit,
+from PyQt6.QtWidgets import (QDialog, QDialogButtonBox, QGridLayout, QLineEdit,
                                QRadioButton, QVBoxLayout)
 
 

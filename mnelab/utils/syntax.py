@@ -4,8 +4,8 @@
 
 import keyword
 
-from PySide6.QtCore import QRegularExpression, Qt
-from PySide6.QtGui import QFont, QSyntaxHighlighter, QTextCharFormat
+from PyQt6.QtCore import QRegularExpression, Qt
+from PyQt6.QtGui import QFont, QSyntaxHighlighter, QTextCharFormat
 
 
 class PythonHighlighter(QSyntaxHighlighter):
