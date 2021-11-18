@@ -1,6 +1,7 @@
 ## [UNRELEASED] - XXXX-XX-XX
 ### Added
 - Add option to use effective sampling rate when importing XDF files ([#236](https://github.com/cbrnr/mnelab/pull/236) by [Clemens Brunner](https://github.com/cbrnr))
+- Add option to disambiguate markers with identical names in different marker streams with the `prefix_markers` parameter ([#239](https://github.com/cbrnr/mnelab/pull/239) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### Fixed
 - Fix history for importing XDF files and dropping channels ([#234](https://github.com/cbrnr/mnelab/pull/234) by [Clemens Brunner](https://github.com/cbrnr))

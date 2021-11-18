@@ -6,7 +6,8 @@ import numpy as np
 import mne
 
 
-def read_raw_xdf(fname, stream_id, srate="effective", *args, **kwargs):
+def read_raw_xdf(fname, stream_id, srate="effective", prefix_markers=False, *args,
+                 **kwargs):
     """Read XDF file.
 
     Parameters
@@ -17,6 +18,8 @@ def read_raw_xdf(fname, stream_id, srate="effective", *args, **kwargs):
         ID (number) of the stream to load.
     srate : {"nominal", "effective"}
         Use either nominal or effective sampling rate.
+    prefix_markers : bool
+        Whether or not to prefix markers with their corresponding stream ID.
 
     Returns
     -------
@@ -35,6 +38,9 @@ def read_raw_xdf(fname, stream_id, srate="effective", *args, **kwargs):
             break  # stream found
     else:  # stream not found
         raise IOError(f"Stream ID {stream_id} not found.")
+    if float(stream["info"]["nominal_srate"][0]) == 0:
+        raise RuntimeError("Importing a marker stream is not supported, try importing a "
+                           "regularly sampled stream instead.")
 
     n_chans = int(stream["info"]["channel_count"][0])
     fs = float(np.array(stream["info"][f"{srate}_srate"]).item())
@@ -63,7 +69,8 @@ def read_raw_xdf(fname, stream_id, srate="effective", *args, **kwargs):
             if stream["info"]["stream_id"] == stream_id:
                 break
         onsets = stream["time_stamps"] - first_samp
-        descriptions = [item for sub in stream["time_series"] for item in sub]
+        prefix = f"{stream_id}-" if prefix_markers else ""
+        descriptions = [f"{prefix}{item}" for sub in stream["time_series"] for item in sub]
         raw.annotations.append(onsets, [0] * len(onsets), descriptions)
     return raw
 
