@@ -12,7 +12,7 @@ from .mainwindow import MainWindow
 from .model import Model
 
 
-__version__ = "0.6.6"
+__version__ = "0.7.0.dev0"
 
 
 def main():
