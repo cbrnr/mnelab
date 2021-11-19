@@ -110,7 +110,8 @@ class Model:
             kwargstr = ", " + f"{', '.join(f'{k}={repr(v)}' for k, v in kwargs.items())}"
         else:
             kwargstr = ""
-        self.history.append(f'data = read_raw("{fname}"{argstr}{kwargstr}, preload=True)')
+        self.history.append(f'data = read_raw("{fname}"{argstr}{kwargstr}, preload=True)'.
+                            replace("'", '"'))
         fsize = getsize(data.filenames[0]) / 1024**2  # convert to MB
         name, ext = Path(fname).stem, "".join(Path(fname).suffixes)
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
