@@ -106,8 +106,3 @@ def get_xml(fname):
                     f.seek(nbytes - 6, 1)
             else:
                 f.seek(nbytes - 2, 1)  # skip remaining chunk contents
-
-
-def get_streams(fname):
-    from pyxdf.pyxdf import parse_chunks, parse_xdf
-    return parse_chunks(parse_xdf(fname))
