@@ -411,7 +411,13 @@ class MainWindow(QMainWindow):
                     row = dialog.view.selectionModel().selectedRows()[0].row()
                     stream_id = dialog.model.data(dialog.model.index(row, 0))
                     srate = "effective" if dialog.effective_srate else "nominal"
-                    self.model.load(fname, stream_id=stream_id, srate=srate)
+                    prefix_markers = dialog.prefix_markers
+                    kwargs = {}
+                    if srate == "nominal":
+                        kwargs["srate"] = srate
+                    if prefix_markers:
+                        kwargs["prefix_markers"] = prefix_markers
+                    self.model.load(fname, stream_id=stream_id, **kwargs)
             else:  # all other file formats
                 try:
                     self.model.load(fname)

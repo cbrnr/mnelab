@@ -28,8 +28,8 @@ class PythonHighlighter(QSyntaxHighlighter):
         # strings
         f = QTextCharFormat()
         f.setForeground(Qt.darkCyan)
-        self.rules.append((QRegularExpression("\".*\""), f))
-        self.rules.append((QRegularExpression("'.*'"), f))
+        self.rules.append((QRegularExpression('"[^"]*"'), f))
+        self.rules.append((QRegularExpression("'[^']*'"), f))
 
     def highlightBlock(self, text):
         for rule in self.rules:
