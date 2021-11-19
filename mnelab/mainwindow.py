@@ -26,7 +26,7 @@ from .widgets import InfoWidget
 from .model import LabelsNotFoundError, InvalidAnnotationsError
 from .utils import have, has_locations, image_path, interface_style
 from .io import writers
-from .io.xdf import get_xml, get_streams
+from .io.xdf import get_xml
 from .viz import plot_erds
 
 
@@ -393,8 +393,9 @@ class MainWindow(QMainWindow):
             ext = "".join(Path(fname).suffixes)
 
             if ext in [".xdf", ".xdfz", ".xdf.gz"]:
+                from pyxdf import resolve_streams
                 rows, disabled = [], []
-                for idx, s in enumerate(get_streams(fname)):
+                for idx, s in enumerate(resolve_streams(fname)):
                     rows.append([s["stream_id"], s["name"], s["type"], s["channel_count"],
                                  s["channel_format"], s["nominal_srate"]])
                     is_marker = (s["nominal_srate"] == 0 or s["channel_format"] == "string")
