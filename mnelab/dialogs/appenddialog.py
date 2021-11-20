@@ -5,7 +5,7 @@
 
 from qtpy.QtCore import Qt, Slot
 from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel, QDialogButtonBox,
-                            QListWidget, QAbstractItemView)
+                            QListWidget, QAbstractItemView, QPushButton)
 
 
 class AppendDialog(QDialog):
@@ -19,15 +19,17 @@ class AppendDialog(QDialog):
         grid.addWidget(QLabel("Source"), 0, 0, Qt.AlignCenter)
         grid.addWidget(QLabel("Destination"), 0, 2, Qt.AlignCenter)
 
-        source = QListWidget(self)
-        source.setAcceptDrops(True)
-        source.setDragEnabled(True)
-        source.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        source.setDefaultDropAction(Qt.DropAction.MoveAction)
-        source.insertItems(0, [d["name"] for d in compatibles])
-        grid.addWidget(source, 1, 0)
+        self.source = QListWidget(self)
+        self.source.setAcceptDrops(True)
+        self.source.setDragEnabled(True)
+        self.source.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.source.setDefaultDropAction(Qt.DropAction.MoveAction)
+        self.source.insertItems(0, [d["name"] for d in compatibles])
+        grid.addWidget(self.source, 1, 0)
 
-        grid.addWidget(QLabel("->"), 1, 1, Qt.AlignHCenter)
+        self.move_button = QPushButton("→")
+        self.move_button.setEnabled(False)
+        grid.addWidget(self.move_button, 1, 1, Qt.AlignHCenter)
 
         self.destination = QListWidget(self)
         self.destination.setAcceptDrops(True)
@@ -43,9 +45,14 @@ class AppendDialog(QDialog):
 
         vbox.addWidget(self.buttonbox)
         vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
-        self.destination.model().rowsInserted.connect(self.toggle_buttons)
-        self.destination.model().rowsRemoved.connect(self.toggle_buttons)
-        self.toggle_buttons()
+        self.destination.model().rowsInserted.connect(self.toggle_ok_button)
+        self.destination.model().rowsRemoved.connect(self.toggle_ok_button)
+        self.source.itemSelectionChanged.connect(self.toggle_move_source)
+        self.destination.itemSelectionChanged.connect(self.toggle_move_destination)
+        self.move_button.clicked.connect(self.move)
+        self.toggle_ok_button()
+        self.toggle_move_source()
+        self.toggle_move_destination()
 
     @property
     def names(self):
@@ -55,9 +62,38 @@ class AppendDialog(QDialog):
         return names
 
     @Slot()
-    def toggle_buttons(self):
+    def toggle_ok_button(self):
         """Toggle OK button."""
         if self.destination.count() > 0:
             self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(True)
         else:
             self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(False)
+
+    @Slot()
+    def toggle_move_source(self):
+        if self.source.selectedItems():
+            self.move_button.setEnabled(True)
+            self.move_button.setText("→")
+            self.destination.clearSelection()
+        elif not self.destination.selectedItems():
+            self.move_button.setEnabled(False)
+
+    @Slot()
+    def toggle_move_destination(self):
+        if self.destination.selectedItems():
+            self.move_button.setEnabled(True)
+            self.move_button.setText("←")
+            self.source.clearSelection()
+        elif not self.source.selectedItems():
+            self.move_button.setEnabled(False)
+
+    @Slot()
+    def move(self):
+        if self.source.selectedItems():
+            for item in self.source.selectedItems():
+                self.destination.addItem(item.text())
+                self.source.takeItem(self.source.row(item))
+        elif self.destination.selectedItems():
+            for item in self.destination.selectedItems():
+                self.source.addItem(item.text())
+                self.destination.takeItem(self.destination.row(item))
