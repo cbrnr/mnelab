@@ -1,3 +1,7 @@
+## [UNRELEASED] - XXXX-XX-XX
+### Added
+- Add button in Append dialog that simplifies moving data between source and destination lists ([#242](https://github.com/cbrnr/mnelab/pull/242) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [0.6.6] - 2021-11-19
 ### Added
 - Add option to use effective sampling rate when importing XDF files ([#236](https://github.com/cbrnr/mnelab/pull/236) by [Clemens Brunner](https://github.com/cbrnr))
