@@ -18,9 +18,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
     - name: Build wheel
-      run: |
-        pip install PyQt6-Qt6
-        pip wheel -w ~/.wheelhouse .
+      run: pip wheel -w ~/.wheelhouse .
     - uses: actions/upload-artifact@v2
       with:
         name: wheel
