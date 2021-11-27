@@ -30,8 +30,8 @@ def main():
     app.setApplicationName(app_name)
     app.setOrganizationName("cbrnr")
     if sys.platform.startswith("darwin"):
-        app.setAttribute(Qt.AA_DontShowIconsInMenus, True)
-    app.setAttribute(Qt.AA_UseHighDpiPixmaps)
+        app.setAttribute(Qt.ApplicationAttribute.AA_DontShowIconsInMenus, True)
+    app.setAttribute(Qt.ApplicationAttribute.AA_UseHighDpiPixmaps)
     model = Model()
     model.view = MainWindow(model)
     if len(sys.argv) > 1:  # open files from command line arguments
