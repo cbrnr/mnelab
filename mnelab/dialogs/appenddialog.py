@@ -3,7 +3,8 @@
 #
 # License: BSD (3-clause)
 
-from PyQt6.QtCore import Qt, Slot
+from PyQt6.QtCore import Qt
+from PyQt6.QtCore import pyqtSlot as Slot
 from PyQt6.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox, QGridLayout,
                              QLabel, QListWidget, QPushButton, QVBoxLayout)
 

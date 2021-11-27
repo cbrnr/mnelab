@@ -12,16 +12,18 @@ import mne
 import numpy as np
 from mne.io.pick import channel_type
 from PyQt6.QtCore import (QEvent, QMetaObject, QModelIndex, QObject, QPoint, QSettings,
-                          QSize, QStringListModel, Qt, Slot)
+                          QSize, QStringListModel, Qt)
+from PyQt6.QtCore import pyqtSlot as Slot
 from PyQt6.QtGui import QAction, QDropEvent, QIcon, QKeySequence
 from PyQt6.QtWidgets import (QApplication, QFileDialog, QFrame, QLabel, QListView,
                              QMainWindow, QMessageBox, QSplitter)
 
-from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog, ChannelPropertiesDialog,
-                      CropDialog, EpochDialog, ERDSDialog, ErrorMessageBox, EventsDialog,
-                      FilterDialog, FindEventsDialog, HistoryDialog, InterpolateBadsDialog,
-                      MetaInfoDialog, MontageDialog, PickChannelsDialog, ReferenceDialog,
-                      RunICADialog, XDFStreamsDialog)
+from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog,
+                      ChannelPropertiesDialog, CropDialog, EpochDialog,
+                      ERDSDialog, ErrorMessageBox, EventsDialog, FilterDialog,
+                      FindEventsDialog, HistoryDialog, InterpolateBadsDialog,
+                      MetaInfoDialog, MontageDialog, PickChannelsDialog,
+                      ReferenceDialog, RunICADialog, XDFStreamsDialog)
 from .io import writers
 from .io.xdf import get_xml
 from .model import InvalidAnnotationsError, LabelsNotFoundError

@@ -3,7 +3,8 @@
 # License: BSD (3-clause)
 
 from mne.io.pick import channel_type, get_channel_type_constants
-from PyQt6.QtCore import QSortFilterProxyModel, Qt, Slot
+from PyQt6.QtCore import QSortFilterProxyModel, Qt
+from PyQt6.QtCore import pyqtSlot as Slot
 from PyQt6.QtGui import QStandardItem, QStandardItemModel
 from PyQt6.QtWidgets import (QAbstractItemView, QComboBox, QDialog, QDialogButtonBox,
                              QStyledItemDelegate, QTableView, QVBoxLayout)
