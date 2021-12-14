@@ -2,6 +2,9 @@
 ### Added
 - Add button in Append dialog that simplifies moving data between source and destination lists ([#242](https://github.com/cbrnr/mnelab/pull/242) by [Clemens Brunner](https://github.com/cbrnr))
 
+### Fixed
+- Fix loading of XDF files that contained additional dots in their file names ([#244](https://github.com/cbrnr/mnelab/pull/244) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [0.6.6] - 2021-11-19
 ### Added
 - Add option to use effective sampling rate when importing XDF files ([#236](https://github.com/cbrnr/mnelab/pull/236) by [Clemens Brunner](https://github.com/cbrnr))
