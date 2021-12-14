@@ -392,7 +392,7 @@ class MainWindow(QMainWindow):
 
             ext = "".join(Path(fname).suffixes)
 
-            if ext in [".xdf", ".xdfz", ".xdf.gz"]:
+            if any([ext.endswith(e) for e in (".xdf", ".xdfz", ".xdf.gz")]):
                 from pyxdf import resolve_streams
                 rows, disabled = [], []
                 for idx, s in enumerate(resolve_streams(fname)):
