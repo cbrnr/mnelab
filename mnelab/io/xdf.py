@@ -4,6 +4,8 @@ import xml.etree.ElementTree as ETree
 
 import numpy as np
 import mne
+from pyxdf import load_xdf, match_streaminfos, resolve_streams
+from pyxdf.pyxdf import open_xdf, _read_varlen_int
 
 
 def read_raw_xdf(fname, stream_id, srate="effective", prefix_markers=False, *args,
@@ -26,8 +28,6 @@ def read_raw_xdf(fname, stream_id, srate="effective", prefix_markers=False, *arg
     raw : mne.io.Raw
         XDF file data.
     """
-    from pyxdf import load_xdf, match_streaminfos, resolve_streams
-
     if srate not in ("nominal", "effective"):
         raise ValueError(f"The 'srate' parameter must be either 'nominal' or 'effective' "
                          f"(got {srate}).")
@@ -88,7 +88,6 @@ def get_xml(fname):
     xml : dict
         XML stream headers and footers.
     """
-    from pyxdf.pyxdf import open_xdf, _read_varlen_int
     with open_xdf(fname) as f:
         xml = defaultdict(dict)
         while True:
@@ -106,3 +105,54 @@ def get_xml(fname):
                     f.seek(nbytes - 6, 1)
             else:
                 f.seek(nbytes - 2, 1)  # skip remaining chunk contents
+
+
+def list_chunks(fname):
+    """List all chunks contained in an XDF file.
+
+    Listing chunks summarizes the content of the XDF file. Because this function does not
+    attempt to parse the data, this also works for corrupted files.
+
+    Parameters
+    ----------
+    fname : str
+        Name of the XDF file.
+
+    Returns
+    -------
+    chunks : list
+        List of dicts containing a short summary for each chunk.
+    """
+    with open_xdf(fname) as f:
+        chunks = []
+        while True:
+            try:
+                nbytes = _read_varlen_int(f)
+            except EOFError:
+                return chunks
+            chunk = {"nbytes": nbytes}
+            tag = struct.unpack('<H', f.read(2))[0]
+            chunk["tag"] = tag
+            if tag == 1:
+                chunk["content"] = f.read(nbytes - 2).decode()
+            elif tag == 5:
+                chunk["content"] = ("0x43 0xA5 0x46 0xDC 0xCB 0xF5 0x41 0x0F 0xB3 0x0E "
+                                    "0xD5 0x46 0x73 0x83 0xCB 0xE4")
+                f.seek(chunk["nbytes"] - 2, 1)  # skip remaining chunk contents
+            elif tag in [2, 6]:  # XML
+                chunk["stream_id"] = struct.unpack("<I", f.read(4))[0]
+                chunk["content"] = f.read(chunk["nbytes"] - 6).decode().replace("\t", "  ")
+            elif tag == 4:
+                chunk["stream_id"] = struct.unpack("<I", f.read(4))[0]
+                collection_time = struct.unpack("<d", f.read(8))[0]
+                offset_value = struct.unpack("<d", f.read(8))[0]
+                chunk["content"] = (f"Collection time: {collection_time}\n"
+                                    f"Offset value: {offset_value}")
+            elif tag == 3:
+                chunk["stream_id"] = struct.unpack("<I", f.read(4))[0]
+                remainder = chunk["nbytes"] - 6
+                chunk["content"] = f"<BINARY DATA ({remainder} Bytes)>"
+                f.seek(remainder, 1)  # skip remaining chunk contents
+            else:
+                f.seek(chunk["nbytes"] - 2, 1)  # skip remaining chunk contents
+            chunks.append(chunk)

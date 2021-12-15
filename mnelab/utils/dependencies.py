@@ -6,8 +6,8 @@ from importlib import import_module
 from qtpy import API_NAME
 
 
-required = ["mne", "numpy", "scipy", "matplotlib", "qtpy", API_NAME]
-optional = ["sklearn", "picard", "pyedflib", "pyxdf", "pybv"]
+required = ["mne", "numpy", "scipy", "matplotlib", "qtpy", "pyxdf", API_NAME]
+optional = ["sklearn", "picard", "pyedflib", "pybv"]
 
 have = {}
 for package in required + optional:

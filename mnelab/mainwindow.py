@@ -11,6 +11,7 @@ from pathlib import Path
 import numpy as np
 import mne
 from mne.io.pick import channel_type
+from pyxdf import resolve_streams
 from qtpy.QtCore import (Qt, Slot, QStringListModel, QModelIndex, QSettings, QEvent, QSize,
                          QPoint, QObject, QMetaObject)
 from qtpy.QtGui import QKeySequence, QDropEvent, QIcon
@@ -21,12 +22,12 @@ from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog, ChannelProper
                       CropDialog, ERDSDialog, EpochDialog, ErrorMessageBox, EventsDialog,
                       FilterDialog, FindEventsDialog, HistoryDialog, InterpolateBadsDialog,
                       MetaInfoDialog, MontageDialog, PickChannelsDialog, ReferenceDialog,
-                      RunICADialog, XDFStreamsDialog)
+                      RunICADialog, XDFChunksDialog, XDFStreamsDialog)
 from .widgets import InfoWidget
 from .model import LabelsNotFoundError, InvalidAnnotationsError
 from .utils import have, has_locations, image_path, interface_style
 from .io import writers
-from .io.xdf import get_xml
+from .io.xdf import get_xml, list_chunks
 from .viz import plot_erds
 
 
@@ -147,6 +148,9 @@ class MainWindow(QMainWindow):
             lambda: self.export_file(model.export_ica, "Export ICA", "*.fif *.fif.gz")
         )
         file_menu.addSeparator()
+        self.actions["xdf_chunks"] = file_menu.addAction("Show XDF chunks...",
+                                                         self.xdf_chunks)
+        file_menu.addSeparator()
         self.actions["quit"] = file_menu.addAction("&Quit", self.close, QKeySequence.Quit)
 
         edit_menu = self.menuBar().addMenu("&Edit")
@@ -232,8 +236,8 @@ class MainWindow(QMainWindow):
         self.actions["about_qt"] = help_menu.addAction("About &Qt", self.show_about_qt)
 
         # actions that are always enabled
-        self.always_enabled = ["open_file", "about", "about_qt", "quit", "toolbar",
-                               "statusbar"]
+        self.always_enabled = ["open_file", "about", "about_qt", "quit", "xdf_chunks",
+                               "toolbar", "statusbar"]
 
         # set up toolbar
         self.toolbar = self.addToolBar("toolbar")
@@ -393,7 +397,6 @@ class MainWindow(QMainWindow):
             ext = "".join(Path(fname).suffixes)
 
             if any([ext.endswith(e) for e in (".xdf", ".xdfz", ".xdf.gz")]):
-                from pyxdf import resolve_streams
                 rows, disabled = [], []
                 for idx, s in enumerate(resolve_streams(fname)):
                     rows.append([s["stream_id"], s["name"], s["type"], s["channel_count"],
@@ -432,6 +435,15 @@ class MainWindow(QMainWindow):
         fname = QFileDialog.getOpenFileName(self, text, filter=ffilter)[0]
         if fname:
             f(fname)
+
+    def xdf_chunks(self):
+        """Show XDF chunks."""
+        fname = QFileDialog.getOpenFileName(self, "Select XDF file",
+                                            filter="*.xdf *.xdfz *.xdf.gz")[0]
+        if fname:
+            chunks = list_chunks(fname)
+            dialog = XDFChunksDialog(self, chunks, fname)
+            dialog.exec_()
 
     def export_file(self, f, text, ffilter="*"):
         """Export to file."""

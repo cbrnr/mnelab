@@ -20,6 +20,7 @@ from .montagedialog import MontageDialog
 from .pickchannelsdialog import PickChannelsDialog
 from .referencedialog import ReferenceDialog
 from .runicadialog import RunICADialog
+from .xdfchunksdialog import XDFChunksDialog
 from .xdfstreamsdialog import XDFStreamsDialog
 
 
@@ -27,4 +28,4 @@ __all__ = ["AnnotationsDialog", "AppendDialog", "CalcDialog", "ChannelProperties
            "CropDialog", "EpochDialog", "ERDSDialog", "ErrorMessageBox", "EventsDialog",
            "FilterDialog", "FindEventsDialog", "HistoryDialog", "InterpolateBadsDialog",
            "MetaInfoDialog", "MontageDialog", "PickChannelsDialog", "ReferenceDialog",
-           "RunICADialog", "XDFStreamsDialog"]
+           "RunICADialog", "XDFChunksDialog", "XDFStreamsDialog"]

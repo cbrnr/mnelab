@@ -7,7 +7,6 @@ from functools import partial
 
 import mne
 
-from ..utils import have
 from .xdf import read_raw_xdf
 
 
@@ -32,12 +31,10 @@ supported = {".edf": mne.io.read_raw_edf,
              ".mff": mne.io.read_raw_egi,
              ".nxe": mne.io.read_raw_eximia,
              ".hdr": mne.io.read_raw_nirx,
-             ".snirf": mne.io.read_raw_snirf}
-
-if have["pyxdf"]:
-    supported.update({".xdf": read_raw_xdf,
-                      ".xdfz": read_raw_xdf,
-                      ".xdf.gz": read_raw_xdf})
+             ".snirf": mne.io.read_raw_snirf,
+             ".xdf": read_raw_xdf,
+             ".xdfz": read_raw_xdf,
+             ".xdf.gz": read_raw_xdf}
 
 # known but unsupported file formats
 suggested = {".vmrk": partial(_read_unsupported, suggest=".vhdr"),
