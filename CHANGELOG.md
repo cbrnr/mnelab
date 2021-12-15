@@ -4,7 +4,7 @@
 - Add dialog that lists XDF chunks (File - Show XDF chunks...) which diplays chunk information for (possibly corrupted) XDF files ([#245](https://github.com/cbrnr/mnelab/pull/245) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### Fixed
-- Fix loading of XDF files that contained additional dots in their file names ([#244](https://github.com/cbrnr/mnelab/pull/244) by [Clemens Brunner](https://github.com/cbrnr))
+- Fix loading of XDF files that contained additional dots in their file names ([#244](https://github.com/cbrnr/mnelab/pull/244) and [#246](https://github.com/cbrnr/mnelab/pull/246) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [0.6.6] - 2021-11-19
 ### Added
