@@ -50,7 +50,7 @@ def read_raw_xdf(fname, stream_id, srate="effective", prefix_markers=False, *arg
             labels.append(str(ch["label"][0]))
             if ch["type"]:
                 types.append(ch["type"][0])
-            units.append(ch["unit"] if ch["unit"] else "NA")
+            units.append(ch["unit"][0] if ch["unit"] else "NA")
     except (TypeError, IndexError):  # no channel labels found
         pass
     if not labels:
@@ -59,7 +59,7 @@ def read_raw_xdf(fname, stream_id, srate="effective", prefix_markers=False, *arg
         units = ["NA" for _ in range(n_chans)]
     info = mne.create_info(ch_names=labels, sfreq=fs, ch_types="eeg")
     # convert from microvolts to volts if necessary
-    scale = np.array([1e-6 if u[0] == "microvolts" else 1 for u in units])
+    scale = np.array([1e-6 if u in ("microvolt", "microvolts") else 1 for u in units])
     raw = mne.io.RawArray((stream["time_series"] * scale).T, info)
     raw._filenames = [fname]
     first_samp = stream["time_stamps"][0]
