@@ -19,12 +19,12 @@ MNELAB requires Python >= 3.8 and the following packages:
 - [numpy](http://www.numpy.org/) >= 1.14.0
 - [scipy](https://www.scipy.org/scipylib/index.html) >= 1.0.0
 - [matplotlib](https://matplotlib.org/) >= 2.1.0
+- [pyxdf](https://github.com/xdf-modules/xdf-Python) >= 1.16.0
 - [pyobjc-framework-Cocoa](https://pyobjc.readthedocs.io/en/latest/) >= 5.2.0 (macOS only)
 
 Optional dependencies provide additional features if installed:
 - [scikit-learn](https://scikit-learn.org/stable/) >= 0.20.0 (ICA computation with FastICA)
 - [python-picard](https://pierreablin.github.io/picard/) >= 0.4.0 (ICA computation with PICARD)
-- [pyxdf](https://github.com/xdf-modules/xdf-Python) >= 1.16.0 (XDF import)
 - [pyEDFlib](https://github.com/holgern/pyedflib) >= 0.1.15 (EDF/BDF export)
 - [pybv](https://github.com/bids-standard/pybv) 0.4.0 (BrainVision VHDR/VMRK/EEG export)
 
@@ -38,7 +38,7 @@ pip install mnelab
 To use all MNELAB features, all optional dependencies should also be installed:
 
 ```
-pip install scikit-learn python-picard pyxdf pyEDFlib pybv
+pip install scikit-learn python-picard pyEDFlib pybv
 ```
 
 You can start MNELAB in a terminal with `mnelab` or `python -m mnelab`. On Windows, make sure to use Command Prompt (`cmd.exe`) or PowerShell (`powershell.exe`) &ndash; the `mnelab` command does not work in Git Bash.
