@@ -3,7 +3,6 @@
 # License: BSD (3-clause)
 
 from os.path import getsize, join, split, splitext
-from pathlib import Path
 from collections import Counter, defaultdict
 from functools import wraps
 from copy import deepcopy
@@ -13,6 +12,7 @@ import mne
 
 from .utils import has_locations
 from .io import read_raw, write_raw
+from .io.readers import split_name_ext
 
 
 class LabelsNotFoundError(Exception):
@@ -113,7 +113,7 @@ class Model:
         self.history.append(f'data = read_raw("{fname}"{argstr}{kwargstr}, preload=True)'.
                             replace("'", '"'))
         fsize = getsize(data.filenames[0]) / 1024**2  # convert to MB
-        name, ext = Path(fname).stem, "".join(Path(fname).suffixes)
+        name, ext = split_name_ext(fname)
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
                                      ftype=ext.upper()[1:], fsize=fsize, data=data,
                                      dtype="raw"))
