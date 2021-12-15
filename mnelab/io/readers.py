@@ -44,6 +44,16 @@ suggested = {".vmrk": partial(_read_unsupported, suggest=".vhdr"),
 readers = {**supported, **suggested}
 
 
+def split_name_ext(fname):
+    """Return name and supported file extension."""
+    maxsuffixes = max([ext.count(".") for ext in supported])
+    suffixes = Path(fname).suffixes
+    for i in range(-maxsuffixes, 0):
+        ext = "".join(suffixes[i:]).lower()
+        if ext in readers.keys():
+            return fname.removesuffix(ext), ext
+
+
 def read_raw(fname, *args, **kwargs):
     """Read raw file.
 
@@ -62,12 +72,9 @@ def read_raw(fname, *args, **kwargs):
     This function supports reading different file formats. It uses the readers dict to
     dispatch the appropriate read function for a supported file type.
     """
-    maxsuffixes = max([ext.count(".") for ext in supported])
-    suffixes = Path(fname).suffixes
-    for i in range(-maxsuffixes, 0):
-        ext = "".join(suffixes[i:]).lower()
-        if ext in readers.keys():
-            return readers[ext](fname, *args, **kwargs)
-    raise ValueError(f"Unknown file type {suffixes}.")
+    _, ext = split_name_ext(fname)
+    if ext is not None:
+        return readers[ext](fname, *args, **kwargs)
+    raise ValueError(f"Unknown file type {''.join(Path(fname).suffixes)}).")
     # here we could inspect the file signature to determine its type, which would allow us
     # to read file independently of their extensions
