@@ -21,7 +21,7 @@ jobs:
                          libxcb-render-util0 libxcb-xinerama0
     - name: Install Python packages
       run: |
-        pip install PySide6
+        pip install PyQt6
     - name: Run tests
       run: |
         xvfb-run python test_pyside6.py
