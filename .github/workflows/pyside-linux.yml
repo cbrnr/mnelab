@@ -21,7 +21,6 @@ jobs:
     - name: Install Python packages
       run: |
         pip install PySide2
-        ls -al
-        apt list --installed
     - name: Run tests
-      run: python test_pyside6.py
+      run: |
+      export QT_DEBUG_PLUGINS=1 && python test_pyside6.py
