@@ -23,4 +23,4 @@ jobs:
         pip install PySide6
         # pip install pytest pytest-qt pytest-xvfb
     - name: Run tests
-      run: python -c "import PySide6"
+      run: python -c "import PySide6; import os; print(os.getcwd())"
