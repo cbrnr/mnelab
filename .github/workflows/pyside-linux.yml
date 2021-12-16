@@ -20,7 +20,7 @@ jobs:
     #                      libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
     - name: Install Python packages
       run: |
-        pip install PySide6
+        pip install PySide2
         ls -al
         apt list --installed
     - name: Run tests

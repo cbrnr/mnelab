@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QApplication, QLabel
+from PySide2.QtWidgets import QApplication, QLabel
 
 app = QApplication()
 label = QLabel("1")
