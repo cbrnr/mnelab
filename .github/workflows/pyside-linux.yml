@@ -24,4 +24,4 @@ jobs:
         pip install PySide2
     - name: Run tests
       run: |
-        export QT_DEBUG_PLUGINS=1 && Xvfb :1 & python test_pyside6.py
+        export QT_DEBUG_PLUGINS=1 && Xvfb & python test_pyside6.py
