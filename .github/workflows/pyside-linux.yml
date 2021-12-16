@@ -22,6 +22,6 @@ jobs:
       run: |
         pip install PySide6
         ls -al
-        # pip install pytest pytest-qt pytest-xvfb
+        apt list --installed
     - name: Run tests
       run: python test_pyside6.py
