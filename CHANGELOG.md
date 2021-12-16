@@ -7,6 +7,9 @@
 - Fix loading of XDF files that contained additional dots in their file names ([#244](https://github.com/cbrnr/mnelab/pull/244) and [#246](https://github.com/cbrnr/mnelab/pull/246) by [Clemens Brunner](https://github.com/cbrnr))
 - Improve microvolts unit detection in XDF files ([#247](https://github.com/cbrnr/mnelab/pull/247) by [Clemens Brunner](https://github.com/cbrnr))
 
+### Changed
+- Remove requirements*.txt files ([#249](https://github.com/cbrnr/mnelab/pull/249) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [0.6.6] - 2021-11-19
 ### Added
 - Add option to use effective sampling rate when importing XDF files ([#236](https://github.com/cbrnr/mnelab/pull/236) by [Clemens Brunner](https://github.com/cbrnr))
