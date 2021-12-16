@@ -1,0 +1,26 @@
+name: PySide6 on Linux
+
+on: pull_request
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10"]
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    # - name: Install Linux packages
+    #   run: |
+    #     sudo apt install libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
+    #                      libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
+    - name: Install Python packages
+      run: |
+        pip install PySide6
+        # pip install pytest pytest-qt pytest-xvfb
+    - name: Run tests
+      run: python -c "import PySide6"
