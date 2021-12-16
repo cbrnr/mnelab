@@ -17,7 +17,7 @@ jobs:
     - name: Install Linux packages
       run: |
         sudo apt install libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
-                         libxkbcommon-x11-0
+                         libxkbcommon-x11-0 xvfb
     - name: Install Python packages
       run: |
         pip install PySide2
