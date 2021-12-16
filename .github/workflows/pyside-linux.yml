@@ -16,7 +16,8 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install Linux packages
       run: |
-        sudo apt install libxcb-icccm4 libxcb-image0 libxcb-keysyms1
+        sudo apt install libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
+                         libxkbcommon-x11-0
     - name: Install Python packages
       run: |
         pip install PySide2
