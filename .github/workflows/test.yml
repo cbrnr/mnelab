@@ -42,7 +42,6 @@ jobs:
         name: mnelab-wheel
     - name: Install Linux packages
       run: |
-        ls -al
         sudo apt install libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
                          libxkbcommon-x11-0 xvfb libxcb-randr0 \
                          libxcb-render-util0 libxcb-xinerama0 libegl1
