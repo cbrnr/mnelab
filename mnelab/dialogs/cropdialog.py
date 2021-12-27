@@ -2,9 +2,9 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QDoubleSpinBox, QCheckBox,
-                            QDialogButtonBox)
-from qtpy.QtCore import Slot
+from PySide6.QtCore import Slot
+from PySide6.QtWidgets import (QCheckBox, QDialog, QDialogButtonBox, QDoubleSpinBox,
+                               QGridLayout, QVBoxLayout)
 
 
 class CropDialog(QDialog):

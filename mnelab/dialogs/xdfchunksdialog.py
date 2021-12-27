@@ -2,10 +2,10 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtCore import Qt, Slot
-from qtpy.QtGui import QFont, QStandardItem, QStandardItemModel
-from qtpy.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox, QHBoxLayout,
-                            QPlainTextEdit, QTableView, QVBoxLayout)
+from PySide6.QtCore import Qt, Slot
+from PySide6.QtGui import QFont, QStandardItem, QStandardItemModel
+from PySide6.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox, QHBoxLayout,
+                               QPlainTextEdit, QTableView, QVBoxLayout)
 
 
 def _add_item(item):

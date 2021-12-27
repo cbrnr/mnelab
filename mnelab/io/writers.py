@@ -4,10 +4,10 @@
 
 from pathlib import Path
 
+import mne
 import numpy as np
 from numpy.core.records import fromarrays
 from scipy.io import savemat
-import mne
 
 from ..utils import have
 

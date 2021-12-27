@@ -3,8 +3,9 @@
 # License: BSD (3-clause)
 
 import xml.etree.ElementTree as ETree
-from qtpy.QtWidgets import (QDialog, QVBoxLayout, QDialogButtonBox, QTreeWidget,
-                            QTreeWidgetItem)
+
+from PySide6.QtWidgets import (QDialog, QDialogButtonBox, QTreeWidget, QTreeWidgetItem,
+                               QVBoxLayout)
 
 
 def populate_tree(parent, node):

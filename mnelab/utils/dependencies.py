@@ -3,10 +3,8 @@
 # License: BSD (3-clause)
 
 from importlib import import_module
-from qtpy import API_NAME
 
-
-required = ["mne", "numpy", "scipy", "matplotlib", "qtpy", "pyxdf", API_NAME]
+required = ["mne", "numpy", "scipy", "matplotlib", "PySide6", "pyxdf"]
 optional = ["sklearn", "picard", "pyedflib", "pybv"]
 
 have = {}
@@ -19,9 +17,5 @@ for package in required + optional:
         try:
             version = mod.__version__
         except AttributeError:
-            if package == "PyQt5":
-                mod = import_module("PyQt5.QtCore")
-                version = mod.PYQT_VERSION_STR
-            else:
-                version = "unknown"
+            version = "unknown"
         have[package] = version

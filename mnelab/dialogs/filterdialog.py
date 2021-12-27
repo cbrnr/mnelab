@@ -2,8 +2,8 @@
 #
 # License: BSD (3-clause)
 
-from qtpy.QtWidgets import (QDialog, QVBoxLayout, QGridLayout, QLabel, QLineEdit,
-                            QDialogButtonBox)
+from PySide6.QtWidgets import (QDialog, QDialogButtonBox, QGridLayout, QLabel, QLineEdit,
+                               QVBoxLayout)
 
 
 class FilterDialog(QDialog):

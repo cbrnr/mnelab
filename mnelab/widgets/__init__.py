@@ -4,5 +4,4 @@
 
 from .infowidget import InfoWidget
 
-
 __all__ = ["InfoWidget"]
