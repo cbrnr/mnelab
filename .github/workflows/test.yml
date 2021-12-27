@@ -12,6 +12,7 @@ jobs:
     - uses: pre-commit/action@v2.0.3
 
   build-wheel:
+    needs: style
     name: Build wheel
     runs-on: ubuntu-latest
     steps:
@@ -21,6 +22,7 @@ jobs:
       run: pip wheel -w ~/.wheelhouse .
     - uses: actions/upload-artifact@v2
       with:
+        name: mnelab-wheel
         path: ~/.wheelhouse/mnelab*.whl
 
   test:
@@ -36,6 +38,8 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - uses: actions/download-artifact@v2
+      with:
+        name: mnelab-wheel
     - name: Install Linux packages
       run: |
         ls -al
