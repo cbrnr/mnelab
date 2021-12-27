@@ -21,7 +21,6 @@ jobs:
       run: pip wheel -w ~/.wheelhouse .
     - uses: actions/upload-artifact@v2
       with:
-        name: wheel
         path: ~/.wheelhouse/mnelab*.whl
 
   test:
@@ -37,8 +36,6 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - uses: actions/download-artifact@v2
-      with:
-        name: wheel
     - name: Install Linux packages
       run: |
         sudo apt install libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
