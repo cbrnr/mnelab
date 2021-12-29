@@ -12,7 +12,7 @@ from PySide6.QtWidgets import QApplication
 from .mainwindow import MainWindow
 from .model import Model
 
-__version__ = "0.7.0.dev0"
+__version__ = "0.7.0"
 
 
 def main():

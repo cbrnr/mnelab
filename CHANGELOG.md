@@ -1,4 +1,4 @@
-## [UNRELEASED] - XXXX-XX-XX
+## [0.7.0] - 2021-12-29
 ### Added
 - Switch to [PySide6](https://www.qt.io/qt-for-python) ([#237](https://github.com/cbrnr/mnelab/pull/237) by [Clemens Brunner](https://github.com/cbrnr))
 - Add button in Append dialog that simplifies moving data between source and destination lists ([#242](https://github.com/cbrnr/mnelab/pull/242) by [Clemens Brunner](https://github.com/cbrnr))
