@@ -51,7 +51,7 @@ def split_name_ext(fname):
     for i in range(-maxsuffixes, 0):
         ext = "".join(suffixes[i:]).lower()
         if ext in readers.keys():
-            return fname.removesuffix(ext), ext
+            return fname[:-len(ext)], ext
 
 
 def read_raw(fname, *args, **kwargs):
