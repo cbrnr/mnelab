@@ -254,7 +254,7 @@ class MainWindow(QMainWindow):
         self.toolbar.addAction(self.actions["find_events"])
         self.toolbar.addAction(self.actions["epoch_data"])
         self.toolbar.addAction(self.actions["run_ica"])
-
+        self.toolbar.setMovable(False)
         self.setUnifiedTitleAndToolBarOnMac(True)
         if settings["toolbar"]:
             self.toolbar.show()
