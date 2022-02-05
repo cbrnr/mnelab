@@ -875,15 +875,14 @@ class MainWindow(QMainWindow):
             self.model.duplicate_data()
             return True
         # otherwise ask the user
-        else:
-            msg = QMessageBox.question(
-                self,
-                "Create new data set",
-                "Create new data set?\nIf 'No', the current data set is overwritten.",
-            )
-            if msg == QMessageBox.Yes:  # create new data set
-                self.model.duplicate_data()
-                return True
+        msg = QMessageBox.question(
+            self,
+            "Create new data set",
+            "Create new data set?\nIf 'No', the current data set is overwritten.",
+        )
+        if msg == QMessageBox.Yes:  # create new data set
+            self.model.duplicate_data()
+            return True
         return False
 
     def _add_recent(self, fname):
