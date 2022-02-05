@@ -876,10 +876,10 @@ class MainWindow(QMainWindow):
             return True
         # otherwise ask the user
         msg = QMessageBox()
-        msg.setWindowTitle("Create new data set")
-        msg.setText("Create new data set?")
+        msg.setWindowTitle("Modify data set")
+        msg.setText("You are about to modify the current data set. How do you want to proceed?")  # noqa: E501
         msg.addButton("Create new data set", QMessageBox.YesRole)
-        msg.addButton("Overwrite existing data set", QMessageBox.NoRole)
+        msg.addButton("Overwrite current data set", QMessageBox.NoRole)
         if msg.exec() == 0:  # create new data set (button index 0)
             self.model.duplicate_data()
             return True
