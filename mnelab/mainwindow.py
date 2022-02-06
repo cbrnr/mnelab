@@ -161,8 +161,10 @@ class MainWindow(QMainWindow):
         self.actions["set_montage"] = edit_menu.addAction("Set &montage...",
                                                           self.set_montage)
         edit_menu.addSeparator()
-        self.actions["set_ref"] = edit_menu.addAction("Set &reference...",
-                                                      self.set_reference)
+        self.actions["modify_ref"] = edit_menu.addAction(
+            "Modify &reference...",
+            self.modify_reference,
+        )
         edit_menu.addSeparator()
         self.actions["annotations"] = edit_menu.addAction("&Annotations...",
                                                           self.edit_annotations)
@@ -811,16 +813,23 @@ class MainWindow(QMainWindow):
         self.auto_duplicate()
         self.model.convert_beer_lambert()
 
-    def set_reference(self):
-        """Set reference."""
+    def modify_reference(self):
+        """Modify reference."""
         dialog = ReferenceDialog(self)
         if dialog.exec():
             self.auto_duplicate()
-            if dialog.average.isChecked():
-                self.model.set_reference("average")
+            if dialog.add_reference.isChecked():
+                add = [c.strip() for c in dialog.add_channellist.text().split(",")]
             else:
-                ref = [c.strip() for c in dialog.channellist.text().split(",")]
-                self.model.set_reference(ref)
+                add = []
+            if dialog.set_reference.isChecked():
+                if dialog.average.isChecked():
+                    ref = "average"
+                else:
+                    ref = [c.strip() for c in dialog.set_channellist.text().split(",")]
+            else:
+                ref = None
+            self.model.modify_reference(add, ref)
 
     def show_history(self):
         """Show history."""
