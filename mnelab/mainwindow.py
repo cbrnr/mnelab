@@ -385,8 +385,11 @@ class MainWindow(QMainWindow):
     def open_data(self, fname=None):
         """Open raw file."""
         if fname is None:
-            fname = QFileDialog.getOpenFileName(self, "Open raw")[0]
-        if fname:
+            # getOpenFileNames returns a tuple (filenames, selected_filter)
+            fnames, _ = QFileDialog.getOpenFileNames(self, "Open raw")
+        else:
+            fnames = [fname]
+        for fname in fnames:
             if not (Path(fname).is_file() or Path(fname).is_dir()):
                 self._remove_recent(fname)
                 QMessageBox.critical(self, "File does not exist",
