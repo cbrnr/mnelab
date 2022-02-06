@@ -875,12 +875,16 @@ class MainWindow(QMainWindow):
             self.model.duplicate_data()
             return True
         # otherwise ask the user
-        else:
-            msg = QMessageBox.question(self, "Overwrite existing data set",
-                                       "Overwrite existing data set?")
-            if msg == QMessageBox.No:  # create new data set
-                self.model.duplicate_data()
-                return True
+        msg = QMessageBox()
+        msg.setWindowTitle("Modify data set")
+        msg.setText("You are about to modify the current data set. How do you want to proceed?")  # noqa: E501
+        createnew_button = msg.addButton("Create new data set", QMessageBox.YesRole)
+        msg.addButton("Overwrite current data set", QMessageBox.NoRole)
+        msg.setDefaultButton(createnew_button)
+        msg.exec()
+        if msg.clickedButton() == createnew_button:
+            self.model.duplicate_data()
+            return True
         return False
 
     def _add_recent(self, fname):
