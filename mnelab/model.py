@@ -472,15 +472,11 @@ class Model:
         self.history.append("data = mne.preprocessing.nirs.beer_lambert_law(data)")
 
     @data_changed
-    def modify_reference(self, add, ref):
+    def change_reference(self, add, ref):
         self.current["reference"] = ref
         if add:
-            try:
-                mne.add_reference_channels(self.current["data"], add, copy=False)
-            except RuntimeError:
-                raise AddReferenceError(f"Cannot add reference channels {add}.")
-            else:
-                self.history.append(f"mne.add_reference_channels(data, {add}, copy=False)")
+            mne.add_reference_channels(self.current["data"], add, copy=False)
+            self.history.append(f"mne.add_reference_channels(data, {add}, copy=False)")
         if ref is None:
             return
 
