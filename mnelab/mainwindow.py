@@ -825,7 +825,7 @@ class MainWindow(QMainWindow):
                 if dialog.reref_average.isChecked():
                     ref = "average"
                 else:
-                    ref = [c.strip() for c in dialog.reref_channellist.text().split(",")]
+                    ref = [c.text() for c in dialog.reref_channellist.selectedItems()]
             else:
                 ref = None
             duplicated = self.auto_duplicate()
