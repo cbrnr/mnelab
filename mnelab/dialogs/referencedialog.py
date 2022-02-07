@@ -34,6 +34,8 @@ class ReferenceDialog(QDialog):
         self.add_reference.toggled.connect(self.toggle_add_channellist)
         self.set_reference.toggled.connect(self.toggle_set)
         self.set_channels.toggled.connect(self.toggle_set_channellist)
+        self.add_reference.toggled.connect(self.toggle_ok)
+        self.set_reference.toggled.connect(self.toggle_ok)
 
         grid.addWidget(self.add_reference, 0, 0)
         grid.addWidget(self.add_channellist, 0, 1)
@@ -46,10 +48,10 @@ class ReferenceDialog(QDialog):
         grid.addWidget(self.set_channellist, 3, 1)
 
         vbox.addLayout(grid)
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        vbox.addWidget(buttonbox)
-        buttonbox.accepted.connect(self.accept)
-        buttonbox.rejected.connect(self.reject)
+        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        vbox.addWidget(self.buttonbox)
+        self.buttonbox.accepted.connect(self.accept)
+        self.buttonbox.rejected.connect(self.reject)
         vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
 
     def toggle_set(self):
@@ -65,3 +67,9 @@ class ReferenceDialog(QDialog):
 
     def toggle_set_channellist(self):
         self.set_channellist.setEnabled(self.set_channels.isChecked())
+
+    def toggle_ok(self):
+        self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(
+            self.add_reference.isChecked()
+            or self.set_reference.isChecked()
+        )
