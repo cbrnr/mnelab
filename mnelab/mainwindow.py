@@ -161,8 +161,10 @@ class MainWindow(QMainWindow):
         self.actions["set_montage"] = edit_menu.addAction("Set &montage...",
                                                           self.set_montage)
         edit_menu.addSeparator()
-        self.actions["set_ref"] = edit_menu.addAction("Set &reference...",
-                                                      self.set_reference)
+        self.actions["change_ref"] = edit_menu.addAction(
+            "Change &reference...",
+            self.change_reference,
+        )
         edit_menu.addSeparator()
         self.actions["annotations"] = edit_menu.addAction("&Annotations...",
                                                           self.edit_annotations)
@@ -811,16 +813,36 @@ class MainWindow(QMainWindow):
         self.auto_duplicate()
         self.model.convert_beer_lambert()
 
-    def set_reference(self):
-        """Set reference."""
-        dialog = ReferenceDialog(self)
+    def change_reference(self):
+        """Change reference."""
+        dialog = ReferenceDialog(self, self.model.current["data"].info["ch_names"])
         if dialog.exec():
-            self.auto_duplicate()
-            if dialog.average.isChecked():
-                self.model.set_reference("average")
+            if dialog.add_group.isChecked():
+                add = [c.strip() for c in dialog.add_channellist.text().split(",")]
             else:
-                ref = [c.strip() for c in dialog.channellist.text().split(",")]
-                self.model.set_reference(ref)
+                add = []
+            if dialog.reref_group.isChecked():
+                if dialog.reref_average.isChecked():
+                    ref = "average"
+                else:
+                    ref = [c.text() for c in dialog.reref_channellist.selectedItems()]
+            else:
+                ref = None
+            duplicated = self.auto_duplicate()
+            try:
+                self.model.change_reference(add, ref)
+            except ValueError as e:
+                if duplicated:  # undo
+                    self.model.remove_data()
+                    # self.model.index -= 1
+                    self.data_changed()
+                msgbox = ErrorMessageBox(
+                    self,
+                    "Error while changing references:",
+                    str(e),
+                    traceback.format_exc(),
+                )
+                msgbox.show()
 
     def show_history(self):
         """Show history."""

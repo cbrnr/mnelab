@@ -472,28 +472,21 @@ class Model:
         self.history.append("data = mne.preprocessing.nirs.beer_lambert_law(data)")
 
     @data_changed
-    def set_reference(self, ref):
+    def change_reference(self, add, ref):
+        self.current["reference"] = ref
+        if add:
+            mne.add_reference_channels(self.current["data"], add, copy=False)
+            self.history.append(f"mne.add_reference_channels(data, {add}, copy=False)")
+        if ref is None:
+            return
+
         self.current["reference"] = ref
         if ref == "average":
             self.current["name"] += " (average ref)"
-            self.current["data"].set_eeg_reference(ref)
-            self.history.append('data.set_eeg_reference("average")')
         else:
             self.current["name"] += " (" + ",".join(ref) + ")"
-            if set(ref) - set(self.current["data"].info["ch_names"]):
-                # add new reference channel(s) to data
-                try:
-                    mne.add_reference_channels(self.current["data"], ref, copy=False)
-                except RuntimeError:
-                    raise AddReferenceError("Cannot add reference channels to average "
-                                            "reference signals.")
-                else:
-                    self.history.append(f"mne.add_reference_channels(data, {ref}, "
-                                        f"copy=False)")
-            else:
-                # re-reference to existing channel(s)
-                self.current["data"].set_eeg_reference(ref)
-                self.history.append(f"data.set_eeg_reference({ref})")
+        self.current["data"].set_eeg_reference(ref)
+        self.history.append(f"data.set_eeg_reference({ref!r})")
 
     @data_changed
     def set_events(self, events):
