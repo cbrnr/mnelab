@@ -1,4 +1,4 @@
-# Authors: Clemens Brunner <clemens.brunner@gmail.com>
+# Copyright (c) MNELAB developers
 #
 # License: BSD (3-clause)
 
@@ -18,16 +18,18 @@ from PySide6.QtWidgets import (QApplication, QFileDialog, QFrame, QLabel,
                                QMainWindow, QMessageBox, QSplitter, QListWidget)
 from pyxdf import resolve_streams
 
-from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog, ChannelPropertiesDialog,
-                      CropDialog, EpochDialog, ERDSDialog, ErrorMessageBox, EventsDialog,
-                      FilterDialog, FindEventsDialog, HistoryDialog, InterpolateBadsDialog,
-                      MetaInfoDialog, MontageDialog, PickChannelsDialog, ReferenceDialog,
-                      RunICADialog, XDFChunksDialog, XDFStreamsDialog)
+from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog,
+                      ChannelPropertiesDialog, CropDialog, EpochDialog,
+                      ERDSDialog, ErrorMessageBox, EventsDialog, FilterDialog,
+                      FindEventsDialog, HistoryDialog, InterpolateBadsDialog,
+                      MetaInfoDialog, MontageDialog, PickChannelsDialog,
+                      PlotEvokedComparisonDialog, ReferenceDialog, RunICADialog,
+                      XDFChunksDialog, XDFStreamsDialog)
 from .io import writers
 from .io.xdf import get_xml, list_chunks
 from .model import InvalidAnnotationsError, LabelsNotFoundError
 from .utils import has_locations, have, image_path, interface_style
-from .viz import plot_erds
+from .viz import plot_erds, plot_evoked_comparison
 from .widgets import InfoWidget
 
 MAX_RECENT = 6  # maximum number of recent files
@@ -161,8 +163,10 @@ class MainWindow(QMainWindow):
         self.actions["set_montage"] = edit_menu.addAction("Set &montage...",
                                                           self.set_montage)
         edit_menu.addSeparator()
-        self.actions["set_ref"] = edit_menu.addAction("Set &reference...",
-                                                      self.set_reference)
+        self.actions["change_ref"] = edit_menu.addAction(
+            "Change &reference...",
+            self.change_reference,
+        )
         edit_menu.addSeparator()
         self.actions["annotations"] = edit_menu.addAction("&Annotations...",
                                                           self.edit_annotations)
@@ -183,6 +187,10 @@ class MainWindow(QMainWindow):
         self.actions["plot_locations"] = plot_menu.addAction(icon, "&Channel locations",
                                                              self.plot_locations)
         self.actions["plot_erds"] = plot_menu.addAction("&ERDS maps...", self.plot_erds)
+        self.actions["plot_evoked_comparison"] = plot_menu.addAction(
+            "Evoked comparison...",
+            self.plot_evoked_comparison,
+        )
         plot_menu.addSeparator()
         self.actions["plot_ica_components"] = plot_menu.addAction("ICA &components...",
                                                                   self.plot_ica_components)
@@ -376,6 +384,9 @@ class MainWindow(QMainWindow):
             self.actions["apply_ica"].setEnabled(enabled and ica)
             self.actions["export_ica"].setEnabled(enabled and ica)
             self.actions["plot_erds"].setEnabled(
+                enabled and self.model.current["dtype"] == "epochs"
+            )
+            self.actions["plot_evoked_comparison"].setEnabled(
                 enabled and self.model.current["dtype"] == "epochs"
             )
             self.actions["plot_ica_components"].setEnabled(enabled and ica and locations)
@@ -703,6 +714,22 @@ class MainWindow(QMainWindow):
             for fig in figs:
                 fig.show()
 
+    def plot_evoked_comparison(self):
+        """Plot evoked potentials averaged over channels."""
+        epochs = self.model.current["data"]
+        dialog = PlotEvokedComparisonDialog(self, epochs.ch_names, epochs.event_id)
+        if dialog.exec():
+            figs = plot_evoked_comparison(
+                epochs=epochs,
+                picks=[item.text() for item in dialog.picks.selectedItems()],
+                events=[item.text() for item in dialog.events.selectedItems()],
+                average_method=dialog.average_epochs.currentText(),
+                combine=dialog.combine_channels.currentText(),
+                confidence_intervals=dialog.confidence_intervals.isChecked(),
+            )
+            for fig in figs:
+                fig.show()
+
     def run_ica(self):
         """Run ICA calculation."""
 
@@ -851,16 +878,36 @@ class MainWindow(QMainWindow):
         self.auto_duplicate()
         self.model.convert_beer_lambert()
 
-    def set_reference(self):
-        """Set reference."""
-        dialog = ReferenceDialog(self)
+    def change_reference(self):
+        """Change reference."""
+        dialog = ReferenceDialog(self, self.model.current["data"].info["ch_names"])
         if dialog.exec():
-            self.auto_duplicate()
-            if dialog.average.isChecked():
-                self.model.set_reference("average")
+            if dialog.add_group.isChecked():
+                add = [c.strip() for c in dialog.add_channellist.text().split(",")]
             else:
-                ref = [c.strip() for c in dialog.channellist.text().split(",")]
-                self.model.set_reference(ref)
+                add = []
+            if dialog.reref_group.isChecked():
+                if dialog.reref_average.isChecked():
+                    ref = "average"
+                else:
+                    ref = [c.text() for c in dialog.reref_channellist.selectedItems()]
+            else:
+                ref = None
+            duplicated = self.auto_duplicate()
+            try:
+                self.model.change_reference(add, ref)
+            except ValueError as e:
+                if duplicated:  # undo
+                    self.model.remove_data()
+                    # self.model.index -= 1
+                    self.data_changed()
+                msgbox = ErrorMessageBox(
+                    self,
+                    "Error while changing references:",
+                    str(e),
+                    traceback.format_exc(),
+                )
+                msgbox.show()
 
     def show_history(self):
         """Show history."""
@@ -891,7 +938,7 @@ class MainWindow(QMainWindow):
                 f"</p></nobr><nobr><p>MNE repository: "
                 f"<a href=https://{mne_url}>{mne_url}</a></p></nobr>"
                 f"<p>Licensed under the BSD 3-clause license.</p>"
-                f"<p>Copyright 2017&ndash;2021 by Clemens Brunner.</p>")
+                f"<p>Copyright © MNELAB developers.</p>")
         msg_box.setInformativeText(text)
         msg_box.exec()
 
