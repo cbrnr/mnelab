@@ -9,7 +9,7 @@ MNELAB is a graphical user interface (GUI) for [MNE](https://github.com/mne-tool
 ![](https://raw.githubusercontent.com/cbrnr/mnelab/main/mnelab.png)
 
 ### Changelog
-Check out the [changelog](https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md) to learn what we added, changed, or fixed in the latest release.
+Check out the [changelog](https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md) to learn what we added, changed, or fixed.
 
 ### Dependencies
 MNELAB requires Python >= 3.8 and the following packages:
@@ -40,9 +40,7 @@ If you want to use all MNELAB features, the full package including optional depe
 pip install mnelab[full]
 ```
 
-You can start MNELAB in a terminal with `mnelab` or `python -m mnelab`. On Windows, make sure to use Command Prompt (`cmd.exe`) or PowerShell (`powershell.exe`) &ndash; the `mnelab` command [currently does not work in Git Bash](https://github.com/pypa/pip/issues/10444).
-
-If you use [Arch Linux](https://www.archlinux.org/), you can alternatively install the [python-mnelab](https://aur.archlinux.org/packages/python-mnelab/) AUR package (note that this also requires the [python-mne](https://aur.archlinux.org/packages/python-mne/) AUR package).
+Then start MNELAB in a terminal with `mnelab` or `python -m mnelab`.
 
 You can also install the latest development version as follows:
 
