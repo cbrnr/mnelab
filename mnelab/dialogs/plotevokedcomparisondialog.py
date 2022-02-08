@@ -7,6 +7,11 @@ from PySide6.QtWidgets import (QCheckBox, QComboBox, QDialog, QDialogButtonBox,
                                QGridLayout, QLabel, QListWidget)
 
 
+def select_all(list_widget):
+    for i in range(list_widget.count()):
+        list_widget.item(i).setSelected(True)
+
+
 class PlotEvokedComparisonDialog(QDialog):
     def __init__(self, parent, channels, events):
         super().__init__(parent)
@@ -22,6 +27,7 @@ class PlotEvokedComparisonDialog(QDialog):
         self.picks = QListWidget()
         self.picks.insertItems(0, channels)
         self.picks.setSelectionMode(QListWidget.ExtendedSelection)
+        select_all(self.picks)
         grid.addWidget(self.picks, 0, 1, 1, 1)
 
         label = QLabel("Events:")
@@ -31,6 +37,7 @@ class PlotEvokedComparisonDialog(QDialog):
         self.events.insertItems(0, events)
         self.events.setSelectionMode(QListWidget.ExtendedSelection)
         self.events.setMaximumHeight(self.events.sizeHintForRow(0) * 5.5)
+        select_all(self.events)
         grid.addWidget(self.events, 1, 1, 1, 1)
 
         grid.addWidget(QLabel("Average method:"), 2, 0)
@@ -47,7 +54,7 @@ class PlotEvokedComparisonDialog(QDialog):
 
         grid.addWidget(QLabel("Confidence intervals:"), 4, 0)
         self.confidence_intervals = QCheckBox()
-        self.confidence_intervals.setChecked(False)
+        self.confidence_intervals.setChecked(True)
         grid.addWidget(self.confidence_intervals, 4, 1)
 
         self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
