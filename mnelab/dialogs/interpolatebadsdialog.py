@@ -1,5 +1,4 @@
-# Authors: Clemens Brunner <clemens.brunner@gmail.com>
-#          Victor Férat <victor.ferat@live.fr>
+# Copyright (c) MNELAB developers
 #
 # License: BSD (3-clause)
 
