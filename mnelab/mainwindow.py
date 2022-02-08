@@ -683,8 +683,8 @@ class MainWindow(QMainWindow):
                 epochs=epochs,
                 picks=[item.text() for item in dialog.picks.selectedItems()],
                 events=[item.text() for item in dialog.events.selectedItems()],
-                average_method=dialog.average_method.currentText(),
-                combine=dialog.combine.currentText(),
+                average_method=dialog.average_epochs.currentText(),
+                combine=dialog.combine_channels.currentText(),
                 confidence_intervals=dialog.confidence_intervals.isChecked(),
             )
             for fig in figs:
