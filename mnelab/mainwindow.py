@@ -310,14 +310,14 @@ class MainWindow(QMainWindow):
 
     def _sidebar_move_event(self, parent, start, end, destination, row):
         """
-        Triggered when an data set in the sidebar is moved.
+        Triggered when an item in the sidebar is moved.
 
         Parameters
         ----------
         parent : PySide6.QtCore.QModelIndex
             ???
         start : int
-            The source index of the data set.
+            The source index of the item.
         end : int
             Same as start because the sidebar only allows single selection.
         destination : PySide6.QtCore.QModelIndex
@@ -325,20 +325,7 @@ class MainWindow(QMainWindow):
         row : int
             The target index.
         """
-        # first the data set is copied to the target index
-        self.model.data.insert(row, self.model.data[start])
-        self.model.history.append(f"datasets.insert({row}, datasets[{start}]")
-        # if moved upward, the source index is increased by 1
-        if start > row:
-            start += 1
-        # if moved downward, the new index (after removing the original
-        # item) will be 1 less that the target index
-        else:
-            row -= 1
-        self.model.index = row
-        self.model.data.pop(start)
-        self.model.history.append(f"datasets.pop({start})]")
-        self.data_changed()
+        self.model.move_data_set(start, row)
 
     def data_changed(self):
         # update sidebar

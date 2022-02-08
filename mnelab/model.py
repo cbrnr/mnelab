@@ -502,3 +502,29 @@ class Model:
     @data_changed
     def set_annotations(self, onset, duration, description):
         self.current["data"].set_annotations(mne.Annotations(onset, duration, description))
+
+    @data_changed
+    def move_data_set(self, source, target):
+        """
+        Change the position of a single data set in `self.data`.
+
+        Parameters
+        ----------
+        source : int
+            The data set's initial index.
+        target : int
+            The index the data set should be moved to.
+        """
+        # first the data set is copied to the target index
+        self.data.insert(target, self.data[source])
+        self.history.append(f"datasets.insert({target}, datasets[{source}])")
+        # if moved to the front, the source index is increased by 1
+        if source > target:
+            source += 1
+        # if moved to the back, the new index (after removing the original
+        # data set) will be 1 less that the target index
+        else:
+            target -= 1
+        self.index = target
+        self.data.pop(source)
+        self.history.append(f"datasets.pop({source})")
