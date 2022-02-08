@@ -18,13 +18,32 @@ from .interpolatebadsdialog import InterpolateBadsDialog
 from .metainfodialog import MetaInfoDialog
 from .montagedialog import MontageDialog
 from .pickchannelsdialog import PickChannelsDialog
+from .plotevokedaveragedialog import PlotEvokedAverageDialog
 from .referencedialog import ReferenceDialog
 from .runicadialog import RunICADialog
 from .xdfchunksdialog import XDFChunksDialog
 from .xdfstreamsdialog import XDFStreamsDialog
 
-__all__ = ["AnnotationsDialog", "AppendDialog", "CalcDialog", "ChannelPropertiesDialog",
-           "CropDialog", "EpochDialog", "ERDSDialog", "ErrorMessageBox", "EventsDialog",
-           "FilterDialog", "FindEventsDialog", "HistoryDialog", "InterpolateBadsDialog",
-           "MetaInfoDialog", "MontageDialog", "PickChannelsDialog", "ReferenceDialog",
-           "RunICADialog", "XDFChunksDialog", "XDFStreamsDialog"]
+__all__ = [
+    "AnnotationsDialog",
+    "AppendDialog",
+    "CalcDialog",
+    "ChannelPropertiesDialog",
+    "CropDialog",
+    "EpochDialog",
+    "ERDSDialog",
+    "ErrorMessageBox",
+    "EventsDialog",
+    "FilterDialog",
+    "FindEventsDialog",
+    "HistoryDialog",
+    "InterpolateBadsDialog",
+    "MetaInfoDialog",
+    "MontageDialog",
+    "PickChannelsDialog",
+    "PlotEvokedAverageDialog",
+    "ReferenceDialog",
+    "RunICADialog",
+    "XDFChunksDialog",
+    "XDFStreamsDialog",
+]

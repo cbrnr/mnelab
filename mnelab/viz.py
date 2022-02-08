@@ -7,6 +7,7 @@ import math
 import matplotlib.pyplot as plt
 from mne.time_frequency import tfr_multitaper
 from mne.viz.utils import center_cmap
+from mne.viz import plot_compare_evokeds
 
 
 def _get_rows_cols(n):
@@ -45,3 +46,44 @@ def plot_erds(data, freqs, n_cycles, baseline, times=(None, None)):
         fig.suptitle(f"ERDS ({event})")
         figs.append(fig)
     return figs
+
+
+def plot_evoked_average(
+    epochs,
+    picks,
+    events,
+    average_method,
+    combine,
+    confidence_intervals,
+):
+    """
+    Plot evoked potentials averaged over channels.
+
+    If multiple channel types are selected, one figure will be returned for
+    each channel type.
+
+    Parameters
+    ----------
+    epochs : mne.epochs.Epochs
+        Epochs extracted from a Raw instance.
+    picks : list[str]
+        Channels to include.
+    events : list[str]
+        Events to include.
+    average_method : {"mean", "median"}
+        How to combine the data during averaging.
+    combine : {"gfp", "std", mean", "median"}
+        How to combine information across channels.
+    confidence_intervals : bool
+        If `True`, plot confidence intervals as shaded areas.
+
+    Returns
+    -------
+    list[matplotlib.figure.Figure]
+        A list of the figure(s) generated.
+    """
+    if confidence_intervals:
+        evokeds = {e: list(epochs[e].iter_evoked()) for e in events}
+    else:
+        evokeds = {e: epochs[e].average(picks=picks, method=average_method, by_event_type=True) for e in events}  # noqa: E501
+    return plot_compare_evokeds(evokeds, picks=picks, combine=combine)
