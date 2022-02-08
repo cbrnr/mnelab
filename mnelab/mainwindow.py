@@ -325,7 +325,7 @@ class MainWindow(QMainWindow):
         row : int
             The target index.
         """
-        self.model.move_data_set(start, row)
+        self.model.move_data(start, row)
 
     def data_changed(self):
         # update sidebar

@@ -504,7 +504,7 @@ class Model:
         self.current["data"].set_annotations(mne.Annotations(onset, duration, description))
 
     @data_changed
-    def move_data_set(self, source, target):
+    def move_data(self, source, target):
         """
         Change the position of a single data set in `self.data`.
 
