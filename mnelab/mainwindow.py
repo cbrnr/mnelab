@@ -12,10 +12,10 @@ import mne
 import numpy as np
 from mne.io.pick import channel_type
 from PySide6.QtCore import (QEvent, QMetaObject, QModelIndex, QObject, QPoint, QSettings,
-                            QSize, QStringListModel, Qt, Slot)
+                            QSize, Qt, Slot)
 from PySide6.QtGui import QAction, QDropEvent, QIcon, QKeySequence
-from PySide6.QtWidgets import (QApplication, QFileDialog, QFrame, QLabel, QListView,
-                               QMainWindow, QMessageBox, QSplitter)
+from PySide6.QtWidgets import (QApplication, QFileDialog, QFrame, QLabel,
+                               QMainWindow, QMessageBox, QSplitter, QListWidget)
 from pyxdf import resolve_streams
 
 from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog, ChannelPropertiesDialog,
@@ -264,15 +264,21 @@ class MainWindow(QMainWindow):
             self.actions["toolbar"].setChecked(False)
 
         # set up data model for sidebar (list of open files)
-        self.names = QStringListModel()
-        self.names.dataChanged.connect(self._update_names)
-        splitter = QSplitter()
-        self.sidebar = QListView()
+        self.sidebar = QListWidget()
         self.sidebar.setFrameStyle(QFrame.NoFrame)
         self.sidebar.setFocusPolicy(Qt.NoFocus)
-        self.sidebar.setModel(self.names)
+        self.sidebar.setAcceptDrops(True)
+        self.sidebar.setDragEnabled(True)
+        self.sidebar.setDragDropMode(QListWidget.InternalMove)
+        self.sidebar.setDefaultDropAction(Qt.DropAction.MoveAction)
+        self.sidebar.setEditTriggers(QListWidget.DoubleClicked)
+        self.sidebar.model().rowsMoved.connect(self._sidebar_move_event)
+        self.sidebar.itemDelegate().commitData.connect(self._sidebar_edit_event)
         self.sidebar.clicked.connect(self._update_data)
+
+        splitter = QSplitter()
         splitter.addWidget(self.sidebar)
+
         self.infowidget = InfoWidget()
         splitter.addWidget(self.infowidget)
         width = splitter.size().width()
@@ -291,10 +297,57 @@ class MainWindow(QMainWindow):
         self.setAcceptDrops(True)
         self.data_changed()
 
+    def _sidebar_edit_event(self, edit):
+        """
+        Triggered when a data set in the sidebar is renamed.
+
+        Parameters
+        ----------
+        edit : PySide6.QtWidgets.QLineEdit
+            The text editor.
+        """
+        self.model.current["name"] = edit.text()
+
+    def _sidebar_move_event(self, parent, start, end, destination, row):
+        """
+        Triggered when an data set in the sidebar is moved.
+
+        Parameters
+        ----------
+        parent : PySide6.QtCore.QModelIndex
+            ???
+        start : int
+            The source index of the data set.
+        end : int
+            Same as start because the sidebar only allows single selection.
+        destination : PySide6.QtCore.QModelIndex
+            ???
+        row : int
+            The target index.
+        """
+        # first the data set is copied to the target index
+        self.model.data.insert(row, self.model.data[start])
+        self.model.history.append(f"datasets.insert({row}, datasets[{start}]")
+        # if moved upward, the source index is increased by 1
+        if start > row:
+            start += 1
+        # if moved downward, the new index (after removing the original
+        # item) will be 1 less that the target index
+        else:
+            row -= 1
+        self.model.index = row
+        self.model.data.pop(start)
+        self.model.history.append(f"datasets.pop({start})]")
+        self.data_changed()
+
     def data_changed(self):
         # update sidebar
-        self.names.setStringList(self.model.names)
-        self.sidebar.setCurrentIndex(self.names.index(self.model.index))
+        self.sidebar.clear()
+        self.sidebar.insertItems(0, self.model.names)
+        self.sidebar.setCurrentRow(self.model.index)
+        for it in range(self.sidebar.count()):
+            item = self.sidebar.item(it)
+            item.setFlags(item.flags() | Qt.ItemIsEditable)
 
         # update info widget
         if self.model.data:
@@ -934,12 +987,6 @@ class MainWindow(QMainWindow):
             self.model.index = selected.row()
             self.data_changed()
             self.model.history.append(f"data = datasets[{self.model.index}]")
-
-    @Slot(QModelIndex, QModelIndex)
-    def _update_names(self, start, stop):
-        """Update names in DataSets after changes in sidebar."""
-        for index in range(start.row(), stop.row() + 1):
-            self.model.data[index]["name"] = self.names.stringList()[index]
 
     @Slot()
     def _update_recent_menu(self):

@@ -1,6 +1,7 @@
 ## [UNRELEASED] - XXXX-XX-XX
 ### Added
 - Add support to select and load multiple files at once ([#257](https://github.com/cbrnr/mnelab/pull/257) by [Florian Hofer](https://github.com/hofaflo))
+- Add drag and drop reordering to sidebar ([#260](https://github.com/cbrnr/mnelab/pull/260) by [Florian Hofer](https://github.com/hofaflo))
 
 ### Fixed
 - Fix splitting name and extension for compatibility with Python 3.8 ([#252](https://github.com/cbrnr/mnelab/pull/252) by [Johan Medrano](https://github.com/yop0))
