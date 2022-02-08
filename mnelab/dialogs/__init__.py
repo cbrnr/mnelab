@@ -18,7 +18,7 @@ from .interpolatebadsdialog import InterpolateBadsDialog
 from .metainfodialog import MetaInfoDialog
 from .montagedialog import MontageDialog
 from .pickchannelsdialog import PickChannelsDialog
-from .plotevokedcomparisondialog import PlotEvokedComparisonDialog
+from .plotevokeddialog import PlotEvokedComparisonDialog
 from .referencedialog import ReferenceDialog
 from .runicadialog import RunICADialog
 from .xdfchunksdialog import XDFChunksDialog
