@@ -1,4 +1,4 @@
-# Authors: Clemens Brunner <clemens.brunner@gmail.com>
+# Copyright (c) MNELAB developers
 #
 # License: BSD (3-clause)
 
