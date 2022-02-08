@@ -315,13 +315,13 @@ class MainWindow(QMainWindow):
         Parameters
         ----------
         parent : PySide6.QtCore.QModelIndex
-            ???
+            Unused.
         start : int
             The source index of the item.
         end : int
-            Same as start because the sidebar only allows single selection.
+            Unused (equals start as the sidebar only allows single selection).
         destination : PySide6.QtCore.QModelIndex
-            ???
+            Unused.
         row : int
             The target index.
         """
