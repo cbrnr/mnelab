@@ -18,16 +18,18 @@ from PySide6.QtWidgets import (QApplication, QFileDialog, QFrame, QLabel, QListV
                                QMainWindow, QMessageBox, QSplitter)
 from pyxdf import resolve_streams
 
-from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog, ChannelPropertiesDialog,
-                      CropDialog, EpochDialog, ERDSDialog, ErrorMessageBox, EventsDialog,
-                      FilterDialog, FindEventsDialog, HistoryDialog, InterpolateBadsDialog,
-                      MetaInfoDialog, MontageDialog, PickChannelsDialog, ReferenceDialog,
-                      RunICADialog, XDFChunksDialog, XDFStreamsDialog)
+from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog,
+                      ChannelPropertiesDialog, CropDialog, EpochDialog,
+                      ERDSDialog, ErrorMessageBox, EventsDialog, FilterDialog,
+                      FindEventsDialog, HistoryDialog, InterpolateBadsDialog,
+                      MetaInfoDialog, MontageDialog, PickChannelsDialog,
+                      PlotEvokedComparisonDialog, ReferenceDialog, RunICADialog,
+                      XDFChunksDialog, XDFStreamsDialog)
 from .io import writers
 from .io.xdf import get_xml, list_chunks
 from .model import InvalidAnnotationsError, LabelsNotFoundError
 from .utils import has_locations, have, image_path, interface_style
-from .viz import plot_erds
+from .viz import plot_erds, plot_evoked_comparison
 from .widgets import InfoWidget
 
 MAX_RECENT = 6  # maximum number of recent files
@@ -185,6 +187,10 @@ class MainWindow(QMainWindow):
         self.actions["plot_locations"] = plot_menu.addAction(icon, "&Channel locations",
                                                              self.plot_locations)
         self.actions["plot_erds"] = plot_menu.addAction("&ERDS maps...", self.plot_erds)
+        self.actions["plot_evoked_comparison"] = plot_menu.addAction(
+            "Evoked comparison...",
+            self.plot_evoked_comparison,
+        )
         plot_menu.addSeparator()
         self.actions["plot_ica_components"] = plot_menu.addAction("ICA &components...",
                                                                   self.plot_ica_components)
@@ -338,6 +344,9 @@ class MainWindow(QMainWindow):
             self.actions["apply_ica"].setEnabled(enabled and ica)
             self.actions["export_ica"].setEnabled(enabled and ica)
             self.actions["plot_erds"].setEnabled(
+                enabled and self.model.current["dtype"] == "epochs"
+            )
+            self.actions["plot_evoked_comparison"].setEnabled(
                 enabled and self.model.current["dtype"] == "epochs"
             )
             self.actions["plot_ica_components"].setEnabled(enabled and ica and locations)
@@ -662,6 +671,22 @@ class MainWindow(QMainWindow):
             baseline = [dialog.b1, dialog.b2]
             times = [dialog.t1, dialog.t2]
             figs = plot_erds(data, freqs, freqs, baseline, times)
+            for fig in figs:
+                fig.show()
+
+    def plot_evoked_comparison(self):
+        """Plot evoked potentials averaged over channels."""
+        epochs = self.model.current["data"]
+        dialog = PlotEvokedComparisonDialog(self, epochs.ch_names, epochs.event_id)
+        if dialog.exec():
+            figs = plot_evoked_comparison(
+                epochs=epochs,
+                picks=[item.text() for item in dialog.picks.selectedItems()],
+                events=[item.text() for item in dialog.events.selectedItems()],
+                average_method=dialog.average_epochs.currentText(),
+                combine=dialog.combine_channels.currentText(),
+                confidence_intervals=dialog.confidence_intervals.isChecked(),
+            )
             for fig in figs:
                 fig.show()
 
