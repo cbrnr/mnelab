@@ -7,10 +7,10 @@ from PySide6.QtWidgets import (QCheckBox, QComboBox, QDialog, QDialogButtonBox,
                                QGridLayout, QLabel, QListWidget)
 
 
-class PlotEvokedAverageDialog(QDialog):
+class PlotEvokedComparisonDialog(QDialog):
     def __init__(self, parent, channels, events):
         super().__init__(parent)
-        self.setWindowTitle("Plot evoked response (average)")
+        self.setWindowTitle("Plot evoked comparison")
 
         grid = QGridLayout(self)
         grid.setColumnStretch(0, 2)

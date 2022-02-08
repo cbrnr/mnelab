@@ -18,7 +18,7 @@ from .interpolatebadsdialog import InterpolateBadsDialog
 from .metainfodialog import MetaInfoDialog
 from .montagedialog import MontageDialog
 from .pickchannelsdialog import PickChannelsDialog
-from .plotevokedaveragedialog import PlotEvokedAverageDialog
+from .plotevokedcomparisondialog import PlotEvokedComparisonDialog
 from .referencedialog import ReferenceDialog
 from .runicadialog import RunICADialog
 from .xdfchunksdialog import XDFChunksDialog
@@ -41,7 +41,7 @@ __all__ = [
     "MetaInfoDialog",
     "MontageDialog",
     "PickChannelsDialog",
-    "PlotEvokedAverageDialog",
+    "PlotEvokedComparisonDialog",
     "ReferenceDialog",
     "RunICADialog",
     "XDFChunksDialog",

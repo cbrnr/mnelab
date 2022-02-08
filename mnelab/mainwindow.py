@@ -23,13 +23,13 @@ from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog,
                       ERDSDialog, ErrorMessageBox, EventsDialog, FilterDialog,
                       FindEventsDialog, HistoryDialog, InterpolateBadsDialog,
                       MetaInfoDialog, MontageDialog, PickChannelsDialog,
-                      PlotEvokedAverageDialog, ReferenceDialog, RunICADialog,
+                      PlotEvokedComparisonDialog, ReferenceDialog, RunICADialog,
                       XDFChunksDialog, XDFStreamsDialog)
 from .io import writers
 from .io.xdf import get_xml, list_chunks
 from .model import InvalidAnnotationsError, LabelsNotFoundError
 from .utils import has_locations, have, image_path, interface_style
-from .viz import plot_erds, plot_evoked_average
+from .viz import plot_erds, plot_evoked_comparison
 from .widgets import InfoWidget
 
 MAX_RECENT = 6  # maximum number of recent files
@@ -187,9 +187,9 @@ class MainWindow(QMainWindow):
         self.actions["plot_locations"] = plot_menu.addAction(icon, "&Channel locations",
                                                              self.plot_locations)
         self.actions["plot_erds"] = plot_menu.addAction("&ERDS maps...", self.plot_erds)
-        self.actions["plot_evoked_average"] = plot_menu.addAction(
-            "Evoked (average)...",
-            self.plot_evoked_average,
+        self.actions["plot_evoked_comparison"] = plot_menu.addAction(
+            "Evoked comparison...",
+            self.plot_evoked_comparison,
         )
         plot_menu.addSeparator()
         self.actions["plot_ica_components"] = plot_menu.addAction("ICA &components...",
@@ -346,7 +346,7 @@ class MainWindow(QMainWindow):
             self.actions["plot_erds"].setEnabled(
                 enabled and self.model.current["dtype"] == "epochs"
             )
-            self.actions["plot_evoked_average"].setEnabled(
+            self.actions["plot_evoked_comparison"].setEnabled(
                 enabled and self.model.current["dtype"] == "epochs"
             )
             self.actions["plot_ica_components"].setEnabled(enabled and ica and locations)
@@ -674,12 +674,12 @@ class MainWindow(QMainWindow):
             for fig in figs:
                 fig.show()
 
-    def plot_evoked_average(self):
+    def plot_evoked_comparison(self):
         """Plot evoked potentials averaged over channels."""
         epochs = self.model.current["data"]
-        dialog = PlotEvokedAverageDialog(self, epochs.ch_names, epochs.event_id)
+        dialog = PlotEvokedComparisonDialog(self, epochs.ch_names, epochs.event_id)
         if dialog.exec():
-            figs = plot_evoked_average(
+            figs = plot_evoked_comparison(
                 epochs=epochs,
                 picks=[item.text() for item in dialog.picks.selectedItems()],
                 events=[item.text() for item in dialog.events.selectedItems()],

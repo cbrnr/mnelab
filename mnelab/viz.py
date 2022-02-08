@@ -48,7 +48,7 @@ def plot_erds(data, freqs, n_cycles, baseline, times=(None, None)):
     return figs
 
 
-def plot_evoked_average(
+def plot_evoked_comparison(
     epochs,
     picks,
     events,
@@ -57,7 +57,7 @@ def plot_evoked_average(
     confidence_intervals,
 ):
     """
-    Plot evoked potentials averaged over channels.
+    Plot evoked potentials of different events averaged over channels.
 
     If multiple channel types are selected, one figure will be returned for
     each channel type.
