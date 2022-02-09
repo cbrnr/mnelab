@@ -762,12 +762,6 @@ class MainWindow(QMainWindow):
             epochs.get_montage(),
         )
         if dialog.exec():
-            if dialog.gfp_yes.isChecked():
-                gfp = True
-            elif dialog.gfp_no.isChecked():
-                gfp = False
-            else:
-                gfp = "only"
             if dialog.topomaps.isChecked():
                 if dialog.topomaps_peaks.isChecked():
                     topomap_times = "peaks"
@@ -781,7 +775,7 @@ class MainWindow(QMainWindow):
                 epochs=epochs,
                 picks=[item.text() for item in dialog.picks.selectedItems()],
                 events=[item.text() for item in dialog.events.selectedItems()],
-                gfp=gfp,
+                gfp=dialog.gfp.isChecked(),
                 spatial_colors=dialog.spatial_colors.isChecked(),
                 topomap_times=topomap_times,
             )

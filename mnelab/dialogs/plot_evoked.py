@@ -4,7 +4,6 @@
 
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import (
-    QButtonGroup,
     QCheckBox,
     QComboBox,
     QDialog,
@@ -30,9 +29,7 @@ class PlotEvokedDialog(QDialog):
 
         grid = QGridLayout(self)
         grid.setColumnStretch(0, 2)
-        grid.setColumnStretch(1, 1)
-        grid.setColumnStretch(2, 1)
-        grid.setColumnStretch(3, 1)
+        grid.setColumnStretch(1, 3)
 
         label = QLabel("Channels:")
         label.setAlignment(Qt.AlignTop)
@@ -41,7 +38,7 @@ class PlotEvokedDialog(QDialog):
         self.picks.insertItems(0, channels)
         self.picks.setSelectionMode(QListWidget.ExtendedSelection)
         select_all(self.picks)
-        grid.addWidget(self.picks, 0, 1, 1, 3)
+        grid.addWidget(self.picks, 0, 1)
 
         label = QLabel("Events:")
         label.setAlignment(Qt.AlignTop)
@@ -51,20 +48,12 @@ class PlotEvokedDialog(QDialog):
         self.events.setSelectionMode(QListWidget.ExtendedSelection)
         self.events.setMaximumHeight(self.events.sizeHintForRow(0) * 5.5)
         select_all(self.events)
-        grid.addWidget(self.events, 1, 1, 1, 3)
+        grid.addWidget(self.events, 1, 1)
 
         grid.addWidget(QLabel("Show GFP:"), 2, 0)
-        self.gfp_group = QButtonGroup()
-        self.gfp_no = QRadioButton("No")
-        self.gfp_yes = QRadioButton("Yes")
-        self.gfp_only = QRadioButton("Only")
-        self.gfp_group.addButton(self.gfp_no)
-        self.gfp_group.addButton(self.gfp_yes)
-        self.gfp_group.addButton(self.gfp_only)
-        self.gfp_no.setChecked(True)
-        grid.addWidget(self.gfp_no, 2, 2)
-        grid.addWidget(self.gfp_yes, 2, 1)
-        grid.addWidget(self.gfp_only, 2, 3)
+        self.gfp = QCheckBox()
+        self.gfp.setChecked(False)
+        grid.addWidget(self.gfp, 2, 1)
 
         self.spatial_colors_label = QLabel("Spatial colors:")
         grid.addWidget(self.spatial_colors_label, 3, 0)
@@ -97,7 +86,6 @@ class PlotEvokedDialog(QDialog):
             self.topomaps.setEnabled(False)
             self.topomaps.setStyleSheet("QGroupBox::title{ color: gray }")
 
-        self.gfp_only.toggled.connect(self.toggle_spatial_colors)
         self.topomaps_times.toggled.connect(self.toggle_topomaps_timelist)
         self.topomaps.toggled.connect(self.toggle_ok)
         self.topomaps_times.toggled.connect(self.toggle_ok)
@@ -122,11 +110,6 @@ class PlotEvokedDialog(QDialog):
     @Slot()
     def toggle_topomaps_timelist(self):
         self.topomaps_timelist.setEnabled(self.topomaps_times.isChecked())
-
-    @Slot()
-    def toggle_spatial_colors(self):
-        self.spatial_colors.setEnabled(not self.gfp_only.isChecked())
-        self.spatial_colors_label.setEnabled(not self.gfp_only.isChecked())
 
 
 class PlotEvokedComparisonDialog(QDialog):
