@@ -457,7 +457,13 @@ class MainWindow(QMainWindow):
                     selected = enabled[0]
                 else:
                     selected = None
-                dialog = XDFStreamsDialog(self, rows, selected=selected, disabled=disabled)
+                dialog = XDFStreamsDialog(
+                    self,
+                    rows,
+                    fname=fname,
+                    selected=selected,
+                    disabled=disabled,
+                )
                 if dialog.exec():
                     row = dialog.view.selectionModel().selectedRows()[0].row()
                     stream_id = dialog.model.data(dialog.model.index(row, 0))
@@ -528,7 +534,9 @@ class MainWindow(QMainWindow):
 
     def xdf_meta_info(self, fname=None):
         """Show XDF meta info."""
-        xml = get_xml(self.model.current["fname"])
+        if fname is None:
+            fname = self.model.current["fname"]
+        xml = get_xml(fname)
         dialog = MetaInfoDialog(self, xml)
         dialog.exec()
 
