@@ -22,7 +22,7 @@ from pyxdf import resolve_streams
 from .dialogs import *  # noqa: F403
 from .io import writers
 from .io.xdf import get_xml, list_chunks
-from .model import InvalidAnnotationsError, LabelsNotFoundError
+from .model import InvalidAnnotationsError, LabelsNotFoundError, Model
 from .utils import has_locations, have, image_path, interface_style
 from .viz import plot_erds, plot_evoked_comparison
 from .widgets import InfoWidget
@@ -55,7 +55,7 @@ def write_settings(**kwargs):
 
 class MainWindow(QMainWindow):
     """MNELAB main window."""
-    def __init__(self, model):
+    def __init__(self, model: Model):
         """Initialize MNELAB main window.
 
         Parameters
