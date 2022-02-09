@@ -49,7 +49,7 @@ class XDFStreamsDialog(QDialog):
         hbox.addWidget(self._effective_srate)
         self._prefix_markers = QCheckBox("Prefix markers with stream ID")
         self._prefix_markers.setChecked(False)
-        if not disabled:
+        if len(disabled) < 2:
             self._prefix_markers.setEnabled(False)
         hbox.addWidget(self._prefix_markers)
         vbox.addLayout(hbox)
