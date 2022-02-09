@@ -40,7 +40,7 @@ from .dialogs import *  # noqa: F403
 from .io import writers
 from .io.xdf import get_xml, list_chunks
 from .model import InvalidAnnotationsError, LabelsNotFoundError, Model
-from .utils import has_locations, have, image_path, interface_style
+from .utils import count_locations, have, image_path, interface_style
 from .viz import plot_erds, plot_evoked, plot_evoked_comparison, plot_evoked_topomaps
 from .widgets import InfoWidget
 
@@ -410,7 +410,7 @@ class MainWindow(QMainWindow):
                 annot = False
             self.actions["export_annotations"].setEnabled(enabled and annot)
             self.actions["annotations"].setEnabled(enabled and annot)
-            locations = has_locations(self.model.current["data"].info)
+            locations = count_locations(self.model.current["data"].info)
             self.actions["plot_locations"].setEnabled(enabled and locations)
             ica = bool(self.model.current["ica"])
             self.actions["apply_ica"].setEnabled(enabled and ica)

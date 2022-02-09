@@ -13,7 +13,7 @@ import numpy as np
 
 from .io import read_raw, write_raw
 from .io.readers import split_name_ext
-from .utils import has_locations
+from .utils import count_locations
 
 
 class LabelsNotFoundError(Exception):
@@ -276,7 +276,7 @@ class Model:
         dtype = self.current["dtype"].capitalize()
         reference = self.current["reference"]
         events = self.current["events"]
-        locations = has_locations(self.current["data"].info)
+        locations = count_locations(self.current["data"].info)
         ica = self.current["ica"]
 
         length = f"{data.times[-1] - data.times[0]:.6g} s"
@@ -340,7 +340,7 @@ class Model:
                 "Events": events,
                 "Annotations": annots,
                 "Reference": reference if reference else "-",
-                "Locations": "Yes" if locations else "-",
+                "Locations": f"{locations}/{nchan}",
                 "ICA": ica}
 
     @data_changed
