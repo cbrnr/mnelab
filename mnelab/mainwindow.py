@@ -187,10 +187,14 @@ class MainWindow(QMainWindow):
             self.plot_evoked_comparison,
         )
         plot_menu.addSeparator()
-        self.actions["plot_ica_components"] = plot_menu.addAction("ICA &components...",
-                                                                  self.plot_ica_components)
-        self.actions["plot_ica_sources"] = plot_menu.addAction("ICA &sources...",
-                                                               self.plot_ica_sources)
+        self.actions["plot_ica_components"] = plot_menu.addAction(
+            "ICA &components",
+            self.plot_ica_components,
+        )
+        self.actions["plot_ica_sources"] = plot_menu.addAction(
+            "ICA &sources",
+            self.plot_ica_sources,
+        )
 
         tools_menu = self.menuBar().addMenu("&Tools")
         icon = QIcon.fromTheme("filter-data")
@@ -226,7 +230,7 @@ class MainWindow(QMainWindow):
                                                           self.epoch_data)
 
         view_menu = self.menuBar().addMenu("&View")
-        self.actions["history"] = view_menu.addAction("&History...", self.show_history)
+        self.actions["history"] = view_menu.addAction("&History", self.show_history)
         self.actions["toolbar"] = view_menu.addAction("&Toolbar", self._toggle_toolbar)
         self.actions["toolbar"].setCheckable(True)
         self.actions["statusbar"] = view_menu.addAction("&Statusbar",
