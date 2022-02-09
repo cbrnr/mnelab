@@ -53,7 +53,7 @@ class XDFStreamsDialog(QDialog):
         if not disabled:
             self._prefix_markers.setEnabled(False)
         hbox.addWidget(self._prefix_markers)
-        self.details_button = QPushButton("Details...")
+        self.details_button = QPushButton("Details")
         self.details_button.clicked.connect(self.details)
         hbox.addWidget(self.details_button)
         vbox.addLayout(hbox)
