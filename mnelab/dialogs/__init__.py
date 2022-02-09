@@ -9,7 +9,7 @@ from .channel_properties import ChannelPropertiesDialog
 from .crop import CropDialog
 from .epoch import EpochDialog
 from .erds import ERDSDialog
-from .errormessagebox import ErrorMessageBox
+from .error_message import ErrorMessageBox
 from .events import EventsDialog
 from .filter import FilterDialog
 from .find_events import FindEventsDialog
