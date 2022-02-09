@@ -626,7 +626,12 @@ class MainWindow(QMainWindow):
             ch_names = self.model.current["data"].info["ch_names"]
             # check if at least one channel name matches a name in the montage
             if set(ch_names) & set(montage.ch_names):
-                self.model.set_montage(name)
+                self.model.set_montage(
+                    name,
+                    match_case=dialog.match_case.isChecked(),
+                    match_alias=dialog.match_alias.isChecked(),
+                    on_missing="ignore" if dialog.ignore_missing.isChecked() else "raise",
+                )
             else:
                 QMessageBox.critical(
                     self, "No matching channel names", "Channel names defined in the "
