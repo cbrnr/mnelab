@@ -6,7 +6,7 @@ from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox, QHBoxLayout,
                                QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout)
 
-from .eventsdialog import IntTableWidgetItem
+from .events import IntTableWidgetItem
 
 
 class AnnotationsDialog(QDialog):
