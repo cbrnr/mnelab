@@ -3,6 +3,7 @@
 # License: BSD (3-clause)
 
 import multiprocessing as mp
+import sys
 import traceback
 from functools import partial
 from pathlib import Path
@@ -66,6 +67,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.model = model  # data model
         self.setWindowTitle("MNELAB")
+        sys.excepthook = self._excepthook
 
         # restore settings
         settings = read_settings()
@@ -298,6 +300,11 @@ class MainWindow(QMainWindow):
 
         self.setAcceptDrops(True)
         self.data_changed()
+
+    def _excepthook(self, type, value, traceback_):
+        exception_text = str(value)
+        traceback_text = "".join(traceback.format_exception(type, value, traceback_))
+        ErrorMessageBox(self, exception_text, "", traceback_text).show()
 
     def _sidebar_edit_event(self, edit):
         """
