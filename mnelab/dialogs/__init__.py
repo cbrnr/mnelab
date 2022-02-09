@@ -23,27 +23,3 @@ from .referencedialog import ReferenceDialog
 from .runicadialog import RunICADialog
 from .xdfchunksdialog import XDFChunksDialog
 from .xdfstreamsdialog import XDFStreamsDialog
-
-__all__ = [
-    "AnnotationsDialog",
-    "AppendDialog",
-    "CalcDialog",
-    "ChannelPropertiesDialog",
-    "CropDialog",
-    "EpochDialog",
-    "ERDSDialog",
-    "ErrorMessageBox",
-    "EventsDialog",
-    "FilterDialog",
-    "FindEventsDialog",
-    "HistoryDialog",
-    "InterpolateBadsDialog",
-    "MetaInfoDialog",
-    "MontageDialog",
-    "PickChannelsDialog",
-    "PlotEvokedComparisonDialog",
-    "ReferenceDialog",
-    "RunICADialog",
-    "XDFChunksDialog",
-    "XDFStreamsDialog",
-]
