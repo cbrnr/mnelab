@@ -5,13 +5,14 @@
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import (QAbstractItemView, QCheckBox, QDialog, QDialogButtonBox,
-                               QHBoxLayout, QTableView, QVBoxLayout)
+                               QHBoxLayout, QTableView, QVBoxLayout, QPushButton)
 
 
 class XDFStreamsDialog(QDialog):
-    def __init__(self, parent, rows, selected=None, disabled=None):
+    def __init__(self, parent, rows, fname, selected=None, disabled=None):
         super().__init__(parent)
         self.setWindowTitle("Select XDF Stream")
+        self.fname = fname
 
         self.model = QStandardItemModel()
         self.model.setHorizontalHeaderLabels(["ID", "Name", "Type", "Channels", "Format",
@@ -49,10 +50,14 @@ class XDFStreamsDialog(QDialog):
         hbox.addWidget(self._effective_srate)
         self._prefix_markers = QCheckBox("Prefix markers with stream ID")
         self._prefix_markers.setChecked(False)
-        if not disabled:
+        if len(disabled) < 2:
             self._prefix_markers.setEnabled(False)
         hbox.addWidget(self._prefix_markers)
+        self.details_button = QPushButton("Details")
+        self.details_button.clicked.connect(self.details)
+        hbox.addWidget(self.details_button)
         vbox.addLayout(hbox)
+
         self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         vbox.addWidget(self.buttonbox)
         self.buttonbox.accepted.connect(self.accept)
@@ -70,3 +75,6 @@ class XDFStreamsDialog(QDialog):
     @property
     def prefix_markers(self):
         return self._prefix_markers.isChecked()
+
+    def details(self):
+        self.parent().xdf_meta_info(self.fname)

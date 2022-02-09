@@ -98,10 +98,6 @@ class MainWindow(QMainWindow):
                                                          QKeySequence.Close)
         self.actions["close_all"] = file_menu.addAction("Close all", self.close_all)
         file_menu.addSeparator()
-        icon = QIcon.fromTheme("meta-info")
-        self.actions["meta_info"] = file_menu.addAction(icon, "Show information...",
-                                                        self.meta_info)
-        file_menu.addSeparator()
         self.actions["import_bads"] = file_menu.addAction(
             "Import bad channels...",
             lambda: self.import_file(model.import_bads, "Import bad channels", "*.csv")
@@ -145,6 +141,11 @@ class MainWindow(QMainWindow):
             lambda: self.export_file(model.export_ica, "Export ICA", "*.fif *.fif.gz")
         )
         file_menu.addSeparator()
+        icon = QIcon.fromTheme("meta-info")
+        self.actions["xdf_meta_info"] = file_menu.addAction(
+            "Show XDF meta information",
+            self.xdf_meta_info,
+        )
         self.actions["xdf_chunks"] = file_menu.addAction("Show XDF chunks...",
                                                          self.xdf_chunks)
         file_menu.addSeparator()
@@ -246,7 +247,6 @@ class MainWindow(QMainWindow):
         self.toolbar = self.addToolBar("toolbar")
         self.toolbar.setObjectName("toolbar")
         self.toolbar.addAction(self.actions["open_file"])
-        self.toolbar.addAction(self.actions["meta_info"])
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.actions["chan_props"])
         self.toolbar.addSeparator()
@@ -409,7 +409,7 @@ class MainWindow(QMainWindow):
             self.actions["append_data"].setEnabled(
                 enabled and append and (self.model.current["dtype"] in ("raw", "epochs"))
             )
-            self.actions["meta_info"].setEnabled(
+            self.actions["xdf_meta_info"].setEnabled(
                 enabled and self.model.current["ftype"] in ["XDF", "XDFZ", "XDF.GZ"]
             )
             self.actions["convert_od"].setEnabled(
@@ -464,7 +464,13 @@ class MainWindow(QMainWindow):
                     selected = enabled[0]
                 else:
                     selected = None
-                dialog = XDFStreamsDialog(self, rows, selected=selected, disabled=disabled)
+                dialog = XDFStreamsDialog(
+                    self,
+                    rows,
+                    fname=fname,
+                    selected=selected,
+                    disabled=disabled,
+                )
                 if dialog.exec():
                     row = dialog.view.selectionModel().selectedRows()[0].row()
                     stream_id = dialog.model.data(dialog.model.index(row, 0))
@@ -533,9 +539,11 @@ class MainWindow(QMainWindow):
             while len(self.model) > 0:
                 self.model.remove_data()
 
-    def meta_info(self):
+    def xdf_meta_info(self, fname=None):
         """Show XDF meta info."""
-        xml = get_xml(self.model.current["fname"])
+        if fname is None:
+            fname = self.model.current["fname"]
+        xml = get_xml(fname)
         dialog = MetaInfoDialog(self, xml)
         dialog.exec()
 
