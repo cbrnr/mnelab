@@ -18,13 +18,7 @@ from PySide6.QtWidgets import (QApplication, QFileDialog, QFrame, QLabel,
                                QMainWindow, QMessageBox, QSplitter, QListWidget)
 from pyxdf import resolve_streams
 
-from .dialogs import (AnnotationsDialog, AppendDialog, CalcDialog,
-                      ChannelPropertiesDialog, CropDialog, EpochDialog,
-                      ERDSDialog, ErrorMessageBox, EventsDialog, FilterDialog,
-                      FindEventsDialog, HistoryDialog, InterpolateBadsDialog,
-                      MetaInfoDialog, MontageDialog, PickChannelsDialog,
-                      PlotEvokedComparisonDialog, ReferenceDialog, RunICADialog,
-                      XDFChunksDialog, XDFStreamsDialog)
+from .dialogs import *  # noqa: F403
 from .io import writers
 from .io.xdf import get_xml, list_chunks
 from .model import InvalidAnnotationsError, LabelsNotFoundError
