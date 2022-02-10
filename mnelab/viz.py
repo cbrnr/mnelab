@@ -151,9 +151,9 @@ def plot_evoked_comparison(
     return plot_compare_evokeds(evokeds, picks=picks, combine=combine)
 
 
-def plot_topomap_evoked(epochs, events, average_method, times):
+def plot_evoked_topomaps(epochs, events, average_method, times):
     """
-    Plot topomaps of evoked potentials.
+    Plot evoked topomaps.
 
     One figure is generated for each event.
 

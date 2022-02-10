@@ -41,7 +41,7 @@ from .io import writers
 from .io.xdf import get_xml, list_chunks
 from .model import InvalidAnnotationsError, LabelsNotFoundError, Model
 from .utils import has_locations, have, image_path, interface_style
-from .viz import plot_erds, plot_evoked, plot_evoked_comparison, plot_topomap_evoked
+from .viz import plot_erds, plot_evoked, plot_evoked_comparison, plot_evoked_topomaps
 from .widgets import InfoWidget
 
 MAX_RECENT = 6  # maximum number of recent files
@@ -209,9 +209,9 @@ class MainWindow(QMainWindow):
             "Evoked comparison...",
             self.plot_evoked_comparison,
         )
-        self.actions["plot_topomap_evoked"] = plot_menu.addAction(
-            "Topomap evoked...",
-            self.plot_topomap_evoked,
+        self.actions["plot_evoked_topomaps"] = plot_menu.addAction(
+            "Evoked topomaps...",
+            self.plot_evoked_topomaps,
         )
         plot_menu.addSeparator()
         self.actions["plot_ica_components"] = plot_menu.addAction(
@@ -802,10 +802,10 @@ class MainWindow(QMainWindow):
             for fig in figs:
                 fig.show()
 
-    def plot_topomap_evoked(self):
-        """Plot topomaps of evoked potentials."""
+    def plot_evoked_topomaps(self):
+        """Plot evoked topomaps."""
         epochs = self.model.current["data"]
-        dialog = PlotTopomapEvokedDialog(self, epochs.event_id)
+        dialog = PlotEvokedTopomaps(self, epochs.event_id)
         if dialog.exec():
             if dialog.auto.isChecked():
                 times = "auto"
@@ -816,7 +816,7 @@ class MainWindow(QMainWindow):
             else:
                 times = [float(t.strip()) for t in dialog.timelist.text().split(",")]
 
-            figs = plot_topomap_evoked(
+            figs = plot_evoked_topomaps(
                 epochs=epochs,
                 events=[item.text() for item in dialog.events.selectedItems()],
                 average_method=dialog.average_epochs.currentText(),
