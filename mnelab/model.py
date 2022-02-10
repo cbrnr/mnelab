@@ -6,6 +6,7 @@ from collections import Counter, defaultdict
 from copy import deepcopy
 from functools import wraps
 from os.path import getsize, join, split, splitext
+from pathlib import Path
 
 import mne
 import numpy as np
@@ -104,6 +105,7 @@ class Model:
     @data_changed
     def load(self, fname, *args, **kwargs):
         """Load data set from file."""
+        fname = str(Path(fname).resolve())
         data = read_raw(fname, *args, **kwargs, preload=True)
         argstr = ", " + f"{', '.join(f'{v}' for v in args)}" if args else ""
         if kwargs:
