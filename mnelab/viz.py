@@ -48,6 +48,40 @@ def plot_erds(data, freqs, n_cycles, baseline, times=(None, None)):
     return figs
 
 
+def plot_erds_topomaps(epochs, events, freqs, baseline, times):
+    """
+    Plot ERDS topomaps, one figure per event.
+
+    Parameters
+    ----------
+    epochs : mne.epochs.Epochs
+        Epochs extracted from a Raw instance.
+    events : list[str]
+        Events to include.
+    freqs : np.ndarray
+        Array of frequencies over which the average is taken.
+    baseline : tuple[float, float]
+        Start and end times for baseline correction.
+    times : tuple[float, float]
+        Start and end times between which the average is taken.
+
+    Returns
+    -------
+    list[matplotlib.figure.Figure]
+        A list of the figure(s) generated.
+    """
+    figs = []
+    for event in events:
+        tfr = tfr_multitaper(epochs[event], freqs, freqs, average=True, return_itc=False)
+        tfr.apply_baseline(baseline, mode="percent")
+        tfr.crop(*times)
+        fig = tfr.plot_topomap(title=f"Event: {event}")
+        fig.set_size_inches(4, 3)
+        fig.set_tight_layout(True)
+        figs.append(fig)
+    return figs
+
+
 def plot_evoked(
     epochs,
     picks,

@@ -32,7 +32,13 @@ from .io.xdf import get_xml, list_chunks
 from .model import InvalidAnnotationsError, LabelsNotFoundError, Model
 from .settings import SettingsDialog, read_settings, write_settings
 from .utils import count_locations, have, image_path, interface_style, natural_sort
-from .viz import plot_erds, plot_evoked, plot_evoked_comparison, plot_evoked_topomaps
+from .viz import (
+    plot_erds,
+    plot_erds_topomaps,
+    plot_evoked,
+    plot_evoked_comparison,
+    plot_evoked_topomaps,
+)
 from .widgets import InfoWidget
 
 
@@ -176,7 +182,12 @@ class MainWindow(QMainWindow):
         icon = QIcon.fromTheme("plot-locations")
         self.actions["plot_locations"] = plot_menu.addAction(icon, "&Channel locations",
                                                              self.plot_locations)
+        plot_menu.addSeparator()
         self.actions["plot_erds"] = plot_menu.addAction("&ERDS maps...", self.plot_erds)
+        self.actions["plot_erds_topomaps"] = plot_menu.addAction(
+            "ERDS topomaps...",
+            self.plot_erds_topomaps,
+        )
         plot_menu.addSeparator()
         self.actions["plot_evoked"] = plot_menu.addAction(
             "Evoked...",
@@ -396,6 +407,9 @@ class MainWindow(QMainWindow):
             self.actions["apply_ica"].setEnabled(enabled and ica)
             self.actions["export_ica"].setEnabled(enabled and ica)
             self.actions["plot_erds"].setEnabled(
+                enabled and self.model.current["dtype"] == "epochs"
+            )
+            self.actions["plot_erds_topomaps"].setEnabled(
                 enabled and self.model.current["dtype"] == "epochs"
             )
             self.actions["plot_evoked"].setEnabled(
@@ -755,6 +769,24 @@ class MainWindow(QMainWindow):
             baseline = [dialog.b1, dialog.b2]
             times = [dialog.t1, dialog.t2]
             figs = plot_erds(data, freqs, freqs, baseline, times)
+            for fig in figs:
+                fig.show()
+
+    def plot_erds_topomaps(self):
+        """Plot ERDS topomaps."""
+        epochs = self.model.current["data"]
+        t_range = [epochs.tmin, epochs.tmax]
+        f_range = [1, epochs.info["sfreq"] / 2]
+
+        dialog = ERDSTopomapsDialog(self, t_range, f_range, epochs.event_id)
+        if dialog.exec():
+            figs = plot_erds_topomaps(
+                epochs,
+                events=[item.text() for item in dialog.events.selectedItems()],
+                freqs=np.arange(dialog.f1, dialog.f2, dialog.step),
+                baseline=[dialog.b1, dialog.b2],
+                times=[dialog.t1, dialog.t2],
+            )
             for fig in figs:
                 fig.show()
 
