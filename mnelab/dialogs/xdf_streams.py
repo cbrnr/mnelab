@@ -4,8 +4,16 @@
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QStandardItem, QStandardItemModel
-from PySide6.QtWidgets import (QAbstractItemView, QCheckBox, QDialog, QDialogButtonBox,
-                               QHBoxLayout, QTableView, QVBoxLayout, QPushButton)
+from PySide6.QtWidgets import (
+    QAbstractItemView,
+    QCheckBox,
+    QDialog,
+    QDialogButtonBox,
+    QHBoxLayout,
+    QPushButton,
+    QTableView,
+    QVBoxLayout,
+)
 
 
 class XDFStreamsDialog(QDialog):

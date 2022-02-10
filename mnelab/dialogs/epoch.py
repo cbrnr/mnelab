@@ -4,8 +4,15 @@
 
 from numpy import unique
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import (QCheckBox, QDialog, QDialogButtonBox, QDoubleSpinBox,
-                               QGridLayout, QLabel, QListWidget)
+from PySide6.QtWidgets import (
+    QCheckBox,
+    QDialog,
+    QDialogButtonBox,
+    QDoubleSpinBox,
+    QGridLayout,
+    QLabel,
+    QListWidget,
+)
 
 
 class EpochDialog(QDialog):

@@ -2,8 +2,16 @@
 #
 # License: BSD (3-clause)
 
-from PySide6.QtWidgets import (QCheckBox, QComboBox, QDialog, QDialogButtonBox, QGridLayout,
-                               QLabel, QSpinBox, QVBoxLayout)
+from PySide6.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QDialog,
+    QDialogButtonBox,
+    QGridLayout,
+    QLabel,
+    QSpinBox,
+    QVBoxLayout,
+)
 
 MAX_INT = 2147483647
 
