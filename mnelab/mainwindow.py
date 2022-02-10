@@ -201,6 +201,7 @@ class MainWindow(QMainWindow):
         self.actions["plot_locations"] = plot_menu.addAction(icon, "&Channel locations",
                                                              self.plot_locations)
         self.actions["plot_erds"] = plot_menu.addAction("&ERDS maps...", self.plot_erds)
+        plot_menu.addSeparator()
         self.actions["plot_evoked"] = plot_menu.addAction(
             "Evoked...",
             self.plot_evoked,
