@@ -4,4 +4,4 @@
 
 from .dependencies import have
 from .syntax import PythonHighlighter
-from .utils import count_locations, image_path, interface_style
+from .utils import count_locations, image_path, interface_style, natural_sort

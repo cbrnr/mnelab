@@ -40,7 +40,7 @@ from .dialogs import *  # noqa: F403
 from .io import writers
 from .io.xdf import get_xml, list_chunks
 from .model import InvalidAnnotationsError, LabelsNotFoundError, Model
-from .utils import count_locations, have, image_path, interface_style
+from .utils import count_locations, have, image_path, interface_style, natural_sort
 from .viz import plot_erds, plot_evoked, plot_evoked_comparison, plot_evoked_topomaps
 from .widgets import InfoWidget
 
@@ -617,7 +617,7 @@ class MainWindow(QMainWindow):
 
     def set_montage(self):
         """Set montage."""
-        montages = sorted(mne.channels.get_builtin_montages(), key=str.lower)
+        montages = natural_sort(mne.channels.get_builtin_montages())
         # TODO: currently it is not possible to remove an existing montage
         dialog = MontageDialog(self, montages)
         if dialog.exec():

@@ -2,6 +2,7 @@
 #
 # License: BSD (3-clause)
 
+import re
 from pathlib import Path
 
 import numpy as np
@@ -30,3 +31,10 @@ def interface_style():
         return "dark"
     else:
         return "light"
+
+
+def natural_sort(lst):
+    """Sort a list in natural order."""
+    def key(s):
+        return [int(t) if t.isdigit() else t.lower() for t in re.split(r'(\d+)', str(s))]
+    return sorted(lst, key=key)
