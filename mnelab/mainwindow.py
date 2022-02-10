@@ -308,6 +308,7 @@ class MainWindow(QMainWindow):
     def _excepthook(self, type, value, traceback_):
         exception_text = str(value)
         traceback_text = "".join(traceback.format_exception(type, value, traceback_))
+        print(traceback_text, file=sys.stderr)
         ErrorMessageBox(self, exception_text, "", traceback_text).show()
 
     def _sidebar_edit_event(self, edit):
