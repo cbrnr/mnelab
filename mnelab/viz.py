@@ -6,8 +6,8 @@ import math
 
 import matplotlib.pyplot as plt
 from mne.time_frequency import tfr_multitaper
-from mne.viz.utils import center_cmap
 from mne.viz import plot_compare_evokeds
+from mne.viz.utils import center_cmap
 
 
 def _get_rows_cols(n):

@@ -12,11 +12,28 @@ from sys import version_info
 import mne
 import numpy as np
 from mne.io.pick import channel_type
-from PySide6.QtCore import (QEvent, QMetaObject, QModelIndex, QObject, QPoint, QSettings,
-                            QSize, Qt, Slot)
+from PySide6.QtCore import (
+    QEvent,
+    QMetaObject,
+    QModelIndex,
+    QObject,
+    QPoint,
+    QSettings,
+    QSize,
+    Qt,
+    Slot,
+)
 from PySide6.QtGui import QAction, QDropEvent, QIcon, QKeySequence
-from PySide6.QtWidgets import (QApplication, QFileDialog, QFrame, QLabel,
-                               QMainWindow, QMessageBox, QSplitter, QListWidget)
+from PySide6.QtWidgets import (
+    QApplication,
+    QFileDialog,
+    QFrame,
+    QLabel,
+    QListWidget,
+    QMainWindow,
+    QMessageBox,
+    QSplitter,
+)
 from pyxdf import resolve_streams
 
 from .dialogs import *  # noqa: F403

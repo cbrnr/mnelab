@@ -5,7 +5,7 @@ from collections import defaultdict
 import mne
 import numpy as np
 from pyxdf import load_xdf, match_streaminfos, resolve_streams
-from pyxdf.pyxdf import open_xdf, _read_varlen_int
+from pyxdf.pyxdf import _read_varlen_int, open_xdf
 
 
 def read_raw_xdf(fname, stream_id, srate="effective", prefix_markers=False, *args,

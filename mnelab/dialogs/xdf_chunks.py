@@ -4,8 +4,15 @@
 
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QFont, QStandardItem, QStandardItemModel
-from PySide6.QtWidgets import (QAbstractItemView, QDialog, QDialogButtonBox, QHBoxLayout,
-                               QPlainTextEdit, QTableView, QVBoxLayout)
+from PySide6.QtWidgets import (
+    QAbstractItemView,
+    QDialog,
+    QDialogButtonBox,
+    QHBoxLayout,
+    QPlainTextEdit,
+    QTableView,
+    QVBoxLayout,
+)
 
 
 def _add_item(item):
