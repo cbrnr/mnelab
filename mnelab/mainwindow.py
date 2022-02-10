@@ -41,7 +41,7 @@ from .io import writers
 from .io.xdf import get_xml, list_chunks
 from .model import InvalidAnnotationsError, LabelsNotFoundError, Model
 from .utils import has_locations, have, image_path, interface_style
-from .viz import plot_erds, plot_evoked_comparison
+from .viz import plot_erds, plot_evoked, plot_evoked_comparison
 from .widgets import InfoWidget
 
 MAX_RECENT = 6  # maximum number of recent files
@@ -201,6 +201,10 @@ class MainWindow(QMainWindow):
         self.actions["plot_locations"] = plot_menu.addAction(icon, "&Channel locations",
                                                              self.plot_locations)
         self.actions["plot_erds"] = plot_menu.addAction("&ERDS maps...", self.plot_erds)
+        self.actions["plot_evoked"] = plot_menu.addAction(
+            "Evoked...",
+            self.plot_evoked,
+        )
         self.actions["plot_evoked_comparison"] = plot_menu.addAction(
             "Evoked comparison...",
             self.plot_evoked_comparison,
@@ -407,6 +411,9 @@ class MainWindow(QMainWindow):
             self.actions["apply_ica"].setEnabled(enabled and ica)
             self.actions["export_ica"].setEnabled(enabled and ica)
             self.actions["plot_erds"].setEnabled(
+                enabled and self.model.current["dtype"] == "epochs"
+            )
+            self.actions["plot_evoked"].setEnabled(
                 enabled and self.model.current["dtype"] == "epochs"
             )
             self.actions["plot_evoked_comparison"].setEnabled(
@@ -742,6 +749,36 @@ class MainWindow(QMainWindow):
             baseline = [dialog.b1, dialog.b2]
             times = [dialog.t1, dialog.t2]
             figs = plot_erds(data, freqs, freqs, baseline, times)
+            for fig in figs:
+                fig.show()
+
+    def plot_evoked(self):
+        """Plot evoked potentials for individual channels."""
+        epochs = self.model.current["data"]
+        dialog = PlotEvokedDialog(
+            self,
+            epochs.ch_names,
+            epochs.event_id,
+            epochs.get_montage(),
+        )
+        if dialog.exec():
+            if dialog.topomaps.isChecked():
+                if dialog.topomaps_peaks.isChecked():
+                    topomap_times = "peaks"
+                elif dialog.topomaps_auto.isChecked():
+                    topomap_times = "auto"
+                else:
+                    topomap_times = [float(t.strip()) for t in dialog.topomaps_timelist.text().split(",")]  # noqa: E501
+            else:
+                topomap_times = []
+            figs = plot_evoked(
+                epochs=epochs,
+                picks=[item.text() for item in dialog.picks.selectedItems()],
+                events=[item.text() for item in dialog.events.selectedItems()],
+                gfp=dialog.gfp.isChecked(),
+                spatial_colors=dialog.spatial_colors.isChecked(),
+                topomap_times=topomap_times,
+            )
             for fig in figs:
                 fig.show()
 

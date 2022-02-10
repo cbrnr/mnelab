@@ -48,6 +48,68 @@ def plot_erds(data, freqs, n_cycles, baseline, times=(None, None)):
     return figs
 
 
+def plot_evoked(
+    epochs,
+    picks,
+    events,
+    gfp,
+    spatial_colors,
+    topomap_times,
+):
+    """
+    Plot evoked potentials of different events for individual channels.
+
+    If multiple events are selected, one figure will be returned for each.
+
+    Parameters
+    ----------
+    epochs : mne.epochs.Epochs
+        Epochs extracted from a Raw instance.
+    picks : list[str]
+        Channels to include.
+    events : list[str]
+        Events to include.
+    gfp : bool | "only"
+        Plot the global field power (GFP).
+    spatial_colors : bool
+        If `True`, the lines are color coded by mapping physical sensor
+        coordinates into color values. Spatially similar channels will have
+        similar colors. Bad channels will be dotted. If `False`, the good
+        channels are plotted black and bad channels red.
+    topomap_times : list[float] | "auto" | "peaks"
+        The time point(s) to plot. If `"auto"`, 5 evenly spaced topographies
+        between the first and last time instant will be shown. If `"peaks"`,
+        finds time points automatically by checking for 3 local maxima in
+        Global Field Power.
+
+    Returns
+    -------
+    list[matplotlib.figure.Figure]
+        A list of the figure(s) generated.
+    """
+    figs = []
+    for event in events:
+        evoked = epochs[event].average(picks=picks)
+        if topomap_times:
+            figs.append(evoked.plot_joint(
+                times=topomap_times,
+                title=f'Event: {event}',
+                picks=picks,
+                ts_args={
+                    "spatial_colors": spatial_colors,
+                    "gfp": gfp,
+                }
+            ))
+        else:
+            figs.append(evoked.plot(
+                window_title=f'Event: {event}',
+                picks=picks,
+                spatial_colors=spatial_colors,
+                gfp=gfp
+            ))
+    return figs
+
+
 def plot_evoked_comparison(
     epochs,
     picks,
