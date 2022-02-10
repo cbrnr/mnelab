@@ -117,7 +117,7 @@ def write_bv(fname, raw, events=None):
     ch_names = raw.info["ch_names"]
     if events is None:
         if raw.annotations:
-            events = mne.events_from_annotations(raw)[0]
+            events = mne.events_from_annotations(raw, regexp=None)[0]
             dur = raw.annotations.duration * fs
             events = np.column_stack([events[:, [0, 2]], dur.astype(int)])
     else:
