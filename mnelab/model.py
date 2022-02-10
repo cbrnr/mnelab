@@ -118,7 +118,7 @@ class Model:
         name, ext = split_name_ext(fname)
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
                                      ftype=ext.upper()[1:], fsize=fsize, data=data,
-                                     dtype="raw"))
+                                     dtype="raw", montage=None))
 
     @data_changed
     def find_events(self, stim_channel, consecutive=True, initial_event=True,
@@ -276,7 +276,7 @@ class Model:
         dtype = self.current["dtype"].capitalize()
         reference = self.current["reference"]
         events = self.current["events"]
-        locations = count_locations(self.current["data"].info)
+        montage = self.current["montage"]
         ica = self.current["ica"]
 
         length = f"{data.times[-1] - data.times[0]:.6g} s"
@@ -312,6 +312,12 @@ class Model:
         if isinstance(reference, list):
             reference = ",".join(reference)
 
+        if montage is None:
+            montage_text = "-"
+        else:
+            locations = count_locations(self.current["data"].info)
+            montage_text = f"{montage} ({locations}/{nchan} locations)"
+
         if ica is not None:
             method = ica.method.title()
             if method == "Fastica":
@@ -340,7 +346,7 @@ class Model:
                 "Events": events,
                 "Annotations": annots,
                 "Reference": reference if reference else "-",
-                "Locations": f"{locations}/{nchan}",
+                "Montage": montage_text,
                 "ICA": ica}
 
     @data_changed
@@ -374,6 +380,7 @@ class Model:
             match_alias=match_alias,
             on_missing=on_missing,
         )
+        self.current["montage"] = montage
         if montage is None:
             self.history.append("data.set_montage(None)")
         else:
