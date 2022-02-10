@@ -41,7 +41,7 @@ from .io import writers
 from .io.xdf import get_xml, list_chunks
 from .model import InvalidAnnotationsError, LabelsNotFoundError, Model
 from .utils import has_locations, have, image_path, interface_style
-from .viz import plot_erds, plot_evoked_comparison, plot_evoked
+from .viz import plot_erds, plot_evoked, plot_evoked_comparison
 from .widgets import InfoWidget
 
 MAX_RECENT = 6  # maximum number of recent files
