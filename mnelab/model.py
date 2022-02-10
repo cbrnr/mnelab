@@ -361,14 +361,23 @@ class Model:
             self.history.append(f"data.set_channel_types({types})")
 
     @data_changed
-    def set_montage(self, montage, match_case, match_alias, on_missing):
+    def set_montage(
+        self,
+        montage,
+        match_case=False,
+        match_alias=False,
+        on_missing="raise",
+    ):
         self.current["data"].set_montage(
             montage=montage,
             match_case=match_case,
             match_alias=match_alias,
             on_missing=on_missing,
         )
-        self.history.append(f"data.set_montage({montage!r}, match_case={match_case}, match_alias={match_alias}, on_missing={on_missing!r})")  # noqa: E501
+        if montage is None:
+            self.history.append("data.set_montage(None)")
+        else:
+            self.history.append(f"data.set_montage({montage!r}, match_case={match_case}, match_alias={match_alias}, on_missing={on_missing!r})")  # noqa: E501
 
     @data_changed
     def filter(self, low, high):

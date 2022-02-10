@@ -174,8 +174,13 @@ class MainWindow(QMainWindow):
         icon = QIcon.fromTheme("chan-props")
         self.actions["chan_props"] = edit_menu.addAction(icon, "Channel &properties...",
                                                          self.channel_properties)
+        edit_menu.addSeparator()
         self.actions["set_montage"] = edit_menu.addAction("Set &montage...",
                                                           self.set_montage)
+        self.actions["clear_montage"] = edit_menu.addAction(
+            "Clear montage",
+            self.clear_montage,
+        )
         edit_menu.addSeparator()
         self.actions["change_ref"] = edit_menu.addAction(
             "Change &reference...",
@@ -637,6 +642,9 @@ class MainWindow(QMainWindow):
                     self, "No matching channel names", "Channel names defined in the "
                     "montage do not match any channel name in the data."
                 )
+
+    def clear_montage(self):
+        self.model.set_montage(None)
 
     def edit_annotations(self):
         fs = self.model.current["data"].info["sfreq"]
