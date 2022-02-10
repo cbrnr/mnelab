@@ -29,9 +29,9 @@ class MontageDialog(QDialog):
                     self.montages.item(i).setSelected(True)
         vbox.addWidget(self.montages)
 
-        self.match_case = QCheckBox("Match case sensitive", self)
+        self.match_case = QCheckBox("Match case-sensitive", self)
         self.match_case.setChecked(True)
-        self.match_alias = QCheckBox("Match alias", self)
+        self.match_alias = QCheckBox("Match aliases", self)
         self.ignore_missing = QCheckBox("Ignore missing", self)
         vbox.addWidget(self.match_case)
         vbox.addWidget(self.match_alias)
