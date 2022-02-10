@@ -617,7 +617,7 @@ class MainWindow(QMainWindow):
 
     def set_montage(self):
         """Set montage."""
-        montages = mne.channels.get_builtin_montages()
+        montages = sorted(mne.channels.get_builtin_montages(), key=str.lower)
         # TODO: currently it is not possible to remove an existing montage
         dialog = MontageDialog(self, montages)
         if dialog.exec():
