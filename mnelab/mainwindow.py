@@ -41,7 +41,7 @@ from .io import writers
 from .io.xdf import get_xml, list_chunks
 from .model import InvalidAnnotationsError, LabelsNotFoundError, Model
 from .utils import has_locations, have, image_path, interface_style
-from .viz import plot_erds, plot_evoked, plot_evoked_comparison
+from .viz import plot_erds, plot_evoked, plot_evoked_comparison, plot_topomap_evoked
 from .widgets import InfoWidget
 
 MAX_RECENT = 6  # maximum number of recent files
@@ -208,6 +208,10 @@ class MainWindow(QMainWindow):
         self.actions["plot_evoked_comparison"] = plot_menu.addAction(
             "Evoked comparison...",
             self.plot_evoked_comparison,
+        )
+        self.actions["plot_topomap_evoked"] = plot_menu.addAction(
+            "Topomap evoked...",
+            self.plot_topomap_evoked,
         )
         plot_menu.addSeparator()
         self.actions["plot_ica_components"] = plot_menu.addAction(
@@ -794,6 +798,29 @@ class MainWindow(QMainWindow):
                 average_method=dialog.average_epochs.currentText(),
                 combine=dialog.combine_channels.currentText(),
                 confidence_intervals=dialog.confidence_intervals.isChecked(),
+            )
+            for fig in figs:
+                fig.show()
+
+    def plot_topomap_evoked(self):
+        """Plot topomaps of evoked potentials."""
+        epochs = self.model.current["data"]
+        dialog = PlotTopomapEvokedDialog(self, epochs.event_id)
+        if dialog.exec():
+            if dialog.auto.isChecked():
+                times = "auto"
+            elif dialog.peaks.isChecked():
+                times = "peaks"
+            elif dialog.interactive.isChecked():
+                times = "interactive"
+            else:
+                times = [float(t.strip()) for t in dialog.timelist.text().split(",")]
+
+            figs = plot_topomap_evoked(
+                epochs=epochs,
+                events=[item.text() for item in dialog.events.selectedItems()],
+                average_method=dialog.average_epochs.currentText(),
+                times=times,
             )
             for fig in figs:
                 fig.show()

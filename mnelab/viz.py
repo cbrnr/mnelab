@@ -149,3 +149,32 @@ def plot_evoked_comparison(
     else:
         evokeds = {e: epochs[e].average(picks=picks, method=average_method, by_event_type=True) for e in events}  # noqa: E501
     return plot_compare_evokeds(evokeds, picks=picks, combine=combine)
+
+
+def plot_topomap_evoked(epochs, events, average_method, times):
+    """
+    Plot topomaps of evoked potentials.
+
+    One figure is generated for each event.
+
+    Parameters
+    ----------
+    epochs : mne.epochs.Epochs
+        Epochs extracted from a Raw instance.
+    events : list[str]
+        Events to include.
+    average_method : "mean" | "median
+        How to average epochs.
+    times : list[float] | "auto" | "peaks" | "interactive"
+        The time point(s) to plot.
+
+    Returns
+    -------
+    list[matplotlib.figure.Figure]
+        A list of the figure(s) generated.
+    """
+    figs = []
+    for event in events:
+        evoked = epochs[event].average(method=average_method)
+        figs.append(evoked.plot_topomap(times, title=f'Event: {event}'))
+    return figs

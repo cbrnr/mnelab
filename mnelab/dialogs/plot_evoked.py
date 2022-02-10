@@ -16,10 +16,7 @@ from PySide6.QtWidgets import (
     QRadioButton,
 )
 
-
-def select_all(list_widget):
-    for i in range(list_widget.count()):
-        list_widget.item(i).setSelected(True)
+from .utils import select_all
 
 
 class PlotEvokedDialog(QDialog):

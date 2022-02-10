@@ -19,6 +19,7 @@ from .meta_info import MetaInfoDialog
 from .montage import MontageDialog
 from .pick_channels import PickChannelsDialog
 from .plot_evoked import PlotEvokedComparisonDialog, PlotEvokedDialog
+from .plot_topomap import PlotTopomapEvokedDialog
 from .reference import ReferenceDialog
 from .run_ica import RunICADialog
 from .xdf_chunks import XDFChunksDialog
