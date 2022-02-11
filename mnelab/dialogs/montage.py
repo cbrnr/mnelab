@@ -5,6 +5,7 @@
 from mne.channels import make_standard_montage
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import (
+    QCheckBox,
     QDialog,
     QDialogButtonBox,
     QHBoxLayout,
@@ -27,6 +28,15 @@ class MontageDialog(QDialog):
                 if self.montages.item(i).data(0) == selected:
                     self.montages.item(i).setSelected(True)
         vbox.addWidget(self.montages)
+
+        self.match_case = QCheckBox("Match case-sensitive", self)
+        self.match_alias = QCheckBox("Match aliases", self)
+        self.ignore_missing = QCheckBox("Ignore missing", self)
+        self.ignore_missing.setChecked(True)
+        vbox.addWidget(self.match_case)
+        vbox.addWidget(self.match_alias)
+        vbox.addWidget(self.ignore_missing)
+
         hbox = QHBoxLayout()
         self.view_button = QPushButton("View")
         self.view_button.clicked.connect(self.view_montage)

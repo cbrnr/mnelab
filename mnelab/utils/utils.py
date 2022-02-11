@@ -2,14 +2,16 @@
 #
 # License: BSD (3-clause)
 
+import re
 from pathlib import Path
 
 import numpy as np
 
 
-def has_locations(info):
+def count_locations(info):
     locs = np.array([ch["loc"][:3] for ch in info["chs"]])
-    return not (np.allclose(locs, 0) or (~np.isfinite(locs)).all())
+    valid_locs = np.any(~np.isclose(locs, 0) & np.isfinite(locs), axis=1)
+    return valid_locs.sum()
 
 
 def image_path(fname):
@@ -29,3 +31,10 @@ def interface_style():
         return "dark"
     else:
         return "light"
+
+
+def natural_sort(lst):
+    """Sort a list in natural order."""
+    def key(s):
+        return [int(t) if t.isdigit() else t.lower() for t in re.split(r'(\d+)', str(s))]
+    return sorted(lst, key=key)

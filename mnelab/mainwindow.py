@@ -40,7 +40,7 @@ from .dialogs import *  # noqa: F403
 from .io import writers
 from .io.xdf import get_xml, list_chunks
 from .model import InvalidAnnotationsError, LabelsNotFoundError, Model
-from .utils import has_locations, have, image_path, interface_style
+from .utils import count_locations, have, image_path, interface_style, natural_sort
 from .viz import plot_erds, plot_evoked, plot_evoked_comparison, plot_evoked_topomaps
 from .widgets import InfoWidget
 
@@ -174,8 +174,13 @@ class MainWindow(QMainWindow):
         icon = QIcon.fromTheme("chan-props")
         self.actions["chan_props"] = edit_menu.addAction(icon, "Channel &properties...",
                                                          self.channel_properties)
+        edit_menu.addSeparator()
         self.actions["set_montage"] = edit_menu.addAction("Set &montage...",
                                                           self.set_montage)
+        self.actions["clear_montage"] = edit_menu.addAction(
+            "Clear montage",
+            self.clear_montage,
+        )
         edit_menu.addSeparator()
         self.actions["change_ref"] = edit_menu.addAction(
             "Change &reference...",
@@ -410,7 +415,7 @@ class MainWindow(QMainWindow):
                 annot = False
             self.actions["export_annotations"].setEnabled(enabled and annot)
             self.actions["annotations"].setEnabled(enabled and annot)
-            locations = has_locations(self.model.current["data"].info)
+            locations = count_locations(self.model.current["data"].info)
             self.actions["plot_locations"].setEnabled(enabled and locations)
             ica = bool(self.model.current["ica"])
             self.actions["apply_ica"].setEnabled(enabled and ica)
@@ -435,6 +440,9 @@ class MainWindow(QMainWindow):
             )
             self.actions["epoch_data"].setEnabled(
                 enabled and events and self.model.current["dtype"] == "raw"
+            )
+            self.actions["clear_montage"].setEnabled(
+                enabled and self.model.current["montage"] is not None
             )
             self.actions["crop"].setEnabled(
                 enabled and self.model.current["dtype"] == "raw"
@@ -617,8 +625,7 @@ class MainWindow(QMainWindow):
 
     def set_montage(self):
         """Set montage."""
-        montages = mne.channels.get_builtin_montages()
-        # TODO: currently it is not possible to remove an existing montage
+        montages = natural_sort(mne.channels.get_builtin_montages())
         dialog = MontageDialog(self, montages)
         if dialog.exec():
             name = dialog.montages.selectedItems()[0].data(0)
@@ -626,12 +633,20 @@ class MainWindow(QMainWindow):
             ch_names = self.model.current["data"].info["ch_names"]
             # check if at least one channel name matches a name in the montage
             if set(ch_names) & set(montage.ch_names):
-                self.model.set_montage(name)
+                self.model.set_montage(
+                    name,
+                    match_case=dialog.match_case.isChecked(),
+                    match_alias=dialog.match_alias.isChecked(),
+                    on_missing="ignore" if dialog.ignore_missing.isChecked() else "raise",
+                )
             else:
                 QMessageBox.critical(
                     self, "No matching channel names", "Channel names defined in the "
                     "montage do not match any channel name in the data."
                 )
+
+    def clear_montage(self):
+        self.model.set_montage(None)
 
     def edit_annotations(self):
         fs = self.model.current["data"].info["sfreq"]
