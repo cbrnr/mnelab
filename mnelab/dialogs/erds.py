@@ -7,8 +7,10 @@ from PySide6.QtWidgets import (
     QDialogButtonBox,
     QDoubleSpinBox,
     QGridLayout,
+    QGroupBox,
     QLabel,
     QListWidget,
+    QLineEdit,
     QVBoxLayout,
 )
 
@@ -79,6 +81,19 @@ class ERDSDialog(QDialog):
         self._b2.setSingleStep(0.1)
         self._b2.setSuffix(" s")
         grid.addWidget(self._b2, 3, 2)
+
+        self.significance_mask = QGroupBox("Significance mask")
+        self.significance_mask.setCheckable(True)
+        self.significance_mask.setChecked(False)
+        significance_mask_grid = QGridLayout()
+        significance_mask_grid.setColumnStretch(0, 2)
+        significance_mask_grid.setColumnStretch(1, 3)
+        significance_mask_grid.addWidget(QLabel("alpha:"), 0, 0)
+        self.alpha = QLineEdit()
+        self.alpha.setText("0.05")
+        significance_mask_grid.addWidget(self.alpha, 0, 1)
+        self.significance_mask.setLayout(significance_mask_grid)
+        grid.addWidget(self.significance_mask, 4, 0, 1, 3)
 
         vbox.addLayout(grid)
         buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)

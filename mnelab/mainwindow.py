@@ -33,6 +33,7 @@ from .model import InvalidAnnotationsError, LabelsNotFoundError, Model
 from .settings import SettingsDialog, read_settings, write_settings
 from .utils import count_locations, have, image_path, interface_style, natural_sort
 from .viz import (
+    calc_tfr_and_masks,
     plot_erds,
     plot_erds_topomaps,
     plot_evoked,
@@ -762,9 +763,36 @@ class MainWindow(QMainWindow):
             freqs = np.arange(dialog.f1, dialog.f2, dialog.step)
             baseline = [dialog.b1, dialog.b2]
             times = [dialog.t1, dialog.t2]
-            figs = plot_erds(data, freqs, freqs, baseline, times)
-            for fig in figs:
-                fig.show()
+            alpha = None
+            if dialog.significance_mask.isChecked():
+                alpha = float(dialog.alpha.text())
+
+            calc = CalcDialog(
+                self,
+                "Calculating ERDS maps",
+                "Calculating ERDS maps..."
+            )
+
+            def callback(x):
+                QMetaObject.invokeMethod(calc, "accept", Qt.QueuedConnection)
+
+            pool = mp.Pool(processes=1)
+            res = pool.apply_async(
+                func=calc_tfr_and_masks,
+                args=(data, freqs, baseline, times, alpha),
+                callback=callback
+            )
+            pool.close()
+
+            if not calc.exec():
+                pool.terminate()
+                res.get()
+                print("ERDS map calculation aborted.")
+            else:
+                tfr_and_masks = res.get(timeout=1)
+                figs = plot_erds(tfr_and_masks)
+                for fig in figs:
+                    fig.show()
 
     def plot_erds_topomaps(self):
         """Plot ERDS topomaps."""
