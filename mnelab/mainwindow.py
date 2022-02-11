@@ -441,6 +441,9 @@ class MainWindow(QMainWindow):
             self.actions["epoch_data"].setEnabled(
                 enabled and events and self.model.current["dtype"] == "raw"
             )
+            self.actions["clear_montage"].setEnabled(
+                enabled and self.model.current["montage"] is not None
+            )
             self.actions["crop"].setEnabled(
                 enabled and self.model.current["dtype"] == "raw"
             )
