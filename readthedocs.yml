@@ -10,4 +10,4 @@ sphinx:
 python:
   version: "3.8"
   install:
-    - requirements: doc/requirements.txt
+    - extra_requirements: doc
