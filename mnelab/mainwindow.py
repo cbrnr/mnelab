@@ -41,7 +41,7 @@ from .io import writers
 from .io.xdf import get_xml, list_chunks
 from .model import InvalidAnnotationsError, LabelsNotFoundError, Model
 from .utils import has_locations, have, image_path, interface_style
-from .viz import plot_erds, plot_evoked, plot_evoked_comparison
+from .viz import plot_erds, plot_evoked, plot_evoked_comparison, plot_evoked_topomaps
 from .widgets import InfoWidget
 
 MAX_RECENT = 6  # maximum number of recent files
@@ -201,6 +201,7 @@ class MainWindow(QMainWindow):
         self.actions["plot_locations"] = plot_menu.addAction(icon, "&Channel locations",
                                                              self.plot_locations)
         self.actions["plot_erds"] = plot_menu.addAction("&ERDS maps...", self.plot_erds)
+        plot_menu.addSeparator()
         self.actions["plot_evoked"] = plot_menu.addAction(
             "Evoked...",
             self.plot_evoked,
@@ -208,6 +209,10 @@ class MainWindow(QMainWindow):
         self.actions["plot_evoked_comparison"] = plot_menu.addAction(
             "Evoked comparison...",
             self.plot_evoked_comparison,
+        )
+        self.actions["plot_evoked_topomaps"] = plot_menu.addAction(
+            "Evoked topomaps...",
+            self.plot_evoked_topomaps,
         )
         plot_menu.addSeparator()
         self.actions["plot_ica_components"] = plot_menu.addAction(
@@ -794,6 +799,29 @@ class MainWindow(QMainWindow):
                 average_method=dialog.average_epochs.currentText(),
                 combine=dialog.combine_channels.currentText(),
                 confidence_intervals=dialog.confidence_intervals.isChecked(),
+            )
+            for fig in figs:
+                fig.show()
+
+    def plot_evoked_topomaps(self):
+        """Plot evoked topomaps."""
+        epochs = self.model.current["data"]
+        dialog = PlotEvokedTopomaps(self, epochs.event_id)
+        if dialog.exec():
+            if dialog.auto.isChecked():
+                times = "auto"
+            elif dialog.peaks.isChecked():
+                times = "peaks"
+            elif dialog.interactive.isChecked():
+                times = "interactive"
+            else:
+                times = [float(t.strip()) for t in dialog.timelist.text().split(",")]
+
+            figs = plot_evoked_topomaps(
+                epochs=epochs,
+                events=[item.text() for item in dialog.events.selectedItems()],
+                average_method=dialog.average_epochs.currentText(),
+                times=times,
             )
             for fig in figs:
                 fig.show()
