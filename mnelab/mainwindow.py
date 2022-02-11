@@ -429,6 +429,9 @@ class MainWindow(QMainWindow):
             self.actions["plot_evoked_comparison"].setEnabled(
                 enabled and self.model.current["dtype"] == "epochs"
             )
+            self.actions["plot_evoked_topomaps"].setEnabled(
+                enabled and self.model.current["dtype"] == "epochs"
+            )
             self.actions["plot_ica_components"].setEnabled(enabled and ica and locations)
             self.actions["plot_ica_sources"].setEnabled(enabled and ica)
             self.actions["interpolate_bads"].setEnabled(enabled and locations and bads)
