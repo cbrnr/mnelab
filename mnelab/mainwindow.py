@@ -261,6 +261,10 @@ class MainWindow(QMainWindow):
         icon = QIcon.fromTheme("epoch-data")
         self.actions["epoch_data"] = tools_menu.addAction(icon, "Create epochs...",
                                                           self.epoch_data)
+        self.actions["drop_bad_epochs"] = tools_menu.addAction(
+            "Drop bad epochs...",
+            self.drop_bad_epochs,
+        )
 
         view_menu = self.menuBar().addMenu("&View")
         self.actions["history"] = view_menu.addAction("&History", self.show_history)
@@ -443,6 +447,9 @@ class MainWindow(QMainWindow):
             )
             self.actions["epoch_data"].setEnabled(
                 enabled and events and self.model.current["dtype"] == "raw"
+            )
+            self.actions["drop_bad_epochs"].setEnabled(
+                enabled and events and self.model.current["dtype"] == "epochs"
             )
             self.actions["clear_montage"].setEnabled(
                 enabled and self.model.current["montage"] is not None
@@ -986,6 +993,29 @@ class MainWindow(QMainWindow):
                 msgbox = ErrorMessageBox(self, "Could not create epochs", str(e),
                                          traceback.format_exc())
                 msgbox.show()
+
+    def drop_bad_epochs(self):
+        """Drop bad epochs."""
+        def fields_to_dict(fields):
+            res = {}
+            for type, value in fields.items():
+                if value.text():
+                    res[type] = float(value.text())
+            return res
+
+        types = sorted(set(self.model.current["data"].get_channel_types()))
+        dialog = DropBadEpochsDialog(self, types)
+        if dialog.exec():
+            reject = None
+            flat = None
+            if dialog.reject_box.isChecked():
+                reject = fields_to_dict(dialog.reject_fields)
+            if dialog.flat_box.isChecked():
+                flat = fields_to_dict(dialog.flat_fields)
+            if reject is None and flat is None:
+                return
+            self.auto_duplicate()
+            self.model.drop_bad_epochs(reject, flat)
 
     def convert_od(self):
         """Convert to optical density."""

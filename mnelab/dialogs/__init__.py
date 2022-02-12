@@ -7,6 +7,7 @@ from .append import AppendDialog
 from .calc import CalcDialog
 from .channel_properties import ChannelPropertiesDialog
 from .crop import CropDialog
+from .drop_bad_epochs import DropBadEpochsDialog
 from .epoch import EpochDialog
 from .erds import ERDSDialog
 from .error_message import ErrorMessageBox

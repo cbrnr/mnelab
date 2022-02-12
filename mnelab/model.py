@@ -495,6 +495,11 @@ class Model:
         self.current["name"] += " (epoched)"
 
     @data_changed
+    def drop_bad_epochs(self, reject, flat):
+        self.current["data"].drop_bad(reject, flat)
+        self.history.append(f"data.drop_bad({reject}, {flat})")
+
+    @data_changed
     def convert_od(self):
         self.current["data"] = mne.preprocessing.nirs.optical_density(self.current["data"])
         self.current["name"] += " (OD)"
