@@ -242,7 +242,7 @@ class Model:
                 events = np.row_stack((self.current["events"], events))
                 events = np.unique(events, axis=0)
             self.current["events"] = events
-        elif fname.lower().endswith("eve.fif"):
+        elif fname.lower().endswith(".fif"):
             self.current["events"] = mne.read_events(fname)
         else:
             raise ValueError(f"Unsupported event file: {fname}")
