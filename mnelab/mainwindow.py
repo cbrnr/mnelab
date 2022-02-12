@@ -87,7 +87,11 @@ class MainWindow(QMainWindow):
         )
         self.actions["import_events"] = file_menu.addAction(
             "Import events...",
-            lambda: self.import_file(model.import_events, "Import events", "*.csv")
+            lambda: self.import_file(
+                model.import_events,
+                "Import events",
+                "*.csv *-eve.fif *_eve.fif",
+            )
         )
         self.actions["import_annotations"] = file_menu.addAction(
             "Import annotations...",

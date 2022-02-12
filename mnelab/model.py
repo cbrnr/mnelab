@@ -227,20 +227,25 @@ class Model:
 
     @data_changed
     def import_events(self, fname):
-        """Import events from a CSV file."""
-        pos, desc = [], []
-        with open(fname) as f:
-            f.readline()  # skip header
-            for line in f:
-                p, d = [int(token.strip()) for token in line.split(",")]
-                pos.append(p)
-                desc.append(d)
-        events = np.column_stack((pos, desc))
-        events = np.insert(events, 1, 0, axis=1)  # insert zero column
-        if len(self.current["events"]) > 0:
-            events = np.row_stack((self.current["events"], events))
-            events = np.unique(events, axis=0)
-        self.current["events"] = events
+        """Import events from a CSV or FIF file."""
+        if fname.lower().endswith(".csv"):
+            pos, desc = [], []
+            with open(fname) as f:
+                f.readline()  # skip header
+                for line in f:
+                    p, d = [int(token.strip()) for token in line.split(",")]
+                    pos.append(p)
+                    desc.append(d)
+            events = np.column_stack((pos, desc))
+            events = np.insert(events, 1, 0, axis=1)  # insert zero column
+            if self.current["events"] is not None:
+                events = np.row_stack((self.current["events"], events))
+                events = np.unique(events, axis=0)
+            self.current["events"] = events
+        elif fname.lower().endswith("eve.fif"):
+            self.current["events"] = mne.read_events(fname)
+        else:
+            raise ValueError(f"Unsupported event file: {fname}")
 
     @data_changed
     def import_annotations(self, fname):
