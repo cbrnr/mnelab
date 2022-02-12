@@ -315,7 +315,7 @@ class Model:
         locations = count_locations(self.current["data"].info)
 
         if montage is None and not locations:
-            montage_text = "-"
+            montage_text = "none"
         elif montage is None and locations:
             montage_text = f"custom ({locations}/{data.info['nchan']} locations)"
         elif montage:
