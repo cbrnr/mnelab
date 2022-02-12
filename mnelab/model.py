@@ -118,7 +118,7 @@ class Model:
         name, ext = split_name_ext(fname)
         self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
                                      ftype=ext.upper()[1:], fsize=fsize, data=data,
-                                     dtype="raw", montage=None))
+                                     dtype="raw", montage=None, events=np.empty((0, 3))))
 
     @data_changed
     def find_events(self, stim_channel, consecutive=True, initial_event=True,
