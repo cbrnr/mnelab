@@ -350,11 +350,6 @@ class Model:
                 "ICA": ica}
 
     @data_changed
-    def drop_channels(self, drops):
-        self.current["data"] = self.current["data"].drop_channels(drops)
-        self.current["name"] += " (channels dropped)"
-
-    @data_changed
     def pick_channels(self, picks):
         self.current["data"] = self.current["data"].pick(picks)
         self.current["name"] += " (channels picked)"

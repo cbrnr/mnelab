@@ -600,16 +600,14 @@ class MainWindow(QMainWindow):
         if dialog.exec():
             if dialog.by_name.isChecked():
                 picks = [item.text() for item in dialog.names.selectedItems()]
-                drops = list(set(channels) - set(picks))
-                if drops:
-                    self.auto_duplicate()
-                    self.model.drop_channels(drops)
-                    self.model.history.append(f"data.drop_channels({drops})")
+                if set(channels) == set(picks):
+                    return
             else:  # by type
                 picks = [item.text() for item in dialog.types.selectedItems()]
-                if set(types) - set(picks):
-                    self.auto_duplicate()
-                    self.model.pick_channels(picks)
+                if set(types) == set(picks):
+                    return
+            self.auto_duplicate()
+            self.model.pick_channels(picks)
 
     def channel_properties(self):
         """Show channel properties dialog."""
