@@ -16,3 +16,7 @@ source_suffix = {
 
 html_theme = 'furo'
 html_title = project
+html_logo = '../../mnelab/images/mnelab_logo.png'
+html_theme_options = {
+    'sidebar_hide_name': True,
+}
