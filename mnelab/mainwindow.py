@@ -595,14 +595,21 @@ class MainWindow(QMainWindow):
     def pick_channels(self):
         """Pick channels in current data set."""
         channels = self.model.current["data"].info["ch_names"]
-        dialog = PickChannelsDialog(self, channels, selected=channels)
+        types = sorted(set(self.model.current["data"].get_channel_types()))
+        dialog = PickChannelsDialog(self, channels, types)
         if dialog.exec():
-            picks = [item.data(0) for item in dialog.channels.selectedItems()]
-            drops = list(set(channels) - set(picks))
-            if drops:
-                self.auto_duplicate()
-                self.model.drop_channels(drops)
-                self.model.history.append(f"data.drop_channels({drops})")
+            if dialog.by_name.isChecked():
+                picks = [item.text() for item in dialog.names.selectedItems()]
+                drops = list(set(channels) - set(picks))
+                if drops:
+                    self.auto_duplicate()
+                    self.model.drop_channels(drops)
+                    self.model.history.append(f"data.drop_channels({drops})")
+            else:  # by type
+                picks = [item.text() for item in dialog.types.selectedItems()]
+                if set(types) - set(picks):
+                    self.auto_duplicate()
+                    self.model.pick_channels(picks)
 
     def channel_properties(self):
         """Show channel properties dialog."""

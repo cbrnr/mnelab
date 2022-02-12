@@ -355,6 +355,12 @@ class Model:
         self.current["name"] += " (channels dropped)"
 
     @data_changed
+    def pick_channels(self, picks):
+        self.current["data"] = self.current["data"].pick(picks)
+        self.current["name"] += " (channels picked)"
+        self.history.append(f"data.pick({picks})")
+
+    @data_changed
     def set_channel_properties(self, bads=None, names=None, types=None):
         if bads != self.current["data"].info["bads"]:
             self.current["data"].info["bads"] = bads
