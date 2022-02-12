@@ -67,6 +67,8 @@ class EventsDialog(QDialog):
         self.table.itemSelectionChanged.connect(self.toggle_buttons)
         self.remove_button.clicked.connect(self.remove_event)
         self.add_button.clicked.connect(self.add_event)
+        self.remove_button.clicked.connect(self.toggle_buttons)
+        self.add_button.clicked.connect(self.toggle_buttons)
         self.toggle_buttons()
         self.resize(300, 500)
 
@@ -74,7 +76,10 @@ class EventsDialog(QDialog):
     def toggle_buttons(self):
         """Toggle + and - buttons."""
         n_items = len(self.table.selectedItems())
-        if n_items == 2:  # one row (2 items) selected
+        if self.table.rowCount() == 0:  # no events available
+            self.add_button.setEnabled(True)
+            self.remove_button.setEnabled(False)
+        elif n_items == 2:  # one row (2 items) selected
             self.add_button.setEnabled(True)
             self.remove_button.setEnabled(True)
         elif n_items > 2:  # more than one row selected
@@ -85,8 +90,12 @@ class EventsDialog(QDialog):
             self.remove_button.setEnabled(False)
 
     def add_event(self):
-        current_row = self.table.selectedIndexes()[0].row()
-        pos = int(self.table.item(current_row, 0).data(Qt.DisplayRole))
+        if self.table.selectedIndexes():
+            current_row = self.table.selectedIndexes()[0].row()
+            pos = int(self.table.item(current_row, 0).data(Qt.DisplayRole))
+        else:
+            current_row = 0
+            pos = 0
         self.table.setSortingEnabled(False)
         self.table.insertRow(current_row)
         self.table.setItem(current_row, 0, IntTableWidgetItem(pos))

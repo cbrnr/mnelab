@@ -407,14 +407,14 @@ class MainWindow(QMainWindow):
         if self.model.data:  # toggle if specific conditions are met
             bads = bool(self.model.current["data"].info["bads"])
             self.actions["export_bads"].setEnabled(enabled and bads)
-            events = self.model.current["events"] is not None
+            events = len(self.model.current["events"]) > 0
             self.actions["export_events"].setEnabled(enabled and events)
             if self.model.current["dtype"] == "raw":
                 annot = bool(self.model.current["data"].annotations)
             else:
                 annot = False
             self.actions["export_annotations"].setEnabled(enabled and annot)
-            self.actions["annotations"].setEnabled(enabled and annot)
+            self.actions["annotations"].setEnabled(enabled)
             locations = count_locations(self.model.current["data"].info)
             self.actions["plot_locations"].setEnabled(enabled and locations)
             ica = bool(self.model.current["ica"])
@@ -435,7 +435,7 @@ class MainWindow(QMainWindow):
             self.actions["plot_ica_components"].setEnabled(enabled and ica and locations)
             self.actions["plot_ica_sources"].setEnabled(enabled and ica)
             self.actions["interpolate_bads"].setEnabled(enabled and locations and bads)
-            self.actions["events"].setEnabled(enabled and events)
+            self.actions["events"].setEnabled(enabled)
             self.actions["events_from_annotations"].setEnabled(enabled and annot)
             self.actions["annotations_from_events"].setEnabled(enabled and events)
             self.actions["find_events"].setEnabled(
