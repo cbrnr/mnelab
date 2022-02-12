@@ -497,6 +497,7 @@ class Model:
     @data_changed
     def drop_bad_epochs(self, reject, flat):
         self.current["data"].drop_bad(reject, flat)
+        self.current["name"] += " (dropped bad epochs)"
         self.history.append(f"data.drop_bad({reject}, {flat})")
 
     @data_changed
