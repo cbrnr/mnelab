@@ -12,17 +12,7 @@ from sys import version_info
 import mne
 import numpy as np
 from mne.io.pick import channel_type
-from PySide6.QtCore import (
-    QEvent,
-    QMetaObject,
-    QModelIndex,
-    QObject,
-    QPoint,
-    QSettings,
-    QSize,
-    Qt,
-    Slot,
-)
+from PySide6.QtCore import QEvent, QMetaObject, QModelIndex, QObject, Qt, Slot
 from PySide6.QtGui import QAction, QDropEvent, QIcon, QKeySequence
 from PySide6.QtWidgets import (
     QApplication,
@@ -40,34 +30,10 @@ from .dialogs import *  # noqa: F403
 from .io import writers
 from .io.xdf import get_xml, list_chunks
 from .model import InvalidAnnotationsError, LabelsNotFoundError, Model
+from .settings import SettingsDialog, read_settings, write_settings
 from .utils import count_locations, have, image_path, interface_style, natural_sort
 from .viz import plot_erds, plot_evoked, plot_evoked_comparison, plot_evoked_topomaps
 from .widgets import InfoWidget
-
-MAX_RECENT = 6  # maximum number of recent files
-
-
-def read_settings():
-    """Read application settings.
-
-    Returns
-    -------
-    settings : dict
-        Settings values.
-    """
-    settings = {}
-    settings["recent"] = QSettings().value("recent", [])
-    settings["toolbar"] = QSettings().value("toolbar", True)
-    settings["statusbar"] = QSettings().value("statusbar", True)
-    settings["size"] = QSettings().value("size", QSize(700, 500))
-    settings["pos"] = QSettings().value("pos", QPoint(100, 100))
-    return settings
-
-
-def write_settings(**kwargs):
-    """Write application settings."""
-    for key, value in kwargs.items():
-        QSettings().setValue(key, value)
 
 
 class MainWindow(QMainWindow):
@@ -165,6 +131,11 @@ class MainWindow(QMainWindow):
         )
         self.actions["xdf_chunks"] = file_menu.addAction("Show XDF chunks...",
                                                          self.xdf_chunks)
+        file_menu.addSeparator()
+        self.actions["settings"] = file_menu.addAction(
+            "Settings...",
+            SettingsDialog(self).exec,
+        )
         file_menu.addSeparator()
         self.actions["quit"] = file_menu.addAction("&Quit", self.close, QKeySequence.Quit)
 
@@ -276,7 +247,7 @@ class MainWindow(QMainWindow):
 
         # actions that are always enabled
         self.always_enabled = ["open_file", "about", "about_qt", "quit", "xdf_chunks",
-                               "toolbar", "statusbar"]
+                               "toolbar", "statusbar", "settings"]
 
         # set up toolbar
         self.toolbar = self.addToolBar("toolbar")
@@ -1107,8 +1078,7 @@ class MainWindow(QMainWindow):
         if fname in self.recent:  # avoid duplicates
             self.recent.remove(fname)
         self.recent.insert(0, fname)
-        while len(self.recent) > MAX_RECENT:  # prune list
-            self.recent.pop()
+        self.recent = self.recent[:read_settings("max_recent")]  # prune list
         write_settings(recent=self.recent)
         if not self.recent_menu.isEnabled():
             self.recent_menu.setEnabled(True)
