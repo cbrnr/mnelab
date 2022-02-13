@@ -16,11 +16,14 @@ from PySide6.QtWidgets import (
 )
 
 
-def _unit(channel_type):
+def _label(channel_type):
+    label = channel_type.upper()
     try:
-        return _unit2human[get_channel_type_constants()[channel_type]["unit"]]
+        unit = _unit2human[get_channel_type_constants()[channel_type]["unit"]]
+        label += f" ({unit})"
     except KeyError:
-        return "AU"
+        pass
+    return label
 
 
 class DropBadEpochsDialog(QDialog):
@@ -36,7 +39,7 @@ class DropBadEpochsDialog(QDialog):
         self.reject_fields = {}
         reject_grid = QGridLayout()
         for row, type in enumerate(types):
-            reject_grid.addWidget(QLabel(f"{type.upper()} ({_unit(type)})"), row, 0)
+            reject_grid.addWidget(QLabel(_label(type)), row, 0)
             self.reject_fields[type] = QLineEdit()
             reject_grid.addWidget(self.reject_fields[type], row, 1)
         self.reject_box.setLayout(reject_grid)
@@ -48,7 +51,7 @@ class DropBadEpochsDialog(QDialog):
         self.flat_fields = {}
         flat_grid = QGridLayout()
         for row, type in enumerate(types):
-            flat_grid.addWidget(QLabel(f"{type.upper()} ({_unit(type)})"), row, 0)
+            flat_grid.addWidget(QLabel(_label(type)), row, 0)
             self.flat_fields[type] = QLineEdit()
             flat_grid.addWidget(self.flat_fields[type], row, 1)
         self.flat_box.setLayout(flat_grid)
