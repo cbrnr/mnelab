@@ -410,7 +410,7 @@ class MainWindow(QMainWindow):
                 enabled and self.model.current["dtype"] == "epochs"
             )
             self.actions["plot_erds_topomaps"].setEnabled(
-                enabled and self.model.current["dtype"] == "epochs"
+                enabled and locations and self.model.current["dtype"] == "epochs"
             )
             self.actions["plot_evoked"].setEnabled(
                 enabled and self.model.current["dtype"] == "epochs"
