@@ -17,11 +17,11 @@ Therefore, the info panel shows information about that data set.
 ## Concatenate data
 Now we want to concatenate the three data sets, starting with `S001R06`.
 In the sidebar, select `S001R06`, then go to `Edit -> Append data...`.
-Select `S001R10` and `S001R14` in the `Source` panel - to select multiple items, hold <kbd>Ctrl</kbd> while clicking.
+Select `S001R10` and `S001R14` in the `Source` panel - to select multiple items, hold <kbd>Ctrl</kbd> (<kbd>⌘</kbd> on macOS) while clicking.
 Drag the selected data sets to the `Destination` panel and confirm with `OK`.
 A new entry appears in the sidebar: `S001R06 (appended)`.
 The entries `Samples` and `Length` in the info panel confirm that it is the result of the concatenation.
-To close the original data sets, select them in the sidebar and go to `File -> Close` (or press <kbd>Ctrl</kbd>+<kbd>F4</kbd>).
+To close the original data sets, select them in the sidebar and go to `File -> Close`.
 
 ## Convert annotations to events
 Splitting the raw data into epochs requires _events_.
