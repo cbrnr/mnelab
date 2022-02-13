@@ -320,11 +320,14 @@ class Model:
         if isinstance(reference, list):
             reference = ",".join(reference)
 
-        if montage is None:
-            montage_text = "-"
-        else:
-            locations = count_locations(self.current["data"].info)
-            montage_text = f"{montage} ({locations}/{nchan} locations)"
+        locations = count_locations(self.current["data"].info)
+
+        if montage is None and not locations:
+            montage_text = "none"
+        elif montage is None and locations:
+            montage_text = f"custom ({locations}/{data.info['nchan']} locations)"
+        elif montage:
+            montage_text = f"{montage} ({locations}/{data.info['nchan']} locations)"
 
         if ica is not None:
             method = ica.method.title()
