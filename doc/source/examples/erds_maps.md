@@ -1,6 +1,6 @@
 # Compute and visualize ERDS maps
 
-Based on [this MNE-Python example](https://mne.tools/dev/auto_examples/time_frequency/time_frequency_erds.html), which also provides a bit of background information on ERDS.
+Based on [this MNE-Python example](https://mne.tools/dev/auto_examples/time_frequency/time_frequency_erds.html), which also provides a bit of background information on event-related (de)synchronization (ERDS).
 
 ## Download required files
 Download data files for runs 6, 10, and 14 of subject 1 from the [EEG Motor Movement/Imagery Dataset](https://physionet.org/content/eegmmidb/1.0.0/):
