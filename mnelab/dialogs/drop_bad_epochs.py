@@ -2,6 +2,8 @@
 #
 # License: BSD (3-clause)
 
+from mne.channels.channels import _unit2human
+from mne.io.pick import get_channel_type_constants
 from PySide6.QtCore import Slot
 from PySide6.QtWidgets import (
     QDialog,
@@ -12,6 +14,13 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QVBoxLayout,
 )
+
+
+def _unit(channel_type):
+    try:
+        return _unit2human[get_channel_type_constants()[channel_type]["unit"]]
+    except KeyError:
+        return "AU"
 
 
 class DropBadEpochsDialog(QDialog):
@@ -27,7 +36,7 @@ class DropBadEpochsDialog(QDialog):
         self.reject_fields = {}
         reject_grid = QGridLayout()
         for row, type in enumerate(types):
-            reject_grid.addWidget(QLabel(type.upper()), row, 0)
+            reject_grid.addWidget(QLabel(f"{type.upper()} ({_unit(type)})"), row, 0)
             self.reject_fields[type] = QLineEdit()
             reject_grid.addWidget(self.reject_fields[type], row, 1)
         self.reject_box.setLayout(reject_grid)
@@ -39,7 +48,7 @@ class DropBadEpochsDialog(QDialog):
         self.flat_fields = {}
         flat_grid = QGridLayout()
         for row, type in enumerate(types):
-            flat_grid.addWidget(QLabel(type.upper()), row, 0)
+            flat_grid.addWidget(QLabel(f"{type.upper()} ({_unit(type)})"), row, 0)
             self.flat_fields[type] = QLineEdit()
             flat_grid.addWidget(self.flat_fields[type], row, 1)
         self.flat_box.setLayout(flat_grid)
