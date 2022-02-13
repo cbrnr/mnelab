@@ -4,6 +4,7 @@
    Home <self>
    Tutorial <tutorial/index>
    Examples <examples/index>
+   About <about>
    GitHub Repository <https://github.com/cbrnr/mnelab>
 ```
 
