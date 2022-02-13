@@ -77,6 +77,10 @@ class SettingsDialog(QDialog):
         self.reset_to_defaults.clicked.connect(self.reset_settings)
         grid.addWidget(self.reset_to_defaults, 1, 0)
 
+        self.reset_to_defaults = QPushButton("Reset window")
+        self.reset_to_defaults.clicked.connect(self.reset_window)
+        grid.addWidget(self.reset_to_defaults, 2, 0)
+
         hbox = QHBoxLayout()
         self.buttonbox = QDialogButtonBox(
             QDialogButtonBox.Apply
@@ -84,7 +88,7 @@ class SettingsDialog(QDialog):
             | QDialogButtonBox.Cancel
         )
         hbox.addWidget(self.buttonbox)
-        grid.addLayout(hbox, 2, 0, 1, 2)
+        grid.addLayout(hbox, 3, 0, 1, 2)
         self.buttonbox.button(QDialogButtonBox.Apply).clicked.connect(self.apply_settings)
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.accepted.connect(self.apply_settings)
@@ -99,3 +103,8 @@ class SettingsDialog(QDialog):
     @Slot()
     def reset_settings(self):
         self.max_recent.setValue(_DEFAULTS["max_recent"])
+
+    @Slot()
+    def reset_window(self):
+        self.parent().resize(_DEFAULTS["size"])
+        self.parent().move(_DEFAULTS["pos"])
