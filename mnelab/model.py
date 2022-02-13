@@ -116,9 +116,17 @@ class Model:
                             replace("'", '"'))
         fsize = getsize(data.filenames[0]) / 1024**2  # convert to MB
         name, ext = split_name_ext(fname)
-        self.insert_data(defaultdict(lambda: None, name=name, fname=fname,
-                                     ftype=ext.upper()[1:], fsize=fsize, data=data,
-                                     dtype="raw", montage=None, events=np.empty((0, 3))))
+        self.insert_data(defaultdict(
+            lambda: None,
+            name=name,
+            fname=fname,
+            ftype=ext.upper()[1:],
+            fsize=fsize,
+            data=data,
+            dtype="raw",
+            montage=None,
+            events=np.empty((0, 3), dtype=int),
+        ))
 
     @data_changed
     def find_events(self, stim_channel, consecutive=True, initial_event=True,
@@ -229,7 +237,7 @@ class Model:
                 desc.append(d)
         events = np.column_stack((pos, desc))
         events = np.insert(events, 1, 0, axis=1)  # insert zero column
-        if self.current["events"] is not None:
+        if len(self.current["events"]) > 0:
             events = np.row_stack((self.current["events"], events))
             events = np.unique(events, axis=0)
         self.current["events"] = events
