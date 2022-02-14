@@ -68,7 +68,7 @@ The resulting figure will look like this:
 ![topomaps event 1](./images/erp/topomaps_event_1.png)
 
 
-## Joint plots
+## Create joint plots
 Butterfly plots and topomaps can be combined to a joint plot.
 Go to **_Plot → Evoked_**, select event "1", and check **_GFP_** and **_Spatial colors_**.
 Activate the **_Topomaps_** group and leave it set at **_Peaks_**.
@@ -78,7 +78,7 @@ You should see something like this:
 ![joint butterfly and topomap plot](./images/erp/joint_plot.png)
 
 
-## Comparing conditions
+## Compare conditions
 So far, we have always plotted individual channels, with different events in separate figures.
 To compare the auditory event to the visual one, go to **_Plot_** → **_Evoked comparison_**.
 Judging by the first topomap (at 0.093 s) in the [joint plot above](#joint-plots), we expect a large negative peak in frontal-central positions (FC) for event 1.
