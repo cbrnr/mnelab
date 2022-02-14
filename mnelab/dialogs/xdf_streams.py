@@ -1,4 +1,4 @@
-# Copyright (c) MNELAB developers
+# © MNELAB developers
 #
 # License: BSD (3-clause)
 
