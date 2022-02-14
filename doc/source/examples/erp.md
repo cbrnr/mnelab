@@ -33,7 +33,7 @@ The FIF file already includes sensor locations, so we do not need to set a monta
 Go to **_Plot_** → **_Channel locations_** to see a 2D sensor location plot.
 **_EEG 053_** is colored red because it is marked "bad".
 
-![channel locations](./erp/sensor_locations.png)
+![channel locations](./images/erp/sensor_locations.png)
 
 
 ## Filter data
@@ -58,14 +58,14 @@ Go to **_Tools_** → **_Drop bad epochs..._**, activate **_Reject_**, and enter
 Go to **_Plot_** → **_Evoked..._**, check **_Spatial colors_**, and click **_OK_**.
 Two figures containing so-called "butterffly" plots will pop up, whose window titles show which event they belong to.
 
-![evoked potentials event 1](./erp/evoked_event_1.png) ![evoked potentials event 3](./erp/evoked_event_3.png)
+![evoked potentials event 1](./images/erp/evoked_event_1.png) ![evoked potentials event 3](./images/erp/evoked_event_3.png)
 
 ## Plot evoked topomaps
 Now we will create topomaps of the potentials evoked by the auditory event (ID 1) at -200 ms, 100 ms, and 400 ms.
 Go to **_Plot_** → **_Evoked topomaps..._** and select Event 1.
 Under **_Select time point(s)_**, choose **_Manual_**, and enter "-0.2,0.1,0.4".
 The resulting figure will look like this:
-![topomaps event 1](./erp/topomaps_event_1.png)
+![topomaps event 1](./images/erp/topomaps_event_1.png)
 
 
 ## Joint plots
@@ -75,7 +75,7 @@ Activate the **_Topomaps_** group and leave it set at **_Peaks_**.
 The topomap time points are automatically chosen as the three largest peaks in the global field power (GFP).
 You should see something like this:
 
-![joint butterfly and topomap plot](./erp/joint_plot.png)
+![joint butterfly and topomap plot](./images/erp/joint_plot.png)
 
 
 ## Comparing conditions
@@ -88,4 +88,4 @@ Leave both event types selected, but change **_Combine channels_** to **_mean_**
 After confirming with **_OK_**, you will see the figure below.
 Each line represents the average over the selected channels for a single event type, and shaded areas represent 95% confidence intervals.
 
-![evoked comparison plot](./erp/evoked_comparison.png)
+![evoked comparison plot](./images/erp/evoked_comparison.png)
