@@ -12,8 +12,33 @@ from PySide6.QtWidgets import (
 )
 
 
-class FilterDialog(QDialog):
-    def __init__(self, parent):
+class DataSetChangeDialog(QDialog):
+    def add_buttonbox(self, force_new, vbox):
+        buttonbox = QDialogButtonBox()
+        buttonbox.addButton("Create new data set", QDialogButtonBox.YesRole)
+        overwrite_button = buttonbox.addButton(
+            "Overwrite current data set",
+            QDialogButtonBox.YesRole,
+        )
+        buttonbox.addButton("Cancel", QDialogButtonBox.RejectRole)
+
+        self.inplace = False
+        if force_new:
+            overwrite_button.setEnabled(False)
+            overwrite_button.setToolTip("Data sets with filenames are always duplicated.")
+
+        vbox.addWidget(buttonbox)
+        buttonbox.accepted.connect(self.accept)
+        buttonbox.rejected.connect(self.reject)
+        overwrite_button.clicked.connect(self.set_overwrite)
+        vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+
+    def set_overwrite(self):
+        self.inplace = True
+
+
+class FilterDialog(DataSetChangeDialog):
+    def __init__(self, parent, force_new=False):
         super().__init__(parent)
         self.setWindowTitle("Filter data")
         vbox = QVBoxLayout(self)
@@ -25,11 +50,8 @@ class FilterDialog(QDialog):
         self.highedit = QLineEdit()
         grid.addWidget(self.highedit, 1, 1)
         vbox.addLayout(grid)
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        vbox.addWidget(buttonbox)
-        buttonbox.accepted.connect(self.accept)
-        buttonbox.rejected.connect(self.reject)
-        vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+
+        self.add_buttonbox(force_new, vbox)
 
     @property
     def low(self):

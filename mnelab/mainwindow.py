@@ -903,9 +903,11 @@ class MainWindow(QMainWindow):
 
     def filter_data(self):
         """Filter data."""
-        dialog = FilterDialog(self)
+        dialog = FilterDialog(self, force_new=self.model.current["fname"])
+
         if dialog.exec():
-            self.auto_duplicate()
+            if not dialog.inplace:
+                self.model.duplicate_data()
             self.model.filter(dialog.low, dialog.high)
 
     def find_events(self):
