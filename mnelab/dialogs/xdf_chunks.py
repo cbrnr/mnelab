@@ -52,6 +52,7 @@ class XDFChunksDialog(QDialog):
         self.view.setSortingEnabled(True)
         self.view.sortByColumn(0, Qt.AscendingOrder)
         self.view.setEditTriggers(QTableView.NoEditTriggers)
+        self.view.selectRow(0)
         self.view.setFixedWidth(450)
 
         self.details = QPlainTextEdit("")
@@ -70,11 +71,12 @@ class XDFChunksDialog(QDialog):
 
         vbox = QVBoxLayout(self)
         vbox.addLayout(hbox)
-        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok)
+        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Close)
         vbox.addWidget(self.buttonbox)
-        self.buttonbox.accepted.connect(self.accept)
+        self.buttonbox.rejected.connect(self.reject)
 
         self.view.clicked.connect(self._update_details)
+        self._update_details()
 
         self.setFixedSize(980, 650)
         self.view.setColumnWidth(0, 70)
