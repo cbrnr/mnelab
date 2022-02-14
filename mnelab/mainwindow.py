@@ -548,7 +548,7 @@ class MainWindow(QMainWindow):
         if fname:
             chunks = list_chunks(fname)
             dialog = XDFChunksDialog(self, chunks, fname)
-            dialog.exec_()
+            dialog.exec()
 
     def export_file(self, f, text, ffilter="*"):
         """Export to file."""
