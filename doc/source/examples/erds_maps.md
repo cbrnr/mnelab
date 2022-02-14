@@ -51,10 +51,10 @@ Don't worry about the channel names containing trailing dots, that's how they ar
 ## Plot ERDS maps
 Select **_Plot → ERDS maps..._** and enter the following values:
 - Frequency range: "2" to "36"
-- Step size: "1"
+- Step size: "0.5"
 - Time range: "-1" to "4"
 - Baseline: "-1" to "0"
 
 Check **_Significance mask_**, leave **_alpha_** at "0.05" and confirm with **_OK_**.
-Calculating the significance masks can take about 30 seconds.
+Calculating the significance masks can take about a minute.
 Eventually, two figures open up, one per event type.
