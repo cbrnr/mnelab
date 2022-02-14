@@ -39,7 +39,7 @@ In the dialog, select events "2" and "3" (the two task onsets).
 You can click and drag to select multiple items in this dialog.
 For **_Interval around events:_** enter "-1.5" and "4.5" as start and end times, respectively.
 Uncheck **_Baseline Correction_** confirm with **_OK_** and select **_Create a new data set_**.
-In the info panel, the **_Data type_** of the newly created data set ("S001R06 (appended) (epoched)") is now "Epochs".
+In the info panel, the **_Data type_** of the newly created data set ("S001 (epoched)") is now "Epochs".
 If you select the original data set, you'll see that it is of type "Raw".
 ERDS maps can only be calculated from "Epochs".
 
