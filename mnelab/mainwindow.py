@@ -1038,9 +1038,21 @@ class MainWindow(QMainWindow):
 
     def epoch_data(self):
         """Epoch raw data."""
-        dialog = EpochDialog(self, self.model.current["events"])
+        unique_events = np.unique(self.model.current["events"][:, 2]).astype(str)
+
+        event_id_to_label = self.model.current["event_mapping"]
+        if event_id_to_label is not None:
+            event_label_to_id = {v: k for k, v in event_id_to_label.items()}
+            unique_events = [event_id_to_label[int(e)] for e in unique_events]
+
+        dialog = EpochDialog(self, unique_events)
         if dialog.exec():
-            events = [int(item.text()) for item in dialog.events.selectedItems()]
+            selected_events = [item.text() for item in dialog.events.selectedItems()]
+            if event_id_to_label is not None:
+                selected_events = [event_label_to_id[e] for e in selected_events]
+            else:
+                selected_events = [int(e) for e in selected_events]
+
             tmin = dialog.tmin.value()
             tmax = dialog.tmax.value()
 
@@ -1051,7 +1063,7 @@ class MainWindow(QMainWindow):
 
             duplicated = self.auto_duplicate()
             try:
-                self.model.epoch_data(events, tmin, tmax, baseline)
+                self.model.epoch_data(selected_events, tmin, tmax, baseline)
             except ValueError as e:
                 if duplicated:  # undo
                     self.model.remove_data()
