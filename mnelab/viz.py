@@ -5,9 +5,9 @@
 import math
 
 import matplotlib.pyplot as plt
+from matplotlib.colors import TwoSlopeNorm
 from mne.time_frequency import tfr_multitaper
 from mne.viz import plot_compare_evokeds
-from mne.viz.utils import center_cmap
 
 
 def _get_rows_cols(n):
@@ -27,15 +27,21 @@ def plot_erds(data, freqs, n_cycles, baseline, times=(None, None)):
     figs = []
     n_rows, n_cols = _get_rows_cols(data.info["nchan"])
     widths = n_cols * [10] + [1]  # each map has width 10, each colorbar width 1
+    vmin, vmax = -1, 2  # default for ERDS maps
+    cnorm = TwoSlopeNorm(vmin=vmin, vcenter=0, vmax=vmax)
 
     for event in data.event_id:  # separate figures for each event ID
         fig, axes = plt.subplots(n_rows, n_cols + 1, gridspec_kw={"width_ratios": widths})
         tfr_avg = tfr[event].average()
-        vmin, vmax = -1, 2  # default for ERDS maps
-        cmap = center_cmap(plt.cm.RdBu, vmin, vmax)
         for ch, ax in enumerate(axes[..., :-1].flat):  # skip last column
-            tfr_avg.plot([ch], vmin=vmin, vmax=vmax, cmap=(cmap, False), axes=ax,
-                         colorbar=False, show=False)
+            tfr_avg.plot(
+                [ch],
+                cmap=plt.cm.RdBu,
+                cnorm=cnorm,
+                axes=ax,
+                colorbar=False,
+                show=False,
+            )
             ax.set_title(data.ch_names[ch], fontsize=10)
             ax.axvline(0, linewidth=1, color="black", linestyle=":")
             ax.set(xlabel="t (s)", ylabel="f (Hz)")
