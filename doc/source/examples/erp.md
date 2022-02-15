@@ -12,7 +12,7 @@ The [MNE-Python documentation](https://mne.tools/stable/overview/datasets_index.
 ## Load data set and events
 Go to **_File&nbsp;–&nbsp;Open..._** and select the *sample_audvis_filt-0-40_raw.fif* file you just downloaded.
 In the info panel, you will see that no events or annotations are present.
-To load the events file, go to **_File&nbsp;–&nbsp;Import&nbsp;events..._**, select *sample_audvis_filt-0-40_raw-eve.fif* and click **_Open_**.
+To load the events from a separate file, go to **_File&nbsp;–&nbsp;Import&nbsp;events..._**, select *sample_audvis_filt-0-40_raw-eve.fif* and click **_Open_**.
 The **_Events_** entry in the info panel now shows that a total of 319 events have been loaded.
 
 
@@ -56,13 +56,13 @@ Go to **_Tools&nbsp;–&nbsp;Drop&nbsp;bad&nbsp;epochs..._**, activate **_Reject
 
 ## Plot evoked potentials
 Go to **_Plot&nbsp;–&nbsp;Evoked..._**, check **_Spatial&nbsp;colors_**, and click **_OK_**.
-Two figures containing so-called "butterffly" plots will pop up, whose window titles show which event they belong to.
+Two figures containing so-called butterfly plots will pop up, and their window titles indicate which event they belong to.
 
 ![evoked potentials event 1](./images/erp/evoked_event_1.png) ![evoked potentials event 3](./images/erp/evoked_event_3.png)
 
 ## Plot evoked topomaps
-Now we will create topomaps of the potentials evoked by the auditory event (ID 1) at -200 ms, 100 ms, and 400 ms.
-Go to **_Plot&nbsp;–&nbsp;Evoked&nbsp;topomaps..._** and select Event 1.
+Now we will create topomaps of the potentials evoked by the auditory event "1" at -200 ms, 100 ms, and 400 ms.
+Go to **_Plot&nbsp;–&nbsp;Evoked&nbsp;topomaps..._** and select event "1".
 Under **_Select&nbsp;time&nbsp;point(s)_**, choose **_Manual_**, and enter "-0.2,0.1,0.4".
 The resulting figure will look like this:
 ![topomaps event 1](./images/erp/topomaps_event_1.png)
@@ -81,11 +81,11 @@ You should see something like this:
 ## Compare conditions
 So far, we have always plotted individual channels, with different events in separate figures.
 To compare the auditory event to the visual one, go to **_Plot&nbsp;–&nbsp;Evoked comparison_**.
-Judging by the first topomap (at 0.093 s) in the [joint plot above](#joint-plots), we expect a large negative peak in frontal-central positions (FC) for event 1.
-The [channel location plot](#plot-channel-locations) tells us that the relevant channels are EEG 010–014.
+Judging by the first topomap (at 0.093 s) in the [joint plot above](#joint-plots), we expect a large negative peak in frontal-central positions (FC) for event "1".
+The [channel location plot](#plot-channel-locations) informs us that the relevant channels are EEG 010–014.
 So in the dialog, select channels EEG 010, EEG 011, EEG 012, EEG 013, and EEG 014.
 Leave both event types selected, but change **_Combine&nbsp;channels_** to **_mean_**.
 After confirming with **_OK_**, you will see the figure below.
-Each line represents the average over the selected channels for a single event type, and shaded areas represent 95% confidence intervals.
+Each line represents the average over the selected channels for a single event type, and shaded ribbons represent 95% confidence intervals.
 
 ![evoked comparison plot](./images/erp/evoked_comparison.png)
