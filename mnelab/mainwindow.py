@@ -584,7 +584,8 @@ class MainWindow(QMainWindow):
                 picks = [item.text() for item in dialog.types.selectedItems()]
                 if set(types) == set(picks):
                     return
-            self.auto_duplicate()
+            if self.auto_duplicate() is None:
+                return
             self.model.pick_channels(picks)
 
     def channel_properties(self):
@@ -673,7 +674,8 @@ class MainWindow(QMainWindow):
         length = self.model.current["data"].n_times / fs
         dialog = CropDialog(self, 0, length)
         if dialog.exec():
-            self.auto_duplicate()
+            if self.auto_duplicate() is None:
+                return
             self.model.crop(dialog.start or 0, dialog.stop)
 
     def append_data(self):
@@ -681,7 +683,8 @@ class MainWindow(QMainWindow):
         compatibles = self.model.get_compatibles()
         dialog = AppendDialog(self, compatibles)
         if dialog.exec():
-            self.auto_duplicate()
+            if self.auto_duplicate() is None:
+                return
             self.model.append_data(dialog.names)
 
     def plot_data(self):
@@ -882,7 +885,8 @@ class MainWindow(QMainWindow):
 
     def apply_ica(self):
         """Apply current fitted ICA."""
-        self.auto_duplicate()
+        if self.auto_duplicate() is None:
+            return
         self.model.apply_ica()
 
     def interpolate_bads(self):
@@ -890,6 +894,8 @@ class MainWindow(QMainWindow):
         dialog = InterpolateBadsDialog(self)
         if dialog.exec():
             duplicated = self.auto_duplicate()
+            if duplicated is None:
+                return
             try:
                 self.model.interpolate_bads(dialog.reset_bads, dialog.mode, dialog.origin)
             except ValueError as e:
@@ -905,7 +911,8 @@ class MainWindow(QMainWindow):
         """Filter data."""
         dialog = FilterDialog(self)
         if dialog.exec():
-            self.auto_duplicate()
+            if self.auto_duplicate() is None:
+                return
             self.model.filter(dialog.low, dialog.high)
 
     def find_events(self):
@@ -954,6 +961,8 @@ class MainWindow(QMainWindow):
                 baseline = None
 
             duplicated = self.auto_duplicate()
+            if duplicated is None:
+                return
             try:
                 self.model.epoch_data(events, tmin, tmax, baseline)
             except ValueError as e:
@@ -985,17 +994,20 @@ class MainWindow(QMainWindow):
                 flat = fields_to_dict(dialog.flat_fields)
             if reject is None and flat is None:
                 return
-            self.auto_duplicate()
+            if self.auto_duplicate() is None:
+                return
             self.model.drop_bad_epochs(reject, flat)
 
     def convert_od(self):
         """Convert to optical density."""
-        self.auto_duplicate()
+        if self.auto_duplicate() is None:
+            return
         self.model.convert_od()
 
     def convert_bl(self):
         """Convert to haemoglobin."""
-        self.auto_duplicate()
+        if self.auto_duplicate() is None:
+            return
         self.model.convert_beer_lambert()
 
     def change_reference(self):
@@ -1013,7 +1025,8 @@ class MainWindow(QMainWindow):
                     ref = [c.text() for c in dialog.reref_channellist.selectedItems()]
             else:
                 ref = None
-            duplicated = self.auto_duplicate()
+            if duplicated is None:
+                return
             try:
                 self.model.change_reference(add, ref)
             except ValueError as e:
@@ -1085,17 +1098,20 @@ class MainWindow(QMainWindow):
             self.model.duplicate_data()
             return True
         # otherwise ask the user
-        msg = QMessageBox()
+        msg = QMessageBox(self)
         msg.setWindowTitle("Modify data set")
         msg.setText("You are about to modify the current data set. How do you want to proceed?")  # noqa: E501
         createnew_button = msg.addButton("Create new data set", QMessageBox.YesRole)
-        msg.addButton("Overwrite current data set", QMessageBox.NoRole)
+        overwrite_button = msg.addButton("Overwrite current data set", QMessageBox.NoRole)
+        msg.addButton("Cancel", QMessageBox.RejectRole)
         msg.setDefaultButton(createnew_button)
         msg.exec()
         if msg.clickedButton() == createnew_button:
             self.model.duplicate_data()
             return True
-        return False
+        elif msg.clickedButton() == overwrite_button:
+            return False
+        return None
 
     def _add_recent(self, fname):
         """Add a file to recent file list.
