@@ -1,4 +1,4 @@
-# Copyright (c) MNELAB developers
+# © MNELAB developers
 #
 # License: BSD (3-clause)
 
@@ -1058,7 +1058,7 @@ class MainWindow(QMainWindow):
                 f"</p></nobr><nobr><p>MNE repository: "
                 f"<a href=https://{mne_url}>{mne_url}</a></p></nobr>"
                 f"<p>Licensed under the BSD 3-clause license.</p>"
-                f"<p>Copyright © MNELAB developers.</p>")
+                f"<p>© MNELAB developers.</p>")
         msg_box.setInformativeText(text)
         msg_box.exec()
 
