@@ -38,6 +38,7 @@ Go to **_Tools&nbsp;–&nbsp;Create&nbsp;Epochs..._** (or select **_Create&nbsp;
 In the dialog, select events "2" and "3" (the two task onsets).
 You can click and drag to select multiple items in this dialog.
 For **_Interval&nbsp;around&nbsp;events:_** enter "-1.5" and "4.5" as start and end times, respectively.
+We will create ERDS maps in the time interval from -1 to 4 seconds, but add half a second at the start and end to account for edge effects.
 Uncheck **_Baseline&nbsp;Correction_** confirm with **_OK_** and select **_Create&nbsp;a&nbsp;new data set_**.
 In the info panel, the **_Data&nbsp;type_** of the newly created data set ("S001 (epoched)") is now "Epochs".
 If you select the original data set, you'll see that it is of type "Raw".
