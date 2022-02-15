@@ -786,7 +786,6 @@ class MainWindow(QMainWindow):
 
             if not calc.exec():
                 pool.terminate()
-                res.get()
                 print("ERDS map calculation aborted.")
             else:
                 tfr_and_masks = res.get(timeout=1)
