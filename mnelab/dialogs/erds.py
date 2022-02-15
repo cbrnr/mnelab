@@ -51,7 +51,7 @@ class ERDSDialog(QDialog):
         self._t1.setRange(*t_range)
         self._t1.setValue(t_range[0])
         self._t1.setDecimals(1)
-        self._step.setSingleStep(0.1)
+        self._t1.setSingleStep(0.1)
         self._t1.setSuffix(" s")
         grid.addWidget(self._t1, 2, 1)
 
@@ -59,7 +59,7 @@ class ERDSDialog(QDialog):
         self._t2.setRange(*t_range)
         self._t2.setValue(t_range[1])
         self._t2.setDecimals(1)
-        self._step.setSingleStep(0.1)
+        self._t2.setSingleStep(0.1)
         self._t2.setSuffix(" s")
         grid.addWidget(self._t2, 2, 2)
 
@@ -68,7 +68,7 @@ class ERDSDialog(QDialog):
         self._b1.setRange(*t_range)
         self._b1.setValue(t_range[0])
         self._b1.setDecimals(1)
-        self._step.setSingleStep(0.1)
+        self._b1.setSingleStep(0.1)
         self._b1.setSuffix(" s")
         grid.addWidget(self._b1, 3, 1)
 
@@ -76,7 +76,7 @@ class ERDSDialog(QDialog):
         self._b2.setRange(*t_range)
         self._b2.setValue(0)
         self._b2.setDecimals(1)
-        self._step.setSingleStep(0.1)
+        self._b2.setSingleStep(0.1)
         self._b2.setSuffix(" s")
         grid.addWidget(self._b2, 3, 2)
 
