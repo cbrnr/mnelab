@@ -35,11 +35,11 @@ The main window looks pretty empty initially. In fact, almost all commands are d
 
 ![menu disabled](./01_menu_disabled.png)
 
-Click on the "Open" icon in the toolbar or go to "File" –> "Open..." and select a file in the dialog window.
+Click on the "Open" icon in the toolbar or go to **_File&nbsp;–&nbsp;Open..._** and select a file in the dialog window.
 The name of the loaded file appears in the sidebar and the info panel shows information about the data set:
 
 ![file loaded](./02_file_loaded.png)
 
-By clicking on "Plot" -> "Data", you can now visualize the raw data:
+By clicking on **_Plot&nbsp;–&nbsp;Data_**, you can now visualize the raw data:
 
 ![plot menu](./03_plot_menu.png)
