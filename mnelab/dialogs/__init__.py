@@ -21,6 +21,7 @@ from .montage import MontageDialog
 from .pick_channels import PickChannelsDialog
 from .plot_evoked import PlotEvokedComparisonDialog, PlotEvokedDialog, PlotEvokedTopomaps
 from .reference import ReferenceDialog
+from .rename_channels import RenameChannelsDialog
 from .run_ica import RunICADialog
 from .xdf_chunks import XDFChunksDialog
 from .xdf_streams import XDFStreamsDialog

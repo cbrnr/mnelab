@@ -15,6 +15,7 @@
 - Add ability to import events from FIF files ([#284](https://github.com/cbrnr/mnelab/pull/284) by [Florian Hofer](https://github.com/hofaflo))
 - Add support for plotting ERDS topomaps (Plot -> ERDS topomaps...) ([#278](https://github.com/cbrnr/mnelab/pull/278) by [Florian Hofer](https://github.com/hofaflo))
 - Add possibility to apply significance masks to ERDS plots ([#279](https://github.com/cbrnr/mnelab/pull/279) by [Florian Hofer](https://github.com/hofaflo))
+- Add basic batch renaming of channels "Edit - Rename channels...") ([#303](https://github.com/cbrnr/mnelab/pull/303) by [Florian Hofer](https://github.com/hofaflo))
 
 ### Changed
 - Simplify rereferencing workflow ([#258](https://github.com/cbrnr/mnelab/pull/258) by [Florian Hofer](https://github.com/hofaflo))
