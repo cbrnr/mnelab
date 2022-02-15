@@ -70,12 +70,22 @@ def plot_erds_topomaps(epochs, events, freqs, baseline, times):
     list[matplotlib.figure.Figure]
         A list of the figure(s) generated.
     """
+    vmin, vmax = -1, 2
+    cmap = center_cmap(plt.cm.RdBu, vmin, vmax)
+
     figs = []
     for event in events:
         tfr = tfr_multitaper(epochs[event], freqs, freqs, average=True, return_itc=False)
         tfr.apply_baseline(baseline, mode="percent")
         tfr.crop(*times)
-        fig = tfr.plot_topomap(title=f"Event: {event}")
+        fig = tfr.plot_topomap(
+            title=f"Event: {event}",
+            unit="ERDS",
+            vmin=vmin,
+            vmax=vmax,
+            cmap=cmap,
+            cbar_fmt="%.1f",
+        )
         fig.set_size_inches(4, 3)
         fig.set_tight_layout(True)
         figs.append(fig)
