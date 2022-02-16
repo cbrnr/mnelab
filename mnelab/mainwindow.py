@@ -1111,17 +1111,20 @@ class MainWindow(QMainWindow):
             self.model.duplicate_data()
             return True
         # otherwise ask the user
-        msg = QMessageBox()
+        msg = QMessageBox(self)
+        msg.setWindowFlags(Qt.Dialog | Qt.WindowTitleHint | Qt.CustomizeWindowHint)
         msg.setWindowTitle("Modify data set")
         msg.setText("You are about to modify the current data set. How do you want to proceed?")  # noqa: E501
-        createnew_button = msg.addButton("Create new data set", QMessageBox.YesRole)
-        msg.addButton("Overwrite current data set", QMessageBox.NoRole)
-        msg.setDefaultButton(createnew_button)
+        create_button = msg.addButton("Create new data set", QMessageBox.AcceptRole)
+        overwrite_button = msg.addButton("Overwrite current data set", QMessageBox.RejectRole)  # noqa: E501
+        msg.setDefaultButton(create_button)
+        msg.setEscapeButton(create_button)
         msg.exec()
-        if msg.clickedButton() == createnew_button:
+        if msg.clickedButton() == overwrite_button:
+            return False
+        else:
             self.model.duplicate_data()
             return True
-        return False
 
     def _add_recent(self, fname):
         """Add a file to recent file list.
