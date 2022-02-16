@@ -530,19 +530,13 @@ class MainWindow(QMainWindow):
 
     def export_file(self, f, text, ffilter="*"):
         """Export to file."""
-        fname = QFileDialog.getSaveFileName(self, text, filter=ffilter)[0]
+        fname = QFileDialog.getSaveFileName(self, text)[0]
         if fname:
-            if ffilter != "*":
-                exts = [ext.replace("*", "") for ext in ffilter.split()]
-
-                maxsuffixes = max([ext.count(".") for ext in exts])
-                suffixes = Path(fname).suffixes
-                for i in range(-maxsuffixes, 0):
-                    ext = "".join(suffixes[i:])
-                    if ext in exts:
-                        return f(fname)
-                fname = fname + exts[0]
-                return f(fname)
+            exts = [ext.replace("*", "") for ext in ffilter.split()]
+            for ext in exts:
+                if fname.endswith(ext):
+                    return f(fname)
+            return f(fname + exts[0])
 
     def import_file(self, f, text, ffilter="*"):
         """Import file."""
