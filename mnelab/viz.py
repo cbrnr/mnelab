@@ -1,13 +1,62 @@
-# Copyright (c) MNELAB developers
+# © MNELAB developers
 #
 # License: BSD (3-clause)
 
 import math
 
 import matplotlib.pyplot as plt
+import numpy as np
 from mne.time_frequency import tfr_multitaper
 from mne.viz import plot_compare_evokeds
-from mne.viz.utils import center_cmap
+
+
+def _center_cmap(cmap, vmin, vmax, name="cmap_centered"):
+    """
+    Center given colormap (ranging from vmin to vmax) at value 0.
+
+    Taken from MNE-Python v0.24, as it will be removed in MNE-Python v1.0.
+
+    Parameters
+    ----------
+    cmap : matplotlib.colors.Colormap
+        The colormap to center around 0.
+    vmin : float
+        Minimum value in the data to map to the lower end of the colormap.
+    vmax : float
+        Maximum value in the data to map to the upper end of the colormap.
+    name : str
+        Name of the new colormap. Defaults to 'cmap_centered'.
+
+    Returns
+    -------
+    cmap_centered : matplotlib.colors.Colormap
+        The new colormap centered around 0.
+
+    Notes
+    -----
+    This function can be used in situations where vmin and vmax are not symmetric around
+    zero. Normally, this results in the value zero not being mapped to white anymore in many
+    colormaps. Using this function, the value zero will be mapped to white even for
+    asymmetric positive and negative value ranges. Note that this could also be achieved by
+    re-normalizing a given colormap by subclassing matplotlib.colors.Normalize as described
+    here:
+    https://matplotlib.org/users/colormapnorms.html#custom-normalization-two-linear-ranges
+    """
+    from matplotlib.colors import LinearSegmentedColormap
+
+    vzero = abs(vmin) / float(vmax - vmin)
+    index_old = np.linspace(0, 1, cmap.N)
+    index_new = np.hstack([
+        np.linspace(0, vzero, cmap.N // 2, endpoint=False),
+        np.linspace(vzero, 1, cmap.N // 2),
+    ])
+
+    colors = ("red", "green", "blue", "alpha")
+    cdict = {name: [] for name in colors}
+    for old, new in zip(index_old, index_new):
+        for color, name in zip(cmap(old), colors):
+            cdict[name].append((new, color, color))
+    return LinearSegmentedColormap(name, cdict)
 
 
 def _get_rows_cols(n):
@@ -32,7 +81,7 @@ def plot_erds(data, freqs, n_cycles, baseline, times=(None, None)):
         fig, axes = plt.subplots(n_rows, n_cols + 1, gridspec_kw={"width_ratios": widths})
         tfr_avg = tfr[event].average()
         vmin, vmax = -1, 2  # default for ERDS maps
-        cmap = center_cmap(plt.cm.RdBu, vmin, vmax)
+        cmap = _center_cmap(plt.cm.RdBu, vmin, vmax)
         for ch, ax in enumerate(axes[..., :-1].flat):  # skip last column
             tfr_avg.plot([ch], vmin=vmin, vmax=vmax, cmap=(cmap, False), axes=ax,
                          colorbar=False, show=False)
@@ -44,6 +93,50 @@ def plot_erds(data, freqs, n_cycles, baseline, times=(None, None)):
             fig.colorbar(axes.flat[0].images[-1], cax=ax)
 
         fig.suptitle(f"ERDS ({event})")
+        figs.append(fig)
+    return figs
+
+
+def plot_erds_topomaps(epochs, events, freqs, baseline, times):
+    """
+    Plot ERDS topomaps, one figure per event.
+
+    Parameters
+    ----------
+    epochs : mne.epochs.Epochs
+        Epochs extracted from a Raw instance.
+    events : list[str]
+        Events to include.
+    freqs : np.ndarray
+        Array of frequencies over which the average is taken.
+    baseline : tuple[float, float]
+        Start and end times for baseline correction.
+    times : tuple[float, float]
+        Start and end times between which the average is taken.
+
+    Returns
+    -------
+    list[matplotlib.figure.Figure]
+        A list of the figure(s) generated.
+    """
+    vmin, vmax = -1, 2
+    cmap = _center_cmap(plt.cm.RdBu, vmin, vmax)
+
+    figs = []
+    for event in events:
+        tfr = tfr_multitaper(epochs[event], freqs, freqs, average=True, return_itc=False)
+        tfr.apply_baseline(baseline, mode="percent")
+        tfr.crop(*times)
+        fig = tfr.plot_topomap(
+            title=f"Event: {event}",
+            unit="ERDS",
+            vmin=vmin,
+            vmax=vmax,
+            cmap=cmap,
+            cbar_fmt="%.1f",
+        )
+        fig.set_size_inches(4, 3)
+        fig.set_tight_layout(True)
         figs.append(fig)
     return figs
 

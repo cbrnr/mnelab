@@ -1,4 +1,4 @@
-# Copyright (c) MNELAB developers
+# © MNELAB developers
 #
 # License: BSD (3-clause)
 
@@ -32,7 +32,13 @@ from .io.xdf import get_xml, list_chunks
 from .model import InvalidAnnotationsError, LabelsNotFoundError, Model
 from .settings import SettingsDialog, read_settings, write_settings
 from .utils import count_locations, have, image_path, interface_style, natural_sort
-from .viz import plot_erds, plot_evoked, plot_evoked_comparison, plot_evoked_topomaps
+from .viz import (
+    plot_erds,
+    plot_erds_topomaps,
+    plot_evoked,
+    plot_evoked_comparison,
+    plot_evoked_topomaps,
+)
 from .widgets import InfoWidget
 
 
@@ -176,7 +182,12 @@ class MainWindow(QMainWindow):
         icon = QIcon.fromTheme("plot-locations")
         self.actions["plot_locations"] = plot_menu.addAction(icon, "&Channel locations",
                                                              self.plot_locations)
+        plot_menu.addSeparator()
         self.actions["plot_erds"] = plot_menu.addAction("&ERDS maps...", self.plot_erds)
+        self.actions["plot_erds_topomaps"] = plot_menu.addAction(
+            "ERDS topomaps...",
+            self.plot_erds_topomaps,
+        )
         plot_menu.addSeparator()
         self.actions["plot_evoked"] = plot_menu.addAction(
             "Evoked...",
@@ -398,6 +409,9 @@ class MainWindow(QMainWindow):
             self.actions["plot_erds"].setEnabled(
                 enabled and self.model.current["dtype"] == "epochs"
             )
+            self.actions["plot_erds_topomaps"].setEnabled(
+                enabled and locations and self.model.current["dtype"] == "epochs"
+            )
             self.actions["plot_evoked"].setEnabled(
                 enabled and self.model.current["dtype"] == "epochs"
             )
@@ -530,19 +544,13 @@ class MainWindow(QMainWindow):
 
     def export_file(self, f, text, ffilter="*"):
         """Export to file."""
-        fname = QFileDialog.getSaveFileName(self, text, filter=ffilter)[0]
+        fname = QFileDialog.getSaveFileName(self, text)[0]
         if fname:
-            if ffilter != "*":
-                exts = [ext.replace("*", "") for ext in ffilter.split()]
-
-                maxsuffixes = max([ext.count(".") for ext in exts])
-                suffixes = Path(fname).suffixes
-                for i in range(-maxsuffixes, 0):
-                    ext = "".join(suffixes[i:])
-                    if ext in exts:
-                        return f(fname)
-                fname = fname + exts[0]
-                return f(fname)
+            exts = [ext.replace("*", "") for ext in ffilter.split()]
+            for ext in exts:
+                if fname.endswith(ext):
+                    return f(fname)
+            return f(fname + exts[0])
 
     def import_file(self, f, text, ffilter="*"):
         """Import file."""
@@ -755,6 +763,24 @@ class MainWindow(QMainWindow):
             baseline = [dialog.b1, dialog.b2]
             times = [dialog.t1, dialog.t2]
             figs = plot_erds(data, freqs, freqs, baseline, times)
+            for fig in figs:
+                fig.show()
+
+    def plot_erds_topomaps(self):
+        """Plot ERDS topomaps."""
+        epochs = self.model.current["data"]
+        t_range = [epochs.tmin, epochs.tmax]
+        f_range = [1, epochs.info["sfreq"] / 2]
+
+        dialog = ERDSTopomapsDialog(self, t_range, f_range, epochs.event_id)
+        if dialog.exec():
+            figs = plot_erds_topomaps(
+                epochs,
+                events=[item.text() for item in dialog.events.selectedItems()],
+                freqs=np.arange(dialog.f1, dialog.f2, dialog.step),
+                baseline=[dialog.b1, dialog.b2],
+                times=[dialog.t1, dialog.t2],
+            )
             for fig in figs:
                 fig.show()
 
@@ -1058,7 +1084,7 @@ class MainWindow(QMainWindow):
                 f"</p></nobr><nobr><p>MNE repository: "
                 f"<a href=https://{mne_url}>{mne_url}</a></p></nobr>"
                 f"<p>Licensed under the BSD 3-clause license.</p>"
-                f"<p>Copyright © MNELAB developers.</p>")
+                f"<p>© MNELAB developers.</p>")
         msg_box.setInformativeText(text)
         msg_box.exec()
 

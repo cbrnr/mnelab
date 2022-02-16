@@ -1,4 +1,4 @@
-# Copyright (c) MNELAB developers
+# © MNELAB developers
 #
 # License: BSD (3-clause)
 
@@ -9,7 +9,7 @@ from .channel_properties import ChannelPropertiesDialog
 from .crop import CropDialog
 from .drop_bad_epochs import DropBadEpochsDialog
 from .epoch import EpochDialog
-from .erds import ERDSDialog
+from .erds import ERDSDialog, ERDSTopomapsDialog
 from .error_message import ErrorMessageBox
 from .events import EventsDialog
 from .filter import FilterDialog

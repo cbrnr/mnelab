@@ -13,6 +13,7 @@
 - Add ability to pick channels by channel type ([#285](https://github.com/cbrnr/mnelab/pull/285) by [Florian Hofer](https://github.com/hofaflo))
 - Add a settings menu (File -> Settings...) ([#289](https://github.com/cbrnr/mnelab/pull/289) by [Florian Hofer](https://github.com/hofaflo))
 - Add ability to import events from FIF files ([#284](https://github.com/cbrnr/mnelab/pull/284) by [Florian Hofer](https://github.com/hofaflo))
+- Add support for plotting ERDS topomaps (Plot -> ERDS topomaps...) ([#278](https://github.com/cbrnr/mnelab/pull/278) by [Florian Hofer](https://github.com/hofaflo))
 
 ### Changed
 - Simplify rereferencing workflow ([#258](https://github.com/cbrnr/mnelab/pull/258) by [Florian Hofer](https://github.com/hofaflo))
@@ -24,6 +25,7 @@
 ### Fixed
 - Fix splitting name and extension for compatibility with Python 3.8 ([#252](https://github.com/cbrnr/mnelab/pull/252) by [Johan Medrano](https://github.com/yop0))
 - Fix exporting to BrainVision with annotations starting with "BAD" or "EDGE" ([#276](https://github.com/cbrnr/mnelab/pull/276) by [Clemens Brunner](https://github.com/cbrnr))
+- Exporting to .fif.gz now uses the correct extension on macOS ([#301](https://github.com/cbrnr/mnelab/pull/301) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [0.7.0] - 2021-12-29
 ### Added
