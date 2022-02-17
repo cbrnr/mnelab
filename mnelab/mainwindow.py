@@ -33,7 +33,7 @@ from .model import InvalidAnnotationsError, LabelsNotFoundError, Model
 from .settings import SettingsDialog, read_settings, write_settings
 from .utils import count_locations, have, image_path, interface_style, natural_sort
 from .viz import (
-    calc_tfr_and_masks,
+    _calc_tfr,
     plot_erds,
     plot_erds_topomaps,
     plot_evoked,
@@ -778,7 +778,7 @@ class MainWindow(QMainWindow):
 
             pool = mp.Pool(processes=1)
             res = pool.apply_async(
-                func=calc_tfr_and_masks,
+                func=_calc_tfr,
                 args=(data, freqs, baseline, times, alpha),
                 callback=callback
             )

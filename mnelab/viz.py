@@ -69,7 +69,7 @@ def _get_rows_cols(n):
     return rows, cols
 
 
-def calc_tfr_and_masks(epochs, freqs, baseline, times, alpha=None):
+def _calc_tfr(epochs, freqs, baseline, times, alpha=None):
     """
     Calculate AverageTFR and significance masks for given epochs.
 
