@@ -86,7 +86,7 @@ class ERDSDialog(QDialog):
         self.alpha = QDoubleSpinBox()
         self.alpha.setMinimum(0)
         self.alpha.setValue(0.05)
-        self.alpha.setDecimals(3)
+        self.alpha.setDecimals(2)
         self.alpha.setSingleStep(0.01)
         grid.addWidget(self.significance_mask, 4, 0)
         grid.addWidget(self.alpha, 4, 1)
