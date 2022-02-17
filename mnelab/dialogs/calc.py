@@ -15,3 +15,4 @@ class CalcDialog(QDialog):
         button.rejected.connect(self.close)
         vbox.addWidget(label)
         vbox.addWidget(button)
+        self.resize(300, 100)
