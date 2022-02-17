@@ -623,28 +623,9 @@ class MainWindow(QMainWindow):
             self.model.set_channel_properties(bads, renamed, types)
 
     def rename_channels(self):
-        dialog = RenameChannelsDialog(self)
+        dialog = RenameChannelsDialog(self, self.model.current["data"].info["ch_names"])
         if dialog.exec():
-            prefix_strip = ""
-            prefix_slice = 0
-            suffix_strip = ""
-            suffix_slice = 0
-            if dialog.prefix_group.isChecked():
-                if dialog.prefix_strip.isChecked():
-                    prefix_strip = dialog.prefix_strip_chars.text()
-                else:
-                    prefix_slice = int(dialog.prefix_slice_num.value())
-            if dialog.suffix_group.isChecked():
-                if dialog.suffix_strip.isChecked():
-                    suffix_strip = dialog.suffix_strip_chars.text()
-                else:
-                    suffix_slice = int(dialog.suffix_slice_num.value())
-            self.model.rename_channels(
-                prefix_strip,
-                prefix_slice,
-                suffix_strip,
-                suffix_slice,
-            )
+            self.model.rename_channels(dialog.new_names)
 
     def set_montage(self):
         """Set montage."""

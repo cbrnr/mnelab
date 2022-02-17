@@ -384,14 +384,8 @@ class Model:
             self.history.append(f"data.set_channel_types({types})")
 
     @data_changed
-    def rename_channels(self, prefix_strip, prefix_slice, suffix_strip, suffix_slice):
+    def rename_channels(self, new_names):
         old_names = self.current["data"].info["ch_names"]
-        new_names = old_names[:]
-        new_names = [n.lstrip(prefix_strip) for n in new_names]
-        new_names = [n[prefix_slice:] for n in new_names]
-        new_names = [n.rstrip(suffix_strip) for n in new_names]
-        if suffix_slice > 0:
-            new_names = [n[:-suffix_slice] for n in new_names]
         mapping = {o: n for o, n in zip(old_names, new_names) if o != n}
         if not mapping:
             return
