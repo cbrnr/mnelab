@@ -6,6 +6,7 @@ import math
 
 import matplotlib.pyplot as plt
 import numpy as np
+from mne.stats import permutation_cluster_1samp_test as pcluster_test
 from mne.time_frequency import tfr_multitaper
 from mne.viz import plot_compare_evokeds
 
@@ -68,30 +69,110 @@ def _get_rows_cols(n):
     return rows, cols
 
 
-def plot_erds(data, freqs, n_cycles, baseline, times=(None, None)):
-    tfr = tfr_multitaper(data, freqs, n_cycles, average=False, return_itc=False)
+def _calc_tfr(epochs, freqs, baseline, times, alpha=None):
+    """
+    Calculate AverageTFR and significance masks for given epochs.
+
+    Adapted from https://mne.tools/dev/auto_examples/time_frequency/time_frequency_erds.html
+
+    Parameters
+    ----------
+    epochs : mne.epochs.Epochs
+        Epochs extracted from a Raw instance.
+    freqs : np.ndarray
+        The frequencies in Hz.
+    baseline : array_like, shape (2,)
+        The time interval to apply rescaling / baseline correction.
+    times : array_like, shape (2,)
+        Start and end of crop time interval.
+    alpha : float, optional
+        If specified, calculate significance maps with threshold `alpha`, by default `None`.
+
+    Returns
+    -------
+    dict[str, tuple[mne.time_frequency.tfr.EpochsTFR, dict[str, np.ndarray | None]]]
+        A dictionary where keys are event IDs and values are tuples (`tfr_ev`, `masks`).
+        `tfr_ev` is the EpochsTFR object for the respective event. `masks` is again a
+        dictionary, where keys are channel names and values are significance masks.
+        Significance masks are `None` if `alpha` was not specified.
+    """
+    tfr = tfr_multitaper(epochs, freqs, freqs, average=False, return_itc=False)
     tfr.apply_baseline(baseline, mode="percent")
     tfr.crop(*times)
 
-    figs = []
-    n_rows, n_cols = _get_rows_cols(data.info["nchan"])
-    widths = n_cols * [10] + [1]  # each map has width 10, each colorbar width 1
+    pcluster_kwargs = dict(
+        n_permutations=100,
+        step_down_p=0.05,
+        seed=1,
+        buffer_size=None,
+        out_type='mask',
+    )
 
-    for event in data.event_id:  # separate figures for each event ID
+    res = {}
+
+    for event in epochs.event_id:
+        tfr_ev = tfr[event]
+        masks = {}
+        for ch in range(epochs.info["nchan"]):
+            mask = None
+            if alpha is not None:
+                # positive clusters
+                _, c1, p1, _ = pcluster_test(tfr_ev.data[:, ch], tail=1, **pcluster_kwargs)
+                # negative clusters
+                _, c2, p2, _ = pcluster_test(tfr_ev.data[:, ch], tail=-1, **pcluster_kwargs)
+
+                c = np.stack(c1 + c2, axis=2)  # combined clusters
+                p = np.concatenate((p1, p2))   # combined p-values
+                mask = c[..., p <= alpha].any(axis=-1)
+            masks[epochs.ch_names[ch]] = mask
+        res[event] = (tfr_ev, masks)
+    return res
+
+
+def plot_erds(tfr_and_masks):
+    """
+    Plot ERDS maps from given TFR and significance masks.
+
+    Parameters
+    ----------
+    tfr_and_masks : dict[str, tuple[EpochsTFR, dict[str, np.ndarray |None]]]
+        A dictionary where keys are event IDs and values are tuples (`tfr_ev`, `masks`).
+        `tfr_ev` is the EpochsTFR object for the respective event. `masks` is again a
+        dictionary, where keys are channel names and values are significance masks.
+
+    Returns
+    -------
+    list[matplotlib.figure.Figure]
+        A list of the figure(s) generated, one figure per event.
+    """
+    figs = []
+
+    for event, (tfr_ev, masks) in tfr_and_masks.items():
+        n_rows, n_cols = _get_rows_cols(tfr_ev.info["nchan"])
+        widths = n_cols * [10] + [1]  # each map has width 10, each colorbar width 1
         fig, axes = plt.subplots(n_rows, n_cols + 1, gridspec_kw={"width_ratios": widths})
-        tfr_avg = tfr[event].average()
         vmin, vmax = -1, 2  # default for ERDS maps
         cmap = _center_cmap(plt.cm.RdBu, vmin, vmax)
-        for ch, ax in enumerate(axes[..., :-1].flat):  # skip last column
-            tfr_avg.plot([ch], vmin=vmin, vmax=vmax, cmap=(cmap, False), axes=ax,
-                         colorbar=False, show=False)
-            ax.set_title(data.ch_names[ch], fontsize=10)
+
+        # skip the last column in `axes`, as it contains the colorbar
+        for (ch_name, mask), ax in zip(masks.items(), axes[..., :-1].flat):
+            tfr_ev.average().plot(
+                [ch_name],
+                vmin=vmin,
+                vmax=vmax,
+                cmap=(cmap, False),
+                axes=ax,
+                colorbar=False,
+                mask=mask,
+                mask_style="mask" if mask is not None else None,  # avoid RuntimeWarning
+                show=False,
+            )
+            ax.set_title(ch_name, fontsize=10)
             ax.axvline(0, linewidth=1, color="black", linestyle=":")
             ax.set(xlabel="t (s)", ylabel="f (Hz)")
             ax.label_outer()
-        for ax in axes[..., -1].flat:  # colorbars in last column
+        for ax in axes[..., -1].flat:
             fig.colorbar(axes.flat[0].images[-1], cax=ax)
-
         fig.suptitle(f"ERDS ({event})")
         figs.append(fig)
     return figs

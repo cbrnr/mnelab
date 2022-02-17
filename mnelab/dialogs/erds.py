@@ -3,6 +3,7 @@
 # License: BSD (3-clause)
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import (
+    QCheckBox,
     QDialog,
     QDialogButtonBox,
     QDoubleSpinBox,
@@ -80,6 +81,18 @@ class ERDSDialog(QDialog):
         self._b2.setSuffix(" s")
         grid.addWidget(self._b2, 3, 2)
 
+        self.significance_mask = QCheckBox("Significance level:")
+        self.significance_mask.setChecked(False)
+        self.alpha = QDoubleSpinBox()
+        self.alpha.setMinimum(0)
+        self.alpha.setValue(0.05)
+        self.alpha.setDecimals(2)
+        self.alpha.setSingleStep(0.01)
+        grid.addWidget(self.significance_mask, 4, 0)
+        grid.addWidget(self.alpha, 4, 1)
+        self.significance_mask.toggled.connect(self.toggle_alpha)
+        self.toggle_alpha()
+
         vbox.addLayout(grid)
         buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         vbox.addWidget(buttonbox)
@@ -114,6 +127,10 @@ class ERDSDialog(QDialog):
     @property
     def b2(self):
         return self._b2.value()
+
+    @Slot()
+    def toggle_alpha(self):
+        self.alpha.setEnabled(self.significance_mask.isChecked())
 
 
 class ERDSTopomapsDialog(QDialog):
