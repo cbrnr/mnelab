@@ -3,14 +3,13 @@
 # License: BSD (3-clause)
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import (
+    QCheckBox,
     QDialog,
     QDialogButtonBox,
     QDoubleSpinBox,
     QGridLayout,
-    QGroupBox,
     QLabel,
     QListWidget,
-    QLineEdit,
     QVBoxLayout,
 )
 
@@ -82,18 +81,17 @@ class ERDSDialog(QDialog):
         self._b2.setSuffix(" s")
         grid.addWidget(self._b2, 3, 2)
 
-        self.significance_mask = QGroupBox("Significance mask")
-        self.significance_mask.setCheckable(True)
+        self.significance_mask = QCheckBox("Significance level:")
         self.significance_mask.setChecked(False)
-        significance_mask_grid = QGridLayout()
-        significance_mask_grid.setColumnStretch(0, 2)
-        significance_mask_grid.setColumnStretch(1, 3)
-        significance_mask_grid.addWidget(QLabel("alpha:"), 0, 0)
-        self.alpha = QLineEdit()
-        self.alpha.setText("0.05")
-        significance_mask_grid.addWidget(self.alpha, 0, 1)
-        self.significance_mask.setLayout(significance_mask_grid)
-        grid.addWidget(self.significance_mask, 4, 0, 1, 3)
+        self.alpha = QDoubleSpinBox()
+        self.alpha.setMinimum(0)
+        self.alpha.setValue(0.05)
+        self.alpha.setDecimals(3)
+        self.alpha.setSingleStep(0.01)
+        grid.addWidget(self.significance_mask, 4, 0)
+        grid.addWidget(self.alpha, 4, 1)
+        self.significance_mask.toggled.connect(self.toggle_alpha)
+        self.toggle_alpha()
 
         vbox.addLayout(grid)
         buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
@@ -129,6 +127,10 @@ class ERDSDialog(QDialog):
     @property
     def b2(self):
         return self._b2.value()
+
+    @Slot()
+    def toggle_alpha(self):
+        self.alpha.setEnabled(self.significance_mask.isChecked())
 
 
 class ERDSTopomapsDialog(QDialog):

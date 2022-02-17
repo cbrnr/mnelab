@@ -765,7 +765,7 @@ class MainWindow(QMainWindow):
             times = [dialog.t1, dialog.t2]
             alpha = None
             if dialog.significance_mask.isChecked():
-                alpha = float(dialog.alpha.text())
+                alpha = dialog.alpha.value()
 
             calc = CalcDialog(
                 self,
