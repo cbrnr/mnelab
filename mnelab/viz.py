@@ -152,7 +152,7 @@ def plot_erds(tfr_and_masks):
         widths = n_cols * [10] + [1]  # each map has width 10, each colorbar width 1
         fig, axes = plt.subplots(n_rows, n_cols + 1, gridspec_kw={"width_ratios": widths})
         vmin, vmax = -1, 2  # default for ERDS maps
-        cmap = center_cmap(plt.cm.RdBu, vmin, vmax)
+        cmap = _center_cmap(plt.cm.RdBu, vmin, vmax)
 
         # skip the last column in `axes`, as it contains the colorbar
         for (ch_name, mask), ax in zip(masks.items(), axes[..., :-1].flat):
