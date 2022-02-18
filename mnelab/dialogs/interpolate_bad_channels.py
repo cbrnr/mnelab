@@ -15,7 +15,7 @@ from PySide6.QtWidgets import (
 )
 
 
-class InterpolateBadsDialog(QDialog):
+class InterpolateBadChannelsDialog(QDialog):
     def __init__(self, parent):
         super().__init__(parent)
         self.setWindowTitle("Interpolate bad channels")

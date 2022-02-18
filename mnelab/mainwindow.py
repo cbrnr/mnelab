@@ -100,10 +100,10 @@ class MainWindow(QMainWindow):
 
         file_menu.addSeparator()
 
-        self.actions["import_bads"] = file_menu.addAction(
+        self.actions["import_bad_channels"] = file_menu.addAction(
             "Import bad channels...",
             lambda: self.import_file(
-                model.import_bads,
+                model.import_bad_channels,
                 "Import bad channels",
                 "*.csv",
             ),
@@ -142,10 +142,10 @@ class MainWindow(QMainWindow):
                 f"{ext[1:].upper()} ({description[1]})...",
                 partial(self.export_file, model.export_data, "Export data", "*" + ext)
             )
-        self.actions["export_bads"] = file_menu.addAction(
+        self.actions["export_bad_channels"] = file_menu.addAction(
             "Export &bad channels...",
             lambda: self.export_file(
-                model.export_bads,
+                model.export_bad_channels,
                 "Export bad channels",
                 "*.csv",
             ),
@@ -177,14 +177,14 @@ class MainWindow(QMainWindow):
 
         file_menu.addSeparator()
 
-        self.actions["xdf_meta_info"] = file_menu.addAction(
+        self.actions["show_xdf_meta_information"] = file_menu.addAction(
             QIcon.fromTheme("meta-info"),
             "Show XDF meta information",
-            self.xdf_meta_info,
+            self.show_xdf_meta_information,
         )
-        self.actions["xdf_chunks"] = file_menu.addAction(
+        self.actions["show_xdf_chunks"] = file_menu.addAction(
             "Show XDF chunks...",
-            self.xdf_chunks,
+            self.show_xdf_chunks,
         )
 
         file_menu.addSeparator()
@@ -230,7 +230,7 @@ class MainWindow(QMainWindow):
 
         edit_menu.addSeparator()
 
-        self.actions["change_ref"] = edit_menu.addAction(
+        self.actions["change_reference"] = edit_menu.addAction(
             "Change &reference...",
             self.change_reference,
         )
@@ -248,9 +248,9 @@ class MainWindow(QMainWindow):
 
         edit_menu.addSeparator()
 
-        self.actions["crop"] = edit_menu.addAction(
+        self.actions["crop_data"] = edit_menu.addAction(
             "&Crop data...",
-            self.crop,
+            self.crop_data,
         )
         self.actions["append_data"] = edit_menu.addAction(
             "Appen&d data...",
@@ -315,7 +315,7 @@ class MainWindow(QMainWindow):
         )
 
         tools_menu = self.menuBar().addMenu("&Tools")
-        self.actions["filter"] = tools_menu.addAction(
+        self.actions["filter_data"] = tools_menu.addAction(
             QIcon.fromTheme("filter-data"),
             "&Filter data...",
             self.filter_data,
@@ -359,17 +359,17 @@ class MainWindow(QMainWindow):
 
         tools_menu.addSeparator()
 
-        self.actions["interpolate_bads"] = tools_menu.addAction(
+        self.actions["interpolate_bad_channels"] = tools_menu.addAction(
             "Interpolate bad channels...",
-            self.interpolate_bads,
+            self.interpolate_bad_channels,
         )
 
         tools_menu.addSeparator()
 
-        self.actions["epoch_data"] = tools_menu.addAction(
+        self.actions["create_epochs"] = tools_menu.addAction(
             QIcon.fromTheme("epoch-data"),
             "Create epochs...",
-            self.epoch_data,
+            self.create_epochs,
         )
         self.actions["drop_bad_epochs"] = tools_menu.addAction(
             "Drop bad epochs...",
@@ -421,9 +421,9 @@ class MainWindow(QMainWindow):
         self.toolbar.addAction(self.actions["plot_psd"])
         self.toolbar.addAction(self.actions["plot_channel_locations"])
         self.toolbar.addSeparator()
-        self.toolbar.addAction(self.actions["filter"])
+        self.toolbar.addAction(self.actions["filter_data"])
         self.toolbar.addAction(self.actions["find_events"])
-        self.toolbar.addAction(self.actions["epoch_data"])
+        self.toolbar.addAction(self.actions["create_epochs"])
         self.toolbar.addAction(self.actions["run_ica"])
         self.toolbar.setMovable(False)
         self.setUnifiedTitleAndToolBarOnMac(True)
@@ -538,7 +538,7 @@ class MainWindow(QMainWindow):
 
         if self.model.data:  # toggle if specific conditions are met
             bads = bool(self.model.current["data"].info["bads"])
-            self.actions["export_bads"].setEnabled(enabled and bads)
+            self.actions["export_bad_channels"].setEnabled(enabled and bads)
             events = len(self.model.current["events"]) > 0
             self.actions["export_events"].setEnabled(enabled and events)
             if self.model.current["dtype"] == "raw":
@@ -569,14 +569,16 @@ class MainWindow(QMainWindow):
             )
             self.actions["plot_ica_components"].setEnabled(enabled and ica and locations)
             self.actions["plot_ica_sources"].setEnabled(enabled and ica)
-            self.actions["interpolate_bads"].setEnabled(enabled and locations and bads)
+            self.actions["interpolate_bad_channels"].setEnabled(
+                enabled and locations and bads
+            )
             self.actions["edit_events"].setEnabled(enabled)
             self.actions["events_from_annotations"].setEnabled(enabled and annot)
             self.actions["annotations_from_events"].setEnabled(enabled and events)
             self.actions["find_events"].setEnabled(
                 enabled and self.model.current["dtype"] == "raw"
             )
-            self.actions["epoch_data"].setEnabled(
+            self.actions["create_epochs"].setEnabled(
                 enabled and events and self.model.current["dtype"] == "raw"
             )
             self.actions["drop_bad_epochs"].setEnabled(
@@ -585,14 +587,14 @@ class MainWindow(QMainWindow):
             self.actions["clear_montage"].setEnabled(
                 enabled and self.model.current["montage"] is not None
             )
-            self.actions["crop"].setEnabled(
+            self.actions["crop_data"].setEnabled(
                 enabled and self.model.current["dtype"] == "raw"
             )
             append = bool(self.model.get_compatibles())
             self.actions["append_data"].setEnabled(
                 enabled and append and (self.model.current["dtype"] in ("raw", "epochs"))
             )
-            self.actions["xdf_meta_info"].setEnabled(
+            self.actions["show_xdf_meta_information"].setEnabled(
                 enabled and self.model.current["ftype"] in ["XDF", "XDFZ", "XDF.GZ"]
             )
             self.actions["convert_od"].setEnabled(
@@ -688,13 +690,13 @@ class MainWindow(QMainWindow):
         if fname:
             f(fname)
 
-    def xdf_chunks(self):
+    def show_xdf_chunks(self):
         """Show XDF chunks."""
         fname = QFileDialog.getOpenFileName(self, "Select XDF file",
                                             filter="*.xdf *.xdfz *.xdf.gz")[0]
         if fname:
             chunks = list_chunks(fname)
-            dialog = XDFChunksDialog(self, chunks, fname)
+            dialog = ShowXDFChunksDialog(self, chunks, fname)
             dialog.exec()
 
     def export_file(self, f, text, ffilter="*"):
@@ -725,12 +727,12 @@ class MainWindow(QMainWindow):
             while len(self.model) > 0:
                 self.model.remove_data()
 
-    def xdf_meta_info(self, fname=None):
-        """Show XDF meta info."""
+    def show_xdf_meta_information(self, fname=None):
+        """Show XDF meta inforation."""
         if fname is None:
             fname = self.model.current["fname"]
         xml = get_xml(fname)
-        dialog = MetaInfoDialog(self, xml)
+        dialog = ShowXDFMetaInformationDialog(self, xml)
         dialog.exec()
 
     def pick_channels(self):
@@ -780,7 +782,7 @@ class MainWindow(QMainWindow):
     def set_montage(self):
         """Set montage."""
         montages = natural_sort(mne.channels.get_builtin_montages())
-        dialog = MontageDialog(self, montages)
+        dialog = SetMontageDialog(self, montages)
         if dialog.exec():
             name = dialog.montages.selectedItems()[0].data(0)
             montage = mne.channels.make_standard_montage(name)
@@ -809,7 +811,7 @@ class MainWindow(QMainWindow):
         dur = self.model.current["data"].annotations.duration
         dur = (dur * fs).astype(int).tolist()
         desc = self.model.current["data"].annotations.description.tolist()
-        dialog = AnnotationsDialog(self, pos, dur, desc)
+        dialog = EditAnnotationsDialog(self, pos, dur, desc)
         if dialog.exec():
             rows = dialog.table.rowCount()
             onset, duration, description = [], [], []
@@ -825,7 +827,7 @@ class MainWindow(QMainWindow):
     def edit_events(self):
         pos = self.model.current["events"][:, 0].tolist()
         desc = self.model.current["events"][:, 2].tolist()
-        dialog = EventsDialog(self, pos, desc)
+        dialog = EditEventsDialog(self, pos, desc)
         if dialog.exec():
             rows = dialog.table.rowCount()
             events = np.zeros((rows, 3), dtype=int)
@@ -835,11 +837,11 @@ class MainWindow(QMainWindow):
                 events[i] = pos, 0, desc
             self.model.set_events(events)
 
-    def crop(self):
+    def crop_data(self):
         """Crop data."""
         fs = self.model.current["data"].info["sfreq"]
         length = self.model.current["data"].n_times / fs
-        dialog = CropDialog(self, 0, length)
+        dialog = CropDataDialog(self, 0, length)
         if dialog.exec():
             self.auto_duplicate()
             self.model.crop(dialog.start or 0, dialog.stop)
@@ -847,7 +849,7 @@ class MainWindow(QMainWindow):
     def append_data(self):
         """Concatenate raw data objects to current one."""
         compatibles = self.model.get_compatibles()
-        dialog = AppendDialog(self, compatibles)
+        dialog = AppendDataDialog(self, compatibles)
         if dialog.exec():
             self.auto_duplicate()
             self.model.append_data(dialog.names)
@@ -1097,9 +1099,9 @@ class MainWindow(QMainWindow):
         self.auto_duplicate()
         self.model.apply_ica()
 
-    def interpolate_bads(self):
+    def interpolate_bad_channels(self):
         """Interpolate bad channels"""
-        dialog = InterpolateBadsDialog(self)
+        dialog = InterpolateBadChannelsDialog(self)
         if dialog.exec():
             duplicated = self.auto_duplicate()
             try:
@@ -1115,7 +1117,7 @@ class MainWindow(QMainWindow):
 
     def filter_data(self):
         """Filter data."""
-        dialog = FilterDialog(self)
+        dialog = FilterDataDialog(self)
         if dialog.exec():
             self.auto_duplicate()
             self.model.filter(dialog.low, dialog.high)
@@ -1152,9 +1154,9 @@ class MainWindow(QMainWindow):
     def annotations_from_events(self):
         self.model.annotations_from_events()
 
-    def epoch_data(self):
+    def create_epochs(self):
         """Epoch raw data."""
-        dialog = EpochDialog(self, self.model.current["events"])
+        dialog = CreateEpochsDialog(self, self.model.current["events"])
         if dialog.exec():
             events = [int(item.text()) for item in dialog.events.selectedItems()]
             tmin = dialog.tmin.value()
@@ -1212,7 +1214,7 @@ class MainWindow(QMainWindow):
 
     def change_reference(self):
         """Change reference."""
-        dialog = ReferenceDialog(self, self.model.current["data"].info["ch_names"])
+        dialog = ChangeReferenceDialog(self, self.model.current["data"].info["ch_names"])
         if dialog.exec():
             if dialog.add_group.isChecked():
                 add = [c.strip() for c in dialog.add_channellist.text().split(",")]

@@ -21,7 +21,7 @@ def _add_item(item):
     return tmp
 
 
-class XDFChunksDialog(QDialog):
+class ShowXDFChunksDialog(QDialog):
     def __init__(self, parent, chunks, fname):
         super().__init__(parent)
         self.setWindowTitle(f"XDF Chunks ({fname})")

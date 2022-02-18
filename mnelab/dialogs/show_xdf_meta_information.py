@@ -22,7 +22,7 @@ def populate_tree(parent, node):
         populate_tree(item, element)
 
 
-class MetaInfoDialog(QDialog):
+class ShowXDFMetaInformationDialog(QDialog):
     def __init__(self, parent, xml):
         super().__init__(parent)
         self.setWindowTitle("XDF meta information")

@@ -15,7 +15,7 @@ from PySide6.QtWidgets import (
 )
 
 
-class MontageDialog(QDialog):
+class SetMontageDialog(QDialog):
     def __init__(self, parent, montages, selected=None):
         super().__init__(parent)
         self.setWindowTitle("Set montage")

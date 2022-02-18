@@ -15,7 +15,7 @@ from PySide6.QtWidgets import (
 )
 
 
-class EpochDialog(QDialog):
+class CreateEpochsDialog(QDialog):
     def __init__(self, parent, events):
         super().__init__(parent)
         self.setWindowTitle("Create Epochs")

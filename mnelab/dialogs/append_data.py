@@ -15,7 +15,7 @@ from PySide6.QtWidgets import (
 )
 
 
-class AppendDialog(QDialog):
+class AppendDataDialog(QDialog):
     def __init__(self, parent, compatibles, title="Append data"):
         super().__init__(parent)
         self.setWindowTitle(title)

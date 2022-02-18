@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (
 )
 
 
-class FilterDialog(QDialog):
+class FilterDataDialog(QDialog):
     def __init__(self, parent):
         super().__init__(parent)
         self.setWindowTitle("Filter data")

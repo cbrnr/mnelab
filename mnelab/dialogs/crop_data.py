@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
 )
 
 
-class CropDialog(QDialog):
+class CropDataDialog(QDialog):
     def __init__(self, parent, start, stop):
         super().__init__(parent)
         self.setWindowTitle("Crop data")

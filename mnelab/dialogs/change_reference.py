@@ -16,7 +16,7 @@ from PySide6.QtWidgets import (
 )
 
 
-class ReferenceDialog(QDialog):
+class ChangeReferenceDialog(QDialog):
     def __init__(self, parent, available_channels):
         super().__init__(parent)
         self.setWindowTitle("Change reference")
