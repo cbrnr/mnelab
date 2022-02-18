@@ -197,6 +197,7 @@ class MainWindow(QMainWindow):
             "Plot &PSD",
             self.plot_psd,
         )
+        plot_menu.addSeparator()
         self.actions["plot_channel_locations"] = plot_menu.addAction(
             QIcon.fromTheme("plot-locations"),
             "Plot &channel locations",
