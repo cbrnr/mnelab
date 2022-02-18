@@ -154,9 +154,11 @@ class MainWindow(QMainWindow):
             "Rename channels...",
             self.rename_channels,
         )
-        icon = QIcon.fromTheme("chan-props")
-        self.actions["chan_props"] = edit_menu.addAction(icon, "Channel &properties...",
-                                                         self.channel_properties)
+        self.actions["edit_channel_properties"] = edit_menu.addAction(
+            QIcon.fromTheme("chan-props"),
+            "Edit channel &properties...",
+            self.edit_channel_properties,
+        )
         edit_menu.addSeparator()
         self.actions["set_montage"] = edit_menu.addAction("Set &montage...",
                                                           self.set_montage)
@@ -170,9 +172,14 @@ class MainWindow(QMainWindow):
             self.change_reference,
         )
         edit_menu.addSeparator()
-        self.actions["annotations"] = edit_menu.addAction("&Annotations...",
-                                                          self.edit_annotations)
-        self.actions["events"] = edit_menu.addAction("&Events...", self.edit_events)
+        self.actions["edit_annotations"] = edit_menu.addAction(
+            "Edit &annotations...",
+            self.edit_annotations,
+        )
+        self.actions["edit_events"] = edit_menu.addAction(
+            "Edit &events...",
+            self.edit_events,
+        )
 
         edit_menu.addSeparator()
         self.actions["crop"] = edit_menu.addAction("&Crop data...", self.crop)
@@ -180,40 +187,50 @@ class MainWindow(QMainWindow):
                                                           self.append_data)
 
         plot_menu = self.menuBar().addMenu("&Plot")
-        icon = QIcon.fromTheme("plot-data")
-        self.actions["plot_data"] = plot_menu.addAction(icon, "&Data", self.plot_data)
-        icon = QIcon.fromTheme("plot-psd")
-        self.actions["plot_psd"] = plot_menu.addAction(icon, "&Power spectral density",
-                                                       self.plot_psd)
-        icon = QIcon.fromTheme("plot-locations")
-        self.actions["plot_locations"] = plot_menu.addAction(icon, "&Channel locations",
-                                                             self.plot_locations)
+        self.actions["plot_data"] = plot_menu.addAction(
+            QIcon.fromTheme("plot-data"),
+            "Plot &data",
+            self.plot_data,
+        )
+        self.actions["plot_psd"] = plot_menu.addAction(
+            QIcon.fromTheme("plot-psd"),
+            "Plot &PSD",
+            self.plot_psd,
+        )
+        self.actions["plot_channel_locations"] = plot_menu.addAction(
+            QIcon.fromTheme("plot-locations"),
+            "Plot &channel locations",
+            self.plot_channel_locations,
+        )
         plot_menu.addSeparator()
-        self.actions["plot_erds"] = plot_menu.addAction("&ERDS maps...", self.plot_erds)
+        self.actions["plot_erds_maps"] = plot_menu.addAction(
+            "Plot &ERDS maps...",
+            self.plot_erds_maps,
+        )
         self.actions["plot_erds_topomaps"] = plot_menu.addAction(
-            "ERDS topomaps...",
+            "Plot ERDS topomaps...",
             self.plot_erds_topomaps,
         )
         plot_menu.addSeparator()
         self.actions["plot_evoked"] = plot_menu.addAction(
-            "Evoked...",
+            "Plot evoked...",
             self.plot_evoked,
         )
         self.actions["plot_evoked_comparison"] = plot_menu.addAction(
-            "Evoked comparison...",
+            "Plot evoked comparison...",
             self.plot_evoked_comparison,
         )
         self.actions["plot_evoked_topomaps"] = plot_menu.addAction(
-            "Evoked topomaps...",
+            "Plot evoked topomaps...",
             self.plot_evoked_topomaps,
         )
         plot_menu.addSeparator()
         self.actions["plot_ica_components"] = plot_menu.addAction(
-            "ICA &components",
+            "Plot ICA &components",
             self.plot_ica_components,
         )
         self.actions["plot_ica_sources"] = plot_menu.addAction(
-            "ICA &sources",
+            "Plot ICA &sources",
             self.plot_ica_sources,
         )
 
@@ -275,11 +292,11 @@ class MainWindow(QMainWindow):
         self.toolbar.setObjectName("toolbar")
         self.toolbar.addAction(self.actions["open_file"])
         self.toolbar.addSeparator()
-        self.toolbar.addAction(self.actions["chan_props"])
+        self.toolbar.addAction(self.actions["edit_channel_properties"])
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.actions["plot_data"])
         self.toolbar.addAction(self.actions["plot_psd"])
-        self.toolbar.addAction(self.actions["plot_locations"])
+        self.toolbar.addAction(self.actions["plot_channel_locations"])
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.actions["filter"])
         self.toolbar.addAction(self.actions["find_events"])
@@ -406,13 +423,13 @@ class MainWindow(QMainWindow):
             else:
                 annot = False
             self.actions["export_annotations"].setEnabled(enabled and annot)
-            self.actions["annotations"].setEnabled(enabled)
+            self.actions["edit_annotations"].setEnabled(enabled)
             locations = count_locations(self.model.current["data"].info)
-            self.actions["plot_locations"].setEnabled(enabled and locations)
+            self.actions["plot_channel_locations"].setEnabled(enabled and locations)
             ica = bool(self.model.current["ica"])
             self.actions["apply_ica"].setEnabled(enabled and ica)
             self.actions["export_ica"].setEnabled(enabled and ica)
-            self.actions["plot_erds"].setEnabled(
+            self.actions["plot_erds_maps"].setEnabled(
                 enabled and self.model.current["dtype"] == "epochs"
             )
             self.actions["plot_erds_topomaps"].setEnabled(
@@ -430,7 +447,7 @@ class MainWindow(QMainWindow):
             self.actions["plot_ica_components"].setEnabled(enabled and ica and locations)
             self.actions["plot_ica_sources"].setEnabled(enabled and ica)
             self.actions["interpolate_bads"].setEnabled(enabled and locations and bads)
-            self.actions["events"].setEnabled(enabled)
+            self.actions["edit_events"].setEnabled(enabled)
             self.actions["events_from_annotations"].setEnabled(enabled and annot)
             self.actions["annotations_from_events"].setEnabled(enabled and events)
             self.actions["find_events"].setEnabled(
@@ -610,10 +627,10 @@ class MainWindow(QMainWindow):
             self.auto_duplicate()
             self.model.pick_channels(picks)
 
-    def channel_properties(self):
-        """Show channel properties dialog."""
+    def edit_channel_properties(self):
+        """Show 'Edit channel properties' dialog."""
         info = self.model.current["data"].info
-        dialog = ChannelPropertiesDialog(self, info)
+        dialog = EditChannelPropertiesDialog(self, info)
         if dialog.exec():
             dialog.model.sort(0)
             bads = []
@@ -756,7 +773,7 @@ class MainWindow(QMainWindow):
         win.setWindowTitle("Power spectral density")
         fig.show()
 
-    def plot_locations(self):
+    def plot_channel_locations(self):
         """Plot current montage."""
         fig = self.model.current["data"].plot_sensors(show_names=True, show=False)
         win = fig.canvas.manager.window
@@ -770,13 +787,13 @@ class MainWindow(QMainWindow):
     def plot_ica_sources(self):
         self.model.current["ica"].plot_sources(inst=self.model.current["data"])
 
-    def plot_erds(self):
+    def plot_erds_maps(self):
         """Plot ERDS maps."""
         data = self.model.current["data"]
         t_range = [data.tmin, data.tmax]
         f_range = [1, data.info["sfreq"] / 2]
 
-        dialog = ERDSDialog(self, t_range, f_range)
+        dialog = PlotERDSMapsDialog(self, t_range, f_range)
 
         if dialog.exec():
             freqs = np.arange(dialog.f1, dialog.f2, dialog.step)
@@ -818,7 +835,7 @@ class MainWindow(QMainWindow):
         t_range = [epochs.tmin, epochs.tmax]
         f_range = [1, epochs.info["sfreq"] / 2]
 
-        dialog = ERDSTopomapsDialog(self, t_range, f_range, epochs.event_id)
+        dialog = PlotERDSTopomapsDialog(self, t_range, f_range, epochs.event_id)
         if dialog.exec():
             figs = plot_erds_topomaps(
                 epochs,
@@ -879,7 +896,7 @@ class MainWindow(QMainWindow):
     def plot_evoked_topomaps(self):
         """Plot evoked topomaps."""
         epochs = self.model.current["data"]
-        dialog = PlotEvokedTopomaps(self, epochs.event_id)
+        dialog = PlotEvokedTopomapsDialog(self, epochs.event_id)
         if dialog.exec():
             if dialog.auto.isChecked():
                 times = "auto"

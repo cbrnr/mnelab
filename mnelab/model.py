@@ -178,7 +178,7 @@ class Model:
         """Export raw to file."""
         write_raw(fname, self.current["data"])
 
-    def export_bads(self, fname):
+    def export_bad_channels(self, fname):
         """Export bad channels info to a CSV file."""
         name, ext = splitext(split(fname)[-1])
         ext = ext if ext else ".csv"  # automatically add extension
@@ -214,7 +214,7 @@ class Model:
         self.current["ica"].save(fname)
 
     @data_changed
-    def import_bads(self, fname):
+    def import_bad_channels(self, fname):
         """Import bad channels info from a CSV file."""
         with open(fname) as f:
             bads = f.read().replace(" ", "").strip().split(",")

@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (
 channel_types = [k.upper() for k in get_channel_type_constants().keys()]
 
 
-class ChannelPropertiesDialog(QDialog):
+class EditChannelPropertiesDialog(QDialog):
     def __init__(self, parent, info, title="Channel Properties"):
         super().__init__(parent)
         self.setWindowTitle(title)

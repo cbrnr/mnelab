@@ -16,7 +16,7 @@ from PySide6.QtWidgets import (
 from .utils import select_all
 
 
-class ERDSDialog(QDialog):
+class PlotERDSMapsDialog(QDialog):
     def __init__(self, parent, t_range, f_range):
         super().__init__(parent)
         self.setWindowTitle("ERDS maps")
@@ -133,7 +133,7 @@ class ERDSDialog(QDialog):
         self.alpha.setEnabled(self.significance_mask.isChecked())
 
 
-class ERDSTopomapsDialog(QDialog):
+class PlotERDSTopomapsDialog(QDialog):
     def __init__(self, parent, t_range, f_range, events):
         super().__init__(parent)
         self.setWindowTitle("ERDS topomaps")

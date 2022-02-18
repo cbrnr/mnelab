@@ -14,22 +14,36 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from .events import IntTableWidgetItem
+
+class IntTableWidgetItem(QTableWidgetItem):
+    def __init__(self, value):
+        super().__init__(str(value))
+
+    def __lt__(self, other):
+        return int(self.data(Qt.EditRole)) < int(other.data(Qt.EditRole))
+
+    def setData(self, role, value):
+        try:
+            value = int(value)
+        except ValueError:
+            return
+        else:
+            if value >= 0:  # event position and type must not be negative
+                super().setData(role, str(value))
 
 
-class AnnotationsDialog(QDialog):
-    def __init__(self, parent, onset, duration, description):
+class EditEventsDialog(QDialog):
+    def __init__(self, parent, pos, desc):
         super().__init__(parent)
-        self.setWindowTitle("Edit Annotations")
+        self.setWindowTitle("Edit Events")
 
-        self.table = QTableWidget(len(onset), 3)
+        self.table = QTableWidget(len(pos), 2)
 
-        for row, annotation in enumerate(zip(onset, duration, description)):
-            self.table.setItem(row, 0, IntTableWidgetItem(annotation[0]))
-            self.table.setItem(row, 1, IntTableWidgetItem(annotation[1]))
-            self.table.setItem(row, 2, QTableWidgetItem(annotation[2]))
+        for row, (p, d) in enumerate(zip(pos, desc)):
+            self.table.setItem(row, 0, IntTableWidgetItem(p))
+            self.table.setItem(row, 1, IntTableWidgetItem(d))
 
-        self.table.setHorizontalHeaderLabels(["Onset", "Duration", "Type"])
+        self.table.setHorizontalHeaderLabels(["Position", "Type"])
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.verticalHeader().setVisible(False)
         self.table.setShowGrid(False)
@@ -56,19 +70,19 @@ class AnnotationsDialog(QDialog):
         self.remove_button.clicked.connect(self.toggle_buttons)
         self.add_button.clicked.connect(self.toggle_buttons)
         self.toggle_buttons()
-        self.resize(500, 500)
+        self.resize(300, 500)
 
     @Slot()
     def toggle_buttons(self):
         """Toggle + and - buttons."""
         n_items = len(self.table.selectedItems())
-        if self.table.rowCount() == 0:  # no annotations available
+        if self.table.rowCount() == 0:  # no events available
             self.add_button.setEnabled(True)
             self.remove_button.setEnabled(False)
-        elif n_items == 3:  # one row (3 items) selected
+        elif n_items == 2:  # one row (2 items) selected
             self.add_button.setEnabled(True)
             self.remove_button.setEnabled(True)
-        elif n_items > 3:  # more than one row selected
+        elif n_items > 2:  # more than one row selected
             self.add_button.setEnabled(False)
             self.remove_button.setEnabled(True)
         else:  # no rows selected
@@ -86,7 +100,6 @@ class AnnotationsDialog(QDialog):
         self.table.insertRow(current_row)
         self.table.setItem(current_row, 0, IntTableWidgetItem(pos))
         self.table.setItem(current_row, 1, IntTableWidgetItem(0))
-        self.table.setItem(current_row, 2, QTableWidgetItem("New Annotation"))
         self.table.setSortingEnabled(True)
 
     def remove_event(self):

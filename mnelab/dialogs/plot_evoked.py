@@ -171,7 +171,7 @@ class PlotEvokedComparisonDialog(QDialog):
             self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(False)
 
 
-class PlotEvokedTopomaps(QDialog):
+class PlotEvokedTopomapsDialog(QDialog):
     def __init__(self, parent, events):
         super().__init__(parent)
         self.setWindowTitle("Plot evoked topomaps")
