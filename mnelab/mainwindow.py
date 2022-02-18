@@ -178,7 +178,7 @@ class MainWindow(QMainWindow):
         file_menu.addSeparator()
 
         self.actions["show_xdf_meta_information"] = file_menu.addAction(
-            QIcon.fromTheme("meta-info"),
+            QIcon.fromTheme("show-xdf-meta-information"),
             "Show XDF meta information",
             self.show_xdf_meta_information,
         )
@@ -212,7 +212,7 @@ class MainWindow(QMainWindow):
             self.rename_channels,
         )
         self.actions["edit_channel_properties"] = edit_menu.addAction(
-            QIcon.fromTheme("chan-props"),
+            QIcon.fromTheme("edit-channel-properties"),
             "Edit channel &properties...",
             self.edit_channel_properties,
         )
@@ -272,7 +272,7 @@ class MainWindow(QMainWindow):
         plot_menu.addSeparator()
 
         self.actions["plot_channel_locations"] = plot_menu.addAction(
-            QIcon.fromTheme("plot-locations"),
+            QIcon.fromTheme("plot-channel-locations"),
             "Plot &channel locations",
             self.plot_channel_locations,
         )
@@ -367,7 +367,7 @@ class MainWindow(QMainWindow):
         tools_menu.addSeparator()
 
         self.actions["create_epochs"] = tools_menu.addAction(
-            QIcon.fromTheme("epoch-data"),
+            QIcon.fromTheme("create-epochs"),
             "Create epochs...",
             self.create_epochs,
         )
