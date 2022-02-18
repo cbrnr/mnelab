@@ -1105,7 +1105,11 @@ class MainWindow(QMainWindow):
         if dialog.exec():
             duplicated = self.auto_duplicate()
             try:
-                self.model.interpolate_bads(dialog.reset_bads, dialog.mode, dialog.origin)
+                self.model.interpolate_bad_channels(
+                    dialog.reset_bads,
+                    dialog.mode,
+                    dialog.origin,
+                )
             except ValueError as e:
                 if duplicated:  # undo
                     self.model.remove_data()
@@ -1120,7 +1124,7 @@ class MainWindow(QMainWindow):
         dialog = FilterDataDialog(self)
         if dialog.exec():
             self.auto_duplicate()
-            self.model.filter(dialog.low, dialog.high)
+            self.model.filter_data(dialog.low, dialog.high)
 
     def find_events(self):
         info = self.model.current["data"].info
@@ -1169,7 +1173,7 @@ class MainWindow(QMainWindow):
 
             duplicated = self.auto_duplicate()
             try:
-                self.model.epoch_data(events, tmin, tmax, baseline)
+                self.model.create_epochs(events, tmin, tmax, baseline)
             except ValueError as e:
                 if duplicated:  # undo
                     self.model.remove_data()

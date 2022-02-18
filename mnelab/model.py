@@ -413,7 +413,7 @@ class Model:
             self.history.append(f"data.set_montage({montage!r}, match_case={match_case}, match_alias={match_alias}, on_missing={on_missing!r})")  # noqa: E501
 
     @data_changed
-    def filter(self, low, high):
+    def filter_data(self, low, high):
         self.current["data"].filter(low, high)
         self.current["name"] += f" ({low}-{high} Hz)"
         self.history.append(f"data.filter({low}, {high})")
@@ -491,14 +491,14 @@ class Model:
         self.current["name"] += " (ICA)"
 
     @data_changed
-    def interpolate_bads(self, reset_bads, mode, origin):
+    def interpolate_bad_channels(self, reset_bads, mode, origin):
         self.current["data"].interpolate_bads(reset_bads, mode, origin)
         self.history.append(f"data.interpolate_bads(reset_bads={reset_bads}, mode={mode}, "
                             f"origin={origin})")
         self.current["name"] += " (interpolated)"
 
     @data_changed
-    def epoch_data(self, events, tmin, tmax, baseline):
+    def create_epochs(self, events, tmin, tmax, baseline):
         epochs = mne.Epochs(self.current["data"], self.current["events"], event_id=events,
                             tmin=tmin, tmax=tmax, baseline=baseline, preload=True)
         self.history.append(f"data = mne.Epochs(data, events, event_id={events}, "
