@@ -149,13 +149,13 @@ class MainWindow(QMainWindow):
         edit_menu = self.menuBar().addMenu("&Edit")
         self.actions["pick_chans"] = edit_menu.addAction("P&ick channels...",
                                                          self.pick_channels)
-        icon = QIcon.fromTheme("chan-props")
-        self.actions["chan_props"] = edit_menu.addAction(icon, "Channel &properties...",
-                                                         self.channel_properties)
         self.actions["rename_channels"] = edit_menu.addAction(
             "Rename channels...",
             self.rename_channels,
         )
+        icon = QIcon.fromTheme("chan-props")
+        self.actions["chan_props"] = edit_menu.addAction(icon, "Channel &properties...",
+                                                         self.channel_properties)
         edit_menu.addSeparator()
         self.actions["set_montage"] = edit_menu.addAction("Set &montage...",
                                                           self.set_montage)

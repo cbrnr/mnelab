@@ -51,8 +51,8 @@ class RenameChannelsDialog(QDialog):
         self.preview.verticalHeader().setVisible(False)
         self.preview.setShowGrid(False)
         self.preview.setSelectionBehavior(QTableWidget.SelectRows)
-        self.preview.setColumnWidth(0, 175)
-        self.preview.setColumnWidth(1, 175)
+        self.preview.setColumnWidth(0, 190)
+        self.preview.setColumnWidth(1, 190)
         self.preview.setEditTriggers(QTableWidget.NoEditTriggers)
         self.preview.setSelectionMode(QTableWidget.NoSelection)
         self.preview.setFocusPolicy(Qt.NoFocus)
@@ -75,7 +75,7 @@ class RenameChannelsDialog(QDialog):
 
         self.toggle_input()
         self.update_preview()
-        self.setFixedSize(400, 500)
+        self.setFixedSize(450, 450)
 
     @Slot()
     def toggle_input(self):
