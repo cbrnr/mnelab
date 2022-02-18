@@ -75,7 +75,7 @@ def write_edf(fname, raw):
             data[i] *= 1e6  # convert to microvolts
             dimension = "uV"
             prefilter = f"HP: {hp}; LP: {lp}"
-            pmin, pmax = data[i].min(), data[i].max()
+            pmin, pmax = int(data[i].min()), int(data[i].max())
             transducer = "Electrode"
         elif kind == "stim":
             dimension = "Boolean"
