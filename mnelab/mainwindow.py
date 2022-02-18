@@ -149,6 +149,10 @@ class MainWindow(QMainWindow):
         edit_menu = self.menuBar().addMenu("&Edit")
         self.actions["pick_chans"] = edit_menu.addAction("P&ick channels...",
                                                          self.pick_channels)
+        self.actions["rename_channels"] = edit_menu.addAction(
+            "Rename channels...",
+            self.rename_channels,
+        )
         icon = QIcon.fromTheme("chan-props")
         self.actions["chan_props"] = edit_menu.addAction(icon, "Channel &properties...",
                                                          self.channel_properties)
@@ -617,6 +621,11 @@ class MainWindow(QMainWindow):
                 if dialog.model.item(i, 3).checkState() == Qt.Checked:
                     bads.append(info["ch_names"][i])
             self.model.set_channel_properties(bads, renamed, types)
+
+    def rename_channels(self):
+        dialog = RenameChannelsDialog(self, self.model.current["data"].info["ch_names"])
+        if dialog.exec():
+            self.model.rename_channels(dialog.new_names)
 
     def set_montage(self):
         """Set montage."""
