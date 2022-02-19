@@ -2,11 +2,10 @@
 This example is based on [this MNE-Python tutorial](https://mne.tools/stable/auto_tutorials/evoked/30_eeg_erp.html).
 
 ## Download data
+Download the two files listed below, which are part of the [MNE-Python sample data](https://osf.io/86qa2/).
 
-```{admonition} TODO
-decide on data hosting, add download instructions
-```
-The [MNE-Python documentation](https://mne.tools/stable/overview/datasets_index.html#sample) provides details on the data set.
+- Raw data: [sample_audvis_filt-0-40_raw.fif](https://osf.io/szh6d/download)
+- Events: [sample_audvis_filt-0-40_raw-eve.fif](https://osf.io/xbvt2/download)
 
 
 ## Load data set and events
