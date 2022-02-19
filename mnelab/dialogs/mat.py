@@ -3,7 +3,6 @@
 # License: BSD (3-clause)
 
 import numpy as np
-
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import (
     QCheckBox,
