@@ -17,6 +17,7 @@
 - Add possibility to apply significance masks to ERDS plots ([#279](https://github.com/cbrnr/mnelab/pull/279) by [Florian Hofer](https://github.com/hofaflo))
 - Add basic batch renaming of channels "Edit - Rename channels...") ([#303](https://github.com/cbrnr/mnelab/pull/303) by [Florian Hofer](https://github.com/hofaflo))
 - Add support for loading data from .MAT files ([#314](https://github.com/cbrnr/mnelab/pull/314) by [Clemens Brunner](https://github.com/cbrnr))
+- Add support for reading multiple XDF streams at once ([#312](https://github.com/cbrnr/mnelab/pull/312) by [Florian Hofer](https://github.com/hofaflo))
 
 ### Changed
 - Simplify rereferencing workflow ([#258](https://github.com/cbrnr/mnelab/pull/258) by [Florian Hofer](https://github.com/hofaflo))

@@ -536,8 +536,8 @@ class MainWindow(QMainWindow):
                     disabled=disabled,
                 )
                 if dialog.exec():
-                    row = dialog.view.selectionModel().selectedRows()[0].row()
-                    stream_id = dialog.model.data(dialog.model.index(row, 0))
+                    rows = [r.row() for r in dialog.view.selectionModel().selectedRows()]
+                    stream_ids = [dialog.view.item(r, 0).value() for r in rows]
                     srate = "effective" if dialog.effective_srate else "nominal"
                     prefix_markers = dialog.prefix_markers
                     kwargs = {}
@@ -545,7 +545,9 @@ class MainWindow(QMainWindow):
                         kwargs["srate"] = srate
                     if prefix_markers:
                         kwargs["prefix_markers"] = prefix_markers
-                    self.model.load(fname, stream_id=stream_id, **kwargs)
+                    if dialog.resample.isChecked():
+                        kwargs["fs_new"] = float(dialog.fs_new.value())
+                    self.model.load(fname, stream_ids=stream_ids, **kwargs)
             elif ext.lower() == ".mat":
                 dialog = MatDialog(self, Path(fname).name, parse_mat(fname))
                 if dialog.exec():

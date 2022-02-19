@@ -31,6 +31,9 @@ class IntTableWidgetItem(QTableWidgetItem):
             if value >= 0:  # event position and type must not be negative
                 super().setData(role, str(value))
 
+    def value(self):
+        return float(self.data(Qt.DisplayRole))
+
 
 class EventsDialog(QDialog):
     def __init__(self, parent, pos, desc):
