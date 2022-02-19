@@ -29,7 +29,7 @@ You are free to either create a new data set containing only the EEG channels or
 
 ## Plot channel locations
 The FIF file already includes sensor locations, so we do not need to set a montage manually.
-Go to **_Plot&nbsp;–&nbsp;Channel&nbsp;locations_** to see a 2D sensor location plot.
+Go to **_Plot&nbsp;–&nbsp;Plot&nbsp;channel&nbsp;locations_** to see a 2D sensor location plot.
 **_EEG 053_** is colored red because it is marked "bad".
 
 ![channel locations](./images/erp/sensor_locations.png)
@@ -54,14 +54,14 @@ Go to **_Tools&nbsp;–&nbsp;Drop&nbsp;bad&nbsp;epochs..._**, activate **_Reject
 
 
 ## Plot evoked potentials
-Go to **_Plot&nbsp;–&nbsp;Evoked..._**, check **_Spatial&nbsp;colors_**, and click **_OK_**.
+Go to **_Plot&nbsp;–&nbsp;Plot&nbsp;evoked..._**, check **_Spatial&nbsp;colors_**, and click **_OK_**.
 Two figures containing so-called butterfly plots will pop up, and their window titles indicate which event they belong to.
 
 ![evoked potentials event 1](./images/erp/evoked_event_1.png) ![evoked potentials event 3](./images/erp/evoked_event_3.png)
 
 ## Plot evoked topomaps
 Now we will create topomaps of the potentials evoked by the auditory event "1" at -200 ms, 100 ms, and 400 ms.
-Go to **_Plot&nbsp;–&nbsp;Evoked&nbsp;topomaps..._** and select event "1".
+Go to **_Plot&nbsp;–&nbsp;Plot&nbsp;evoked&nbsp;topomaps..._** and select event "1".
 Under **_Select&nbsp;time&nbsp;point(s)_**, choose **_Manual_**, and enter "-0.2,0.1,0.4".
 The resulting figure will look like this:
 ![topomaps event 1](./images/erp/topomaps_event_1.png)
@@ -69,7 +69,7 @@ The resulting figure will look like this:
 
 ## Create joint plots
 Butterfly plots and topomaps can be combined to a joint plot.
-Go to **_Plot&nbsp;–&nbsp;Evoked_**, select event "1", and check **_GFP_** and **_Spatial&nbsp;colors_**.
+Go to **_Plot&nbsp;–&nbsp;Plot&nbsp;evoked..._**, select event "1", and check **_GFP_** and **_Spatial&nbsp;colors_**.
 Activate the **_Topomaps_** group and leave it set at **_Peaks_**.
 The topomap time points are automatically chosen as the three largest peaks in the global field power (GFP).
 You should see something like this:
@@ -79,7 +79,7 @@ You should see something like this:
 
 ## Compare conditions
 So far, we have always plotted individual channels, with different events in separate figures.
-To compare the auditory event to the visual one, go to **_Plot&nbsp;–&nbsp;Evoked comparison_**.
+To compare the auditory event to the visual one, go to **_Plot&nbsp;–&nbsp;Plot&nbsp;evoked&nbsp;comparison..._**.
 Judging by the first topomap (at 0.093 s) in the [joint plot above](#joint-plots), we expect a large negative peak in frontal-central positions (FC) for event "1".
 The [channel location plot](#plot-channel-locations) informs us that the relevant channels are EEG 010–014.
 So in the dialog, select channels EEG 010, EEG 011, EEG 012, EEG 013, and EEG 014.
