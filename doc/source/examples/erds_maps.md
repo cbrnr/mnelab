@@ -14,6 +14,8 @@ In the sidebar, the three data sets are now visible.
 The data set loaded last ("S001R14") is highlighted, indicating it is currently "active".
 The info panel on the right shows information about the active data set.
 
+![](./images/erds_maps/data_sets_loaded.png)
+
 ## Concatenate data
 Now we want to concatenate the three data sets, starting with _S001R06_.
 In the sidebar, select _S001R06_, then go to **_Edit&nbsp;–&nbsp;Append&nbsp;data..._**.
@@ -23,6 +25,8 @@ A new entry appears in the sidebar: "S001R06 (appended)".
 Rename it "S001" by double-clicking the sidebar entry, entering the new name, and confirming with <kbd>Return</kbd>.
 The entries **_Samples_** and **_Length_** in the info panel confirm that it is the result of the concatenation.
 To close the original data sets, select each one in the sidebar and go to **_File&nbsp;–&nbsp;Close_**.
+
+![](./images/erds_maps/append_data.png)
 
 ## Convert annotations to events
 Splitting the raw data into epochs requires _events_.
@@ -44,10 +48,14 @@ In the info panel, the **_Data&nbsp;type_** of the newly created data set ("S001
 If you select the original data set, you'll see that it is of type "Raw".
 ERDS maps can only be calculated from "Epochs".
 
+![](./images/erds_maps/create_epochs.png)
+
 ## Pick channels
 Considering the motor imagery tasks, electrodes C3, Cz, and C4 should show the strongest activity.
 Go to **_Edit&nbsp;–&nbsp;Pick&nbsp;channels..._** and select the desired channels.
 Don't worry about the channel names containing trailing dots, that's how they are stored in the original data files.
+
+![](./images/erds_maps/pick_channels.png)
 
 ## Plot ERDS maps
 Select **_Plot&nbsp;–&nbsp;Plot&nbsp;ERDS&nbsp;maps..._** and enter the following values:
@@ -57,5 +65,11 @@ Select **_Plot&nbsp;–&nbsp;Plot&nbsp;ERDS&nbsp;maps..._** and enter the follow
 - Baseline: "-1" to "0"
 
 Check **_Significance&nbsp;mask_**, leave **_alpha_** at "0.05" and confirm with **_OK_**.
+
+![](./images/erds_maps/plot_erds_maps.png)
+
 Calculating the significance masks can take about a minute.
-Eventually, two figures open up, one per event type.
+Eventually, two figures open up, one per event type:
+
+![](./images/erds_maps/result_hand.png)
+![](./images/erds_maps/result_feet.png)
