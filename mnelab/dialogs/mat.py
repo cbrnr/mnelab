@@ -46,7 +46,7 @@ def populate_tree(parent, nodes):
 
 
 class MatDialog(QDialog):
-    def __init__(self, parent, nodes):
+    def __init__(self, parent, fname, nodes):
         super().__init__(parent)
         self.setWindowTitle("Select variable")
 
@@ -57,7 +57,11 @@ class MatDialog(QDialog):
         self.tree.setColumnWidth(1, 100)
         self.tree.setColumnWidth(2, 125)
 
-        populate_tree(self.tree, nodes)
+        self.root = QTreeWidgetItem(self.tree)
+        self.root.setText(0, fname)
+        self.root.setFlags(self.root.flags() & ~Qt.ItemIsSelectable)
+
+        populate_tree(self.root, nodes)
 
         self.tree.expandAll()
 
@@ -91,7 +95,7 @@ class MatDialog(QDialog):
         item = self.tree.selectedItems()[0]
         text = item.text(0)
         parent = item.parent()
-        while parent is not None:
+        while parent is not self.root:
             text = f"{parent.text(0)}.{text}"
             parent = parent.parent()
         return text

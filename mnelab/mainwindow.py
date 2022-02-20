@@ -526,7 +526,7 @@ class MainWindow(QMainWindow):
                         kwargs["prefix_markers"] = prefix_markers
                     self.model.load(fname, stream_id=stream_id, **kwargs)
             elif ext.lower() == ".mat":
-                dialog = MatDialog(self, parse_mat(fname))
+                dialog = MatDialog(self, Path(fname).name, parse_mat(fname))
                 if dialog.exec():
                     self.model.load(
                         fname,
