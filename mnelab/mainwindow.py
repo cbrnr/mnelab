@@ -28,6 +28,7 @@ from pyxdf import resolve_streams
 
 from .dialogs import *  # noqa: F403
 from .io import writers
+from .io.mat import parse_mat
 from .io.xdf import get_xml, list_chunks
 from .model import InvalidAnnotationsError, LabelsNotFoundError, Model
 from .settings import SettingsDialog, read_settings, write_settings
@@ -492,7 +493,7 @@ class MainWindow(QMainWindow):
 
             ext = "".join(Path(fname).suffixes)
 
-            if any([ext.endswith(e) for e in (".xdf", ".xdfz", ".xdf.gz")]):
+            if any([ext.endswith(e) for e in (".xdf", ".xdfz", ".xdf.gz")]):  # XDF
                 rows, disabled = [], []
                 for idx, s in enumerate(resolve_streams(fname)):
                     rows.append([s["stream_id"], s["name"], s["type"], s["channel_count"],
@@ -524,6 +525,15 @@ class MainWindow(QMainWindow):
                     if prefix_markers:
                         kwargs["prefix_markers"] = prefix_markers
                     self.model.load(fname, stream_id=stream_id, **kwargs)
+            elif ext.lower() == ".mat":
+                dialog = MatDialog(self, Path(fname).name, parse_mat(fname))
+                if dialog.exec():
+                    self.model.load(
+                        fname,
+                        variable=dialog.name,
+                        fs=dialog.fs,
+                        transpose=dialog.transpose,
+                    )
             else:  # all other file formats
                 try:
                     self.model.load(fname)
