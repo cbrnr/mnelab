@@ -8,6 +8,9 @@ MNELAB is a graphical user interface (GUI) for [MNE](https://github.com/mne-tool
 
 ![](https://raw.githubusercontent.com/cbrnr/mnelab/main/mnelab.png)
 
+### Documentation
+Instructions for installation and basic use as well as step-by-step examples for different use cases are available on [Read the Docs](https://mnelab.readthedocs.io/).
+
 ### Changelog
 Check out the [changelog](https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md) to learn what we added, changed, or fixed.
 
