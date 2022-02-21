@@ -45,7 +45,7 @@ def populate_tree(parent, nodes):
                     item.setText(3, repr(v))
 
 
-class MatDialog(QDialog):
+class MatVariablesDialog(QDialog):
     def __init__(self, parent, fname, nodes):
         super().__init__(parent)
         self.setWindowTitle("Select variable")

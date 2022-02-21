@@ -16,7 +16,7 @@ from .filter_data import FilterDataDialog
 from .find_events import FindEventsDialog
 from .history import HistoryDialog
 from .interpolate_bad_channels import InterpolateBadChannelsDialog
-from .mat import MatDialog
+from .mat_variables import MatVariablesDialog
 from .pick_channels import PickChannelsDialog
 from .plot_erds import PlotERDSMapsDialog, PlotERDSTopomapsDialog
 from .plot_evoked import (
