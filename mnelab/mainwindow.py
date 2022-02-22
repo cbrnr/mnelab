@@ -12,8 +12,8 @@ from sys import version_info
 import mne
 import numpy as np
 from mne.io.pick import channel_type
-from PySide6.QtCore import QEvent, QMetaObject, QModelIndex, QObject, Qt, Slot
-from PySide6.QtGui import QAction, QDropEvent, QIcon, QKeySequence
+from PySide6.QtCore import QEvent, QMetaObject, QModelIndex, QObject, Qt, QUrl, Slot
+from PySide6.QtGui import QAction, QDesktopServices, QDropEvent, QIcon, QKeySequence
 from PySide6.QtWidgets import (
     QApplication,
     QFileDialog,
@@ -259,10 +259,13 @@ class MainWindow(QMainWindow):
         help_menu = self.menuBar().addMenu("&Help")
         self.actions["about"] = help_menu.addAction("&About", self.show_about)
         self.actions["about_qt"] = help_menu.addAction("About &Qt", self.show_about_qt)
-
+        self.actions["documentation"] = help_menu.addAction(
+            "&Documentation",
+            self.show_documentation,
+        )
         # actions that are always enabled
         self.always_enabled = ["open_file", "about", "about_qt", "quit", "xdf_chunks",
-                               "toolbar", "statusbar", "settings"]
+                               "toolbar", "statusbar", "settings", "documentation"]
 
         # set up toolbar
         self.toolbar = self.addToolBar("toolbar")
@@ -1091,6 +1094,11 @@ class MainWindow(QMainWindow):
     def show_about_qt(self):
         """Show About Qt dialog."""
         QMessageBox.aboutQt(self, "About Qt")
+
+    def show_documentation(self):
+        url = QUrl('https://mnelab.readthedocs.io/')
+        if not QDesktopServices.openUrl(url):
+            QMessageBox.warning(self, 'Open Url', 'Could not open url')
 
     def auto_duplicate(self):
         """Automatically duplicate current data set.
