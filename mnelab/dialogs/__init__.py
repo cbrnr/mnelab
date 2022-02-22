@@ -17,7 +17,6 @@ from .find_events import FindEventsDialog
 from .history import HistoryDialog
 from .interpolate_bads import InterpolateBadsDialog
 from .mat import MatDialog
-from .meta_info import MetaInfoDialog
 from .montage import MontageDialog
 from .pick_channels import PickChannelsDialog
 from .plot_evoked import PlotEvokedComparisonDialog, PlotEvokedDialog, PlotEvokedTopomaps
@@ -25,4 +24,5 @@ from .reference import ReferenceDialog
 from .rename_channels import RenameChannelsDialog
 from .run_ica import RunICADialog
 from .xdf_chunks import XDFChunksDialog
+from .xdf_metadata import XDFMetadataDialog
 from .xdf_streams import XDFStreamsDialog
