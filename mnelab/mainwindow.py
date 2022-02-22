@@ -177,10 +177,10 @@ class MainWindow(QMainWindow):
 
         file_menu.addSeparator()
 
-        self.actions["show_xdf_meta_information"] = file_menu.addAction(
-            QIcon.fromTheme("show-xdf-meta-information"),
-            "Show XDF meta information",
-            self.show_xdf_meta_information,
+        self.actions["show_xdf_information"] = file_menu.addAction(
+            QIcon.fromTheme("show-xdf-information"),
+            "Show XDF information",
+            self.show_xdf_information,
         )
         self.actions["show_xdf_chunks"] = file_menu.addAction(
             "Show XDF chunks...",
@@ -401,13 +401,14 @@ class MainWindow(QMainWindow):
             "About &Qt",
             self.show_about_qt,
         )
+        help_menu.addSeparator()
         self.actions["documentation"] = help_menu.addAction(
             "&Documentation",
             self.show_documentation,
         )
 
         # actions that are always enabled
-        self.always_enabled = ["open_file", "about", "about_qt", "quit", "xdf_chunks",
+        self.always_enabled = ["open_file", "about", "about_qt", "quit", "show_xdf_chunks",
                                "toolbar", "statusbar", "settings", "documentation"]
 
         # set up toolbar
@@ -594,7 +595,7 @@ class MainWindow(QMainWindow):
             self.actions["append_data"].setEnabled(
                 enabled and append and (self.model.current["dtype"] in ("raw", "epochs"))
             )
-            self.actions["show_xdf_meta_information"].setEnabled(
+            self.actions["show_xdf_information"].setEnabled(
                 enabled and self.model.current["ftype"] in ["XDF", "XDFZ", "XDF.GZ"]
             )
             self.actions["convert_od"].setEnabled(
@@ -696,7 +697,7 @@ class MainWindow(QMainWindow):
                                             filter="*.xdf *.xdfz *.xdf.gz")[0]
         if fname:
             chunks = list_chunks(fname)
-            dialog = ShowXDFChunksDialog(self, chunks, fname)
+            dialog = XDFChunksDialog(self, chunks, fname)
             dialog.exec()
 
     def export_file(self, f, text, ffilter="*"):
@@ -727,12 +728,12 @@ class MainWindow(QMainWindow):
             while len(self.model) > 0:
                 self.model.remove_data()
 
-    def show_xdf_meta_information(self, fname=None):
-        """Show XDF meta inforation."""
+    def show_xdf_information(self, fname=None):
+        """Show XDF information."""
         if fname is None:
             fname = self.model.current["fname"]
         xml = get_xml(fname)
-        dialog = ShowXDFMetaInformationDialog(self, xml)
+        dialog = XDFInfoDialog(self, xml)
         dialog.exec()
 
     def pick_channels(self):
