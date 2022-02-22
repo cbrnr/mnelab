@@ -408,7 +408,7 @@ class MainWindow(QMainWindow):
 
         # actions that are always enabled
         self.always_enabled = ["open_file", "about", "about_qt", "quit", "xdf_chunks",
-                               "toolbar", "statusbar", "settings"]
+                               "toolbar", "statusbar", "settings", "documentation"]
 
         # set up toolbar
         self.toolbar = self.addToolBar("toolbar")
@@ -1287,7 +1287,7 @@ class MainWindow(QMainWindow):
     def show_documentation(self):
         url = QUrl('https://mnelab.readthedocs.io/')
         if not QDesktopServices.openUrl(url):
-            QMessageBox.warning(self, 'Open Url', 'Could not open url')
+            QMessageBox.warning(self, 'Open URL', 'Could not open URL')
 
     def auto_duplicate(self):
         """Automatically duplicate current data set.
