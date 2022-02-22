@@ -132,12 +132,12 @@ class MainWindow(QMainWindow):
             lambda: self.export_file(model.export_ica, "Export ICA", "*.fif *.fif.gz")
         )
         file_menu.addSeparator()
-        icon = QIcon.fromTheme("meta-info")
-        self.actions["xdf_meta_info"] = file_menu.addAction(
-            "Show XDF meta information",
-            self.xdf_meta_info,
+        icon = QIcon.fromTheme("xdf-metadata")
+        self.actions["xdf_metadata"] = file_menu.addAction(
+            "Show XDF metadata",
+            self.xdf_metadata,
         )
-        self.actions["xdf_chunks"] = file_menu.addAction("Show XDF chunks...",
+        self.actions["xdf_chunks"] = file_menu.addAction("Inspect XDF chunks...",
                                                          self.xdf_chunks)
         file_menu.addSeparator()
         self.actions["settings"] = file_menu.addAction(
@@ -473,7 +473,7 @@ class MainWindow(QMainWindow):
             self.actions["append_data"].setEnabled(
                 enabled and append and (self.model.current["dtype"] in ("raw", "epochs"))
             )
-            self.actions["xdf_meta_info"].setEnabled(
+            self.actions["xdf_metadata"].setEnabled(
                 enabled and self.model.current["ftype"] in ["XDF", "XDFZ", "XDF.GZ"]
             )
             self.actions["convert_od"].setEnabled(
@@ -570,7 +570,7 @@ class MainWindow(QMainWindow):
             f(fname)
 
     def xdf_chunks(self):
-        """Show XDF chunks."""
+        """Inspect XDF chunks."""
         fname = QFileDialog.getOpenFileName(self, "Select XDF file",
                                             filter="*.xdf *.xdfz *.xdf.gz")[0]
         if fname:
@@ -606,12 +606,12 @@ class MainWindow(QMainWindow):
             while len(self.model) > 0:
                 self.model.remove_data()
 
-    def xdf_meta_info(self, fname=None):
-        """Show XDF meta info."""
+    def xdf_metadata(self, fname=None):
+        """Show XDF metadata."""
         if fname is None:
             fname = self.model.current["fname"]
         xml = get_xml(fname)
-        dialog = MetaInfoDialog(self, xml)
+        dialog = XDFMetadataDialog(self, xml)
         dialog.exec()
 
     def pick_channels(self):

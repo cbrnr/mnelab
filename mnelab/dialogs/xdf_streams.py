@@ -85,4 +85,4 @@ class XDFStreamsDialog(QDialog):
         return self._prefix_markers.isChecked()
 
     def details(self):
-        self.parent().xdf_meta_info(self.fname)
+        self.parent().xdf_metadata(self.fname)
