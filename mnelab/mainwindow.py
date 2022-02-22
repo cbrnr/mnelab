@@ -154,9 +154,11 @@ class MainWindow(QMainWindow):
             "Rename channels...",
             self.rename_channels,
         )
-        icon = QIcon.fromTheme("chan-props")
-        self.actions["chan_props"] = edit_menu.addAction(icon, "Channel &properties...",
-                                                         self.channel_properties)
+        self.actions["chan_props"] = edit_menu.addAction(
+            QIcon.fromTheme("chan-props"),
+            "Edit channel &properties...",
+            self.channel_properties,
+        )
         edit_menu.addSeparator()
         self.actions["set_montage"] = edit_menu.addAction("Set &montage...",
                                                           self.set_montage)
@@ -170,9 +172,14 @@ class MainWindow(QMainWindow):
             self.change_reference,
         )
         edit_menu.addSeparator()
-        self.actions["annotations"] = edit_menu.addAction("&Annotations...",
-                                                          self.edit_annotations)
-        self.actions["events"] = edit_menu.addAction("&Events...", self.edit_events)
+        self.actions["annotations"] = edit_menu.addAction(
+            "Edit &Annotations...",
+            self.edit_annotations,
+        )
+        self.actions["events"] = edit_menu.addAction(
+            "Edit &Events...",
+            self.edit_events,
+        )
 
         edit_menu.addSeparator()
         self.actions["crop"] = edit_menu.addAction("&Crop data...", self.crop)
@@ -180,40 +187,51 @@ class MainWindow(QMainWindow):
                                                           self.append_data)
 
         plot_menu = self.menuBar().addMenu("&Plot")
-        icon = QIcon.fromTheme("plot-data")
-        self.actions["plot_data"] = plot_menu.addAction(icon, "&Data", self.plot_data)
-        icon = QIcon.fromTheme("plot-psd")
-        self.actions["plot_psd"] = plot_menu.addAction(icon, "&Power spectral density",
-                                                       self.plot_psd)
-        icon = QIcon.fromTheme("plot-locations")
-        self.actions["plot_locations"] = plot_menu.addAction(icon, "&Channel locations",
-                                                             self.plot_locations)
+        self.actions["plot_data"] = plot_menu.addAction(
+            QIcon.fromTheme("plot-data"),
+            "Plot &Data",
+            self.plot_data,
+        )
+        self.actions["plot_psd"] = plot_menu.addAction(
+            QIcon.fromTheme("plot-psd"),
+            "Plot &PSD",
+            self.plot_psd,
+        )
         plot_menu.addSeparator()
-        self.actions["plot_erds"] = plot_menu.addAction("&ERDS maps...", self.plot_erds)
+        self.actions["plot_locations"] = plot_menu.addAction(
+            QIcon.fromTheme("plot-locations"),
+            "Plot &channel locations",
+            self.plot_locations,
+        )
+        plot_menu.addSeparator()
+        self.actions["plot_erds"] = plot_menu.addAction(
+            "Plot &ERDS maps...",
+            self.plot_erds,
+        )
         self.actions["plot_erds_topomaps"] = plot_menu.addAction(
-            "ERDS topomaps...",
+            "Plot ERDS topomaps...",
             self.plot_erds_topomaps,
         )
         plot_menu.addSeparator()
         self.actions["plot_evoked"] = plot_menu.addAction(
-            "Evoked...",
+            "Plot evoked...",
             self.plot_evoked,
         )
         self.actions["plot_evoked_comparison"] = plot_menu.addAction(
-            "Evoked comparison...",
+            "Plot evoked comparison...",
             self.plot_evoked_comparison,
         )
         self.actions["plot_evoked_topomaps"] = plot_menu.addAction(
-            "Evoked topomaps...",
+            "Plot evoked topomaps...",
             self.plot_evoked_topomaps,
         )
         plot_menu.addSeparator()
         self.actions["plot_ica_components"] = plot_menu.addAction(
-            "ICA &components",
+            "Plot ICA &components",
             self.plot_ica_components,
         )
         self.actions["plot_ica_sources"] = plot_menu.addAction(
-            "ICA &sources",
+            "Plot ICA &sources",
             self.plot_ica_sources,
         )
 
@@ -231,13 +249,16 @@ class MainWindow(QMainWindow):
             "Create annotations from events", self.annotations_from_events
         )
         tools_menu.addSeparator()
-        nirs_menu = tools_menu.addMenu("NIRS")
-        self.actions["convert_od"] = nirs_menu.addAction("Convert to &optical density",
-                                                         self.convert_od)
-        self.actions["convert_bl"] = nirs_menu.addAction("Convert to &haemoglobin",
-                                                         self.convert_bl)
-
+        self.actions["convert_od"] = tools_menu.addAction(
+            "Convert to &optical density",
+            self.convert_od,
+        )
+        self.actions["convert_bl"] = tools_menu.addAction(
+            "Convert to &haemoglobin",
+            self.convert_bl,
+        )
         tools_menu.addSeparator()
+
         icon = QIcon.fromTheme("run-ica")
         self.actions["run_ica"] = tools_menu.addAction(icon, "Run &ICA...", self.run_ica)
         self.actions["apply_ica"] = tools_menu.addAction("Apply &ICA", self.apply_ica)
