@@ -27,4 +27,6 @@ from .plot_evoked import (
 from .rename_channels import RenameChannelsDialog
 from .run_ica import RunICADialog
 from .set_montage import SetMontageDialog
-from .xdf import XDFChunksDialog, XDFInfoDialog, XDFStreamsDialog
+from .show_xdf_chunks import ShowXDFChunksDialog
+from .show_xdf_meta_information import ShowXDFMetaInformationDialog
+from .xdf_streams import XDFStreamsDialog
