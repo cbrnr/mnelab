@@ -83,7 +83,6 @@ class XDFStreamsDialog(QDialog):
         hbox_resample = QHBoxLayout()
         self.resample = QCheckBox()
         hbox_resample.addWidget(self.resample)
-        self.resample.toggled.connect(self._toggle_fs_new)
         self.resample_label = QLabel("Resample to:")
         hbox_resample.addWidget(self.resample_label)
 
@@ -110,7 +109,6 @@ class XDFStreamsDialog(QDialog):
 
         self._set_suggested_fs()
         self._toggle_resample()
-        self._toggle_fs_new()
         self.resize(775, 650)
         self.view.setColumnWidth(0, 90)
         self.view.setColumnWidth(1, 200)
@@ -153,8 +151,3 @@ class XDFStreamsDialog(QDialog):
         else:
             self.resample.setChecked(False)
             self.resample.setEnabled(True)
-
-    @Slot()
-    def _toggle_fs_new(self):
-        self.fs_new.setEnabled(self.resample.isChecked())
-        self.resample_label.setEnabled(self.resample.isChecked())
