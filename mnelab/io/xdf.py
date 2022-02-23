@@ -82,7 +82,7 @@ def read_raw_xdf(
     prefix_markers : bool
         Whether or not to prefix markers with their corresponding stream ID.
     fs_new : float | None
-        Resampling target frequency in Hz. If only one stread_id is given, this can be
+        Resampling target frequency in Hz. If only one stream_id is given, this can be
         `None`, in which case no resampling is performed.
 
     Returns
