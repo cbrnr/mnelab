@@ -40,13 +40,13 @@ If you want to use all MNELAB features, the full package including optional depe
 pip install mnelab[full]
 ```
 
-Then start MNELAB in a terminal with `mnelab` or `python -m mnelab`.
-
 You can also install the latest development version as follows:
 
 ```
 pip install git+https://github.com/cbrnr/mnelab
 ```
+
+Then start MNELAB in a terminal with `mnelab` or `python -m mnelab`.
 
 ### Contributing
 The [contributing guide](https://github.com/cbrnr/mnelab/blob/main/CONTRIBUTING.md) contains detailed instructions on how to contribute to MNELAB.
