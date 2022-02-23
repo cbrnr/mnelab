@@ -1,5 +1,6 @@
 ![Python](https://img.shields.io/pypi/pyversions/mnelab.svg?logo=python)
 [![PyPI Version](https://img.shields.io/pypi/v/mnelab)](https://pypi.org/project/mnelab/)
+[![Docs](https://readthedocs.org/projects/mnelab/badge/?version=latest)](https://mnelab.readthedocs.io/)
 [![License](https://img.shields.io/github/license/cbrnr/mnelab)](LICENSE)
 
 ![](https://raw.githubusercontent.com/cbrnr/mnelab/main/mnelab/images/mnelab_logo.png)
@@ -7,6 +8,9 @@
 MNELAB is a graphical user interface (GUI) for [MNE](https://github.com/mne-tools/mne-python), a Python package for EEG/MEG analysis.
 
 ![](https://raw.githubusercontent.com/cbrnr/mnelab/main/mnelab.png)
+
+### Documentation
+Instructions for installing and using MNELAB as well as step-by-step examples for different use cases are available in the [documentation](https://mnelab.readthedocs.io/).
 
 ### Changelog
 Check out the [changelog](https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md) to learn what we added, changed, or fixed.
