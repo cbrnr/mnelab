@@ -20,7 +20,7 @@
 
 ### Changed
 - Simplify rereferencing workflow ([#258](https://github.com/cbrnr/mnelab/pull/258) by [Florian Hofer](https://github.com/hofaflo))
-- Move "Show information..." from toolbar to "File" menu and rename to "Show XDF meta information" ([#266](https://github.com/cbrnr/mnelab/pull/266) by [Florian Hofer](https://github.com/hofaflo))
+- Move "Show information..." from toolbar to "File" menu and rename to "Show XDF metadata" ([#266](https://github.com/cbrnr/mnelab/pull/266) by [Florian Hofer](https://github.com/hofaflo) and [#318](https://github.com/cbrnr/mnelab/pull/318) by [Clemens Brunner](https://github.com/cbrnr))
 - Replace `utils.has_location` with `utils.count_locations`, which returns the number of locations instead of a boolean ([#271](https://github.com/cbrnr/mnelab/pull/271) by [Florian Hofer](https://github.com/hofaflo))
 - Stop requiring existing annotations or events to enable editing them ([#283](https://github.com/cbrnr/mnelab/pull/283) by [Florian Hofer](https://github.com/hofaflo))
 - Replace "(channels dropped)" suffix with "(channels picked)" and use `pick_channels` instead of `drop_channels` ([#285](https://github.com/cbrnr/mnelab/pull/285) by [Florian Hofer](https://github.com/hofaflo))
