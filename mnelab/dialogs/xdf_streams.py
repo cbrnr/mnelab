@@ -67,33 +67,29 @@ class XDFStreamsDialog(QDialog):
         self.view.itemSelectionChanged.connect(self._set_suggested_fs)
         self.view.itemSelectionChanged.connect(self._toggle_resample)
 
-        vbox = QVBoxLayout(self)
-        vbox.addWidget(self.view)
-        hbox1 = QHBoxLayout()
-        self._effective_srate = QCheckBox("Use effective sampling rate")
-        self._effective_srate.setChecked(True)
-        hbox1.addWidget(self._effective_srate)
-        self._prefix_markers = QCheckBox("Prefix markers with stream ID")
-        self._prefix_markers.setChecked(False)
-        if len(disabled) < 2:
-            self._prefix_markers.setEnabled(False)
-        hbox1.addStretch()
-        hbox1.addWidget(self._prefix_markers)
-
-        hbox_resample = QHBoxLayout()
         self.resample = QCheckBox()
-        hbox_resample.addWidget(self.resample)
         self.resample_label = QLabel("Resample to:")
-        hbox_resample.addWidget(self.resample_label)
-
         self.fs_new = QDoubleSpinBox()
         self.fs_new.setRange(1,  max(r[5] for r in rows))
         self.fs_new.setValue(1)
         self.fs_new.setDecimals(1)
         self.fs_new.setSuffix(" Hz")
-        hbox_resample.addWidget(self.fs_new)
+
+        self._prefix_markers = QCheckBox("Prefix markers with stream ID")
+        self._prefix_markers.setChecked(False)
+        if len(disabled) < 2:
+            self._prefix_markers.setEnabled(False)
+
+        hbox1 = QHBoxLayout()
+        hbox1.addWidget(self.resample)
+        hbox1.addWidget(self.resample_label)
+        hbox1.addWidget(self.fs_new)
         hbox1.addStretch()
-        hbox1.addLayout(hbox_resample)
+        hbox1.addWidget(self._prefix_markers)
+        hbox1.addStretch()
+
+        vbox = QVBoxLayout(self)
+        vbox.addWidget(self.view)
         vbox.addLayout(hbox1)
 
         hbox2 = QHBoxLayout()
@@ -113,10 +109,6 @@ class XDFStreamsDialog(QDialog):
         self.view.setColumnWidth(0, 90)
         self.view.setColumnWidth(1, 200)
         self.view.setColumnWidth(2, 140)
-
-    @property
-    def effective_srate(self):
-        return self._effective_srate.isChecked()
 
     @property
     def prefix_markers(self):

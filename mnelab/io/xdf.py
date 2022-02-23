@@ -66,7 +66,6 @@ def _resample_streams(streams, stream_ids, fs_new):
 def read_raw_xdf(
     fname,
     stream_ids,
-    srate="effective",
     prefix_markers=False,
     fs_new=None,
     *args,
@@ -80,8 +79,6 @@ def read_raw_xdf(
         Name of the XDF file.
     stream_ids : list[int]
         IDs of the streams to load.
-    srate : {"nominal", "effective"}
-        Use either nominal or effective sampling rate.
     prefix_markers : bool
         Whether or not to prefix markers with their corresponding stream ID.
     fs_new : float | None
@@ -93,10 +90,6 @@ def read_raw_xdf(
     raw : mne.io.Raw
         XDF file data.
     """
-    if srate not in ("nominal", "effective"):
-        raise ValueError(f"The 'srate' parameter must be either 'nominal' or 'effective' "
-                         f"(got {srate}).")
-
     if len(stream_ids) > 1 and fs_new is None:
         raise ValueError("Parameter 'fs_new' required when reading multiple streams.")
 
@@ -135,7 +128,7 @@ def read_raw_xdf(
     else:  # only possible if a single stream was selected
         all_time_series = streams[stream_ids[0]]["time_series"]
         first_time = streams[stream_ids[0]]["time_stamps"][0]
-        fs = float(np.array(stream["info"][f"{srate}_srate"]).item())
+        fs = float(np.array(stream["info"]["effective_srate"]).item())
 
     info = mne.create_info(ch_names=labels_all, sfreq=fs, ch_types=types_all)
 

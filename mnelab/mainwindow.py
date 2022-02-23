@@ -538,11 +538,8 @@ class MainWindow(QMainWindow):
                 if dialog.exec():
                     rows = [r.row() for r in dialog.view.selectionModel().selectedRows()]
                     stream_ids = [dialog.view.item(r, 0).value() for r in rows]
-                    srate = "effective" if dialog.effective_srate else "nominal"
                     prefix_markers = dialog.prefix_markers
                     kwargs = {}
-                    if srate == "nominal":
-                        kwargs["srate"] = srate
                     if prefix_markers:
                         kwargs["prefix_markers"] = prefix_markers
                     if dialog.resample.isChecked():
