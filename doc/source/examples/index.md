@@ -1,9 +1,7 @@
 # Examples
 
-TODO intro
-
 ```{toctree}
     :maxdepth: 1
     ERDS maps <erds_maps>
-    Event Related Potentials <erp>
+    Event-Related Potentials <erp>
 ```
