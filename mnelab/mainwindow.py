@@ -259,6 +259,7 @@ class MainWindow(QMainWindow):
         help_menu = self.menuBar().addMenu("&Help")
         self.actions["about"] = help_menu.addAction("&About", self.show_about)
         self.actions["about_qt"] = help_menu.addAction("About &Qt", self.show_about_qt)
+        help_menu.addSeparator()
         self.actions["documentation"] = help_menu.addAction(
             "&Documentation",
             self.show_documentation,
