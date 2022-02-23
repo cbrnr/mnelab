@@ -27,7 +27,7 @@ pip install git+https://github.com/cbrnr/mnelab
 
 ## First steps
 Open a terminal and enter `mnelab` or `python -m mnelab` to start MNELAB.
-The main window of MNELAB consists of a menu bar (A), a toolbar (B), a sidebar (C), an info panel (D) and a status bar (E):
+The main window of MNELAB consists of a menu bar (A), a toolbar (B), a sidebar (C), an info panel (D), and a status bar (E):
 
 ![empty window](./empty_window.png)
 
@@ -35,11 +35,11 @@ The main window looks pretty empty initially. In fact, almost all commands are d
 
 ![menu disabled](./menu_disabled.png)
 
-Click on the "Open" icon in the toolbar or go to **_File&nbsp;–&nbsp;Open..._** and select a file in the dialog window.
-The name of the loaded file appears in the sidebar and the info panel shows information about the data set:
+Click on the "Open" icon in the toolbar or select **_File&nbsp;–&nbsp;Open..._** and pick a file in the dialog window.
+The name of the loaded file appears in the sidebar, and the info panel shows information about the data set:
 
 ![file loaded](./file_loaded.png)
 
-By clicking on **_Plot&nbsp;–&nbsp;Data_**, you can now visualize the raw data:
+Select **_Plot&nbsp;–&nbsp;Plot data_** to visualize the time course of the individual channels:
 
 ![plot menu](./plot_menu.png)

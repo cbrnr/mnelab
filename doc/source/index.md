@@ -5,14 +5,11 @@
    Tutorial <tutorial/index>
    Examples <examples/index>
    About <about>
-   GitHub Repository <https://github.com/cbrnr/mnelab>
+   GitHub <https://github.com/cbrnr/mnelab>
 ```
-
-# MNELAB
-Welcome! This is the documentation for MNELAB, a graphical user interface (GUI) for [MNE](https://github.com/mne-tools/mne-python), a Python package for EEG/MEG analysis.
 
 ![MNELAB GUI example](https://raw.githubusercontent.com/cbrnr/mnelab/main/mnelab.png)
 
-See [**Tutorial**](./tutorial/index) for installation instructions and first steps.
+MNELAB is a graphical user interface (GUI) for [MNE-Python](https://github.com/mne-tools/mne-python), a package for EEG/MEG analysis.
 
-Go to [**Examples**](./examples/index) for step-by-step guides on several use cases.
+Read the [**tutorial**](./tutorial/index) for installation instructions and first steps. The [**examples**](./examples/index) showcase how to use MNELAB for common use cases.
