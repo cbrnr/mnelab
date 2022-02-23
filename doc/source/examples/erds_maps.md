@@ -18,7 +18,7 @@ The info panel on the right shows information about the active data set.
 ## Concatenate data
 We want to concatenate the three data sets, starting with _S001R06_.
 In the sidebar, select _S001R06_, then go to _Edit – Append data..._ to open the corresponding dialog.
-Select _S001R10_ and _S001R14_ in the _Source_ panel – to select multiple items, hold <kbd>Ctrl</kbd> (<kbd>⌘</kbd> on macOS) while clicking.
+Select _S001R10_ and _S001R14_ in the _Source_ panel; to select multiple items, hold <kbd>Ctrl</kbd> (<kbd>⌘</kbd> on macOS) while clicking.
 Drag the selected data sets to the _Destination_ panel (or click on the arrow button in the middle) and confirm with _OK_.
 A new entry appears in the sidebar: "S001R06 (appended)".
 Rename it to "S001" by double-clicking the sidebar entry, entering the new name, and confirming with <kbd>Return</kbd>.
@@ -43,9 +43,9 @@ You can click and drag to select multiple items in this dialog.
 For _Interval around events_ enter "-1.5" and "4.5" as start and end times relative to the selected events, respectively.
 We will create ERDS maps in the time interval ranging from -1 to 4 seconds, but we add half a second at the start and end to account for edge effects.
 Uncheck _Baseline Correction_, confirm with _OK_, and select _Create a new data set_.
-In the info panel, the _Data type_ of the newly created data set ("S001 (epoched)") is now "[Epochs](https://mne.tools/stable/glossary.html#term-epochs)".
-If you select the original data set, you'll see that it is of type "[Raw](https://mne.tools/stable/glossary.html#term-raw)".
-ERDS maps can only be calculated from "Epochs".
+In the info panel, the _Data type_ of the newly created data set ("S001 (epoched)") is now [Epochs](https://mne.tools/stable/glossary.html#term-epochs).
+If you select the original data set, you'll see that it is of type [Raw](https://mne.tools/stable/glossary.html#term-raw).
+ERDS maps can only be calculated from Epochs.
 
 ![](./images/erds_maps/create_epochs.png)
 
@@ -63,7 +63,7 @@ Select _Plot – Plot ERDS maps..._ and enter the following values:
 - Time range: "-1" to "4"
 - Baseline: "-1" to "0"
 
-Check _Significance mask_, leave _alpha_ at "0.05" and confirm with _OK_. This will determine significant pattern in the maps using a cluster permutation test.
+Check _Significance level_, leave the value at "0.05" and confirm with _OK_. This will determine significant pattern in the maps using a cluster permutation test.
 
 ![](./images/erds_maps/plot_erds_maps.png)
 
