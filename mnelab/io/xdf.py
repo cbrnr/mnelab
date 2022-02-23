@@ -6,7 +6,7 @@ import mne
 import numpy as np
 import scipy.signal
 from mne.io.pick import get_channel_type_constants
-from pyxdf import load_xdf, match_streaminfos, resolve_streams
+from pyxdf import load_xdf
 from pyxdf.pyxdf import _read_varlen_int, open_xdf
 
 
@@ -137,9 +137,10 @@ def read_raw_xdf(
 
     raw = mne.io.RawArray(all_time_series_scaled, info)
     raw._filenames = [fname]
-    markers = match_streaminfos(resolve_streams(fname), [{"type": "Markers"}])
-    for stream_id in markers:
-        stream = streams[stream_id]
+
+    for stream_id, stream in streams.items():
+        if not (stream["info"]["nominal_srate"] == ["0"] and stream["info"]["channel_format"] == ["string"]):  # noqa: E501
+            continue
         onsets = stream["time_stamps"] - first_time
         prefix = f"{stream_id}-" if prefix_markers else ""
         descriptions = [f"{prefix}{item}" for sub in stream["time_series"] for item in sub]
