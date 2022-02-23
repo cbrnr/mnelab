@@ -35,11 +35,11 @@ The main window looks pretty empty initially. In fact, almost all commands are d
 
 ![menu disabled](./menu_disabled.png)
 
-Click on the "Open" icon in the toolbar or select **_File&nbsp;–&nbsp;Open..._** and pick a file in the dialog window.
+Click on the "Open" icon in the toolbar or select _File – Open..._ and pick a file in the dialog window.
 The name of the loaded file appears in the sidebar, and the info panel shows information about the data set:
 
 ![file loaded](./file_loaded.png)
 
-Select **_Plot&nbsp;–&nbsp;Plot data_** to visualize the time course of the individual channels:
+Select _Plot – Plot data_ to visualize the time course of the individual channels:
 
 ![plot menu](./plot_menu.png)
