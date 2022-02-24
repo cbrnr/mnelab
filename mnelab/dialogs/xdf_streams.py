@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from .utils import AlwaysSelectedTableWidget, IntTableWidgetItem
+from .utils import IntTableWidgetItem
 
 
 class XDFStreamsDialog(QDialog):
@@ -27,7 +27,7 @@ class XDFStreamsDialog(QDialog):
         self.setWindowTitle("Select XDF Stream")
         self.fname = fname
 
-        self.view = AlwaysSelectedTableWidget(len(rows), 6)
+        self.view = QTableWidget(len(rows), 6)
         for i, row in enumerate(rows):
             self.view.setItem(i, 0, IntTableWidgetItem(row[0]))
             self.view.setItem(i, 1, QTableWidgetItem(row[1]))
@@ -57,8 +57,7 @@ class XDFStreamsDialog(QDialog):
         self.view.setSortingEnabled(True)
         self.view.sortByColumn(0, Qt.AscendingOrder)
 
-        self.view.itemSelectionChanged.connect(self._set_suggested_fs)
-        self.view.itemSelectionChanged.connect(self._toggle_resample)
+        self.view.itemSelectionChanged.connect(self.toggle_buttons)
 
         self.resample = QCheckBox()
         self.resample_label = QLabel("Resample to:")
@@ -96,8 +95,7 @@ class XDFStreamsDialog(QDialog):
         self.buttonbox.rejected.connect(self.reject)
         vbox.addLayout(hbox2)
 
-        self._set_suggested_fs()
-        self._toggle_resample()
+        self.toggle_buttons()
         self.resize(775, 650)
         self.view.setColumnWidth(0, 90)
         self.view.setColumnWidth(1, 200)
@@ -111,28 +109,32 @@ class XDFStreamsDialog(QDialog):
         self.parent().xdf_metadata(self.fname)
 
     @Slot()
-    def _set_suggested_fs(self):
-        # Like in SigViewer, the most common sampling rate is suggested.
-        channel_counts = []
-        sampling_rates = []
-        row_indices = {r.row() for r in self.view.selectedIndexes()}
-        for row in row_indices:
-            channel_counts.append(self.view.item(row, 3).value())
-            sampling_rates.append(self.view.item(row, 5).value())
-
-        counts = defaultdict(int)
-        for channel_count, sampling_rate in zip(channel_counts, sampling_rates):
-            if sampling_rate != 0:
-                counts[sampling_rate] += channel_count
-
-        suggested_fs = max(counts, key=counts.get)
-        self.fs_new.setValue(suggested_fs)
-
-    @Slot()
-    def _toggle_resample(self):
+    def toggle_buttons(self):
+        # toggle the resample selection
         if len(self.view.selectionModel().selectedRows()) > 1:
             self.resample.setChecked(True)
             self.resample.setEnabled(False)
         else:
             self.resample.setChecked(False)
             self.resample.setEnabled(True)
+
+        # if there is no selection disable OK
+        if not self.view.selectionModel().selectedRows():
+            self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(False)
+        else:
+            self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(True)
+            # suggest the most common sampling rate (with the most channels)
+            channel_counts = []
+            sampling_rates = []
+            row_indices = {r.row() for r in self.view.selectedIndexes()}
+            for row in row_indices:
+                channel_counts.append(self.view.item(row, 3).value())
+                sampling_rates.append(self.view.item(row, 5).value())
+
+            counts = defaultdict(int)
+            for channel_count, sampling_rate in zip(channel_counts, sampling_rates):
+                if sampling_rate != 0:
+                    counts[sampling_rate] += channel_count
+
+            suggested_fs = max(counts, key=counts.get)
+            self.fs_new.setValue(suggested_fs)

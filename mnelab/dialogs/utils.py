@@ -2,7 +2,7 @@
 #
 # License: BSD (3-clause)
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Slot, QItemSelection
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem
 
 
@@ -10,20 +10,6 @@ def select_all(list_widget):
     """Select all items in a QListWidget."""
     for i in range(list_widget.count()):
         list_widget.item(i).setSelected(True)
-
-
-class AlwaysSelectedTableWidget(QTableWidget):
-    def mousePressEvent(self, event):
-        # avoid deselection when clicking in an empty region of the table
-        if not self.indexAt(event.position().toPoint()).isValid():
-            return
-        # disable deselecting the last selected row
-        selected_rows = {i.row() for i in self.selectedItems()}
-        if len(selected_rows) == 1:
-            if selected_rows == {self.itemAt(event.position().toPoint()).row()}:
-                return
-        QTableWidget.mousePressEvent(self, event)
-
 
 class IntTableWidgetItem(QTableWidgetItem):
     def __init__(self, value):
