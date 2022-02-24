@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from .events import IntTableWidgetItem
+from .utils import IntTableWidgetItem
 
 
 class AnnotationsDialog(QDialog):

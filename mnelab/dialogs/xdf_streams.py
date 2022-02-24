@@ -18,14 +18,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from .events import IntTableWidgetItem
-
-
-class AlwaysSelectedTableWidget(QTableWidget):
-    # to avoid deselection when clicking in an empty region of the table, filter mouseclicks
-    def mousePressEvent(self, event):
-        if self.indexAt(event.position().toPoint()).isValid():
-            QTableWidget.mousePressEvent(self, event)
+from .utils import AlwaysSelectedTableWidget, IntTableWidgetItem
 
 
 class XDFStreamsDialog(QDialog):
