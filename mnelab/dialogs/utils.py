@@ -13,10 +13,16 @@ def select_all(list_widget):
 
 
 class AlwaysSelectedTableWidget(QTableWidget):
-    # to avoid deselection when clicking in an empty region of the table, filter mouseclicks
     def mousePressEvent(self, event):
-        if self.indexAt(event.position().toPoint()).isValid():
-            QTableWidget.mousePressEvent(self, event)
+        # avoid deselection when clicking in an empty region of the table
+        if not self.indexAt(event.position().toPoint()).isValid():
+            return
+        # disable deselecting the last selected row
+        selected_rows = {i.row() for i in self.selectedItems()}
+        if len(selected_rows) == 1:
+            if selected_rows == {self.itemAt(event.position().toPoint()).row()}:
+                return
+        QTableWidget.mousePressEvent(self, event)
 
 
 class IntTableWidgetItem(QTableWidgetItem):
