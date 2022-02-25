@@ -173,7 +173,7 @@ def plot_erds(tfr_and_masks):
             ax.label_outer()
         for ax in axes[..., -1].flat:
             fig.colorbar(axes.flat[0].images[-1], cax=ax)
-        fig.suptitle(f"ERDS ({event})")
+        fig.suptitle(f"ERDS – {event}")
         figs.append(fig)
     return figs
 
