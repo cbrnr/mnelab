@@ -5,6 +5,7 @@
 import multiprocessing as mp
 import sys
 import traceback
+from collections import defaultdict
 from functools import partial
 from pathlib import Path
 from sys import version_info
@@ -1040,18 +1041,18 @@ class MainWindow(QMainWindow):
         """Epoch raw data."""
         unique_events = np.unique(self.model.current["events"][:, 2]).astype(str)
 
-        event_id_to_label = self.model.current["event_mapping"]
-        if event_id_to_label is not None:
-            event_label_to_id = {v: k for k, v in event_id_to_label.items()}
-            unique_events = [event_id_to_label[int(e)] for e in unique_events]
+        # If an event mapping exists, display the events as "ID (label)", e.g. "1 (hand)".
+        # Events without a label are displayed as "ID ()", e.g. "2 ()"
+        if self.model.current["event_mapping"] is not None:
+            event_id_to_label = defaultdict(str, self.model.current["event_mapping"])
+            unique_events = [f"{e} ({event_id_to_label[int(e)]})" for e in unique_events]
 
         dialog = EpochDialog(self, unique_events)
         if dialog.exec():
-            selected_events = [item.text() for item in dialog.events.selectedItems()]
-            if event_id_to_label is not None:
-                selected_events = [event_label_to_id[e] for e in selected_events]
-            else:
-                selected_events = [int(e) for e in selected_events]
+            # Create a dict {"ID (label)": ID, ...} (if an event mapping exists) or
+            # {"ID": ID} (if no event mapping exists). This is then passed to `mne.Epochs`
+            # as `event_id`, so the labels are also shown in plots and plotting dialogs.
+            selected_events = {item.text(): int(item.text().split(" ")[0]) for item in dialog.events.selectedItems()}  # noqa: E501
 
             tmin = dialog.tmin.value()
             tmax = dialog.tmax.value()

@@ -499,8 +499,6 @@ class Model:
 
     @data_changed
     def epoch_data(self, events, tmin, tmax, baseline):
-        if self.current["event_mapping"] is not None:
-            events = {v: k for k, v in self.current["event_mapping"].items() if k in events}
         epochs = mne.Epochs(self.current["data"], self.current["events"], event_id=events,
                             tmin=tmin, tmax=tmax, baseline=baseline, preload=True)
         self.history.append(f"data = mne.Epochs(data, events, event_id={events}, "
