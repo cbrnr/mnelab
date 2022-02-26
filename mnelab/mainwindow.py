@@ -710,14 +710,19 @@ class MainWindow(QMainWindow):
     def edit_events(self):
         pos = self.model.current["events"][:, 0].tolist()
         desc = self.model.current["events"][:, 2].tolist()
-        dialog = EventsDialog(self, pos, desc)
+        dialog = EventsDialog(self, pos, desc, self.model.current["event_mapping"])
         if dialog.exec():
-            rows = dialog.table.rowCount()
+            rows = dialog.event_table.rowCount()
             events = np.zeros((rows, 3), dtype=int)
             for i in range(rows):
-                pos = int(dialog.table.item(i, 0).data(Qt.DisplayRole))
-                desc = int(dialog.table.item(i, 1).data(Qt.DisplayRole))
+                pos = int(dialog.event_table.item(i, 0).data(Qt.DisplayRole))
+                desc = int(dialog.event_table.item(i, 1).data(Qt.DisplayRole))
                 events[i] = pos, 0, desc
+            self.model.current["event_mapping"] = dict(dialog.event_mapping)
+            if self.model.current["dtype"] == "epochs":
+                event_id_old = self.model.current["data"].event_id
+                event_id_new = {f"{k} ({v})": k for k, v in dialog.event_mapping.items() if k in event_id_old.values()}  # noqa: E501
+                self.model.current["data"].event_id = event_id_new
             self.model.set_events(events)
 
     def crop(self):
@@ -1043,9 +1048,9 @@ class MainWindow(QMainWindow):
 
         # If an event mapping exists, display the events as "ID (label)", e.g. "1 (hand)".
         # Events without a label are displayed as "ID ()", e.g. "2 ()"
-        if self.model.current["event_mapping"] is not None:
-            event_id_to_label = defaultdict(str, self.model.current["event_mapping"])
-            unique_events = [f"{e} ({event_id_to_label[int(e)]})" for e in unique_events]
+        # if self.model.current["event_mapping"] is not None:
+        event_id_to_label = defaultdict(str, self.model.current["event_mapping"])
+        unique_events = [f"{e} ({event_id_to_label[int(e)]})" for e in unique_events]
 
         dialog = EpochDialog(self, unique_events)
         if dialog.exec():
