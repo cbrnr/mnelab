@@ -1046,17 +1046,14 @@ class MainWindow(QMainWindow):
         """Epoch raw data."""
         unique_events = np.unique(self.model.current["events"][:, 2]).astype(str)
 
-        # If an event mapping exists, display the events as "ID (label)", e.g. "1 (hand)".
-        # Events without a label are displayed as "ID ()", e.g. "2 ()"
-        # if self.model.current["event_mapping"] is not None:
+        # Display the events as "ID (label)", e.g. "1 (hand)".
         event_id_to_label = defaultdict(str, self.model.current["event_mapping"])
         unique_events = [f"{e} ({event_id_to_label[int(e)]})" for e in unique_events]
 
         dialog = EpochDialog(self, unique_events)
         if dialog.exec():
-            # Create a dict {"ID (label)": ID, ...} (if an event mapping exists) or
-            # {"ID": ID} (if no event mapping exists). This is then passed to `mne.Epochs`
-            # as `event_id`, so the labels are also shown in plots and plotting dialogs.
+            # Create a dict {"ID (label)": ID, ...}. This is then passed to `mne.Epochs` as
+            # `event_id`, so the labels are also shown in plots and plotting dialogs.
             selected_events = {item.text(): int(item.text().split(" ")[0]) for item in dialog.events.selectedItems()}  # noqa: E501
 
             tmin = dialog.tmin.value()
