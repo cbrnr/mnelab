@@ -21,6 +21,7 @@ def main():
     app_name = "MNELAB"
     if sys.platform.startswith("darwin"):
         # set bundle name on macOS (app name shown in the menu bar)
+        # this must be done before the app is created
         from Foundation import NSBundle
         bundle = NSBundle.mainBundle()
         info = bundle.localizedInfoDictionary() or bundle.infoDictionary()
