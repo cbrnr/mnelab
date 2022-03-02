@@ -716,8 +716,8 @@ class MainWindow(QMainWindow):
             rows = dialog.event_table.rowCount()
             events = np.zeros((rows, 3), dtype=int)
             for i in range(rows):
-                pos = int(dialog.event_table.item(i, 0).data(Qt.DisplayRole))
-                desc = int(dialog.event_table.item(i, 1).data(Qt.DisplayRole))
+                pos = dialog.event_table.item(i, 0).value()
+                desc = dialog.event_table.item(i, 1).value()
                 events[i] = pos, 0, desc
             self.model.current["event_mapping"] = dict(dialog.event_mapping)
             if self.model.current["dtype"] == "epochs":
