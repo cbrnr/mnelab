@@ -294,7 +294,8 @@ class MainWindow(QMainWindow):
         )
         # actions that are always enabled
         self.always_enabled = ["open_file", "about", "about_qt", "quit", "xdf_chunks",
-                               "toolbar", "statusbar", "settings", "documentation"]
+                               "toolbar", "statusbar", "settings", "documentation",
+                               "history"]
 
         # set up toolbar
         self.toolbar = self.addToolBar("toolbar")
