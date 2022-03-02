@@ -29,4 +29,4 @@ class IntTableWidgetItem(QTableWidgetItem):
                 super().setData(role, str(value))
 
     def value(self):
-        return float(self.data(Qt.DisplayRole))
+        return int(self.data(Qt.DisplayRole))
