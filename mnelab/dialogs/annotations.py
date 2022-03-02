@@ -56,6 +56,7 @@ class AnnotationsDialog(QDialog):
         self.remove_button.clicked.connect(self.toggle_buttons)
         self.add_button.clicked.connect(self.toggle_buttons)
         self.toggle_buttons()
+        self.setMinimumSize(500, 500)
         self.resize(500, 500)
 
     @Slot()

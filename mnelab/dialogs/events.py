@@ -10,7 +10,6 @@ from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QHBoxLayout,
-    QLabel,
     QPushButton,
     QTableWidget,
     QTableWidgetItem,
@@ -39,46 +38,38 @@ class EventsDialog(QDialog):
         self.event_table.setSortingEnabled(True)
         self.event_table.sortByColumn(0, Qt.AscendingOrder)
 
-        self.event_mapping = defaultdict(str, event_mapping)
-        self.mapping_table = QTableWidget(0, 2)
-        self.mapping_table.setHorizontalHeaderLabels(["ID", "Label"])
-        self.mapping_table.horizontalHeader().setStretchLastSection(True)
-        self.mapping_table.verticalHeader().setVisible(False)
-        self.mapping_table.setShowGrid(False)
-        self.mapping_table.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.fill_mapping_table()
-        self.clear_button = QPushButton("Clear event mapping")
+        self.event_mapping = event_mapping
 
+        vbox = QVBoxLayout(self)
+        vbox.addWidget(self.event_table)
         hbox = QHBoxLayout()
         self.add_button = QPushButton("+")
         self.remove_button = QPushButton("-")
+        self.mapping_button = QPushButton("Mapping...")
+        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         hbox.addWidget(self.add_button)
         hbox.addWidget(self.remove_button)
-
-        vbox = QVBoxLayout(self)
-        vbox.addWidget(QLabel("Events:"))
-        vbox.addWidget(self.event_table)
+        hbox.addWidget(self.mapping_button)
+        hbox.addStretch()
+        hbox.addWidget(buttonbox)
         vbox.addLayout(hbox)
-        vbox.addWidget(QLabel("Event mapping:"))
-        vbox.addWidget(self.mapping_table)
-        vbox.addWidget(self.clear_button)
-
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        vbox.addWidget(buttonbox)
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)
         self.event_table.itemSelectionChanged.connect(self.toggle_buttons)
-        self.event_table.itemChanged.connect(self.fill_mapping_table)
-        self.mapping_table.itemChanged.connect(self.store_mapping)
         self.remove_button.clicked.connect(self.remove_event)
         self.add_button.clicked.connect(self.add_event)
         self.remove_button.clicked.connect(self.toggle_buttons)
         self.add_button.clicked.connect(self.toggle_buttons)
-        self.clear_button.clicked.connect(self.clear_mapping)
+        self.mapping_button.clicked.connect(self.open_mapping_dialog)
         self.toggle_buttons()
-        self.event_table.setMinimumHeight(350)
-        self.mapping_table.setMinimumHeight(150)
-        self.resize(300, 700)
+        self.setMinimumSize(500, 500)
+        self.resize(500, 500)
+
+    @Slot()
+    def open_mapping_dialog(self):
+        dialog = EventMappingDialog(self)
+        if dialog.exec():
+            self.event_mapping = dialog.event_mapping
 
     @Slot()
     def toggle_buttons(self):
@@ -87,15 +78,19 @@ class EventsDialog(QDialog):
         if self.event_table.rowCount() == 0:  # no events available
             self.add_button.setEnabled(True)
             self.remove_button.setEnabled(False)
+            self.mapping_button.setEnabled(False)
         elif n_items == 2:  # one row (2 items) selected
             self.add_button.setEnabled(True)
             self.remove_button.setEnabled(True)
+            self.mapping_button.setEnabled(True)
         elif n_items > 2:  # more than one row selected
             self.add_button.setEnabled(False)
             self.remove_button.setEnabled(True)
+            self.mapping_button.setEnabled(True)
         else:  # no rows selected
             self.add_button.setEnabled(False)
             self.remove_button.setEnabled(False)
+            self.mapping_button.setEnabled(True)
 
     def add_event(self):
         if self.event_table.selectedIndexes():
@@ -115,7 +110,38 @@ class EventsDialog(QDialog):
         self.event_table.clearSelection()
         for row in sorted(rows, reverse=True):
             self.event_table.removeRow(row)
+
+
+class EventMappingDialog(QDialog):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setWindowTitle("Event Mapping")
+        self.event_table = parent.event_table
+        self.event_mapping = defaultdict(str, parent.event_mapping)
+        self.mapping_table = QTableWidget(0, 2)
+        self.mapping_table.setHorizontalHeaderLabels(["Type", "Label"])
+        self.mapping_table.horizontalHeader().setStretchLastSection(True)
+        self.mapping_table.verticalHeader().setVisible(False)
+        self.mapping_table.setShowGrid(False)
+        self.mapping_table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.fill_mapping_table()
+        self.clear_button = QPushButton("Clear mapping")
+
+        vbox = QVBoxLayout(self)
+        vbox.addWidget(self.mapping_table)
+        hbox = QHBoxLayout()
+        hbox.addWidget(self.clear_button)
+        hbox.addStretch()
+        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        hbox.addWidget(buttonbox)
+        vbox.addLayout(hbox)
+        buttonbox.accepted.connect(self.accept)
+        buttonbox.rejected.connect(self.reject)
+
+        self.mapping_table.itemChanged.connect(self.store_mapping)
+        self.clear_button.clicked.connect(self.clear_mapping)
+
+        self.mapping_table.setMinimumHeight(150)
 
     def get_unique_events(self):
         unique_events = set()
