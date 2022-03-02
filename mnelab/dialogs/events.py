@@ -16,7 +16,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from .utils import IntTableWidgetItem, FloatTableWidgetItem
+from .utils import IntTableWidgetItem
 
 
 class EventsDialog(QDialog):
