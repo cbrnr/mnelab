@@ -30,3 +30,23 @@ class IntTableWidgetItem(QTableWidgetItem):
 
     def value(self):
         return int(self.data(Qt.DisplayRole))
+
+
+class FloatTableWidgetItem(QTableWidgetItem):
+    def __init__(self, value):
+        super().__init__(str(value))
+
+    def __lt__(self, other):
+        return float(self.data(Qt.EditRole)) < float(other.data(Qt.EditRole))
+
+    def setData(self, role, value):
+        try:
+            value = float(value)
+        except ValueError:
+            return
+        else:
+            if value >= 0:  # event position and type must not be negative
+                super().setData(role, str(value))
+
+    def value(self):
+        return float(self.data(Qt.DisplayRole))

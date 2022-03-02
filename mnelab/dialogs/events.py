@@ -16,15 +16,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from .utils import IntTableWidgetItem
-
-
-def _get_unique_events(event_table):
-    unique_events = set()
-    for i in range(event_table.rowCount()):
-        if item := event_table.item(i, 1):
-            unique_events.add(int(item.value()))
-    return unique_events
+from .utils import IntTableWidgetItem, FloatTableWidgetItem
 
 
 class EventsDialog(QDialog):
@@ -127,6 +119,12 @@ class EventMappingDialog(QDialog):
         self.setWindowTitle("Event Mapping")
         self.event_table = parent.event_table
         self.event_mapping = defaultdict(str, parent.event_mapping)  # make copy
+
+        self.unique_events = set()
+        for i in range(self.event_table.rowCount()):
+            if item := self.event_table.item(i, 1):
+                self.unique_events.add(int(item.value()))
+
         self.mapping_table = QTableWidget(0, 2)
         self.mapping_table.setHorizontalHeaderLabels(["Type", "Label"])
         self.mapping_table.horizontalHeader().setStretchLastSection(True)
@@ -153,9 +151,8 @@ class EventMappingDialog(QDialog):
         self.mapping_table.setMinimumHeight(150)
 
     def fill_mapping_table(self):
-        unique_events = _get_unique_events(self.event_table)
         self.mapping_table.setRowCount(0)
-        for row, id_ in enumerate(sorted(unique_events)):
+        for row, id_ in enumerate(sorted(self.unique_events)):
             id_item = IntTableWidgetItem(id_)
             id_item.setFlags(id_item.flags() ^ Qt.ItemIsEditable)
             self.mapping_table.insertRow(row)
@@ -163,10 +160,9 @@ class EventMappingDialog(QDialog):
             self.mapping_table.setItem(row, 1, QTableWidgetItem(self.event_mapping[id_]))
 
     def store_mapping(self):
-        unique_events = _get_unique_events(self.event_table)
         for i in range(self.mapping_table.rowCount()):
             event_id = int(self.mapping_table.item(i, 0).value())
-            if event_id not in unique_events:
+            if event_id not in self.unique_events:
                 del self.event_mapping[event_id]
             if self.mapping_table.item(i, 1) is not None:
                 self.event_mapping[event_id] = self.mapping_table.item(i, 1).text()
