@@ -19,6 +19,14 @@ from PySide6.QtWidgets import (
 from .utils import IntTableWidgetItem
 
 
+def _get_unique_events(event_table):
+    unique_events = set()
+    for i in range(event_table.rowCount()):
+        if item := event_table.item(i, 1):
+            unique_events.add(int(item.value()))
+    return unique_events
+
+
 class EventsDialog(QDialog):
     def __init__(self, parent, pos, desc, event_mapping):
         super().__init__(parent)
@@ -38,7 +46,7 @@ class EventsDialog(QDialog):
         self.event_table.setSortingEnabled(True)
         self.event_table.sortByColumn(0, Qt.AscendingOrder)
 
-        self.event_mapping = event_mapping
+        self.event_mapping = defaultdict(str, event_mapping)  # make copy
 
         vbox = QVBoxLayout(self)
         vbox.addWidget(self.event_table)
@@ -109,6 +117,7 @@ class EventsDialog(QDialog):
         rows = {index.row() for index in self.event_table.selectedIndexes()}
         self.event_table.clearSelection()
         for row in sorted(rows, reverse=True):
+            del self.event_mapping[self.event_table.item(row, 1).value()]
             self.event_table.removeRow(row)
 
 
@@ -117,7 +126,7 @@ class EventMappingDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Event Mapping")
         self.event_table = parent.event_table
-        self.event_mapping = defaultdict(str, parent.event_mapping)
+        self.event_mapping = defaultdict(str, parent.event_mapping)  # make copy
         self.mapping_table = QTableWidget(0, 2)
         self.mapping_table.setHorizontalHeaderLabels(["Type", "Label"])
         self.mapping_table.horizontalHeader().setStretchLastSection(True)
@@ -143,15 +152,8 @@ class EventMappingDialog(QDialog):
 
         self.mapping_table.setMinimumHeight(150)
 
-    def get_unique_events(self):
-        unique_events = set()
-        for i in range(self.event_table.rowCount()):
-            if item := self.event_table.item(i, 1):
-                unique_events.add(int(item.value()))
-        return unique_events
-
     def fill_mapping_table(self):
-        unique_events = self.get_unique_events()
+        unique_events = _get_unique_events(self.event_table)
         self.mapping_table.setRowCount(0)
         for row, id_ in enumerate(sorted(unique_events)):
             id_item = IntTableWidgetItem(id_)
@@ -161,7 +163,7 @@ class EventMappingDialog(QDialog):
             self.mapping_table.setItem(row, 1, QTableWidgetItem(self.event_mapping[id_]))
 
     def store_mapping(self):
-        unique_events = self.get_unique_events()
+        unique_events = _get_unique_events(self.event_table)
         for i in range(self.mapping_table.rowCount()):
             event_id = int(self.mapping_table.item(i, 0).value())
             if event_id not in unique_events:
