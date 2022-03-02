@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from .utils import IntTableWidgetItem
+from .utils import FloatTableWidgetItem, IntTableWidgetItem
 
 
 class XDFStreamsDialog(QDialog):
@@ -34,7 +34,7 @@ class XDFStreamsDialog(QDialog):
             self.view.setItem(i, 2, QTableWidgetItem(row[2]))
             self.view.setItem(i, 3, IntTableWidgetItem(row[3]))
             self.view.setItem(i, 4, QTableWidgetItem(row[4]))
-            self.view.setItem(i, 5, IntTableWidgetItem(row[5]))
+            self.view.setItem(i, 5, FloatTableWidgetItem(row[5]))
             if i in disabled:
                 for col in range(6):
                     self.view.item(i, col).setFlags(Qt.NoItemFlags)

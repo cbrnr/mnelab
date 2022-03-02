@@ -2,7 +2,6 @@
 #
 # License: BSD (3-clause)
 
-from numpy import unique
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -26,7 +25,7 @@ class EpochDialog(QDialog):
         grid.addWidget(label, 0, 0, 1, 1)
 
         self.events = QListWidget()
-        self.events.insertItems(0, unique(events[:, 2]).astype(str))
+        self.events.insertItems(0, events)
         self.events.setSelectionMode(QListWidget.ExtendedSelection)
         grid.addWidget(self.events, 0, 1, 1, 2)
 

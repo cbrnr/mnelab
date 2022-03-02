@@ -5,6 +5,7 @@
 import multiprocessing as mp
 import sys
 import traceback
+from collections import defaultdict
 from functools import partial
 from pathlib import Path
 from sys import version_info
@@ -709,14 +710,19 @@ class MainWindow(QMainWindow):
     def edit_events(self):
         pos = self.model.current["events"][:, 0].tolist()
         desc = self.model.current["events"][:, 2].tolist()
-        dialog = EventsDialog(self, pos, desc)
+        dialog = EventsDialog(self, pos, desc, self.model.current["event_mapping"])
         if dialog.exec():
-            rows = dialog.table.rowCount()
+            rows = dialog.event_table.rowCount()
             events = np.zeros((rows, 3), dtype=int)
             for i in range(rows):
-                pos = int(dialog.table.item(i, 0).data(Qt.DisplayRole))
-                desc = int(dialog.table.item(i, 1).data(Qt.DisplayRole))
+                pos = int(dialog.event_table.item(i, 0).data(Qt.DisplayRole))
+                desc = int(dialog.event_table.item(i, 1).data(Qt.DisplayRole))
                 events[i] = pos, 0, desc
+            self.model.current["event_mapping"] = dict(dialog.event_mapping)
+            if self.model.current["dtype"] == "epochs":
+                event_id_old = self.model.current["data"].event_id
+                event_id_new = {f"{k} ({v})": k for k, v in dialog.event_mapping.items() if k in event_id_old.values()}  # noqa: E501
+                self.model.current["data"].event_id = event_id_new
             self.model.set_events(events)
 
     def crop(self):
@@ -1038,9 +1044,18 @@ class MainWindow(QMainWindow):
 
     def epoch_data(self):
         """Epoch raw data."""
-        dialog = EpochDialog(self, self.model.current["events"])
+        unique_events = np.unique(self.model.current["events"][:, 2]).astype(str)
+
+        # Display the events as "ID (label)", e.g. "1 (hand)".
+        event_id_to_label = defaultdict(str, self.model.current["event_mapping"])
+        unique_events = [f"{e} ({event_id_to_label[int(e)]})" for e in unique_events]
+
+        dialog = EpochDialog(self, unique_events)
         if dialog.exec():
-            events = [int(item.text()) for item in dialog.events.selectedItems()]
+            # Create a dict {"ID (label)": ID, ...}. This is then passed to `mne.Epochs` as
+            # `event_id`, so the labels are also shown in plots and plotting dialogs.
+            selected_events = {item.text(): int(item.text().split(" ")[0]) for item in dialog.events.selectedItems()}  # noqa: E501
+
             tmin = dialog.tmin.value()
             tmax = dialog.tmax.value()
 
@@ -1051,7 +1066,7 @@ class MainWindow(QMainWindow):
 
             duplicated = self.auto_duplicate()
             try:
-                self.model.epoch_data(events, tmin, tmax, baseline)
+                self.model.epoch_data(selected_events, tmin, tmax, baseline)
             except ValueError as e:
                 if duplicated:  # undo
                     self.model.remove_data()

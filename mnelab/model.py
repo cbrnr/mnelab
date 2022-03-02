@@ -126,6 +126,7 @@ class Model:
             dtype="raw",
             montage=None,
             events=np.empty((0, 3), dtype=int),
+            event_mapping={},
         ))
 
     @data_changed
