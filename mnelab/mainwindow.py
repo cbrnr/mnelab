@@ -721,10 +721,8 @@ class MainWindow(QMainWindow):
             self.model.current["event_mapping"] = dict(dialog.event_mapping)
             if self.model.current["dtype"] == "epochs":
                 event_id_old = self.model.current["data"].event_id
-                print("BEFORE", event_id_old)
                 event_id_new = {f"{k} ({v})": k for k, v in dialog.event_mapping.items() if k in event_id_old.values()}  # noqa: E501
                 self.model.current["data"].event_id = event_id_new
-                print("AFTER", event_id_new)
             self.model.set_events(events)
 
     def crop(self):
