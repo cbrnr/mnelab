@@ -15,7 +15,7 @@ from PySide6.QtWidgets import (
 
 
 class EpochDialog(QDialog):
-    def __init__(self, parent, events):
+    def __init__(self, parent, event_types):
         super().__init__(parent)
         self.setWindowTitle("Create Epochs")
 
@@ -25,7 +25,7 @@ class EpochDialog(QDialog):
         grid.addWidget(label, 0, 0, 1, 1)
 
         self.events = QListWidget()
-        self.events.insertItems(0, events)
+        self.events.insertItems(0, event_types)
         self.events.setSelectionMode(QListWidget.ExtendedSelection)
         grid.addWidget(self.events, 0, 1, 1, 2)
 
@@ -82,3 +82,7 @@ class EpochDialog(QDialog):
         else:
             self.a.setEnabled(False)
             self.b.setEnabled(False)
+
+    @property
+    def selected_events(self):
+        return [int(item.text()) for item in self.events.selectedItems()]
