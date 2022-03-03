@@ -451,7 +451,7 @@ class MainWindow(QMainWindow):
                 enabled and self.model.current["dtype"] == "epochs"
             )
             self.actions["plot_evoked_topomaps"].setEnabled(
-                enabled and self.model.current["dtype"] == "epochs"
+                enabled and locations and self.model.current["dtype"] == "epochs"
             )
             self.actions["plot_ica_components"].setEnabled(enabled and ica and locations)
             self.actions["plot_ica_sources"].setEnabled(enabled and ica)
