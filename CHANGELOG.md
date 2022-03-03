@@ -28,7 +28,6 @@
 - Stop requiring existing annotations or events to enable editing them ([#283](https://github.com/cbrnr/mnelab/pull/283) by [Florian Hofer](https://github.com/hofaflo))
 - Replace "(channels dropped)" suffix with "(channels picked)" and use `pick_channels` instead of `drop_channels` ([#285](https://github.com/cbrnr/mnelab/pull/285) by [Florian Hofer](https://github.com/hofaflo))
 - The overwrite confirmation dialog is now fail-safe because it defaults to creating a new dataset ([#304](https://github.com/cbrnr/mnelab/pull/304) by [Clemens Brunner](https://github.com/cbrnr))
-- Dialogs where events can be selected now show both the integer IDs and the event labels ([#302](https://github.com/cbrnr/mnelab/pull/302) by [Florian Hofer](https://github.com/hofaflo))
 
 ### Fixed
 - Fix splitting name and extension for compatibility with Python 3.8 ([#252](https://github.com/cbrnr/mnelab/pull/252) by [Johan Medrano](https://github.com/yop0))

@@ -5,7 +5,6 @@
 import multiprocessing as mp
 import sys
 import traceback
-from collections import defaultdict
 from functools import partial
 from pathlib import Path
 from sys import version_info
@@ -722,8 +721,10 @@ class MainWindow(QMainWindow):
             self.model.current["event_mapping"] = dict(dialog.event_mapping)
             if self.model.current["dtype"] == "epochs":
                 event_id_old = self.model.current["data"].event_id
+                print("BEFORE", event_id_old)
                 event_id_new = {f"{k} ({v})": k for k, v in dialog.event_mapping.items() if k in event_id_old.values()}  # noqa: E501
                 self.model.current["data"].event_id = event_id_new
+                print("AFTER", event_id_new)
             self.model.set_events(events)
 
     def crop(self):
@@ -1045,18 +1046,9 @@ class MainWindow(QMainWindow):
 
     def epoch_data(self):
         """Epoch raw data."""
-        unique_events = np.unique(self.model.current["events"][:, 2]).astype(str)
-
-        # Display the events as "ID (label)", e.g. "1 (hand)".
-        event_id_to_label = defaultdict(str, self.model.current["event_mapping"])
-        unique_events = [f"{e} ({event_id_to_label[int(e)]})" for e in unique_events]
-
-        dialog = EpochDialog(self, unique_events)
+        event_types = np.unique(self.model.current["events"][:, 2]).astype(str).tolist()
+        dialog = EpochDialog(self, event_types)
         if dialog.exec():
-            # Create a dict {"ID (label)": ID, ...}. This is then passed to `mne.Epochs` as
-            # `event_id`, so the labels are also shown in plots and plotting dialogs.
-            selected_events = {item.text(): int(item.text().split(" ")[0]) for item in dialog.events.selectedItems()}  # noqa: E501
-
             tmin = dialog.tmin.value()
             tmax = dialog.tmax.value()
 
@@ -1066,8 +1058,9 @@ class MainWindow(QMainWindow):
                 baseline = None
 
             duplicated = self.auto_duplicate()
+
             try:
-                self.model.epoch_data(selected_events, tmin, tmax, baseline)
+                self.model.epoch_data(dialog.selected_events, tmin, tmax, baseline)
             except ValueError as e:
                 if duplicated:  # undo
                     self.model.remove_data()

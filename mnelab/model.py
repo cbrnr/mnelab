@@ -126,7 +126,7 @@ class Model:
             dtype="raw",
             montage=None,
             events=np.empty((0, 3), dtype=int),
-            event_mapping={},
+            event_mapping=defaultdict(str),
         ))
 
     @data_changed
@@ -499,10 +499,10 @@ class Model:
         self.current["name"] += " (interpolated)"
 
     @data_changed
-    def epoch_data(self, events, tmin, tmax, baseline):
-        epochs = mne.Epochs(self.current["data"], self.current["events"], event_id=events,
+    def epoch_data(self, event_id, tmin, tmax, baseline):
+        epochs = mne.Epochs(self.current["data"], self.current["events"], event_id=event_id,
                             tmin=tmin, tmax=tmax, baseline=baseline, preload=True)
-        self.history.append(f"data = mne.Epochs(data, events, event_id={events}, "
+        self.history.append(f"data = mne.Epochs(data, events, event_id={event_id}, "
                             f"tmin={tmin}, tmax={tmax}, baseline={baseline}, preload=True)")
         self.current["data"] = epochs
         self.current["dtype"] = "epochs"
