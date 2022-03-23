@@ -20,6 +20,7 @@
 - Add support for reading multiple XDF streams (via resampling) ([#312](https://github.com/cbrnr/mnelab/pull/312) by [Florian Hofer](https://github.com/hofaflo))
 - Add app icon ([#319](https://github.com/cbrnr/mnelab/pull/319) by [Clemens Brunner](https://github.com/cbrnr))
 - Add dialog to modify mapping between event IDs and labels (Edit - Events...) ([#302](https://github.com/cbrnr/mnelab/pull/302) by [Florian Hofer](https://github.com/hofaflo) and [Clemens Brunner](https://github.com/cbrnr))
+- Add complete history for Find Events dialog ([#333](https://github.com/cbrnr/mnelab/pull/333) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### Changed
 - Simplify rereferencing workflow ([#258](https://github.com/cbrnr/mnelab/pull/258) by [Florian Hofer](https://github.com/hofaflo))
