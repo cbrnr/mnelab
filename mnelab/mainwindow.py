@@ -1022,7 +1022,11 @@ class MainWindow(QMainWindow):
         dialog = FindEventsDialog(self, info["ch_names"], default_stim)
         if dialog.exec():
             stim_channel = dialog.stimchan.currentText()
-            consecutive = dialog.consecutive.isChecked()
+            consecutive = dialog.consecutive.currentText().lower()
+            if consecutive == "true":
+                consecutive = True
+            elif consecutive == "false":
+                consecutive = False
             initial_event = dialog.initial_event.isChecked()
             uint_cast = dialog.uint_cast.isChecked()
             min_dur = dialog.minduredit.value()

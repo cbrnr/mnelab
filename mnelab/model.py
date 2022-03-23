@@ -130,8 +130,15 @@ class Model:
         ))
 
     @data_changed
-    def find_events(self, stim_channel, consecutive=True, initial_event=True,
-                    uint_cast=True, min_duration=0, shortest_event=0):
+    def find_events(
+        self,
+        stim_channel,
+        consecutive=True,
+        initial_event=True,
+        uint_cast=True,
+        min_duration=0,
+        shortest_event=0
+    ):
         """Find events in raw data."""
         events = mne.find_events(
             self.current["data"],
@@ -144,7 +151,20 @@ class Model:
         )
         if events.shape[0] > 0:  # if events were found
             self.current["events"] = events
-            self.history.append("events = mne.find_events(data)")
+            hist = "events = mne.find_events(data"
+            hist += f", stim_channel={stim_channel!r}"
+            if consecutive != "increasing":
+                hist += f", consecutive={consecutive!r}"
+            if initial_event:
+                hist += f", initial_event={initial_event!r}"
+            if uint_cast:
+                hist += f", uint_cast={uint_cast!r}"
+            if min_duration > 0:
+                hist += f", min_duration={min_duration!r}"
+            if shortest_event != 2:
+                hist += f", shortest_event={shortest_event!r}"
+            hist += ")"
+            self.history.append(hist)
 
     @data_changed
     def events_from_annotations(self):
