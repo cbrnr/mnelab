@@ -65,6 +65,14 @@ class EventsDialog(QDialog):
         self.setMinimumSize(500, 500)
         self.resize(500, 500)
 
+    @property
+    def unique_events(self):
+        _unique_events = set()
+        for i in range(self.event_table.rowCount()):
+            if item := self.event_table.item(i, 1):
+                _unique_events.add(int(item.value()))
+        return _unique_events
+
     @Slot()
     def open_mapping_dialog(self):
         dialog = EventMappingDialog(self)
@@ -109,8 +117,10 @@ class EventsDialog(QDialog):
         rows = {index.row() for index in self.event_table.selectedIndexes()}
         self.event_table.clearSelection()
         for row in sorted(rows, reverse=True):
-            del self.event_mapping[self.event_table.item(row, 1).value()]
+            value = self.event_table.item(row, 1).value()
             self.event_table.removeRow(row)
+            if value not in self.unique_events:
+                self.event_mapping.pop(value, None)
 
 
 class EventMappingDialog(QDialog):
@@ -118,12 +128,8 @@ class EventMappingDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Event Mapping")
         self.event_table = parent.event_table
+        self.unique_events = parent.unique_events
         self.event_mapping = defaultdict(str, parent.event_mapping)  # make copy
-
-        self.unique_events = set()
-        for i in range(self.event_table.rowCount()):
-            if item := self.event_table.item(i, 1):
-                self.unique_events.add(int(item.value()))
 
         self.mapping_table = QTableWidget(0, 2)
         self.mapping_table.setHorizontalHeaderLabels(["Type", "Label"])
