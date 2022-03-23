@@ -30,8 +30,9 @@ class FindEventsDialog(QDialog):
         grid.addWidget(self.stimchan, 0, 1)
 
         grid.addWidget(QLabel("Consecutive"), 1, 0)
-        self.consecutive = QCheckBox()
-        self.consecutive.setChecked(True)
+        self.consecutive = QComboBox()
+        self.consecutive.addItems(["Increasing", "True", "False"])
+        self.consecutive.setCurrentIndex(0)
         grid.addWidget(self.consecutive, 1, 1)
 
         grid.addWidget(QLabel("Initial event"), 2, 0)
@@ -39,7 +40,7 @@ class FindEventsDialog(QDialog):
         self.initial_event.setChecked(True)
         grid.addWidget(self.initial_event, 2, 1)
 
-        grid.addWidget(QLabel("Cast to unsigned integer"), 3, 0)
+        grid.addWidget(QLabel("Interpret as uint16"), 3, 0)
         self.uint_cast = QCheckBox()
         self.uint_cast.setChecked(True)
         grid.addWidget(self.uint_cast, 3, 1)
@@ -51,6 +52,7 @@ class FindEventsDialog(QDialog):
 
         grid.addWidget(QLabel("Shortest event:"), 5, 0)
         self.shortesteventedit = QSpinBox()
+        self.shortesteventedit.setValue(2)
         self.shortesteventedit.setMaximum(MAX_INT)
         grid.addWidget(self.shortesteventedit, 5, 1)
 
