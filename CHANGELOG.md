@@ -37,6 +37,7 @@
 - Fix exporting to BrainVision with annotations starting with "BAD" or "EDGE" ([#276](https://github.com/cbrnr/mnelab/pull/276) by [Clemens Brunner](https://github.com/cbrnr))
 - Exporting to .fif.gz now uses the correct extension on macOS ([#301](https://github.com/cbrnr/mnelab/pull/301) by [Clemens Brunner](https://github.com/cbrnr))
 - Round physical minima and maxima to integers in EDF export ([#310](https://github.com/cbrnr/mnelab/pull/310) by [Clemens Brunner](https://github.com/cbrnr))
+- Fix crop limit could exceed the signal length ([#336](https://github.com/cbrnr/mnelab/pull/336) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [0.7.0] - 2021-12-29
 ### Added
