@@ -727,12 +727,11 @@ class MainWindow(QMainWindow):
 
     def crop(self):
         """Crop data."""
-        fs = self.model.current["data"].info["sfreq"]
-        length = self.model.current["data"].n_times / fs
-        dialog = CropDialog(self, 0, length)
+        stop = self.model.current["data"].times[-1]
+        dialog = CropDialog(self, 0, stop)
         if dialog.exec():
             self.auto_duplicate()
-            self.model.crop(dialog.start or 0, dialog.stop)
+            self.model.crop(max(dialog.start, 0), min(dialog.stop, stop))
 
     def append_data(self):
         """Concatenate raw data objects to current one."""
