@@ -313,8 +313,21 @@ class Model:
         montage = self.current["montage"]
         ica = self.current["ica"]
 
-        length = f"{data.times[-1] - data.times[0]:.6g} s"
-        samples = f"{len(data.times)}"
+        fs = data.info["sfreq"]
+        n_samples = len(data.times)
+        samples = f"{n_samples:,}".replace(",", "\u2009")
+
+        seconds = n_samples / fs
+        minutes, seconds = divmod(seconds, 60)
+        hours, minutes = divmod(minutes, 60)
+        hours, minutes = int(hours), int(minutes)
+        if hours > 0:
+            length = f"{hours}\u2009h {minutes}\u2009m {seconds:.3g}\u2009s"
+        elif minutes > 0:
+            length = f"{minutes}\u2009m {seconds:.3g}\u2009s"
+        else:
+            length = f"{seconds:.3g}\u2009s"
+
         if self.current["dtype"] == "epochs":  # add epoch count
             length = f"{self.current['data'].events.shape[0]} x {length}"
             samples = f"{self.current['data'].events.shape[0]} x {samples}"
@@ -378,7 +391,7 @@ class Model:
                 "Size in memory": f"{data.get_data().nbytes / 1024**2:.2f} MB",
                 "Channels": f"{nchan} (" + chans + ")",
                 "Samples": samples,
-                "Sampling frequency": f"{data.info['sfreq']:.6g} Hz",
+                "Sampling frequency": f"{fs:.6g} Hz",
                 "Length": length,
                 "Events": events,
                 "Annotations": annots,
