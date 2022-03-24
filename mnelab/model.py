@@ -345,14 +345,17 @@ class Model:
         chans = ", ".join([" ".join([str(v), k.upper()]) for k, v in chans])
 
         if events is not None and events.shape[0] > 0:
-            nevents = events.shape[0]
-            unique = [str(e) for e in sorted(set(events[:, 2]))]
-            if len(unique) > 20:  # do not show all events
-                first = ", ".join(unique[:10])
-                last = ", ".join(unique[-10:])
-                events = f"{nevents} ({first + ', ..., ' + last})"
+            unique, counts = np.unique(events[:, 2], return_counts=True)
+            events = f"{events.shape[0]} ("
+            if len(unique) < 8:
+                events += ", ".join([f"{u}: {c}" for u, c in zip(unique, counts)])
+            elif 8 <= len(unique) <= 12:
+                events += ", ".join([f"{u}" for u in unique])
             else:
-                events = f"{nevents} ({', '.join(unique)})"
+                first = ", ".join([f"{u}" for u in unique[:6]])
+                last = ", ".join([f"{u}" for u in unique[-6:]])
+                events += f"{first}, ..., {last}"
+            events += ")"
         else:
             events = "-"
 
