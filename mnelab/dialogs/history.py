@@ -2,6 +2,8 @@
 #
 # License: BSD (3-clause)
 
+import sys
+
 from PySide6.QtGui import QFont, QGuiApplication
 from PySide6.QtWidgets import (
     QDialog,
@@ -21,7 +23,13 @@ class HistoryDialog(QDialog):
         layout = QVBoxLayout()
         text = QPlainTextEdit()
         font = QFont()
-        font.setFamily("monospace")
+        if sys.platform.startswith("darwin"):
+            fontname = "menlo"
+        elif sys.platform.startswith("win32"):
+            fontname = "consolas"
+        else:
+            fontname = "monospace"
+        font.setFamily(fontname)
         font.setStyleHint(QFont.Monospace)
         text.setFont(font)
         highlighter = PythonHighlighter(text.document())  # noqa: F841
