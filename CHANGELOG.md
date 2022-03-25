@@ -1,4 +1,4 @@
-## [UNRELEASED] - XXXX-XX-XX
+## [0.8.0] - 2022-03-25
 ### Added
 - Add support to select and load multiple files at once ([#257](https://github.com/cbrnr/mnelab/pull/257) by [Florian Hofer](https://github.com/hofaflo))
 - Add drag and drop reordering to sidebar ([#261](https://github.com/cbrnr/mnelab/pull/261) by [Florian Hofer](https://github.com/hofaflo))
