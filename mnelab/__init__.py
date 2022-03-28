@@ -36,9 +36,9 @@ def main():
     QIcon.setFallbackThemeName("default")
     if sys.platform.startswith("darwin"):
         app.setAttribute(Qt.ApplicationAttribute.AA_DontShowIconsInMenus, True)
-        app.setWindowIcon(QIcon("mnelab-logo-macos"))
+        app.setWindowIcon(QIcon.fromTheme("mnelab-logo-macos"))
     else:
-        app.setWindowIcon(QIcon("mnelab-logo"))
+        app.setWindowIcon(QIcon.fromTheme("mnelab-logo"))
     app.setAttribute(Qt.ApplicationAttribute.AA_UseHighDpiPixmaps)
     model = Model()
     model.view = MainWindow(model)
