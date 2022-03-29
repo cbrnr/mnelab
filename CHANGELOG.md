@@ -1,4 +1,6 @@
 ## [UNRELEASED] - xxxx-xx-xx
+### Fixed
+- Fix loading of application icon ([#339](https://github.com/cbrnr/mnelab/pull/339) by [Guillaume Favelier](https://github.com/GuillaumeFavelier))
 
 ## [0.8.0] - 2022-03-25
 ### Added
