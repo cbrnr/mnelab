@@ -4,6 +4,7 @@
 
 import multiprocessing as mp
 import sys
+from pathlib import Path
 
 import matplotlib
 from PySide6.QtCore import Qt
@@ -33,9 +34,9 @@ def main():
     app.setOrganizationName("cbrnr")
     if sys.platform.startswith("darwin"):
         app.setAttribute(Qt.ApplicationAttribute.AA_DontShowIconsInMenus, True)
-        app.setWindowIcon(QIcon("mnelab/icons/mnelab-logo-macos.svg"))
+        app.setWindowIcon(QIcon(f"{Path(__file__).parent}/icons/mnelab-logo-macos.svg"))
     else:
-        app.setWindowIcon(QIcon("mnelab/icons/mnelab-logo.svg"))
+        app.setWindowIcon(QIcon(f"{Path(__file__).parent}/icons/mnelab-logo.svg"))
     app.setAttribute(Qt.ApplicationAttribute.AA_UseHighDpiPixmaps)
     model = Model()
     model.view = MainWindow(model)
