@@ -393,12 +393,16 @@ class MainWindow(QMainWindow):
 
     @contextmanager
     def _wait_cursor(self):
-        default_cursor = self.cursor()
-        self.setCursor(Qt.WaitCursor)
-        try:
+        # disabled on macOS because of outdated icon
+        if sys.platform.startswith("darwin"):
             yield
-        finally:
-            self.setCursor(default_cursor)
+        else:
+            default_cursor = self.cursor()
+            self.setCursor(Qt.WaitCursor)
+            try:
+                yield
+            finally:
+                self.setCursor(default_cursor)
 
     def data_changed(self):
         # update sidebar
