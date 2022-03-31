@@ -5,10 +5,10 @@
 import multiprocessing as mp
 import sys
 import traceback
+from contextlib import contextmanager
 from functools import partial
 from pathlib import Path
 from sys import version_info
-from contextlib import contextmanager
 
 import mne
 import numpy as np
