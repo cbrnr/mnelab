@@ -320,6 +320,9 @@ class MainWindow(QMainWindow):
             self.toolbar.hide()
             self.actions["toolbar"].setChecked(False)
 
+        # set the actions of the context menu (right click on sidebar)
+        context_menu_actions = [self.actions["close_file"]]
+
         # set up data model for sidebar (list of open files)
         self.sidebar = QListWidget()
         self.sidebar.setFrameStyle(QFrame.NoFrame)
@@ -332,6 +335,8 @@ class MainWindow(QMainWindow):
         self.sidebar.model().rowsMoved.connect(self._sidebar_move_event)
         self.sidebar.itemDelegate().commitData.connect(self._sidebar_edit_event)
         self.sidebar.clicked.connect(self._update_data)
+        self.sidebar.setContextMenuPolicy(Qt.ActionsContextMenu)
+        self.sidebar.addActions(context_menu_actions)
 
         splitter = QSplitter()
         splitter.addWidget(self.sidebar)
