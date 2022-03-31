@@ -8,6 +8,7 @@ import traceback
 from functools import partial
 from pathlib import Path
 from sys import version_info
+from contextlib import contextmanager
 
 import mne
 import numpy as np
@@ -389,6 +390,15 @@ class MainWindow(QMainWindow):
             The target index.
         """
         self.model.move_data(start, row)
+
+    @contextmanager
+    def _wait_cursor(self):
+        default_cursor = self.cursor()
+        self.setCursor(Qt.WaitCursor)
+        try:
+            yield
+        finally:
+            self.setCursor(default_cursor)
 
     def data_changed(self):
         # update sidebar
