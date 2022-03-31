@@ -360,7 +360,7 @@ class MainWindow(QMainWindow):
 
         self.setAcceptDrops(True)
         self.data_changed()
-        self.infowidget.set_values(shortcuts)
+        self.infowidget.set_values(shortcuts, shortcut=True)
 
     def _excepthook(self, type, value, traceback_):
         exception_text = str(value)

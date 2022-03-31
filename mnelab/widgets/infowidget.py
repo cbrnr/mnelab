@@ -2,7 +2,8 @@
 #
 # License: BSD (3-clause)
 
-from PySide6.QtWidgets import QGridLayout, QLabel, QSizePolicy, QVBoxLayout, QWidget
+from PySide6.QtWidgets import (QGridLayout, QLabel, QSizePolicy, QVBoxLayout, QWidget,
+                               QPushButton, QHBoxLayout)
 
 
 class InfoWidget(QWidget):
@@ -22,7 +23,45 @@ class InfoWidget(QWidget):
         vbox.addStretch(1)
         self.set_values(values)
 
-    def set_values(self, values=None):
+    def _get_shortcut_style(self):
+        return " \
+            .shortcut { \
+                background-color:#ededed; \
+                border-radius:5px; \
+                border:2px solid #dcdcdc; \
+                color:#666666; \
+                font-size:15px; \
+                font-weight:bold; \
+                padding:15px 15px; \
+            } \
+        "
+
+    def _add_text_entry(self, row, left, right):
+        left = QLabel(left + ":")
+        self.grid.addWidget(left, row, 0)
+        right = QLabel(right)
+        right.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
+        self.grid.addWidget(right, row, 1)
+
+    def _add_shortcut(self, row, left, right):
+        left = left.replace('...', '')
+        left = QLabel(left)
+        spacer = QWidget()
+        self.grid.addWidget(left, row, 0)
+
+        keys = right.split('+')
+        right = QHBoxLayout()
+        for key in keys:
+            button = QPushButton(key)
+            button.setStyleSheet(self._get_shortcut_style())
+            button.setProperty("class", "shortcut")
+            right.addWidget(button)
+        spacer = QWidget()
+        spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        right.addWidget(spacer)
+        self.grid.addLayout(right, row, 1)
+
+    def set_values(self, values=None, shortcut=False):
         """Set values (and overwrite existing values).
 
         Parameters
@@ -33,16 +72,23 @@ class InfoWidget(QWidget):
         self.clear()
         if values:
             for row, (key, value) in enumerate(values.items()):
-                left = QLabel(str(key) + ":")
-                right = QLabel(str(value))
-                right.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
-                self.grid.addWidget(left, row, 0)
-                self.grid.addWidget(right, row, 1)
+                left = str(key)
+                right = str(value)
+                if shortcut:
+                    self._add_shortcut(row, left, right)
+                else:
+                    self._add_text_entry(row, left, right)
 
     def clear(self):
         """Clear all values."""
         item = self.grid.takeAt(0)
         while item:
-            item.widget().deleteLater()
+            if isinstance(item, QHBoxLayout):
+                sub = item.takeAt(0)
+                while sub:
+                    sub.widget().deleteLater()
+                    sub = item.takeAt(0)
+            else:
+                item.widget().deleteLater()
             del item
             item = self.grid.takeAt(0)
