@@ -1331,4 +1331,8 @@ class MainWindow(QMainWindow):
                 QIcon.setThemeName(style)
             else:
                 QIcon.setThemeName("light")  # fallback
+            # update shortcuts stylesheet if necessary
+            if hasattr(self, "infowidget"):
+                if self.infowidget._shortcut:
+                    self.infowidget.set_shortcuts()
         return super().event(ev)

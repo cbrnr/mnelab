@@ -27,6 +27,7 @@ class InfoWidget(QWidget):
     """
     def __init__(self, values=None):
         super().__init__()
+        self._shortcut = False
         vbox = QVBoxLayout(self)
         self.grid = QGridLayout()
         vbox.addLayout(self.grid)
@@ -99,6 +100,7 @@ class InfoWidget(QWidget):
         shortcut : bool
             Whether the values describe shortcuts or not. Defaults to False.
         """
+        self._shortcut = shortcut
         self.clear()
         self.layout().takeAt(1)  # remove vertical stretch
         if shortcut:
