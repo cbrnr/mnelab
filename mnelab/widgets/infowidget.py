@@ -2,6 +2,8 @@
 #
 # License: BSD (3-clause)
 
+import sys
+
 from PySide6.QtWidgets import (QGridLayout, QLabel, QSizePolicy, QVBoxLayout, QWidget,
                                QPushButton, QHBoxLayout)
 
@@ -59,6 +61,8 @@ class InfoWidget(QWidget):
 
         keys = right.split('+')
         for key in keys:
+            if sys.platform.startswith("darwin"):
+                key = key.replace('Ctrl', '⌘')
             button = QPushButton(key)
             button.setStyleSheet(self._get_shortcut_style())
             button.setProperty("class", "shortcut")
