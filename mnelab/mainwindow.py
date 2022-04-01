@@ -336,13 +336,6 @@ class MainWindow(QMainWindow):
         splitter = QSplitter()
         splitter.addWidget(self.sidebar)
 
-        # describe the shortcuts
-        shortcuts = dict()
-        for action in self.actions.values():
-            if not action.shortcut().isEmpty():
-                action_text = action.text().replace('&', '')
-                shortcuts[action_text] = action.shortcut().toString()
-
         self.infowidget = InfoWidget()
         splitter.addWidget(self.infowidget)
         width = splitter.size().width()
@@ -360,7 +353,7 @@ class MainWindow(QMainWindow):
 
         self.setAcceptDrops(True)
         self.data_changed()
-        self.infowidget.set_values(shortcuts, shortcut=True)
+        self.infowidget.set_shortcuts()
 
     def _excepthook(self, type, value, traceback_):
         exception_text = str(value)

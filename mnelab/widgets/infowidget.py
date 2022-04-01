@@ -21,6 +21,14 @@ class InfoWidget(QWidget):
         vbox.addLayout(self.grid)
         self.set_values(values)
 
+    def set_shortcuts(self):
+        shortcuts = {
+            "Open": "Ctrl+O",
+            "History": "Ctrl+H",
+            "Quit": "Ctrl+Q",
+        }
+        self.set_values(shortcuts, shortcut=True)
+
     def _get_shortcut_style(self):
         return " \
             .shortcut { \
