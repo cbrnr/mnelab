@@ -32,8 +32,9 @@ def data_changed(f):
     """Call self.view.data_changed method after function call."""
     @wraps(f)
     def wrapper(*args, **kwargs):
-        f(*args, **kwargs)
-        args[0].view.data_changed()
+        with args[0].view._wait_cursor():
+            f(*args, **kwargs)
+            args[0].view.data_changed()
     return wrapper
 
 

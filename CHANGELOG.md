@@ -1,4 +1,6 @@
 ## [UNRELEASED] - XXXX-XX-XX
+### Added
+- Change the default cursor to a spinning wheel when the data is changed ([#341](https://github.com/cbrnr/mnelab/pull/341) by [Guillaume Favelier](https://github.com/GuillaumeFavelier))
 
 ## [0.8.1] - 2022-03-29
 ### Fixed

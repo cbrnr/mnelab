@@ -5,6 +5,7 @@
 import multiprocessing as mp
 import sys
 import traceback
+from contextlib import contextmanager
 from functools import partial
 from pathlib import Path
 from sys import version_info
@@ -389,6 +390,19 @@ class MainWindow(QMainWindow):
             The target index.
         """
         self.model.move_data(start, row)
+
+    @contextmanager
+    def _wait_cursor(self):
+        # disabled on macOS because of outdated icon
+        if sys.platform.startswith("darwin"):
+            yield
+        else:
+            default_cursor = self.cursor()
+            self.setCursor(Qt.WaitCursor)
+            try:
+                yield
+            finally:
+                self.setCursor(default_cursor)
 
     def data_changed(self):
         # update sidebar
