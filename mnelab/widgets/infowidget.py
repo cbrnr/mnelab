@@ -18,9 +18,7 @@ class InfoWidget(QWidget):
         super().__init__()
         vbox = QVBoxLayout(self)
         self.grid = QGridLayout()
-        self.grid.setColumnStretch(1, 1)
         vbox.addLayout(self.grid)
-        vbox.addStretch(1)
         self.set_values(values)
 
     def _get_shortcut_style(self):
@@ -43,23 +41,23 @@ class InfoWidget(QWidget):
         right.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
         self.grid.addWidget(right, row, 1)
 
-    def _add_shortcut(self, row, left, right):
+    def _add_shortcut_entry(self, row, left, right):
+        hbox = QHBoxLayout()
+        hbox.addStretch(1)
+
         left = left.replace('...', '')
         left = QLabel(left)
-        spacer = QWidget()
-        self.grid.addWidget(left, row, 0)
+        hbox.addWidget(left)
 
         keys = right.split('+')
-        right = QHBoxLayout()
         for key in keys:
             button = QPushButton(key)
             button.setStyleSheet(self._get_shortcut_style())
             button.setProperty("class", "shortcut")
-            right.addWidget(button)
-        spacer = QWidget()
-        spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        right.addWidget(spacer)
-        self.grid.addLayout(right, row, 1)
+            hbox.addWidget(button)
+        hbox.addStretch(1)
+
+        self.grid.addLayout(hbox, row, 0)
 
     def set_values(self, values=None, shortcut=False):
         """Set values (and overwrite existing values).
@@ -70,12 +68,18 @@ class InfoWidget(QWidget):
             Each key/value pair in this dict is displayed in a row separated by a colon.
         """
         self.clear()
+        if shortcut:
+            self.grid.setColumnStretch(1, 0)
+            self.layout().takeAt(1)  # remove vertical stretch
+        else:
+            self.grid.setColumnStretch(1, 1)
+            self.layout().addStretch(1)
         if values:
             for row, (key, value) in enumerate(values.items()):
                 left = str(key)
                 right = str(value)
                 if shortcut:
-                    self._add_shortcut(row, left, right)
+                    self._add_shortcut_entry(row, left, right)
                 else:
                     self._add_text_entry(row, left, right)
 
@@ -86,7 +90,9 @@ class InfoWidget(QWidget):
             if isinstance(item, QHBoxLayout):
                 sub = item.takeAt(0)
                 while sub:
-                    sub.widget().deleteLater()
+                    if sub.widget() is not None:
+                        sub.widget().deleteLater()
+                    del sub
                     sub = item.takeAt(0)
             else:
                 item.widget().deleteLater()
