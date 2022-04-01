@@ -404,7 +404,7 @@ class MainWindow(QMainWindow):
         if self.model.data:
             self.infowidget.set_values(self.model.get_info())
         else:
-            self.infowidget.clear()
+            self.infowidget.set_shortcuts()
 
         # update status bar
         if self.model.data:

@@ -100,9 +100,9 @@ class InfoWidget(QWidget):
             Whether the values describe shortcuts or not. Defaults to False.
         """
         self.clear()
+        self.layout().takeAt(1)  # remove vertical stretch
         if shortcut:
             self.grid.setColumnStretch(1, 0)
-            self.layout().takeAt(1)  # remove vertical stretch
         else:
             self.grid.setColumnStretch(1, 1)
             self.layout().addStretch(1)
