@@ -74,6 +74,8 @@ class InfoWidget(QWidget):
         ----------
         values : dict
             Each key/value pair in this dict is displayed in a row separated by a colon.
+        shortcut : bool
+            Whether the values describe shortcuts or not. Defaults to False.
         """
         self.clear()
         if shortcut:
