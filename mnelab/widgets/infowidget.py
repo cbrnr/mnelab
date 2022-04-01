@@ -38,7 +38,7 @@ class InfoWidget(QWidget):
                 color:#666666; \
                 font-size:15px; \
                 font-weight:bold; \
-                padding:15px 15px; \
+                padding:8px 8px; \
             } \
         "
 
