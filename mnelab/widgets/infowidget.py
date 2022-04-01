@@ -7,6 +7,8 @@ import sys
 from PySide6.QtWidgets import (QGridLayout, QLabel, QSizePolicy, QVBoxLayout, QWidget,
                                QPushButton, QHBoxLayout)
 
+from ..utils import interface_style
+
 
 class InfoWidget(QWidget):
     """Display basic file information in a table (two columns).
@@ -32,17 +34,32 @@ class InfoWidget(QWidget):
         self.set_values(shortcuts, shortcut=True)
 
     def _get_shortcut_style(self):
-        return " \
+        stylesheet = " \
             .shortcut { \
-                background-color:#ededed; \
+        "
+        style = interface_style()
+        if style is None:
+            style = 'light'
+        if style == 'light':
+            stylesheet += "  \
+                    background-color:#ededed; \
+                    color:#666666; \
+                    border:2px solid #dcdcdc; \
+            "
+        else:
+            stylesheet += "  \
+                    background-color:#131313; \
+                    color:#9a9a9a; \
+                    border:2px solid #242424; \
+            "
+        stylesheet += " \
                 border-radius:5px; \
-                border:2px solid #dcdcdc; \
-                color:#666666; \
                 font-size:15px; \
                 font-weight:bold; \
                 padding:8px 8px; \
             } \
         "
+        return stylesheet
 
     def _add_text_entry(self, row, left, right):
         left = QLabel(left + ":")
