@@ -34,9 +34,7 @@ class InfoWidget(QWidget):
         self.set_values(shortcuts, shortcut=True)
 
     def _get_shortcut_style(self):
-        stylesheet = " \
-            .shortcut { \
-        "
+        stylesheet = ".shortcut {"
         style = interface_style()
         if style is None:
             style = 'light'
@@ -44,21 +42,17 @@ class InfoWidget(QWidget):
             stylesheet += "  \
                     background-color:#ededed; \
                     color:#666666; \
-                    border:2px solid #dcdcdc; \
-            "
+                    border:2px solid #dcdcdc;"
         else:
             stylesheet += "  \
                     background-color:#131313; \
                     color:#9a9a9a; \
-                    border:2px solid #242424; \
-            "
+                    border:2px solid #242424;"
         stylesheet += " \
                 border-radius:5px; \
                 font-size:15px; \
                 font-weight:bold; \
-                padding:8px 8px; \
-            } \
-        "
+                padding:8px 8px;}"
         return stylesheet
 
     def _add_text_entry(self, row, left, right):
