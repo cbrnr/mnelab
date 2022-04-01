@@ -277,7 +277,7 @@ class MainWindow(QMainWindow):
 
         view_menu = self.menuBar().addMenu("&View")
         self.actions["history"] = view_menu.addAction("&History", self.show_history,
-                                                      QKeySequence(Qt.CTRL + Qt.Key_H))
+                                                      QKeySequence(Qt.CTRL + Qt.Key_Y))
         self.actions["toolbar"] = view_menu.addAction("&Toolbar", self._toggle_toolbar)
         self.actions["toolbar"].setCheckable(True)
         self.actions["statusbar"] = view_menu.addAction("&Statusbar",

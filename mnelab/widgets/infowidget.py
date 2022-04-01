@@ -36,7 +36,7 @@ class InfoWidget(QWidget):
     def set_shortcuts(self):
         shortcuts = {
             "Open": "Ctrl+O",
-            "History": "Ctrl+H",
+            "History": "Ctrl+Y",
             "Quit": "Ctrl+Q",
         }
         self.set_values(shortcuts, shortcut=True)
