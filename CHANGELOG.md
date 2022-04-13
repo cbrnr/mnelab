@@ -2,6 +2,9 @@
 ### Added
 - Change the default cursor to a spinning wheel when the data is changed ([#341](https://github.com/cbrnr/mnelab/pull/341) by [Guillaume Favelier](https://github.com/GuillaumeFavelier))
 
+### Fixed
+- Fix XDF marker stream detection and loading ([#345](https://github.com/cbrnr/mnelab/pull/345) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [0.8.1] - 2022-03-29
 ### Fixed
 - Fix loading of application icon ([#339](https://github.com/cbrnr/mnelab/pull/339) by [Guillaume Favelier](https://github.com/GuillaumeFavelier))
