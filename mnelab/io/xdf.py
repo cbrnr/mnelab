@@ -139,7 +139,8 @@ def read_raw_xdf(
     raw._filenames = [fname]
 
     for stream_id, stream in streams.items():
-        if not (stream["info"]["nominal_srate"] == ["0"] and stream["info"]["channel_format"] == ["string"]):  # noqa: E501
+        srate = float(stream["info"]["nominal_srate"][0])
+        if not (srate == 0 and stream["info"]["channel_format"] == ["string"]):
             continue
         onsets = stream["time_stamps"] - first_time
         prefix = f"{stream_id}-" if prefix_markers else ""
