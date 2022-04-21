@@ -138,9 +138,10 @@ def read_raw_xdf(
     raw = mne.io.RawArray(all_time_series_scaled, info)
     raw._filenames = [fname]
 
+    # convert marker streams to annotations
     for stream_id, stream in streams.items():
         srate = float(stream["info"]["nominal_srate"][0])
-        if not (srate == 0 and stream["info"]["channel_format"] == ["string"]):
+        if srate != 0:  # marker streams with regular srate are not supported yet
             continue
         onsets = stream["time_stamps"] - first_time
         prefix = f"{stream_id}-" if prefix_markers else ""
