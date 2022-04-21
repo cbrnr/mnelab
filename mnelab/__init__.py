@@ -14,7 +14,7 @@ from PySide6.QtWidgets import QApplication
 from .mainwindow import MainWindow
 from .model import Model
 
-__version__ = "0.8.3"
+__version__ = "0.9.0.dev0"
 
 
 def main():
