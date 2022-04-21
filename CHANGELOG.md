@@ -1,4 +1,6 @@
-## [UNRELEASED] - xxxx-xx-xx
+## [0.8.3] - 2022-04-21
+### Fixed
+- Fix XDF marker stream regression ([#346](https://github.com/cbrnr/mnelab/pull/346) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [0.8.2] - 2022-04-13
 ### Added
