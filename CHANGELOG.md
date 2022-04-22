@@ -1,5 +1,16 @@
 ## [UNRELEASED] - XXXX-XX-XX
 
+## [0.8.3] - 2022-04-21
+### Fixed
+- Fix XDF marker stream regression ([#346](https://github.com/cbrnr/mnelab/pull/346) by [Clemens Brunner](https://github.com/cbrnr))
+
+## [0.8.2] - 2022-04-13
+### Added
+- Change the default cursor to a spinning wheel when the data is changed ([#341](https://github.com/cbrnr/mnelab/pull/341) by [Guillaume Favelier](https://github.com/GuillaumeFavelier))
+
+### Fixed
+- Fix XDF marker stream detection and loading ([#345](https://github.com/cbrnr/mnelab/pull/345) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [0.8.1] - 2022-03-29
 ### Fixed
 - Fix loading of application icon ([#339](https://github.com/cbrnr/mnelab/pull/339) by [Guillaume Favelier](https://github.com/GuillaumeFavelier))
