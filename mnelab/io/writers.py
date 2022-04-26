@@ -60,10 +60,7 @@ def write_edf(fname, raw):
     fs = raw.info["sfreq"]
     nchan = raw.info["nchan"]
     ch_names = raw.info["ch_names"]
-    if raw.info["meas_date"] is not None:
-        meas_date = raw.info["meas_date"]
-    else:
-        meas_date = None
+    meas_date = raw.info["meas_date"]
     hp, lp = raw.info["highpass"], raw.info["lowpass"]
     hp = "DC" if hp == 0 else f"{hp:.0f} Hz"
     lp = f"{lp:.0f} Hz"
