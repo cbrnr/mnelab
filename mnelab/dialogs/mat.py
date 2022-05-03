@@ -37,8 +37,11 @@ def populate_tree(parent, nodes):
             else:
                 item.setText(1, type(v).__name__)
                 if isinstance(v, np.ndarray):
+                    item.setText(1, f"{type(v).__name__} ({v.dtype.name})")  # add dtype
                     item.setText(2, " × ".join(map(str, v.shape)))
-                    if v.ndim != 2:  # only two-dimensional arrays can be loaded
+                    if v.ndim > 2:  # arrays with more than two dimensions cannot be loaded
+                        item.setFlags(Qt.NoItemFlags)
+                    elif v.dtype not in (np.float32, np.float64):  # must be numeric types
                         item.setFlags(Qt.NoItemFlags)
                 else:
                     item.setFlags(Qt.NoItemFlags)
@@ -53,8 +56,8 @@ class MatDialog(QDialog):
         self.tree = QTreeWidget()
         self.tree.setColumnCount(4)
         self.tree.setHeaderLabels(["Name", "Type", "Shape", "Value"])
-        self.tree.setColumnWidth(0, 175)
-        self.tree.setColumnWidth(1, 100)
+        self.tree.setColumnWidth(0, 200)
+        self.tree.setColumnWidth(1, 125)
         self.tree.setColumnWidth(2, 125)
 
         self.root = QTreeWidgetItem(self.tree)
@@ -106,6 +109,8 @@ class MatDialog(QDialog):
 
     @property
     def transpose(self):
+        if not self._transpose.isEnabled():
+            return False
         return self._transpose.isChecked()
 
     @Slot()
@@ -115,7 +120,11 @@ class MatDialog(QDialog):
         if (items := self.tree.selectedItems()):
             self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(True)
             shape = [int(dim) for dim in items[0].text(2).split(" × ")]
-            if shape[0] > shape[1]:  # check transpose if there are more rows than columns
-                self._transpose.setChecked(True)
+            if len(shape) == 1:
+                self._transpose.setEnabled(False)
             else:
-                self._transpose.setChecked(False)
+                self._transpose.setEnabled(True)
+                if shape[0] > shape[1]:  # transpose if there are more rows than columns
+                    self._transpose.setChecked(True)
+                else:
+                    self._transpose.setChecked(False)
