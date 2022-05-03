@@ -2,6 +2,7 @@ import re
 
 from mne import create_info
 from mne.io import RawArray
+from numpy import atleast_2d
 from scipy.io import loadmat
 
 
@@ -21,7 +22,7 @@ def read_raw_mat(fname, variable, fs, transpose=False, *args, **kwargs):
         Whether to transpose the data.
     """
     mat = loadmat(fname, simplify_cells=True)
-    data = _get_dict_value(mat, variable.split("."))
+    data = atleast_2d(_get_dict_value(mat, variable.split(".")))
     if transpose:
         data = data.T
     info = create_info(data.shape[0], fs, "eeg")
