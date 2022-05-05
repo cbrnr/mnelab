@@ -2,6 +2,9 @@
 ### Added
 - Support importing 1D arrays from .mat files ([#348](https://github.com/cbrnr/mnelab/pull/348) by [Clemens Brunner](https://github.com/cbrnr))
 
+### Fixed
+- Restrict XDF marker channels to irregular sampling rate and a single channel (but arbitrary data type) ([#349](https://github.com/cbrnr/mnelab/pull/349) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [0.8.3] - 2022-04-21
 ### Fixed
 - Fix XDF marker stream regression ([#346](https://github.com/cbrnr/mnelab/pull/346) by [Clemens Brunner](https://github.com/cbrnr))
