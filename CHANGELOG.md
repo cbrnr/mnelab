@@ -1,4 +1,4 @@
-## [UNRELEASED] - XXXX-XX-XX
+## [0.8.4] - 2022-05-05
 ### Added
 - Support importing 1D arrays from .mat files ([#348](https://github.com/cbrnr/mnelab/pull/348) by [Clemens Brunner](https://github.com/cbrnr))
 
