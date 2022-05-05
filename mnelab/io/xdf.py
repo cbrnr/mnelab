@@ -141,7 +141,9 @@ def read_raw_xdf(
     # convert marker streams to annotations
     for stream_id, stream in streams.items():
         srate = float(stream["info"]["nominal_srate"][0])
-        if srate != 0:  # marker streams with regular srate are not supported yet
+        n_chans = int(stream["info"]["channel_count"][0])
+        # marker streams with regular srate or more than 1 channel are not supported yet
+        if srate != 0 or n_chans > 1:
             continue
         onsets = stream["time_stamps"] - first_time
         prefix = f"{stream_id}-" if prefix_markers else ""
