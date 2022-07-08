@@ -5,6 +5,39 @@
 from PySide6.QtWidgets import QGridLayout, QLabel, QSizePolicy, QVBoxLayout, QWidget
 
 
+def _make_shortcuts_table(names, shortcuts, style="light"):
+    text_color = "#777"
+    background_color = "#fff" if style == "light" else "#000"
+    html = f"""<!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          html {{ font-size: 16px; }}
+          kbd {{
+            background-color: {background_color};
+            font-weight: 600;
+            color: {text_color};
+          }}
+          table {{ color: {text_color}; }}
+        </style>
+      </head>
+      <body>
+        <table>
+          <tbody>"""
+    for name, shortcut in zip(names, shortcuts):
+        modifier, key = shortcut
+        html += (
+            f'\n            <tr><td align="right" width="50%">{name} </td>'
+            f'<td><kbd>{modifier}</kbd> '
+            f'<kbd>{key}</kbd></td></tr>'
+        )
+    html += """\n          </tbody>
+        </table>
+      </body>
+    </html>"""
+    return html
+
+
 class InfoWidget(QWidget):
     """Display basic file information in a table (two columns).
 
@@ -46,3 +79,14 @@ class InfoWidget(QWidget):
             item.widget().deleteLater()
             del item
             item = self.grid.takeAt(0)
+
+
+class EmptyWidget(QWidget):
+    def __init__(self):
+        super().__init__()
+        shortcuts = _make_shortcuts_table(["Open", "Close", "History"], ["⌘O", "⌘W", "⌘Y"])
+        text = QLabel(shortcuts)
+        vbox = QVBoxLayout(self)
+        vbox.addStretch()
+        vbox.addWidget(text)
+        vbox.addStretch()

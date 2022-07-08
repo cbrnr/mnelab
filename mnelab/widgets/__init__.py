@@ -2,4 +2,4 @@
 #
 # License: BSD (3-clause)
 
-from .infowidget import InfoWidget
+from .infowidget import EmptyWidget, InfoWidget
