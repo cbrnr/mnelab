@@ -2,19 +2,18 @@
 #
 # License: BSD (3-clause)
 
+from PySide6.QtGui import QKeySequence
 from PySide6.QtWidgets import QGridLayout, QLabel, QSizePolicy, QVBoxLayout, QWidget
 
 
-def _make_shortcuts_table(names, shortcuts, style="light"):
+def _make_shortcuts_table(actions):
     text_color = "#777"
-    background_color = "#fff" if style == "light" else "#000"
     html = f"""<!DOCTYPE html>
     <html>
       <head>
         <style>
           html {{ font-size: 16px; }}
           kbd {{
-            background-color: {background_color};
             font-weight: 600;
             color: {text_color};
           }}
@@ -24,7 +23,9 @@ def _make_shortcuts_table(names, shortcuts, style="light"):
       <body>
         <table>
           <tbody>"""
-    for name, shortcut in zip(names, shortcuts):
+    for action in actions:
+        name = action.text().replace("&", "").replace(".", "")
+        shortcut = action.shortcut().toString(format=QKeySequence.NativeText)
         modifier, key = shortcut
         html += (
             f'\n            <tr><td align="right" width="50%">{name} </td>'
@@ -82,10 +83,9 @@ class InfoWidget(QWidget):
 
 
 class EmptyWidget(QWidget):
-    def __init__(self):
+    def __init__(self, actions):
         super().__init__()
-        shortcuts = _make_shortcuts_table(["Open", "Close", "History"], ["⌘O", "⌘W", "⌘Y"])
-        text = QLabel(shortcuts)
+        text = QLabel(_make_shortcuts_table(actions))
         vbox = QVBoxLayout(self)
         vbox.addStretch()
         vbox.addWidget(text)

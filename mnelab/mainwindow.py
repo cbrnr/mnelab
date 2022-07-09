@@ -7,6 +7,7 @@ import sys
 import traceback
 from contextlib import contextmanager
 from functools import partial
+from operator import itemgetter
 from pathlib import Path
 from sys import version_info
 
@@ -278,7 +279,11 @@ class MainWindow(QMainWindow):
         )
 
         view_menu = self.menuBar().addMenu("&View")
-        self.actions["history"] = view_menu.addAction("&History", self.show_history)
+        self.actions["history"] = view_menu.addAction(
+            "&History",
+            self.show_history,
+            QKeySequence(Qt.CTRL | Qt.Key_Y),
+        )
         self.actions["toolbar"] = view_menu.addAction("&Toolbar", self._toggle_toolbar)
         self.actions["toolbar"].setCheckable(True)
         self.actions["statusbar"] = view_menu.addAction("&Statusbar",
@@ -340,7 +345,8 @@ class MainWindow(QMainWindow):
 
         self.infowidget = QStackedWidget()
         self.infowidget.addWidget(InfoWidget())
-        self.infowidget.addWidget(EmptyWidget())
+        emptywidget = EmptyWidget(itemgetter("open_file", "history")(self.actions))
+        self.infowidget.addWidget(emptywidget)
         splitter.addWidget(self.infowidget)
         width = splitter.size().width()
         splitter.setSizes((int(width * 0.3), int(width * 0.7)))
