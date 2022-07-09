@@ -7,6 +7,7 @@ import sys
 import traceback
 from contextlib import contextmanager
 from functools import partial
+from operator import itemgetter
 from pathlib import Path
 from sys import version_info
 
@@ -24,6 +25,7 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QSplitter,
+    QStackedWidget,
 )
 from pyxdf import resolve_streams
 
@@ -42,7 +44,7 @@ from .viz import (
     plot_evoked_comparison,
     plot_evoked_topomaps,
 )
-from .widgets import InfoWidget
+from .widgets import EmptyWidget, InfoWidget
 
 
 class MainWindow(QMainWindow):
@@ -277,7 +279,11 @@ class MainWindow(QMainWindow):
         )
 
         view_menu = self.menuBar().addMenu("&View")
-        self.actions["history"] = view_menu.addAction("&History", self.show_history)
+        self.actions["history"] = view_menu.addAction(
+            "&History",
+            self.show_history,
+            QKeySequence(Qt.CTRL | Qt.Key_Y),
+        )
         self.actions["toolbar"] = view_menu.addAction("&Toolbar", self._toggle_toolbar)
         self.actions["toolbar"].setCheckable(True)
         self.actions["statusbar"] = view_menu.addAction("&Statusbar",
@@ -337,7 +343,10 @@ class MainWindow(QMainWindow):
         splitter = QSplitter()
         splitter.addWidget(self.sidebar)
 
-        self.infowidget = InfoWidget()
+        self.infowidget = QStackedWidget()
+        self.infowidget.addWidget(InfoWidget())
+        emptywidget = EmptyWidget(itemgetter("open_file", "history")(self.actions))
+        self.infowidget.addWidget(emptywidget)
         splitter.addWidget(self.infowidget)
         width = splitter.size().width()
         splitter.setSizes((int(width * 0.3), int(width * 0.7)))
@@ -415,9 +424,10 @@ class MainWindow(QMainWindow):
 
         # update info widget
         if self.model.data:
-            self.infowidget.set_values(self.model.get_info())
+            self.infowidget.setCurrentIndex(0)
+            self.infowidget.widget(0).set_values(self.model.get_info())
         else:
-            self.infowidget.clear()
+            self.infowidget.setCurrentIndex(1)
 
         # update status bar
         if self.model.data:

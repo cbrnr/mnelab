@@ -2,7 +2,44 @@
 #
 # License: BSD (3-clause)
 
+from PySide6.QtGui import QKeySequence
 from PySide6.QtWidgets import QGridLayout, QLabel, QSizePolicy, QVBoxLayout, QWidget
+
+
+def _make_shortcuts_table(actions):
+    text_color = "#777"
+    html = f"""<!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          html {{ font-size: 16px; }}
+          kbd {{
+            font-weight: 600;
+            color: {text_color};
+          }}
+          table {{ color: {text_color}; }}
+        </style>
+      </head>
+      <body>
+        <table>
+          <tbody>"""
+    for action in actions:
+        name = action.text().replace("&", "").replace(".", "")
+        shortcut = action.shortcut().toString(format=QKeySequence.NativeText)
+        modifier, key = shortcut[:-1].strip(), shortcut[-1]
+        html += (
+            f'\n            <tr><td align="right" width="50%">{name} </td>'
+        )
+        if modifier[-1] == "+":
+            html += f'<td><kbd>{modifier[:-1]}</kbd>+'
+        else:
+            html += f'<td><kbd>{modifier}</kbd> '
+        html += f'<kbd>{key}</kbd></td></tr>'
+    html += """\n          </tbody>
+        </table>
+      </body>
+    </html>"""
+    return html
 
 
 class InfoWidget(QWidget):
@@ -46,3 +83,13 @@ class InfoWidget(QWidget):
             item.widget().deleteLater()
             del item
             item = self.grid.takeAt(0)
+
+
+class EmptyWidget(QWidget):
+    def __init__(self, actions):
+        super().__init__()
+        text = QLabel(_make_shortcuts_table(actions))
+        vbox = QVBoxLayout(self)
+        vbox.addStretch()
+        vbox.addWidget(text)
+        vbox.addStretch()
