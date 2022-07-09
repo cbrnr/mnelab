@@ -26,7 +26,7 @@ def _make_shortcuts_table(actions):
     for action in actions:
         name = action.text().replace("&", "").replace(".", "")
         shortcut = action.shortcut().toString(format=QKeySequence.NativeText)
-        modifier, key = shortcut
+        modifier, key = shortcut[:-1].strip().replace("+", ""), shortcut[-1]
         html += (
             f'\n            <tr><td align="right" width="50%">{name} </td>'
             f'<td><kbd>{modifier}</kbd> '
