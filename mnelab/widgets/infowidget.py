@@ -5,7 +5,6 @@
 from PySide6.QtGui import QKeySequence
 from PySide6.QtWidgets import QGridLayout, QLabel, QSizePolicy, QVBoxLayout, QWidget
 
-
 dev_label = (
     '<p align="right"><font color="red"><small>Development Version</small></font></p>'
 )
