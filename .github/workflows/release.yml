@@ -10,21 +10,21 @@ jobs:
     name: Style
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-    - uses: pre-commit/action@v2.0.3
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
+    - uses: pre-commit/action@v3.0.0
 
   build-wheel:
     name: Build wheel
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
     - name: Build wheel
       run: |
         pip install wheel
         pip wheel -w ~/.wheelhouse .
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         path: ~/.wheelhouse/mnelab*.whl
 
@@ -32,15 +32,15 @@ jobs:
     name: Build sdist
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.8"
       - name: Build sdist
         run: |
           pip install build
           python -m build --sdist
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           path: dist/*.tar.gz
 
@@ -49,11 +49,11 @@ jobs:
     needs: [style, build-wheel, build-sdist]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: artifact
           path: dist
-      - uses: pypa/gh-action-pypi-publish@v1.4.2
+      - uses: pypa/gh-action-pypi-publish@v1.5
         with:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
