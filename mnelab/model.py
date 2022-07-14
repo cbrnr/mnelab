@@ -380,7 +380,7 @@ class Model:
         else:
             ica = "-"
 
-        size_disk = f"{fsize:.2f} MB" if fname else "-"
+        size_disk = f"{fsize:.2f}\u2009MB" if fname else "-"
 
         if hasattr(data, "annotations") and data.annotations is not None:
             annots = len(data.annotations.description)
@@ -392,10 +392,10 @@ class Model:
                 "File type": ftype if ftype else "-",
                 "Data type": dtype,
                 "Size on disk": size_disk,
-                "Size in memory": f"{data.get_data().nbytes / 1024**2:.2f} MB",
+                "Size in memory": f"{data.get_data().nbytes / 1024**2:.2f}\u2009MB",
                 "Channels": f"{nchan} (" + chans + ")",
                 "Samples": samples,
-                "Sampling frequency": f"{fs:.6g} Hz",
+                "Sampling frequency": f"{fs:.6g}\u2009Hz",
                 "Length": length,
                 "Events": events,
                 "Annotations": annots,
