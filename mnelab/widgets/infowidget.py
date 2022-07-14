@@ -6,6 +6,11 @@ from PySide6.QtGui import QKeySequence
 from PySide6.QtWidgets import QGridLayout, QLabel, QSizePolicy, QVBoxLayout, QWidget
 
 
+dev_label = (
+    '<p align="right"><font color="red"><small>Development Version</small></font></p>'
+)
+
+
 def _make_shortcuts_table(actions):
     text_color = "#777"
     html = f"""<!DOCTYPE html>
@@ -51,6 +56,8 @@ class InfoWidget(QWidget):
         Each key/value pair in this dict will be displayed in a row, separated by a colon.
     """
     def __init__(self, values=None):
+        from .. import __version__
+
         super().__init__()
         vbox = QVBoxLayout(self)
         self.grid = QGridLayout()
@@ -58,6 +65,9 @@ class InfoWidget(QWidget):
         vbox.addLayout(self.grid)
         vbox.addStretch(1)
         self.set_values(values)
+        if __version__.split(".")[-1].startswith("dev"):
+            vbox.addStretch()
+            vbox.addWidget(QLabel(dev_label))
 
     def set_values(self, values=None):
         """Set values (and overwrite existing values).
@@ -87,9 +97,13 @@ class InfoWidget(QWidget):
 
 class EmptyWidget(QWidget):
     def __init__(self, actions):
+        from .. import __version__
+
         super().__init__()
         text = QLabel(_make_shortcuts_table(actions))
         vbox = QVBoxLayout(self)
         vbox.addStretch()
         vbox.addWidget(text)
         vbox.addStretch()
+        if __version__.split(".")[-1].startswith("dev"):
+            vbox.addWidget(QLabel(dev_label))
