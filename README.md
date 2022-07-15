@@ -32,7 +32,7 @@ Optional dependencies provide additional features:
 - [pybv](https://pybv.readthedocs.io/en/stable/) ≥ 0.7.4 (BrainVision VHDR/VMRK/EEG export)
 
 ### Installation
-You can install MNELAB with:
+You can install MNELAB with [pip](https://pip.pypa.io/en/stable/):
 
 ```
 pip install mnelab
