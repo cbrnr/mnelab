@@ -5,7 +5,7 @@
 
 ![](https://raw.githubusercontent.com/cbrnr/mnelab/main/mnelab/images/mnelab_logo.png)
 
-MNELAB is a graphical user interface (GUI) for [MNE](https://github.com/mne-tools/mne-python), a Python package for EEG/MEG analysis.
+MNELAB is a graphical user interface (GUI) for [MNE-Python](https://mne.tools/stable/index.html), a Python package for EEG/MEG analysis.
 
 ![](https://raw.githubusercontent.com/cbrnr/mnelab/main/mnelab.png)
 
@@ -17,19 +17,19 @@ Check out the [changelog](https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md
 
 ### Dependencies
 MNELAB requires Python >= 3.8 and the following packages:
-- [mne](https://github.com/mne-tools/mne-python) >= 0.24.0
+- [mne](https://mne.tools/stable/index.html) >= 0.24.0
 - [PySide6](https://www.qt.io/qt-for-python) >= 6.2.0
 - [numpy](http://www.numpy.org/) >= 1.14.0
-- [scipy](https://www.scipy.org/scipylib/index.html) >= 1.0.0
+- [scipy](https://scipy.org/) >= 1.0.0
 - [matplotlib](https://matplotlib.org/) >= 3.5.0
 - [pyxdf](https://github.com/xdf-modules/xdf-Python) >= 1.16.0
 - [pyobjc-framework-Cocoa](https://pyobjc.readthedocs.io/en/latest/) >= 5.2.0 (macOS only)
 
-Optional dependencies provide additional features if installed:
+Optional dependencies provide additional features:
 - [scikit-learn](https://scikit-learn.org/stable/) >= 0.20.0 (ICA computation with FastICA)
 - [python-picard](https://pierreablin.github.io/picard/) >= 0.4.0 (ICA computation with PICARD)
-- [pyEDFlib](https://github.com/holgern/pyedflib) >= 0.1.15 (EDF/BDF export)
-- [pybv](https://github.com/bids-standard/pybv) 0.4.0 (BrainVision VHDR/VMRK/EEG export)
+- [pyEDFlib](https://pyedflib.readthedocs.io/en/latest/) >= 0.1.15 (EDF/BDF export)
+- [pybv](https://pybv.readthedocs.io/en/stable/) 0.4.0 (BrainVision VHDR/VMRK/EEG export)
 
 ### Installation
 You can install MNELAB with:
@@ -44,13 +44,19 @@ If you want to use all MNELAB features, the full package including optional depe
 pip install mnelab[full]
 ```
 
-You can also install the latest development version as follows:
+You can also use [pipx](https://pypa.github.io/pipx/) to install MNELAB in a completely isolated environment:
+
+```
+pipx install mnelab
+```
+
+If you want the latest development version, use the following command:
 
 ```
 pip install git+https://github.com/cbrnr/mnelab
 ```
 
-Then start MNELAB in a terminal with `mnelab` or `python -m mnelab`.
+Then start MNELAB in a terminal with `mnelab`.
 
 ### Contributing
 The [contributing guide](https://github.com/cbrnr/mnelab/blob/main/CONTRIBUTING.md) contains detailed instructions on how to contribute to MNELAB.
