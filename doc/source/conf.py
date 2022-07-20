@@ -4,20 +4,22 @@
 # full list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-project = 'MNELAB'
+project = "MNELAB"
+copyright = "MNELAB Developers"
 
-extensions = ['myst_parser']
+extensions = ["myst_parser"]
 
 source_suffix = {
-    '.rst': 'restructuredtext',
-    '.md': 'markdown',
+    ".rst": "restructuredtext",
+    ".md": "markdown",
 }
 
-html_theme = 'furo'
+html_theme = "furo"
 html_title = project
-html_logo = '../../mnelab/images/mnelab_logo.png'
+html_logo = "../../mnelab/images/mnelab_logo.png"
 html_theme_options = {
-    'sidebar_hide_name': True,
+    "sidebar_hide_name": True,
+    "top_of_page_button": None,
 }
 
 templates_path = ["_templates"]
