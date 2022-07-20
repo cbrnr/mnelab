@@ -5,6 +5,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 project = "MNELAB"
+copyright = "MNELAB Developers"
 
 extensions = ["myst_parser"]
 
