@@ -1,5 +1,5 @@
-![Python](https://img.shields.io/pypi/pyversions/mnelab.svg?logo=python)
-[![PyPI Version](https://img.shields.io/pypi/v/mnelab)](https://pypi.org/project/mnelab/)
+![Python](https://img.shields.io/pypi/pyversions/mnelab.svg?logo=python&logoColor=white)
+[![PyPI](https://img.shields.io/pypi/v/mnelab)](https://pypi.org/project/mnelab/)
 [![Docs](https://readthedocs.org/projects/mnelab/badge/?version=latest)](https://mnelab.readthedocs.io/)
 [![License](https://img.shields.io/github/license/cbrnr/mnelab)](LICENSE)
 
