@@ -10,4 +10,4 @@ def test_split_name_ext(ext):
 
 
 def test_split_name_ext_unsupported():
-    assert split_name_ext("test.xxx") is None
+    assert split_name_ext("test.xxx") == ("test.xxx", None)
