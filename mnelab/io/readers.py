@@ -56,6 +56,7 @@ def split_name_ext(fname):
         ext = "".join(suffixes[i:]).lower()
         if ext in readers.keys():
             return Path(fname).name[:-len(ext)], ext
+    return fname, None  # unknown file extension
 
 
 def read_raw(fname, *args, **kwargs):
@@ -79,6 +80,9 @@ def read_raw(fname, *args, **kwargs):
     _, ext = split_name_ext(fname)
     if ext is not None:
         return readers[ext](fname, *args, **kwargs)
-    raise ValueError(f"Unknown file type {''.join(Path(fname).suffixes)}).")
+    else:
+        ext = "".join(Path(fname).suffixes)
+        msg = f"Unsupported file type ({ext})." if ext else "Unsupported file type."
+        raise ValueError(msg)
     # here we could inspect the file signature to determine its type, which would allow us
     # to read file independently of their extensions
