@@ -1,4 +1,4 @@
-## [UNRELEASED] - xxxx-xx-xx
+## [UNRELEASED] - 2022-10-08
 ### Added
 - Show some keyboard shortcuts when no file is open ([#350](https://github.com/cbrnr/mnelab/pull/350) by [Clemens Brunner](https://github.com/cbrnr))
 - Always show a notification when running the dev version ([#351](https://github.com/cbrnr/mnelab/pull/351) by [Clemens Brunner](https://github.com/cbrnr))
