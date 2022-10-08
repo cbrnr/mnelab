@@ -1,3 +1,5 @@
+## [UNRELEASED] - YYYY-MM-DD
+
 ## [0.8.5] - 2022-10-08
 ### Added
 - Show some keyboard shortcuts when no file is open ([#350](https://github.com/cbrnr/mnelab/pull/350) by [Clemens Brunner](https://github.com/cbrnr))
