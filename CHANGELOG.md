@@ -1,4 +1,6 @@
 ## [UNRELEASED] - YYYY-MM-DD
+### Added
+- Support more microvolt unit abbreviations in XDF import ([#365](https://github.com/cbrnr/mnelab/pull/365) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [0.8.5] - 2022-10-08
 ### Added
