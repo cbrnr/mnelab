@@ -132,7 +132,8 @@ def read_raw_xdf(
 
     info = mne.create_info(ch_names=labels_all, sfreq=fs, ch_types=types_all)
 
-    scale = np.array([1e-6 if u in ("microvolt", "microvolts") else 1 for u in units_all])
+    microvolts = ("microvolt", "microvolts", "µV", "μV", "uV")
+    scale = np.array([1e-6 if u in microvolts else 1 for u in units_all])
     all_time_series_scaled = (all_time_series * scale).T
 
     raw = mne.io.RawArray(all_time_series_scaled, info)
