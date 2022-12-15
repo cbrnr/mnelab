@@ -18,11 +18,11 @@ Check out the [changelog](https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md
 
 ### Dependencies
 MNELAB requires Python ≥ 3.8 and the following packages:
-- [mne](https://mne.tools/stable/index.html) ≥ 1.0.0
-- [PySide6](https://www.qt.io/qt-for-python) ≥ 6.2.0
+- [mne](https://mne.tools/stable/index.html) ≥ 1.2.0
+- [PySide6](https://www.qt.io/qt-for-python) ≥ 6.4.0
 - [numpy](http://www.numpy.org/) ≥ 1.20.0
 - [scipy](https://scipy.org/) ≥ 1.7.0
-- [matplotlib](https://matplotlib.org/) ≥ 3.5.0
+- [matplotlib](https://matplotlib.org/) ≥ 3.6.2
 - [pyxdf](https://github.com/xdf-modules/xdf-Python) ≥ 1.16.0
 - [pyobjc-framework-Cocoa](https://pyobjc.readthedocs.io/en/latest/) ≥ 7.3.0 (macOS only)
 
