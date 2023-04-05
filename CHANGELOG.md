@@ -1,4 +1,4 @@
-## [UNRELEASED] - YYYY-MM-DD
+## [0.8.6] - 2023-04-05
 ### Added
 - Add Python 3.11 support ([#364](https://github.com/cbrnr/mnelab/pull/364) by [Clemens Brunner](https://github.com/cbrnr))
 - Support more microvolt unit abbreviations in XDF import ([#365](https://github.com/cbrnr/mnelab/pull/365) by [Clemens Brunner](https://github.com/cbrnr))
