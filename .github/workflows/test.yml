@@ -49,7 +49,7 @@ jobs:
     - uses: actions/download-artifact@v3
       with:
         name: mnelab-wheel
-    - uses: pyvista/setup-headless-display-action@v2
+    - uses: pyvista/setup-headless-display-action@main
       with:
         qt: true
         pyvista: false
