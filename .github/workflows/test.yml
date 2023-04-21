@@ -49,7 +49,7 @@ jobs:
     - uses: actions/download-artifact@v3
       with:
         name: mnelab-wheel
-    - bash: |
+    - bash: |  # debug
         set -e
         LD_DEBUG=libs python -c "from PySide6.QtWidgets import QApplication, QWidget; app = QApplication([]); import matplotlib; matplotlib.use('QtAgg'); import matplotlib.pyplot as plt; plt.figure()"
     - uses: pyvista/setup-headless-display-action@v2
