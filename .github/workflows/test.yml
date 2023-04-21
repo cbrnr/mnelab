@@ -49,13 +49,10 @@ jobs:
     - uses: actions/download-artifact@v3
       with:
         name: mnelab-wheel
-    - name: Install Linux packages
-      run: |
-        sudo apt update
-        sudo apt install libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
-                         libxkbcommon-x11-0 xvfb libxcb-randr0 \
-                         libxcb-render-util0 libxcb-xinerama0 libegl1 \
-                         libxcb-shape0
+    - uses: pyvista/setup-headless-display-action@v2
+      with:
+        qt: true
+        pyvista: false
     - name: Install Python packages
       run: |
         pip install $(echo mnelab*.whl)
