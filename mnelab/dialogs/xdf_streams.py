@@ -38,14 +38,16 @@ class XDFStreamsDialog(QDialog):
             if i in disabled:
                 for col in range(6):
                     self.view.item(i, col).setFlags(Qt.NoItemFlags)
-        self.view.setHorizontalHeaderLabels([
-            "ID",
-            "Name",
-            "Type",
-            "Channels",
-            "Format",
-            "Sampling Rate",
-        ])
+        self.view.setHorizontalHeaderLabels(
+            [
+                "ID",
+                "Name",
+                "Type",
+                "Channels",
+                "Format",
+                "Sampling Rate",
+            ]
+        )
 
         self.view.setEditTriggers(QTableWidget.NoEditTriggers)
         self.view.setSelectionBehavior(QTableWidget.SelectRows)
@@ -62,7 +64,7 @@ class XDFStreamsDialog(QDialog):
         self.resample = QCheckBox()
         self.resample_label = QLabel("Resample to:")
         self.fs_new = QDoubleSpinBox()
-        self.fs_new.setRange(1,  max(r[5] for r in rows))
+        self.fs_new.setRange(1, max(r[5] for r in rows))
         self.fs_new.setValue(1)
         self.fs_new.setDecimals(1)
         self.fs_new.setSuffix(" Hz")

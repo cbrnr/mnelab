@@ -76,6 +76,7 @@ class MySortFilterProxyModel(QSortFilterProxyModel):
     This is useful for the 'Bad' column, which stores its data (True/False) as Qt.UserRole
     instead of the default Qt.DisplayRole.
     """
+
     def lessThan(self, left, right):
         left_data = self.sourceModel().data(left)
         right_data = self.sourceModel().data(right)

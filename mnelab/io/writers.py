@@ -23,24 +23,35 @@ def write_set(fname, raw):
     times = raw.times
     ch_names = raw.info["ch_names"]
     chanlocs = fromarrays([ch_names], names=["labels"])
-    events = fromarrays([raw.annotations.description,
-                         raw.annotations.onset * fs + 1,
-                         raw.annotations.duration * fs],
-                        names=["type", "latency", "duration"])
-    savemat(fname, dict(EEG=dict(data=data,
-                                 setname=fname,
-                                 nbchan=data.shape[0],
-                                 pnts=data.shape[1],
-                                 trials=1,
-                                 srate=fs,
-                                 xmin=times[0],
-                                 xmax=times[-1],
-                                 chanlocs=chanlocs,
-                                 event=events,
-                                 icawinv=[],
-                                 icasphere=[],
-                                 icaweights=[])),
-            appendmat=False)
+    events = fromarrays(
+        [
+            raw.annotations.description,
+            raw.annotations.onset * fs + 1,
+            raw.annotations.duration * fs,
+        ],
+        names=["type", "latency", "duration"],
+    )
+    savemat(
+        fname,
+        dict(
+            EEG=dict(
+                data=data,
+                setname=fname,
+                nbchan=data.shape[0],
+                pnts=data.shape[1],
+                trials=1,
+                srate=fs,
+                xmin=times[0],
+                xmax=times[-1],
+                chanlocs=chanlocs,
+                event=events,
+                icawinv=[],
+                icasphere=[],
+                icaweights=[],
+            )
+        ),
+        appendmat=False,
+    )
 
 
 def write_edf(fname, raw):
@@ -80,17 +91,23 @@ def write_edf(fname, raw):
             pmin, pmax = dmin, dmax
             transducer = "Triggers and status"
         else:
-            raise NotImplementedError(f"Channel type {kind} not supported (currently only "
-                                      f"EEG and STIM channels work)")
-        channel_info.append(dict(label=ch_names[i],
-                                 dimension=dimension,
-                                 sample_rate=fs,
-                                 physical_min=pmin,
-                                 physical_max=pmax,
-                                 digital_min=dmin,
-                                 digital_max=dmax,
-                                 transducer=transducer,
-                                 prefilter=prefilter))
+            raise NotImplementedError(
+                f"Channel type {kind} not supported (currently only "
+                f"EEG and STIM channels work)"
+            )
+        channel_info.append(
+            dict(
+                label=ch_names[i],
+                dimension=dimension,
+                sample_rate=fs,
+                physical_min=pmin,
+                physical_max=pmax,
+                digital_min=dmin,
+                digital_max=dmax,
+                transducer=transducer,
+                prefilter=prefilter,
+            )
+        )
         data_list.append(data[i])
     f.setTechnician("MNELAB")
     f.setSignalHeaders(channel_info)
@@ -119,8 +136,14 @@ def write_bv(fname, raw, events=None):
             events = np.column_stack([events[:, [0, 2]], dur.astype(int)])
     else:
         events = events[:, [0, 2]]
-    pybv.write_brainvision(data=data, sfreq=fs, ch_names=ch_names, fname_base=name,
-                           folder_out=parent, events=events)
+    pybv.write_brainvision(
+        data=data,
+        sfreq=fs,
+        ch_names=ch_names,
+        fname_base=name,
+        folder_out=parent,
+        events=events,
+    )
 
 
 # supported write file formats
@@ -128,14 +151,20 @@ def write_bv(fname, raw, events=None):
 # the corresponding value is a list with three elements: (1) the writer function, (2) the
 # full file format name, and (3) a (comma-separated) string indicating the supported objects
 # (currently either raw or epoch)
-writers = {".fif": [write_fif, "Elekta Neuromag", "raw,epoch"],
-           ".fif.gz": [write_fif, "Elekta Neuromag", "raw,epoch"],
-           ".set": [write_set, "EEGLAB", "raw"]}
+writers = {
+    ".fif": [write_fif, "Elekta Neuromag", "raw,epoch"],
+    ".fif.gz": [write_fif, "Elekta Neuromag", "raw,epoch"],
+    ".set": [write_set, "EEGLAB", "raw"],
+}
 if have["pybv"]:
     writers.update({".eeg": [write_bv, "BrainVision", "raw"]})
 if have["pyedflib"]:
-    writers.update({".edf": [write_edf, "European Data Format", "raw"],
-                    ".bdf": [write_edf, "Biosemi Data Format", "raw"]})
+    writers.update(
+        {
+            ".edf": [write_edf, "European Data Format", "raw"],
+            ".bdf": [write_edf, "Biosemi Data Format", "raw"],
+        }
+    )
 
 
 def write_raw(fname, raw):

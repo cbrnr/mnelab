@@ -30,25 +30,29 @@ class AddReferenceError(Exception):
 
 def data_changed(f):
     """Call self.view.data_changed method after function call."""
+
     @wraps(f)
     def wrapper(*args, **kwargs):
         with args[0].view._wait_cursor():
             f(*args, **kwargs)
             args[0].view.data_changed()
+
     return wrapper
 
 
 class Model:
     """Data model for MNELAB."""
+
     def __init__(self):
         self.view = None  # current view
         self.data = []  # list of data sets
         self.index = -1  # index of currently active data set
-        self.history = ["from copy import deepcopy",
-                        "import mne",
-                        "from mnelab.io import read_raw"
-                        "\n",
-                        "datasets = []"]
+        self.history = [
+            "from copy import deepcopy",
+            "import mne",
+            "from mnelab.io import read_raw" "\n",
+            "datasets = []",
+        ]
 
     @data_changed
     def insert_data(self, dataset):
@@ -113,22 +117,25 @@ class Model:
             kwargstr = ", " + f"{', '.join(f'{k}={repr(v)}' for k, v in kwargs.items())}"
         else:
             kwargstr = ""
-        self.history.append(f'data = read_raw("{fname}"{argstr}{kwargstr}, preload=True)'.
-                            replace("'", '"'))
+        self.history.append(
+            f'data = read_raw("{fname}"{argstr}{kwargstr}, preload=True)'.replace("'", '"')
+        )
         fsize = getsize(data.filenames[0]) / 1024**2  # convert to MB
         name, ext = split_name_ext(fname)
-        self.insert_data(defaultdict(
-            lambda: None,
-            name=name,
-            fname=fname,
-            ftype=ext.upper()[1:],
-            fsize=fsize,
-            data=data,
-            dtype="raw",
-            montage=None,
-            events=np.empty((0, 3), dtype=int),
-            event_mapping=defaultdict(str),
-        ))
+        self.insert_data(
+            defaultdict(
+                lambda: None,
+                name=name,
+                fname=fname,
+                ftype=ext.upper()[1:],
+                fsize=fsize,
+                data=data,
+                dtype="raw",
+                montage=None,
+                events=np.empty((0, 3), dtype=int),
+                event_mapping=defaultdict(str),
+            )
+        )
 
     @data_changed
     def find_events(
@@ -138,7 +145,7 @@ class Model:
         initial_event=True,
         uint_cast=True,
         min_duration=0,
-        shortest_event=0
+        shortest_event=0,
     ):
         """Find events in raw data."""
         events = mne.find_events(
@@ -148,7 +155,7 @@ class Model:
             initial_event=initial_event,
             uint_cast=uint_cast,
             min_duration=min_duration,
-            shortest_event=shortest_event
+            shortest_event=shortest_event,
         )
         if events.shape[0] > 0:  # if events were found
             self.current["events"] = events
@@ -183,13 +190,11 @@ class Model:
         """Convert events to annotations."""
         mapping = self.current.get("event_mapping")
         annots = mne.annotations_from_events(
-            self.current["events"],
-            self.current["data"].info["sfreq"],
-            event_desc=mapping
+            self.current["events"], self.current["data"].info["sfreq"], event_desc=mapping
         )
         if len(annots) > 0:
             self.current["data"].set_annotations(annots)
-            hist = ('annots = mne.annotations_from_events(events, data.info["sfreq"]')
+            hist = 'annots = mne.annotations_from_events(events, data.info["sfreq"]'
             if mapping is not None:
                 hist += f", event_desc={mapping}"
             hist += ")"
@@ -213,8 +218,14 @@ class Model:
         name, ext = splitext(split(fname)[-1])
         ext = ext if ext else ".csv"  # automatically add extension
         fname = join(split(fname)[0], name + ext)
-        np.savetxt(fname, self.current["events"][:, [0, 2]], fmt="%d", delimiter=",",
-                   header="pos,type", comments="")
+        np.savetxt(
+            fname,
+            self.current["events"][:, [0, 2]],
+            fmt="%d",
+            delimiter=",",
+            header="pos,type",
+            comments="",
+        )
 
     def export_annotations(self, fname):
         """Export annotations to a CSV file."""
@@ -242,8 +253,10 @@ class Model:
             bads = f.read().replace(" ", "").strip().split(",")
             unknown = set(bads) - set(self.current["data"].info["ch_names"])
             if unknown:
-                raise LabelsNotFoundError("The following imported channel labels are not "
-                                          "contained in the data: " + ",".join(unknown))
+                raise LabelsNotFoundError(
+                    "The following imported channel labels are not "
+                    "contained in the data: " + ",".join(unknown)
+                )
             else:
                 self.current["data"].info["bads"] = bads
 
@@ -282,8 +295,9 @@ class Model:
                     onset = float(annot[1].strip())
                     duration = float(annot[2].strip())
                     if onset > self.current["data"].n_times / fs:
-                        raise InvalidAnnotationsError("One or more annotations are outside "
-                                                      "the data range.")
+                        raise InvalidAnnotationsError(
+                            "One or more annotations are outside " "the data range."
+                        )
                     else:
                         descs.append(annot[0].strip())
                         onsets.append(onset)
@@ -388,20 +402,22 @@ class Model:
                 annots = "-"
         else:
             annots = "-"
-        return {"File name": fname if fname else "-",
-                "File type": ftype if ftype else "-",
-                "Data type": dtype,
-                "Size on disk": size_disk,
-                "Size in memory": f"{data.get_data().nbytes / 1024**2:.2f}\u2009MB",
-                "Channels": f"{nchan} (" + chans + ")",
-                "Samples": samples,
-                "Sampling frequency": f"{fs:.6g}\u2009Hz",
-                "Length": length,
-                "Events": events,
-                "Annotations": annots,
-                "Reference": reference if reference else "-",
-                "Montage": montage_text,
-                "ICA": ica}
+        return {
+            "File name": fname if fname else "-",
+            "File type": ftype if ftype else "-",
+            "Data type": dtype,
+            "Size on disk": size_disk,
+            "Size in memory": f"{data.get_data().nbytes / 1024**2:.2f}\u2009MB",
+            "Channels": f"{nchan} (" + chans + ")",
+            "Samples": samples,
+            "Sampling frequency": f"{fs:.6g}\u2009Hz",
+            "Length": length,
+            "Events": events,
+            "Annotations": annots,
+            "Reference": reference if reference else "-",
+            "Montage": montage_text,
+            "ICA": ica,
+        }
 
     @data_changed
     def pick_channels(self, picks):
@@ -448,7 +464,10 @@ class Model:
         if montage is None:
             self.history.append("data.set_montage(None)")
         else:
-            self.history.append(f"data.set_montage({montage!r}, match_case={match_case}, match_alias={match_alias}, on_missing={on_missing!r})")  # noqa: E501
+            self.history.append(
+                f"data.set_montage({montage!r}, match_case={match_case}, "
+                f"match_alias={match_alias}, on_missing={on_missing!r})"
+            )
 
     @data_changed
     def filter(self, low, high):
@@ -531,16 +550,27 @@ class Model:
     @data_changed
     def interpolate_bads(self, reset_bads, mode, origin):
         self.current["data"].interpolate_bads(reset_bads, mode, origin)
-        self.history.append(f"data.interpolate_bads(reset_bads={reset_bads}, mode={mode}, "
-                            f"origin={origin})")
+        self.history.append(
+            f"data.interpolate_bads(reset_bads={reset_bads}, mode={mode}, "
+            f"origin={origin})"
+        )
         self.current["name"] += " (interpolated)"
 
     @data_changed
     def epoch_data(self, event_id, tmin, tmax, baseline):
-        epochs = mne.Epochs(self.current["data"], self.current["events"], event_id=event_id,
-                            tmin=tmin, tmax=tmax, baseline=baseline, preload=True)
-        self.history.append(f"data = mne.Epochs(data, events, event_id={event_id}, "
-                            f"tmin={tmin}, tmax={tmax}, baseline={baseline}, preload=True)")
+        epochs = mne.Epochs(
+            self.current["data"],
+            self.current["events"],
+            event_id=event_id,
+            tmin=tmin,
+            tmax=tmax,
+            baseline=baseline,
+            preload=True,
+        )
+        self.history.append(
+            f"data = mne.Epochs(data, events, event_id={event_id}, "
+            f"tmin={tmin}, tmax={tmax}, baseline={baseline}, preload=True)"
+        )
         self.current["data"] = epochs
         self.current["dtype"] = "epochs"
         self.current["events"] = self.current["data"].events

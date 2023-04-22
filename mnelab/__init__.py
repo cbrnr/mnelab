@@ -24,6 +24,7 @@ def main():
         # set bundle name on macOS (app name shown in the menu bar)
         # this must be done before the app is created
         from Foundation import NSBundle
+
         bundle = NSBundle.mainBundle()
         info = bundle.localizedInfoDictionary() or bundle.infoDictionary()
         info["CFBundleName"] = app_name

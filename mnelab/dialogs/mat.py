@@ -117,7 +117,7 @@ class MatDialog(QDialog):
     def toggle(self):
         """Toggle OK and Transpose buttons."""
         self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(False)
-        if (items := self.tree.selectedItems()):
+        if items := self.tree.selectedItems():
             self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(True)
             shape = [int(dim) for dim in items[0].text(2).split(" × ")]
             if len(shape) == 1:

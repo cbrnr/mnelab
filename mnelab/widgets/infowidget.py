@@ -31,14 +31,12 @@ def _make_shortcuts_table(actions):
         name = action.text().replace("&", "").replace(".", "")
         shortcut = action.shortcut().toString(format=QKeySequence.NativeText)
         modifier, key = shortcut[:-1].strip(), shortcut[-1]
-        html += (
-            f'\n            <tr><td align="right" width="50%">{name} </td>'
-        )
+        html += f'\n            <tr><td align="right" width="50%">{name} </td>'
         if modifier[-1] == "+":
-            html += f'<td><kbd>{modifier[:-1]}</kbd>+'
+            html += f"<td><kbd>{modifier[:-1]}</kbd>+"
         else:
-            html += f'<td><kbd>{modifier}</kbd> '
-        html += f'<kbd>{key}</kbd></td></tr>'
+            html += f"<td><kbd>{modifier}</kbd> "
+        html += f"<kbd>{key}</kbd></td></tr>"
     html += """\n          </tbody>
         </table>
       </body>
@@ -54,6 +52,7 @@ class InfoWidget(QWidget):
     values : dict
         Each key/value pair in this dict will be displayed in a row, separated by a colon.
     """
+
     def __init__(self, values=None):
         from .. import __version__
 

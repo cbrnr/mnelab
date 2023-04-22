@@ -41,8 +41,10 @@ supported = {
 }
 
 # known but unsupported file formats
-suggested = {".vmrk": partial(_read_unsupported, suggest=".vhdr"),
-             ".eeg": partial(_read_unsupported, suggest=".vhdr")}
+suggested = {
+    ".vmrk": partial(_read_unsupported, suggest=".vhdr"),
+    ".eeg": partial(_read_unsupported, suggest=".vhdr"),
+}
 
 # all known file formats
 readers = {**supported, **suggested}
@@ -55,7 +57,7 @@ def split_name_ext(fname):
     for i in range(-maxsuffixes, 0):
         ext = "".join(suffixes[i:]).lower()
         if ext in readers.keys():
-            return Path(fname).name[:-len(ext)], ext
+            return Path(fname).name[: -len(ext)], ext
     return fname, None  # unknown file extension
 
 

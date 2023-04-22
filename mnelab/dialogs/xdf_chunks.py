@@ -28,8 +28,14 @@ class XDFChunksDialog(QDialog):
 
         self.chunks = chunks
 
-        TAGS = {1: "FileHeader", 2: "StreamHeader", 3: "Samples", 4: "ClockOffset",
-                5: "Boundary", 6: "StreamFooter"}
+        TAGS = {
+            1: "FileHeader",
+            2: "StreamHeader",
+            3: "Samples",
+            4: "ClockOffset",
+            5: "Boundary",
+            6: "StreamFooter",
+        }
 
         self.model = QStandardItemModel()
         self.model.setHorizontalHeaderLabels(["#", "Bytes", "Tag", "Stream ID"])

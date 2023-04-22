@@ -83,9 +83,7 @@ class SettingsDialog(QDialog):
 
         hbox = QHBoxLayout()
         self.buttonbox = QDialogButtonBox(
-            QDialogButtonBox.Apply
-            | QDialogButtonBox.Ok
-            | QDialogButtonBox.Cancel
+            QDialogButtonBox.Apply | QDialogButtonBox.Ok | QDialogButtonBox.Cancel
         )
         hbox.addWidget(self.buttonbox)
         grid.addLayout(hbox, 3, 0, 1, 2)
@@ -97,7 +95,7 @@ class SettingsDialog(QDialog):
     @Slot()
     def apply_settings(self):
         QSettings().setValue("max_recent", int(self.max_recent.text()))
-        self.parent().recent = self.parent().recent[:_get_value("max_recent")]
+        self.parent().recent = self.parent().recent[: _get_value("max_recent")]
         QSettings().setValue("recent", self.parent().recent)
 
     @Slot()

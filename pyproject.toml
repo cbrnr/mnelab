@@ -46,7 +46,11 @@ documentation = "https://mnelab.readthedocs.io/en/latest/"
 repository = "https://github.com/cbrnr/mnelab"
 changelog = "https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md"
 
+[tool.black]
+line-length = 92
+
 [tool.isort]
+profile = "black"
 line_length = 92
 multi_line_output = 3
 include_trailing_comma = true

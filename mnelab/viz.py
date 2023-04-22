@@ -47,10 +47,12 @@ def _center_cmap(cmap, vmin, vmax, name="cmap_centered"):
 
     vzero = abs(vmin) / float(vmax - vmin)
     index_old = np.linspace(0, 1, cmap.N)
-    index_new = np.hstack([
-        np.linspace(0, vzero, cmap.N // 2, endpoint=False),
-        np.linspace(vzero, 1, cmap.N // 2),
-    ])
+    index_new = np.hstack(
+        [
+            np.linspace(0, vzero, cmap.N // 2, endpoint=False),
+            np.linspace(vzero, 1, cmap.N // 2),
+        ]
+    )
 
     colors = ("red", "green", "blue", "alpha")
     cdict = {name: [] for name in colors}
@@ -105,7 +107,7 @@ def _calc_tfr(epochs, freqs, baseline, times, alpha=None):
         step_down_p=0.05,
         seed=1,
         buffer_size=None,
-        out_type='mask',
+        out_type="mask",
     )
 
     res = {}
@@ -122,7 +124,7 @@ def _calc_tfr(epochs, freqs, baseline, times, alpha=None):
                 _, c2, p2, _ = pcluster_test(tfr_ev.data[:, ch], tail=-1, **pcluster_kwargs)
 
                 c = np.stack(c1 + c2, axis=2)  # combined clusters
-                p = np.concatenate((p1, p2))   # combined p-values
+                p = np.concatenate((p1, p2))  # combined p-values
                 mask = c[..., p <= alpha].any(axis=-1)
             masks[epochs.ch_names[ch]] = mask
         res[event] = (tfr_ev, masks)
@@ -265,22 +267,26 @@ def plot_evoked(
     for event in events:
         evoked = epochs[event].average(picks=picks)
         if topomap_times:
-            figs.append(evoked.plot_joint(
-                times=topomap_times,
-                title=f'Event: {event}',
-                picks=picks,
-                ts_args={
-                    "spatial_colors": spatial_colors,
-                    "gfp": gfp,
-                }
-            ))
+            figs.append(
+                evoked.plot_joint(
+                    times=topomap_times,
+                    title=f"Event: {event}",
+                    picks=picks,
+                    ts_args={
+                        "spatial_colors": spatial_colors,
+                        "gfp": gfp,
+                    },
+                )
+            )
         else:
-            figs.append(evoked.plot(
-                window_title=f'Event: {event}',
-                picks=picks,
-                spatial_colors=spatial_colors,
-                gfp=gfp
-            ))
+            figs.append(
+                evoked.plot(
+                    window_title=f"Event: {event}",
+                    picks=picks,
+                    spatial_colors=spatial_colors,
+                    gfp=gfp,
+                )
+            )
     return figs
 
 
@@ -321,7 +327,10 @@ def plot_evoked_comparison(
     if confidence_intervals:
         evokeds = {e: list(epochs[e].iter_evoked()) for e in events}
     else:
-        evokeds = {e: epochs[e].average(picks=picks, method=average_method, by_event_type=True) for e in events}  # noqa: E501
+        evokeds = {
+            e: epochs[e].average(picks=picks, method=average_method, by_event_type=True)
+            for e in events
+        }
     return plot_compare_evokeds(evokeds, picks=picks, combine=combine)
 
 
@@ -350,7 +359,7 @@ def plot_evoked_topomaps(epochs, events, average_method, times):
     figs = []
     for event in events:
         evoked = epochs[event].average(method=average_method)
-        figs.append(evoked.plot_topomap(times, title=f'Event: {event}'))
-        if times == 'interactive':
+        figs.append(evoked.plot_topomap(times, title=f"Event: {event}"))
+        if times == "interactive":
             figs[-1].set_size_inches(6, 4)
     return figs

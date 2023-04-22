@@ -56,8 +56,12 @@ class PickChannelsDialog(QDialog):
     def toggle_buttons(self):
         """Toggle OK button."""
         self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(False)
-        if (self.by_name.isChecked() and self.names.selectedItems()
-                or self.by_type.isChecked() and self.types.selectedItems()):
+        if (
+            self.by_name.isChecked()
+            and self.names.selectedItems()
+            or self.by_type.isChecked()
+            and self.types.selectedItems()
+        ):
             self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(True)
 
     @Slot()
