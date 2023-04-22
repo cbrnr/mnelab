@@ -46,6 +46,11 @@ documentation = "https://mnelab.readthedocs.io/en/latest/"
 repository = "https://github.com/cbrnr/mnelab"
 changelog = "https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md"
 
+[tool.isort]
+line_length = 92
+multi_line_output = 3
+include_trailing_comma = true
+
 [tool.setuptools.dynamic]
 version = {attr = "mnelab.__version__"}
 readme = {file = "README.md", content-type = "text/markdown"}
