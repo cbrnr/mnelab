@@ -49,17 +49,16 @@ jobs:
     - uses: actions/download-artifact@v3
       with:
         name: mnelab-wheel
-    - uses: pyvista/setup-headless-display-action@main
-      with:
-        qt: true
-        pyvista: false
+    - name: Install Linux packages
+      run: |
+        sudo apt update
+        sudo apt install libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
+                         libxkbcommon-x11-0 xvfb libxcb-randr0 \
+                         libxcb-render-util0 libxcb-xinerama0 libegl1 \
+                         libxcb-shape0 libxcb-cursor0
     - name: Install Python packages
       run: |
         pip install $(echo mnelab*.whl)
         pip install pytest pytest-qt pytest-xvfb
-    - name: Debug
-      run: |
-        set -e
-        LD_DEBUG=libs python -c "from PySide6.QtWidgets import QApplication, QWidget; app = QApplication([]); import matplotlib; matplotlib.use('QtAgg'); import matplotlib.pyplot as plt; plt.figure()"
     - name: Run tests
       run: pytest
