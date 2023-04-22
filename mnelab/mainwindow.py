@@ -49,6 +49,7 @@ from .widgets import EmptyWidget, InfoWidget
 
 class MainWindow(QMainWindow):
     """MNELAB main window."""
+
     def __init__(self, model: Model):
         """Initialize MNELAB main window.
 
@@ -81,20 +82,22 @@ class MainWindow(QMainWindow):
         # initialize menus
         file_menu = self.menuBar().addMenu("&File")
         icon = QIcon.fromTheme("open-file")
-        self.actions["open_file"] = file_menu.addAction(icon, "&Open...", self.open_data,
-                                                        QKeySequence.Open)
+        self.actions["open_file"] = file_menu.addAction(
+            icon, "&Open...", self.open_data, QKeySequence.Open
+        )
         self.recent_menu = file_menu.addMenu("Open recent")
         self.recent_menu.aboutToShow.connect(self._update_recent_menu)
         self.recent_menu.triggered.connect(self._load_recent)
         if not self.recent:
             self.recent_menu.setEnabled(False)
-        self.actions["close_file"] = file_menu.addAction("&Close", self.model.remove_data,
-                                                         QKeySequence.Close)
+        self.actions["close_file"] = file_menu.addAction(
+            "&Close", self.model.remove_data, QKeySequence.Close
+        )
         self.actions["close_all"] = file_menu.addAction("Close all", self.close_all)
         file_menu.addSeparator()
         self.actions["import_bads"] = file_menu.addAction(
             "Import bad channels...",
-            lambda: self.import_file(model.import_bads, "Import bad channels", "*.csv")
+            lambda: self.import_file(model.import_bads, "Import bad channels", "*.csv"),
         )
         self.actions["import_events"] = file_menu.addAction(
             "Import events...",
@@ -102,12 +105,13 @@ class MainWindow(QMainWindow):
         )
         self.actions["import_annotations"] = file_menu.addAction(
             "Import annotations...",
-            lambda: self.import_file(model.import_annotations, "Import annotations",
-                                     "*.csv")
+            lambda: self.import_file(
+                model.import_annotations, "Import annotations", "*.csv"
+            ),
         )
         self.actions["import_ica"] = file_menu.addAction(
             "Import &ICA...",
-            lambda: self.open_file(model.import_ica, "Import ICA", "*.fif *.fif.gz")
+            lambda: self.open_file(model.import_ica, "Import ICA", "*.fif *.fif.gz"),
         )
         file_menu.addSeparator()
         self.export_menu = file_menu.addMenu("Export data")
@@ -115,24 +119,25 @@ class MainWindow(QMainWindow):
             action = "export_data" + ext.replace(".", "_")
             self.actions[action] = self.export_menu.addAction(
                 f"{ext[1:].upper()} ({description[1]})...",
-                partial(self.export_file, model.export_data, "Export data", "*" + ext)
+                partial(self.export_file, model.export_data, "Export data", "*" + ext),
             )
         self.actions["export_bads"] = file_menu.addAction(
             "Export &bad channels...",
-            lambda: self.export_file(model.export_bads, "Export bad channels", "*.csv")
+            lambda: self.export_file(model.export_bads, "Export bad channels", "*.csv"),
         )
         self.actions["export_events"] = file_menu.addAction(
             "Export &events...",
-            lambda: self.export_file(model.export_events, "Export events", "*.csv")
+            lambda: self.export_file(model.export_events, "Export events", "*.csv"),
         )
         self.actions["export_annotations"] = file_menu.addAction(
             "Export &annotations...",
-            lambda: self.export_file(model.export_annotations, "Export annotations",
-                                     "*.csv")
+            lambda: self.export_file(
+                model.export_annotations, "Export annotations", "*.csv"
+            ),
         )
         self.actions["export_ica"] = file_menu.addAction(
             "Export ICA...",
-            lambda: self.export_file(model.export_ica, "Export ICA", "*.fif *.fif.gz")
+            lambda: self.export_file(model.export_ica, "Export ICA", "*.fif *.fif.gz"),
         )
         file_menu.addSeparator()
         icon = QIcon.fromTheme("xdf-metadata")
@@ -140,8 +145,9 @@ class MainWindow(QMainWindow):
             "Show XDF metadata",
             self.xdf_metadata,
         )
-        self.actions["xdf_chunks"] = file_menu.addAction("Inspect XDF chunks...",
-                                                         self.xdf_chunks)
+        self.actions["xdf_chunks"] = file_menu.addAction(
+            "Inspect XDF chunks...", self.xdf_chunks
+        )
         file_menu.addSeparator()
         self.actions["settings"] = file_menu.addAction(
             "Settings...",
@@ -151,8 +157,9 @@ class MainWindow(QMainWindow):
         self.actions["quit"] = file_menu.addAction("&Quit", self.close, QKeySequence.Quit)
 
         edit_menu = self.menuBar().addMenu("&Edit")
-        self.actions["pick_chans"] = edit_menu.addAction("P&ick channels...",
-                                                         self.pick_channels)
+        self.actions["pick_chans"] = edit_menu.addAction(
+            "P&ick channels...", self.pick_channels
+        )
         self.actions["rename_channels"] = edit_menu.addAction(
             "Rename channels...",
             self.rename_channels,
@@ -163,8 +170,9 @@ class MainWindow(QMainWindow):
             self.channel_properties,
         )
         edit_menu.addSeparator()
-        self.actions["set_montage"] = edit_menu.addAction("Set &montage...",
-                                                          self.set_montage)
+        self.actions["set_montage"] = edit_menu.addAction(
+            "Set &montage...", self.set_montage
+        )
         self.actions["clear_montage"] = edit_menu.addAction(
             "Clear montage",
             self.clear_montage,
@@ -186,8 +194,9 @@ class MainWindow(QMainWindow):
 
         edit_menu.addSeparator()
         self.actions["crop"] = edit_menu.addAction("&Crop data...", self.crop)
-        self.actions["append_data"] = edit_menu.addAction("Appen&d data...",
-                                                          self.append_data)
+        self.actions["append_data"] = edit_menu.addAction(
+            "Appen&d data...", self.append_data
+        )
 
         plot_menu = self.menuBar().addMenu("&Plot")
         self.actions["plot_data"] = plot_menu.addAction(
@@ -240,11 +249,13 @@ class MainWindow(QMainWindow):
 
         tools_menu = self.menuBar().addMenu("&Tools")
         icon = QIcon.fromTheme("filter-data")
-        self.actions["filter"] = tools_menu.addAction(icon, "&Filter data...",
-                                                      self.filter_data)
+        self.actions["filter"] = tools_menu.addAction(
+            icon, "&Filter data...", self.filter_data
+        )
         icon = QIcon.fromTheme("find-events")
-        self.actions["find_events"] = tools_menu.addAction(icon, "Find &events...",
-                                                           self.find_events)
+        self.actions["find_events"] = tools_menu.addAction(
+            icon, "Find &events...", self.find_events
+        )
         self.actions["events_from_annotations"] = tools_menu.addAction(
             "Create events from annotations", self.events_from_annotations
         )
@@ -271,8 +282,9 @@ class MainWindow(QMainWindow):
         )
         tools_menu.addSeparator()
         icon = QIcon.fromTheme("epoch-data")
-        self.actions["epoch_data"] = tools_menu.addAction(icon, "Create epochs...",
-                                                          self.epoch_data)
+        self.actions["epoch_data"] = tools_menu.addAction(
+            icon, "Create epochs...", self.epoch_data
+        )
         self.actions["drop_bad_epochs"] = tools_menu.addAction(
             "Drop bad epochs...",
             self.drop_bad_epochs,
@@ -286,8 +298,9 @@ class MainWindow(QMainWindow):
         )
         self.actions["toolbar"] = view_menu.addAction("&Toolbar", self._toggle_toolbar)
         self.actions["toolbar"].setCheckable(True)
-        self.actions["statusbar"] = view_menu.addAction("&Statusbar",
-                                                        self._toggle_statusbar)
+        self.actions["statusbar"] = view_menu.addAction(
+            "&Statusbar", self._toggle_statusbar
+        )
         self.actions["statusbar"].setCheckable(True)
 
         help_menu = self.menuBar().addMenu("&Help")
@@ -299,9 +312,18 @@ class MainWindow(QMainWindow):
             self.show_documentation,
         )
         # actions that are always enabled
-        self.always_enabled = ["open_file", "about", "about_qt", "quit", "xdf_chunks",
-                               "toolbar", "statusbar", "settings", "documentation",
-                               "history"]
+        self.always_enabled = [
+            "open_file",
+            "about",
+            "about_qt",
+            "quit",
+            "xdf_chunks",
+            "toolbar",
+            "statusbar",
+            "settings",
+            "documentation",
+            "history",
+        ]
 
         # set up toolbar
         self.toolbar = self.addToolBar("toolbar")
@@ -431,7 +453,7 @@ class MainWindow(QMainWindow):
 
         # update status bar
         if self.model.data:
-            mb = self.model.nbytes / 1024 ** 2
+            mb = self.model.nbytes / 1024**2
             self.status_label.setText(f"Total Memory: {mb:.2f} MB")
         else:
             self.status_label.clear()
@@ -537,8 +559,9 @@ class MainWindow(QMainWindow):
         for fname in fnames:
             if not (Path(fname).is_file() or Path(fname).is_dir()):
                 self._remove_recent(fname)
-                QMessageBox.critical(self, "File does not exist",
-                                     f"File {fname} does not exist anymore.")
+                QMessageBox.critical(
+                    self, "File does not exist", f"File {fname} does not exist anymore."
+                )
                 return
 
             ext = "".join(Path(fname).suffixes)
@@ -546,9 +569,17 @@ class MainWindow(QMainWindow):
             if any([ext.endswith(e) for e in (".xdf", ".xdfz", ".xdf.gz")]):  # XDF
                 rows, disabled = [], []
                 for idx, s in enumerate(resolve_streams(fname)):
-                    rows.append([s["stream_id"], s["name"], s["type"], s["channel_count"],
-                                 s["channel_format"], s["nominal_srate"]])
-                    is_marker = (s["nominal_srate"] == 0 or s["channel_format"] == "string")
+                    rows.append(
+                        [
+                            s["stream_id"],
+                            s["name"],
+                            s["type"],
+                            s["channel_count"],
+                            s["channel_format"],
+                            s["nominal_srate"],
+                        ]
+                    )
+                    is_marker = s["nominal_srate"] == 0 or s["channel_format"] == "string"
                     if is_marker:  # disable marker streams
                         disabled.append(idx)
 
@@ -599,8 +630,9 @@ class MainWindow(QMainWindow):
 
     def xdf_chunks(self):
         """Inspect XDF chunks."""
-        fname = QFileDialog.getOpenFileName(self, "Select XDF file",
-                                            filter="*.xdf *.xdfz *.xdf.gz")[0]
+        fname = QFileDialog.getOpenFileName(
+            self, "Select XDF file", filter="*.xdf *.xdfz *.xdf.gz"
+        )[0]
         if fname:
             chunks = list_chunks(fname)
             dialog = XDFChunksDialog(self, chunks, fname)
@@ -704,8 +736,10 @@ class MainWindow(QMainWindow):
                 )
             else:
                 QMessageBox.critical(
-                    self, "No matching channel names", "Channel names defined in the "
-                    "montage do not match any channel name in the data."
+                    self,
+                    "No matching channel names",
+                    "Channel names defined in the "
+                    "montage do not match any channel name in the data.",
                 )
 
     def clear_montage(self):
@@ -745,7 +779,11 @@ class MainWindow(QMainWindow):
             self.model.current["event_mapping"] = dict(dialog.event_mapping)
             if self.model.current["dtype"] == "epochs":
                 event_id_old = self.model.current["data"].event_id
-                event_id_new = {f"{k} ({v})": k for k, v in dialog.event_mapping.items() if k in event_id_old.values()}  # noqa: E501
+                event_id_new = {
+                    f"{k} ({v})": k
+                    for k, v in dialog.event_mapping.items()
+                    if k in event_id_old.values()
+                }
                 self.model.current["data"].event_id = event_id_new
             self.model.set_events(events)
 
@@ -772,9 +810,13 @@ class MainWindow(QMainWindow):
         self.bads = self.model.current["data"].info["bads"]
         events = self.model.current["events"]
         nchan = self.model.current["data"].info["nchan"]
-        fig = self.model.current["data"].plot(events=events, n_channels=nchan,
-                                              title=self.model.current["name"],
-                                              scalings="auto", show=False)
+        fig = self.model.current["data"].plot(
+            events=events,
+            n_channels=nchan,
+            title=self.model.current["name"],
+            scalings="auto",
+            show=False,
+        )
         if events is not None:
             hist = f"data.plot(events=events, n_channels={nchan})"
         else:
@@ -839,11 +881,7 @@ class MainWindow(QMainWindow):
             if dialog.significance_mask.isChecked():
                 alpha = dialog.alpha.value()
 
-            calc = CalcDialog(
-                self,
-                "Calculating ERDS maps",
-                "Calculating ERDS maps..."
-            )
+            calc = CalcDialog(self, "Calculating ERDS maps", "Calculating ERDS maps...")
 
             def callback(x):
                 QMetaObject.invokeMethod(calc, "accept", Qt.QueuedConnection)
@@ -852,7 +890,7 @@ class MainWindow(QMainWindow):
             res = pool.apply_async(
                 func=_calc_tfr,
                 args=(data, freqs, baseline, times, alpha),
-                callback=callback
+                callback=callback,
             )
             pool.close()
 
@@ -899,7 +937,9 @@ class MainWindow(QMainWindow):
                 elif dialog.topomaps_auto.isChecked():
                     topomap_times = "auto"
                 else:
-                    topomap_times = [float(t.strip()) for t in dialog.topomaps_timelist.text().split(",")]  # noqa: E501
+                    topomap_times = [
+                        float(t.strip()) for t in dialog.topomaps_timelist.text().split(",")
+                    ]
             else:
                 topomap_times = []
             figs = plot_evoked(
@@ -992,7 +1032,7 @@ class MainWindow(QMainWindow):
                 func=ica.fit,
                 args=(self.model.current["data"],),
                 kwds={"reject_by_annotation": exclude_bad_segments},
-                callback=callback
+                callback=callback,
             )
             pool.close()
 
@@ -1001,8 +1041,9 @@ class MainWindow(QMainWindow):
                 print("ICA calculation aborted...")
             else:
                 self.model.current["ica"] = res.get(timeout=1)
-                self.model.history.append(f"ica.fit(inst=raw, reject_by_annotation="
-                                          f"{exclude_bad_segments})")
+                self.model.history.append(
+                    f"ica.fit(inst=raw, reject_by_annotation=" f"{exclude_bad_segments})"
+                )
                 self.data_changed()
 
     def apply_ica(self):
@@ -1022,8 +1063,12 @@ class MainWindow(QMainWindow):
                     self.model.remove_data()
                     self.model.index -= 1
                     self.data_changed()
-                msgbox = ErrorMessageBox(self, "Could not interpolate bad channels", str(e),
-                                         traceback.format_exc())
+                msgbox = ErrorMessageBox(
+                    self,
+                    "Could not interpolate bad channels",
+                    str(e),
+                    traceback.format_exc(),
+                )
                 msgbox.show()
 
     def filter_data(self):
@@ -1060,7 +1105,7 @@ class MainWindow(QMainWindow):
                 initial_event=initial_event,
                 uint_cast=uint_cast,
                 min_duration=min_dur,
-                shortest_event=shortest_event
+                shortest_event=shortest_event,
             )
 
     def events_from_annotations(self):
@@ -1091,12 +1136,14 @@ class MainWindow(QMainWindow):
                     self.model.remove_data()
                     self.model.index -= 1
                     self.data_changed()
-                msgbox = ErrorMessageBox(self, "Could not create epochs", str(e),
-                                         traceback.format_exc())
+                msgbox = ErrorMessageBox(
+                    self, "Could not create epochs", str(e), traceback.format_exc()
+                )
                 msgbox.show()
 
     def drop_bad_epochs(self):
         """Drop bad epochs."""
+
         def fields_to_dict(fields):
             res = {}
             for type, value in fields.items():
@@ -1169,7 +1216,7 @@ class MainWindow(QMainWindow):
         from . import __version__
 
         msg_box = QMessageBox(self)
-        text = (f"<img src='{image_path('mnelab_logo.png')}'><p>MNELAB {__version__}</p>")
+        text = f"<img src='{image_path('mnelab_logo.png')}'><p>MNELAB {__version__}</p>"
         msg_box.setText(text)
 
         mnelab_url = "github.com/cbrnr/mnelab"
@@ -1182,13 +1229,15 @@ class MainWindow(QMainWindow):
             else:
                 pkgs.append(f"{key}&nbsp;(not installed)")
         version = ".".join(str(k) for k in version_info[:3])
-        text = (f"<nobr><p>This program uses Python {version} and the following packages:"
-                f"</p></nobr><p>{', '.join(pkgs)}</p>"
-                f"<nobr><p>MNELAB repository: <a href=https://{mnelab_url}>{mnelab_url}</a>"
-                f"</p></nobr><nobr><p>MNE repository: "
-                f"<a href=https://{mne_url}>{mne_url}</a></p></nobr>"
-                f"<p>Licensed under the BSD 3-clause license.</p>"
-                f"<p>© MNELAB developers.</p>")
+        text = (
+            f"<nobr><p>This program uses Python {version} and the following packages:"
+            f"</p></nobr><p>{', '.join(pkgs)}</p>"
+            f"<nobr><p>MNELAB repository: <a href=https://{mnelab_url}>{mnelab_url}</a>"
+            f"</p></nobr><nobr><p>MNE repository: "
+            f"<a href=https://{mne_url}>{mne_url}</a></p></nobr>"
+            f"<p>Licensed under the BSD 3-clause license.</p>"
+            f"<p>© MNELAB developers.</p>"
+        )
         msg_box.setInformativeText(text)
         msg_box.exec()
 
@@ -1197,9 +1246,9 @@ class MainWindow(QMainWindow):
         QMessageBox.aboutQt(self, "About Qt")
 
     def show_documentation(self):
-        url = QUrl('https://mnelab.readthedocs.io/')
+        url = QUrl("https://mnelab.readthedocs.io/")
         if not QDesktopServices.openUrl(url):
-            QMessageBox.warning(self, 'Open Url', 'Could not open url')
+            QMessageBox.warning(self, "Open Url", "Could not open url")
 
     def auto_duplicate(self):
         """Automatically duplicate current data set.
@@ -1223,9 +1272,13 @@ class MainWindow(QMainWindow):
         msg = QMessageBox(self)
         msg.setWindowFlags(Qt.Dialog | Qt.WindowTitleHint | Qt.CustomizeWindowHint)
         msg.setWindowTitle("Modify data set")
-        msg.setText("You are about to modify the current data set. How do you want to proceed?")  # noqa: E501
+        msg.setText(
+            "You are about to modify the current data set. How do you want to proceed?"
+        )
         create_button = msg.addButton("Create new data set", QMessageBox.AcceptRole)
-        overwrite_button = msg.addButton("Overwrite current data set", QMessageBox.RejectRole)  # noqa: E501
+        overwrite_button = msg.addButton(
+            "Overwrite current data set", QMessageBox.RejectRole
+        )
         msg.setDefaultButton(create_button)
         msg.setEscapeButton(create_button)
         msg.exec()
@@ -1246,7 +1299,7 @@ class MainWindow(QMainWindow):
         if fname in self.recent:  # avoid duplicates
             self.recent.remove(fname)
         self.recent.insert(0, fname)
-        self.recent = self.recent[:read_settings("max_recent")]  # prune list
+        self.recent = self.recent[: read_settings("max_recent")]  # prune list
         write_settings(recent=self.recent)
         if not self.recent_menu.isEnabled():
             self.recent_menu.setEnabled(True)

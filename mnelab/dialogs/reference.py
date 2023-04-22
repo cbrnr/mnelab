@@ -82,7 +82,11 @@ class ReferenceDialog(QDialog):
             self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(False)
             return
 
-        if self.reref_group.isChecked() and self.reref_channels.isChecked() and not self.reref_channellist.selectedItems():  # noqa: E501
+        if (
+            self.reref_group.isChecked()
+            and self.reref_channels.isChecked()
+            and not self.reref_channellist.selectedItems()
+        ):
             self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(False)
             return
 

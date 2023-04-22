@@ -53,7 +53,9 @@ def _resample_streams(streams, stream_ids, fs_new):
         x_old = streams[stream_id]["time_series"]
         x_new = scipy.signal.resample(x_old, len_new, axis=0)
 
-        row_start = int(np.floor((streams[stream_id]["time_stamps"][0] - first_time) * fs_new))  # noqa: E501
+        row_start = int(
+            np.floor((streams[stream_id]["time_stamps"][0] - first_time) * fs_new)
+        )
         row_end = row_start + x_new.shape[0]
         col_end = col_start + x_new.shape[1]
         all_time_series[row_start:row_end, col_start:col_end] = x_new
@@ -105,7 +107,9 @@ def read_raw_xdf(
         try:
             for ch in stream["info"]["desc"][0]["channels"][0]["channel"]:
                 labels.append(str(ch["label"][0]))
-                if ch["type"] and ch["type"][0].lower() in get_channel_type_constants(include_defaults=True):  # noqa: E501
+                if ch["type"] and ch["type"][0].lower() in get_channel_type_constants(
+                    include_defaults=True
+                ):
                     types.append(ch["type"][0].lower())
                 else:
                     types.append("misc")
@@ -174,7 +178,7 @@ def get_xml(fname):
                 nbytes = _read_varlen_int(f)
             except EOFError:
                 return xml
-            tag = struct.unpack('<H', f.read(2))[0]
+            tag = struct.unpack("<H", f.read(2))[0]
             if tag in [2, 3, 4, 6]:
                 stream_id = struct.unpack("<I", f.read(4))[0]
                 if tag in [2, 6]:  # parse StreamHeader/StreamFooter chunk
@@ -210,13 +214,15 @@ def list_chunks(fname):
             except EOFError:
                 return chunks
             chunk = {"nbytes": nbytes}
-            tag = struct.unpack('<H', f.read(2))[0]
+            tag = struct.unpack("<H", f.read(2))[0]
             chunk["tag"] = tag
             if tag == 1:
                 chunk["content"] = f.read(nbytes - 2).decode()
             elif tag == 5:
-                chunk["content"] = ("0x43 0xA5 0x46 0xDC 0xCB 0xF5 0x41 0x0F 0xB3 0x0E "
-                                    "0xD5 0x46 0x73 0x83 0xCB 0xE4")
+                chunk["content"] = (
+                    "0x43 0xA5 0x46 0xDC 0xCB 0xF5 0x41 0x0F "
+                    "0xB3 0x0E 0xD5 0x46 0x73 0x83 0xCB 0xE4"
+                )
                 f.seek(chunk["nbytes"] - 2, 1)  # skip remaining chunk contents
             elif tag in [2, 6]:  # XML
                 chunk["stream_id"] = struct.unpack("<I", f.read(4))[0]
@@ -225,8 +231,9 @@ def list_chunks(fname):
                 chunk["stream_id"] = struct.unpack("<I", f.read(4))[0]
                 collection_time = struct.unpack("<d", f.read(8))[0]
                 offset_value = struct.unpack("<d", f.read(8))[0]
-                chunk["content"] = (f"Collection time: {collection_time}\n"
-                                    f"Offset value: {offset_value}")
+                chunk["content"] = (
+                    f"Collection time: {collection_time}\n" f"Offset value: {offset_value}"
+                )
             elif tag == 3:
                 chunk["stream_id"] = struct.unpack("<I", f.read(4))[0]
                 remainder = chunk["nbytes"] - 6

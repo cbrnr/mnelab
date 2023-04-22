@@ -52,8 +52,7 @@ class MontageDialog(QDialog):
 
     @Slot()
     def toggle_buttons(self):
-        """Toggle OK and View buttons.
-        """
+        """Toggle OK and View buttons."""
         if self.montages.selectedItems():
             self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(True)
             self.view_button.setEnabled(True)
