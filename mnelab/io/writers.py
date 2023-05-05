@@ -145,7 +145,7 @@ def write_bv(fname, raw, events=None):
         fname_base=name,
         folder_out=parent,
         events=events,
-        unit=units
+        unit=units,
     )
 
 
