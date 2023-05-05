@@ -136,6 +136,8 @@ def write_bv(fname, raw, events=None):
             events = np.column_stack([events[:, [0, 2]], dur.astype(int)])
     else:
         events = events[:, [0, 2]]
+    units = [ch["unit"] for ch in raw.info["chs"]]
+    units = ["V" if unit == 107 else "AU" for unit in units]
     pybv.write_brainvision(
         data=data,
         sfreq=fs,
@@ -143,6 +145,7 @@ def write_bv(fname, raw, events=None):
         fname_base=name,
         folder_out=parent,
         events=events,
+        unit=units
     )
 
 
