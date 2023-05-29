@@ -875,7 +875,7 @@ class MainWindow(QMainWindow):
 
         if dialog.exec():
             freqs = np.arange(dialog.f1, dialog.f2, dialog.step)
-            baseline = [dialog.b1, dialog.b2]
+            baseline = (dialog.b1, dialog.b2)
             times = [dialog.t1, dialog.t2]
             alpha = None
             if dialog.significance_mask.isChecked():
@@ -915,7 +915,7 @@ class MainWindow(QMainWindow):
                 epochs,
                 events=[item.text() for item in dialog.events.selectedItems()],
                 freqs=np.arange(dialog.f1, dialog.f2, dialog.step),
-                baseline=[dialog.b1, dialog.b2],
+                baseline=(dialog.b1, dialog.b2),
                 times=[dialog.t1, dialog.t2],
             )
             for fig in figs:
