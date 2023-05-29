@@ -1,6 +1,7 @@
 ## [UNRELEASED] - YYYY-MM-DD
 ### Fixed
 - Correctly scale data when exporting to BrainVision ([#376](https://github.com/cbrnr/mnelab/pull/376) by [Clemens Brunner](https://github.com/cbrnr))
+- Fix ERDS maps plotting not working for MNE >= 1.1 ([#382](https://github.com/cbrnr/mnelab/pull/382) by [Jérémy Frey](https://github.com/jfrey-xx))
 
 ## [0.8.6] - 2023-04-05
 ### Added
