@@ -10,7 +10,7 @@ jobs:
     name: Style
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: actions/setup-python@v4
       with:
         python-version: '3.11'
@@ -21,7 +21,7 @@ jobs:
     name: Build wheel
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: actions/setup-python@v4
       with:
         python-version: '3.11'
@@ -42,7 +42,7 @@ jobs:
     name: Run tests (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
