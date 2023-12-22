@@ -2,4 +2,4 @@
 #
 # License: BSD (3-clause)
 
-from .infowidget import EmptyWidget, InfoWidget
+from mnelab.widgets.infowidget import EmptyWidget, InfoWidget

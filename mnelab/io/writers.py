@@ -9,7 +9,7 @@ import numpy as np
 from numpy.core.records import fromarrays
 from scipy.io import savemat
 
-from ..utils import have
+from mnelab.utils import have
 
 
 def write_fif(fname, raw):
@@ -92,8 +92,8 @@ def write_edf(fname, raw):
             transducer = "Triggers and status"
         else:
             raise NotImplementedError(
-                f"Channel type {kind} not supported (currently only "
-                f"EEG and STIM channels work)"
+                f"Channel type {kind} not supported (currently only EEG and STIM channels "
+                f"work)"
             )
         channel_info.append(
             dict(
@@ -149,11 +149,9 @@ def write_bv(fname, raw, events=None):
     )
 
 
-# supported write file formats
-# this dict contains each supported file extension as a key
-# the corresponding value is a list with three elements: (1) the writer function, (2) the
-# full file format name, and (3) a (comma-separated) string indicating the supported objects
-# (currently either raw or epoch)
+# this dict contains each supported file extension as a key; the corresponding value is a
+# list with three elements: (1) the writer function, (2) the full file format name, and (3)
+# a (comma-separated) string indicating the supported objects
 writers = {
     ".fif": [write_fif, "Elekta Neuromag", "raw,epoch"],
     ".fif.gz": [write_fif, "Elekta Neuromag", "raw,epoch"],

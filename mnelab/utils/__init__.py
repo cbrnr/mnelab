@@ -2,6 +2,6 @@
 #
 # License: BSD (3-clause)
 
-from .dependencies import have
-from .syntax import PythonHighlighter
-from .utils import count_locations, image_path, interface_style, natural_sort
+from mnelab.utils.dependencies import have
+from mnelab.utils.syntax import PythonHighlighter
+from mnelab.utils.utils import count_locations, image_path, interface_style, natural_sort

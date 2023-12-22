@@ -15,7 +15,7 @@ def _center_cmap(cmap, vmin, vmax, name="cmap_centered"):
     """
     Center given colormap (ranging from vmin to vmax) at value 0.
 
-    Taken from MNE-Python v0.24, as it will be removed in MNE-Python v1.0.
+    Taken from MNE-Python v0.24 (it has been removed in MNE-Python v1.0).
 
     Parameters
     ----------
@@ -248,15 +248,13 @@ def plot_evoked(
     gfp : bool | "only"
         Plot the global field power (GFP).
     spatial_colors : bool
-        If `True`, the lines are color coded by mapping physical sensor
-        coordinates into color values. Spatially similar channels will have
-        similar colors. Bad channels will be dotted. If `False`, the good
-        channels are plotted black and bad channels red.
+        If `True`, the lines are color coded by mapping physical sensor coordinates into
+        color values. Spatially similar channels will have similar colors. Bad channels will
+        be dotted. If `False`, the good channels are plotted black and bad channels red.
     topomap_times : list[float] | "auto" | "peaks"
-        The time point(s) to plot. If `"auto"`, 5 evenly spaced topographies
-        between the first and last time instant will be shown. If `"peaks"`,
-        finds time points automatically by checking for 3 local maxima in
-        Global Field Power.
+        The time point(s) to plot. If `"auto"`, 5 evenly spaced topographies between the
+        first and last time instant will be shown. If `"peaks"`, finds time points
+        automatically by checking for 3 local maxima in Global Field Power.
 
     Returns
     -------
@@ -301,8 +299,8 @@ def plot_evoked_comparison(
     """
     Plot evoked potentials of different events averaged over channels.
 
-    If multiple channel types are selected, one figure will be returned for
-    each channel type.
+    If multiple channel types are selected, one figure will be returned for each channel
+    type.
 
     Parameters
     ----------
