@@ -17,6 +17,7 @@ jobs:
     - uses: pre-commit/action@v3.0.0
 
   build-wheel:
+    needs: style
     name: Build wheel
     runs-on: ubuntu-latest
     steps:
@@ -33,6 +34,7 @@ jobs:
         path: ~/.wheelhouse/mnelab*.whl
 
   build-sdist:
+    needs: style
     name: Build sdist
     runs-on: ubuntu-latest
     steps:
@@ -50,7 +52,7 @@ jobs:
 
   upload-pypi:
     name: Upload to PyPI
-    needs: [style, build-wheel, build-sdist]
+    needs: [build-wheel, build-sdist]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
