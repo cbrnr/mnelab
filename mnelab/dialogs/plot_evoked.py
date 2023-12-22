@@ -16,7 +16,7 @@ from PySide6.QtWidgets import (
     QRadioButton,
 )
 
-from .utils import select_all
+from mnelab.dialogs.utils import select_all
 
 
 class PlotEvokedDialog(QDialog):

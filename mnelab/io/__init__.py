@@ -2,5 +2,5 @@
 #
 # License: BSD (3-clause)
 
-from .readers import read_raw
-from .writers import write_raw, writers
+from mnelab.io.readers import read_raw
+from mnelab.io.writers import write_raw, writers

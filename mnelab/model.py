@@ -11,9 +11,9 @@ from pathlib import Path
 import mne
 import numpy as np
 
-from .io import read_raw, write_raw
-from .io.readers import split_name_ext
-from .utils import count_locations
+from mnelab.io import read_raw, write_raw
+from mnelab.io.readers import split_name_ext
+from mnelab.utils import count_locations
 
 
 class LabelsNotFoundError(Exception):
@@ -254,8 +254,8 @@ class Model:
             unknown = set(bads) - set(self.current["data"].info["ch_names"])
             if unknown:
                 raise LabelsNotFoundError(
-                    "The following imported channel labels are not "
-                    "contained in the data: " + ",".join(unknown)
+                    "The following imported channel labels are not contained in the data: "
+                    + ",".join(unknown)
                 )
             else:
                 self.current["data"].info["bads"] = bads
@@ -296,7 +296,7 @@ class Model:
                     duration = float(annot[2].strip())
                     if onset > self.current["data"].n_times / fs:
                         raise InvalidAnnotationsError(
-                            "One or more annotations are outside " "the data range."
+                            "One or more annotations are outside the data range."
                         )
                     else:
                         descs.append(annot[0].strip())
@@ -637,8 +637,8 @@ class Model:
         # if moved to the front, the source index is increased by 1
         if source > target:
             source += 1
-        # if moved to the back, the new index (after removing the original
-        # data set) will be 1 less that the target index
+        # if moved to the back, the new index (after removing the original data set) will be
+        # 1 less that the target index
         else:
             target -= 1
         self.index = target

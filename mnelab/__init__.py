@@ -11,8 +11,8 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
-from .mainwindow import MainWindow
-from .model import Model
+from mnelab.mainwindow import MainWindow
+from mnelab.model import Model
 
 __version__ = "0.9.0.dev0"
 

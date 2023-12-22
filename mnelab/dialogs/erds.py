@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from .utils import select_all
+from mnelab.dialogs.utils import select_all
 
 
 class ERDSDialog(QDialog):

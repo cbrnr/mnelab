@@ -7,8 +7,8 @@ from pathlib import Path
 
 import mne
 
-from .mat import read_raw_mat
-from .xdf import read_raw_xdf
+from mnelab.io.mat import read_raw_mat
+from mnelab.io.xdf import read_raw_xdf
 
 
 def _read_unsupported(fname, **kwargs):

@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from .utils import IntTableWidgetItem
+from mnelab.dialogs.utils import IntTableWidgetItem
 
 
 class AnnotationsDialog(QDialog):

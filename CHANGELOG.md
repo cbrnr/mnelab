@@ -12,8 +12,6 @@
 ### Added
 - Show some keyboard shortcuts when no file is open ([#350](https://github.com/cbrnr/mnelab/pull/350) by [Clemens Brunner](https://github.com/cbrnr))
 - Always show a notification when running the dev version ([#351](https://github.com/cbrnr/mnelab/pull/351) by [Clemens Brunner](https://github.com/cbrnr))
-
-### Fixed
 - Helpful error message when opening an unsupported file type ([#360](https://github.com/cbrnr/mnelab/pull/360) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [0.8.4] - 2022-05-05
@@ -42,18 +40,18 @@
 ### Added
 - Add support to select and load multiple files at once ([#257](https://github.com/cbrnr/mnelab/pull/257) by [Florian Hofer](https://github.com/hofaflo))
 - Add drag and drop reordering to sidebar ([#261](https://github.com/cbrnr/mnelab/pull/261) by [Florian Hofer](https://github.com/hofaflo))
-- Add support for plotting evoked potentials averaged over channels (Plot -> Evoked comparison...) ([#256](https://github.com/cbrnr/mnelab/pull/256) by [Florian Hofer](https://github.com/hofaflo))
+- Add support for plotting evoked potentials averaged over channels (Plot – Evoked comparison...) ([#256](https://github.com/cbrnr/mnelab/pull/256) by [Florian Hofer](https://github.com/hofaflo))
 - Exceptions are now shown in an error message box instead of being silently caught ([#268](https://github.com/cbrnr/mnelab/pull/268) by [Florian Hofer](https://github.com/hofaflo))
 - Add "Details" button to "Select XDF Stream" dialog ([#266](https://github.com/cbrnr/mnelab/pull/266) by [Florian Hofer](https://github.com/hofaflo))
-- Add support for plotting evoked potentials for individual channels including topomaps (Plot -> Evoked...) ([#63](https://github.com/cbrnr/mnelab/pull/263) by [Florian Hofer](https://github.com/hofaflo))
-- Add support for plotting topomaps of evoked potentials (Plot -> Evoked topomaps...) ([#277](https://github.com/cbrnr/mnelab/pull/277) by [Florian Hofer](https://github.com/hofaflo))
+- Add support for plotting evoked potentials for individual channels including topomaps (Plot – Evoked...) ([#63](https://github.com/cbrnr/mnelab/pull/263) by [Florian Hofer](https://github.com/hofaflo))
+- Add support for plotting topomaps of evoked potentials (Plot – Evoked topomaps...) ([#277](https://github.com/cbrnr/mnelab/pull/277) by [Florian Hofer](https://github.com/hofaflo))
 - Add montage name and location count to infowidget ([#271](https://github.com/cbrnr/mnelab/pull/271) by [Florian Hofer](https://github.com/hofaflo))
 - Add possibility to specify `match_case`, `match_alias`, and `on_missing` to "Set montage..." ([#271](https://github.com/cbrnr/mnelab/pull/271) by [Florian Hofer](https://github.com/hofaflo))
 - Add "Clear montage" to "Edit" menu ([#271](https://github.com/cbrnr/mnelab/pull/271) by [Florian Hofer](https://github.com/hofaflo))
 - Add ability to pick channels by channel type ([#285](https://github.com/cbrnr/mnelab/pull/285) by [Florian Hofer](https://github.com/hofaflo))
-- Add a settings menu (File -> Settings...) ([#289](https://github.com/cbrnr/mnelab/pull/289) by [Florian Hofer](https://github.com/hofaflo))
+- Add a settings menu (File – Settings...) ([#289](https://github.com/cbrnr/mnelab/pull/289) by [Florian Hofer](https://github.com/hofaflo))
 - Add ability to import events from FIF files ([#284](https://github.com/cbrnr/mnelab/pull/284) by [Florian Hofer](https://github.com/hofaflo))
-- Add support for plotting ERDS topomaps (Plot -> ERDS topomaps...) ([#278](https://github.com/cbrnr/mnelab/pull/278) by [Florian Hofer](https://github.com/hofaflo))
+- Add support for plotting ERDS topomaps (Plot – ERDS topomaps...) ([#278](https://github.com/cbrnr/mnelab/pull/278) by [Florian Hofer](https://github.com/hofaflo))
 - Add possibility to apply significance masks to ERDS plots ([#279](https://github.com/cbrnr/mnelab/pull/279) by [Florian Hofer](https://github.com/hofaflo))
 - Add basic batch renaming of channels "Edit - Rename channels...") ([#303](https://github.com/cbrnr/mnelab/pull/303) by [Florian Hofer](https://github.com/hofaflo))
 - Add support for loading data from .MAT files ([#314](https://github.com/cbrnr/mnelab/pull/314) by [Clemens Brunner](https://github.com/cbrnr))
@@ -89,9 +87,6 @@
 - Fix loading of XDF files that contained additional dots in their file names ([#244](https://github.com/cbrnr/mnelab/pull/244) and [#246](https://github.com/cbrnr/mnelab/pull/246) by [Clemens Brunner](https://github.com/cbrnr))
 - Improve microvolts unit detection in XDF files ([#247](https://github.com/cbrnr/mnelab/pull/247) by [Clemens Brunner](https://github.com/cbrnr))
 
-### Changed
-- Remove requirements*.txt files ([#249](https://github.com/cbrnr/mnelab/pull/249) by [Clemens Brunner](https://github.com/cbrnr))
-
 ## [0.6.6] - 2021-11-19
 ### Added
 - Add option to use effective sampling rate when importing XDF files ([#236](https://github.com/cbrnr/mnelab/pull/236) by [Clemens Brunner](https://github.com/cbrnr))
@@ -116,12 +111,6 @@
 - XDF files with missing channel units can now be imported ([#225](https://github.com/cbrnr/mnelab/pull/225) by [Clemens Brunner](https://github.com/cbrnr))
 - Fix export to BrainVision files for newer versions of `pybv` ([#226](https://github.com/cbrnr/mnelab/pull/226) by [Clemens Brunner](https://github.com/cbrnr))
 - XDF files containing channels in microvolts are now correctly scaled during import ([#227](https://github.com/cbrnr/mnelab/pull/227) by [Clemens Brunner](https://github.com/cbrnr))
-
-### Changed
-- Rename `master` branch to `main` ([#193](https://github.com/cbrnr/mnelab/pull/193) by [Clemens Brunner](https://github.com/cbrnr))
-- Simplify dependencies ([#199](https://github.com/cbrnr/mnelab/pull/199) by [Clemens Brunner](https://github.com/cbrnr))
-- Switch to `setup.cfg` ([#216](https://github.com/cbrnr/mnelab/pull/216) by [Clemens Brunner](https://github.com/cbrnr))
-- Remove instructions and workarounds specific to `conda` environments ([#223](https://github.com/cbrnr/mnelab/pull/223) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [0.6.3] - 2021-01-05
 ### Added

@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from ..utils import PythonHighlighter
+from mnelab.utils import PythonHighlighter
 
 
 class HistoryDialog(QDialog):

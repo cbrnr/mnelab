@@ -29,14 +29,14 @@ from PySide6.QtWidgets import (
 )
 from pyxdf import resolve_streams
 
-from .dialogs import *  # noqa: F403
-from .io import writers
-from .io.mat import parse_mat
-from .io.xdf import get_xml, list_chunks
-from .model import InvalidAnnotationsError, LabelsNotFoundError, Model
-from .settings import SettingsDialog, read_settings, write_settings
-from .utils import count_locations, have, image_path, interface_style, natural_sort
-from .viz import (
+from mnelab.dialogs import *  # noqa: F403
+from mnelab.io import writers
+from mnelab.io.mat import parse_mat
+from mnelab.io.xdf import get_xml, list_chunks
+from mnelab.model import InvalidAnnotationsError, LabelsNotFoundError, Model
+from mnelab.settings import SettingsDialog, read_settings, write_settings
+from mnelab.utils import count_locations, have, image_path, interface_style, natural_sort
+from mnelab.viz import (
     _calc_tfr,
     plot_erds,
     plot_erds_topomaps,
@@ -44,7 +44,7 @@ from .viz import (
     plot_evoked_comparison,
     plot_evoked_topomaps,
 )
-from .widgets import EmptyWidget, InfoWidget
+from mnelab.widgets import EmptyWidget, InfoWidget
 
 
 class MainWindow(QMainWindow):
@@ -738,8 +738,8 @@ class MainWindow(QMainWindow):
                 QMessageBox.critical(
                     self,
                     "No matching channel names",
-                    "Channel names defined in the "
-                    "montage do not match any channel name in the data.",
+                    "Channel names defined in the montage do not match any channel name in "
+                    "the data.",
                 )
 
     def clear_montage(self):
@@ -805,8 +805,8 @@ class MainWindow(QMainWindow):
 
     def plot_data(self):
         """Plot data."""
-        # self.bad is needed to update history if bad channels are selected in
-        # the interactive plot window (see also self.eventFilter)
+        # self.bad is needed to update history if bad channels are selected in the
+        # interactive plot window (see also self.eventFilter)
         self.bads = self.model.current["data"].info["bads"]
         events = self.model.current["events"]
         nchan = self.model.current["data"].info["nchan"]

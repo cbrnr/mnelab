@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from .utils import FloatTableWidgetItem, IntTableWidgetItem
+from mnelab.dialogs.utils import FloatTableWidgetItem, IntTableWidgetItem
 
 
 class XDFStreamsDialog(QDialog):
