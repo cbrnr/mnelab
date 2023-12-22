@@ -37,6 +37,13 @@ full = [
     "pyEDFlib >= 0.1.22",  # edf
     "pybv >= 0.7.4",  # brainvision
 ]
+dev = [
+    "mnelab[full]",
+    "pre-commit",
+    "pytest",
+    "ruff",
+    "setuptools",
+]
 
 [project.gui-scripts]
 mnelab = "mnelab:main"
@@ -46,9 +53,6 @@ homepage = "https://github.com/cbrnr/mnelab"
 documentation = "https://mnelab.readthedocs.io/en/latest/"
 repository = "https://github.com/cbrnr/mnelab"
 changelog = "https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md"
-
-[tool.black]
-line-length = 92
 
 [tool.ruff]
 select = ["E", "F", "I", "W"]
