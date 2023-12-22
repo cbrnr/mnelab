@@ -1,5 +1,5 @@
 ## Contributing to MNELAB
-If you want to implement a new feature, fix an existing bug or help improve MNELAB in any other way (such as adding or improving documentation), please consider submitting a [pull request](https://github.com/cbrnr/mnelab/pulls) on GitHub. It might be a good idea to open an [issue](https://github.com/cbrnr/mnelab/issues) beforehand to discuss your planned contributions with the developers.
+If you want to implement a new feature, fix an existing bug, or help improve MNELAB in any other way (such as adding or improving documentation), please consider submitting a [pull request](https://github.com/cbrnr/mnelab/pulls) on GitHub. It might be a good idea to open an [issue](https://github.com/cbrnr/mnelab/issues) beforehand to discuss your planned contributions with the developers.
 
 Before you start working on your contribution, please make sure to follow the guidelines described in this document.
 
@@ -7,9 +7,7 @@ Before you start working on your contribution, please make sure to follow the gu
 ### Setting up the development environment
 You will need to have a working Python installation (make sure to use one of the supported Python versions). Installation methods vary across platforms, but if you don't have any specific preferences, the [official installers](https://www.python.org/) are a great option on Windows and macOS.
 
-If you use macOS, you can also install Python via [Homebrew](https://brew.sh/) (`brew install python` or `brew install python@3.8` for a specific version). On Linux, use the package manager to install Python if it is not already available.
-
-In addition to Python, you will also need a working [Git](https://git-scm.com/) installation. Again, installation methods are different depending on which platform you are using. If you are on Windows, you can install [Git for Windows](https://gitforwindows.org/). If you are on macOS, you should install the XCode command line tools with `xcode-select --install`.
+In addition to Python, you will also need a working [Git](https://git-scm.com/) installation. Again, installation methods are different depending on which platform you are using. If you are on Windows, you can install [Git for Windows](https://gitforwindows.org/). If you are on macOS, you can install the XCode command line tools with `xcode-select --install`.
 
 ### Forking and cloning MNELAB
 On the [GitHub website](https://github.com/cbrnr/mnelab), click on the "Fork" button in the top right corner to create your own fork of MNELAB (you need to be logged in with your GitHub account). Next, from the main page of your fork, click on the green "Clone or download" button. Copy the URL to the clipboard &ndash; you will need this URL to create your local MNELAB repository.
@@ -20,26 +18,22 @@ Open a terminal and change into the folder where you would like your MNELAB proj
 In a terminal, change to the `mnelab` folder containing your MNELAB fork. You can install the package and all dependencies with the following command:
 
 ```
-pip install -e .[full]
+pip install -e ".[full]"
 ```
 
 You might want to [create a virtual environment](https://docs.python.org/3/library/venv.html#creating-virtual-environments) instead of installing everything into your main environment.
 
 ### Creating a new branch
-Before you start working with the MNELAB codebase, you should create a new branch. In a terminal, type `git checkout -b <BRANCH_NAME>` (replacing `<BRANCH_NAME>` with a suitable name for your branch). You are now ready to work on your contribution.
+Before you start working with the MNELAB codebase, you should create a new branch. In a terminal, type `git switch -c <BRANCH_NAME>` (replacing `<BRANCH_NAME>` with a suitable name for your branch). You are now ready to work on your contribution.
 
 ### Making a pull request
-Once you have committed all of your changes, you can push them to your remote fork by typing `git push`. The GitHub page of your fork will now show a prompt to create a new pull request. Think of a good title and describe your contribution. If you have a corresponding issue, make sure to mention this issue in your description (it will be automatically closed after your pull request is merged).
+Once you have committed all of your changes, you can push them to your remote fork by typing `git push`. The GitHub page of your fork will now show a prompt to create a new pull request. Think of a good title and describe your contribution. If you have a corresponding issue, make sure to reference this issue in your description (it will be automatically closed after your pull request is merged).
 
 ### Adding a changelog entry
-Once you have an open pull request, add an entry to the top of `CHANGELOG.md` in the most suitable section: "Added" lists new features, "Fixed" lists bug fixes, and "Changed" lists all other (mostly internal) changes. Finally, make sure to mention your pull request and your name.
+Once you have an open pull request, add an entry to the top of `CHANGELOG.md` in the most suitable section: "Added" lists new features, "Fixed" lists bug fixes, and "Changed" lists changes to existing functionality. Finally, make sure to mention your pull request and your name.
 
 ### Coding style
-MNELAB adheres to [PEP8](https://www.python.org/dev/peps/pep-0008/) wherever possible (with the noteable exception that we use a maximum line length of 92 characters as opposed to the recommended 79 characters). Because PySide6 is based on the C++-based Qt library, most of its names use camel case (violating PEP8 recommendations) instead of snake case. In your own code, please use snake case whenever possible.
-
-MNELAB uses double quotes for strings by default unless this is not possible (e.g. use `"string"` instead of `'string'`, but `'this is "weird"'` uses single quotes because the string itself contains double quotes).
-
-Finally, use f-strings to format strings instead of `str.format` or the `%` operator.
+MNELAB uses [Black](https://black.readthedocs.io/en/stable/?badge=stable#) for code formatting wherever possible (with the noteable exception that we use a maximum line length of 92 characters as opposed to the default 88 characters). Because [PySide6](https://doc.qt.io/qtforpython-6/index.html) is based on the C++-based Qt library, most of its names use camel case instead of snake case. In your own code, please use snake case whereever possible.
 
 ## Making a PyPI release
 Follow these steps to make a new [PyPI](https://pypi.org/project/mnelab/) release (requires write permissions for GitHub and PyPI project sites):
