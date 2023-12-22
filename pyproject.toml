@@ -39,6 +39,7 @@ full = [
 ]
 dev = [
     "mnelab[full]",
+    "pre-commit",
     "pytest",
     "ruff",
     "setuptools",
