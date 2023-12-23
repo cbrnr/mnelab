@@ -93,7 +93,7 @@ def read_raw_xdf(
         XDF file data.
     """
     if len(stream_ids) > 1 and fs_new is None:
-        raise ValueError("Parameter 'fs_new' required when reading multiple streams.")
+        raise ValueError("Argument `fs_new` required when reading multiple streams.")
 
     streams, _ = load_xdf(fname)
     streams = {stream["info"]["stream_id"]: stream for stream in streams}
