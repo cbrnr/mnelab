@@ -68,6 +68,7 @@ def _resample_streams(streams, stream_ids, fs_new):
 def read_raw_xdf(
     fname,
     stream_ids,
+    marker_ids=None,
     prefix_markers=False,
     fs_new=None,
     *args,
@@ -80,9 +81,13 @@ def read_raw_xdf(
     fname : str
         Name of the XDF file.
     stream_ids : list[int]
-        IDs of the streams to load.
+        IDs of streams to load. A list of available streams can be obtained with
+        `pyxdf.resolve_streams(fname)`.
+    marker_ids : list[int] | None
+        IDs of marker streams to load. If None, load all marker streams. A marker stream is
+        a stream with a nominal sampling frequency of 0 Hz.
     prefix_markers : bool
-        Whether or not to prefix markers with their corresponding stream ID.
+        Whether or not to prefix marker streams with their corresponding stream ID.
     fs_new : float | None
         Resampling target frequency in Hz. If only one stream_id is given, this can be
         `None`, in which case no resampling is performed.
@@ -92,11 +97,18 @@ def read_raw_xdf(
     raw : mne.io.Raw
         XDF file data.
     """
+
     if len(stream_ids) > 1 and fs_new is None:
         raise ValueError("Argument `fs_new` required when reading multiple streams.")
 
     streams, _ = load_xdf(fname)
     streams = {stream["info"]["stream_id"]: stream for stream in streams}
+
+    if all(_is_markerstream(streams[stream_id]) for stream_id in stream_ids):
+        raise RuntimeError(
+            "Loading only marker streams is not supported, at least one stream must be a "
+            "regular stream."
+        )
 
     labels_all, types_all, units_all = [], [], []
     for stream_id in stream_ids:
@@ -107,9 +119,7 @@ def read_raw_xdf(
         try:
             for ch in stream["info"]["desc"][0]["channels"][0]["channel"]:
                 labels.append(str(ch["label"][0]))
-                if ch["type"] and ch["type"][0].lower() in get_channel_type_constants(
-                    include_defaults=True
-                ):
+                if ch["type"] and ch["type"][0].lower() in get_channel_type_constants(True):
                     types.append(ch["type"][0].lower())
                 else:
                     types.append("misc")
@@ -145,10 +155,9 @@ def read_raw_xdf(
 
     # convert marker streams to annotations
     for stream_id, stream in streams.items():
-        srate = float(stream["info"]["nominal_srate"][0])
-        n_chans = int(stream["info"]["channel_count"][0])
-        # marker streams with regular srate or more than 1 channel are not supported yet
-        if srate != 0 or n_chans > 1:
+        if marker_ids is not None and stream_id not in marker_ids:
+            continue
+        if not _is_markerstream(stream):
             continue
         onsets = stream["time_stamps"] - first_time
         prefix = f"{stream_id}-" if prefix_markers else ""
@@ -156,6 +165,12 @@ def read_raw_xdf(
         raw.annotations.append(onsets, [0] * len(onsets), descriptions)
 
     return raw
+
+
+def _is_markerstream(stream):
+    srate = float(stream["info"]["nominal_srate"][0])
+    n_chans = int(stream["info"]["channel_count"][0])
+    return srate == 0 and n_chans == 1
 
 
 def get_xml(fname):
