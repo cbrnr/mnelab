@@ -353,7 +353,7 @@ class Model:
         else:
             nchan = data.info["nchan"]
         chans = Counter(
-            [mne.io.pick.channel_type(data.info, i) for i in range(data.info["nchan"])]
+            [mne.channel_type(data.info, i) for i in range(data.info["nchan"])]
         )
         # sort by channel type (always move "stim" to end of list)
         chans = sorted(dict(chans).items(), key=lambda x: (x[0] == "stim", x[0]))

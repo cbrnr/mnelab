@@ -2,7 +2,8 @@
 #
 # License: BSD (3-clause)
 
-from mne.io.pick import channel_type, get_channel_type_constants
+from mne import channel_type
+from mne.io import get_channel_type_constants
 from PySide6.QtCore import QSortFilterProxyModel, Qt, Slot
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import (

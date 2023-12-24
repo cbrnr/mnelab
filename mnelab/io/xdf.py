@@ -5,7 +5,7 @@ from collections import defaultdict
 import mne
 import numpy as np
 import scipy.signal
-from mne.io.pick import get_channel_type_constants
+from mne.io import get_channel_type_constants
 from pyxdf import load_xdf
 from pyxdf.pyxdf import _read_varlen_int, open_xdf
 
