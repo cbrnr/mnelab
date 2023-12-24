@@ -352,9 +352,7 @@ class Model:
             nchan = f"{data.info['nchan']} ({nbads} bad)"
         else:
             nchan = data.info["nchan"]
-        chans = Counter(
-            [mne.channel_type(data.info, i) for i in range(data.info["nchan"])]
-        )
+        chans = Counter([mne.channel_type(data.info, i) for i in range(data.info["nchan"])])
         # sort by channel type (always move "stim" to end of list)
         chans = sorted(dict(chans).items(), key=lambda x: (x[0] == "stim", x[0]))
         chans = ", ".join([" ".join([str(v), k.upper()]) for k, v in chans])
