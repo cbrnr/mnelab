@@ -1,4 +1,7 @@
 ## [UNRELEASED] - YYYY-MM-DD
+### Removed
+- Remove support for Python 3.8 ([#396](https://github.com/cbrnr/mnelab/pull/396) by [Clemens Brunner](https://github.com/cbrnr))
+
 ### Fixed
 - Correctly scale data when exporting to BrainVision ([#376](https://github.com/cbrnr/mnelab/pull/376) by [Clemens Brunner](https://github.com/cbrnr))
 - Fix ERDS maps plotting not working for MNE >= 1.1 ([#382](https://github.com/cbrnr/mnelab/pull/382) by [Jérémy Frey](https://github.com/jfrey-xx))
@@ -96,12 +99,12 @@
 - Fix history for importing XDF files and dropping channels ([#234](https://github.com/cbrnr/mnelab/pull/234) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [0.6.5] - 2021-11-08
+### Changed
+- Remove support for Python 3.6 and 3.7 and add support for Python 3.10 ([#233](https://github.com/cbrnr/mnelab/pull/233) by [Clemens Brunner](https://github.com/cbrnr))
+
 ### Fixed
 - Fix EDF/BDF export of data containing stim channels ([#230](https://github.com/cbrnr/mnelab/pull/230) by [Clemens Brunner](https://github.com/cbrnr))
 - Close EDF/BDF file in export ([#232](https://github.com/cbrnr/mnelab/pull/232) by [Clemens Brunner](https://github.com/cbrnr))
-
-### Changed
-- Remove support for Python 3.6 and 3.7 and add support for Python 3.10 ([#233](https://github.com/cbrnr/mnelab/pull/233) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [0.6.4] - 2021-10-19
 ### Fixed
@@ -116,12 +119,12 @@
 ### Added
 - Add Python 3.9 support ([#190](https://github.com/cbrnr/mnelab/pull/190) by [Clemens Brunner](https://github.com/cbrnr))
 
+### Changed
+- PySide2 installed by default if wrapped Qt bindings (PyQt5, PySide2) are not found ([#187](https://github.com/cbrnr/mnelab/pull/187) by [Guillaume Dollé](https://github.com/gdolle))
+
 ### Fixed
 - Fix export functionality ([#184](https://github.com/cbrnr/mnelab/pull/184) by [Guillaume Dollé](https://github.com/gdolle))
 - Fix ICA computation in separate process ([#192](https://github.com/cbrnr/mnelab/pull/192) by [Clemens Brunner](https://github.com/cbrnr))
-
-### Changed
-- PySide2 installed by default if wrapped Qt bindings (PyQt5, PySide2) are not found ([#187](https://github.com/cbrnr/mnelab/pull/187) by [Guillaume Dollé](https://github.com/gdolle))
 
 ## [0.6.2] - 2020-10-30
 ### Fixed
@@ -139,12 +142,12 @@
 - Add syntax highlighting in history dialog ([#179](https://github.com/cbrnr/mnelab/pull/179) by [Clemens Brunner](https://github.com/cbrnr))
 - Add copy to clipboard in history dialog ([#180](https://github.com/cbrnr/mnelab/pull/180) by [Clemens Brunner](https://github.com/cbrnr))
 
+### Changed
+- Required dependencies are now listed only in one place (requirements.txt) ([#172](https://github.com/cbrnr/mnelab/pull/172) by [Clemens Brunner](https://github.com/cbrnr))
+
 ### Fixed
 - Show correct signal length in seconds ([#168](https://github.com/cbrnr/mnelab/pull/168) by [Clemens Brunner](https://github.com/cbrnr))
 - Fix export functionality ([#177](https://github.com/cbrnr/mnelab/pull/177) by [Guillaume Dollé](https://github.com/gdolle) and [Clemens Brunner](https://github.com/cbrnr))
-
-### Changed
-- Required dependencies are now listed only in one place (requirements.txt) ([#172](https://github.com/cbrnr/mnelab/pull/172) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [0.5.7] - 2020-07-13
 ### Fixed
@@ -163,9 +166,6 @@
 - Add support for appending epoched data ([#135](https://github.com/cbrnr/mnelab/pull/135) by [Lukas Stranger](https://github.com/stralu))
 - Add support for NIRS data and conversion to optical density and haemoglobin ([#145](https://github.com/cbrnr/mnelab/pull/145) by [Robert Luke](https://github.com/rob-luke) and [Clemens Brunner](https://github.com/cbrnr))
 
-### Fixed
-- Fix loading of BrainVision files that have an extension other than .eeg ([#142](https://github.com/cbrnr/mnelab/pull/142) by [Clemens Brunner](https://github.com/cbrnr))
-
 ### Changed
 - Use [QtPy](https://github.com/spyder-ide/qtpy) to support both PyQt5 and PySide2 ([#118](https://github.com/cbrnr/mnelab/pull/118) by [Clemens Brunner](https://github.com/cbrnr))
 - Remove resource file and include icons directly ([#125](https://github.com/cbrnr/mnelab/pull/125) by [Clemens Brunner](https://github.com/cbrnr))
@@ -175,20 +175,23 @@
 - Add function `utils.has_locations` to determine if channel locations are available ([#147](https://github.com/cbrnr/mnelab/pull/147) by [Clemens Brunner](https://github.com/cbrnr))
 - Refactor readers and writers ([#148](https://github.com/cbrnr/mnelab/pull/148) by [Clemens Brunner](https://github.com/cbrnr))
 
+### Fixed
+- Fix loading of BrainVision files that have an extension other than .eeg ([#142](https://github.com/cbrnr/mnelab/pull/142) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [0.5.3] - 2020-02-03
 ### Added
 - Add history for setting reference ([#100](https://github.com/cbrnr/mnelab/pull/100) by [Clemens Brunner](https://github.com/cbrnr))
 - Add history for setting montage, switching/duplicating data sets, plot PSD, and plotting data with events ([#109](https://github.com/cbrnr/mnelab/pull/109) by [Clemens Brunner](https://github.com/cbrnr))
 
-### Fixed
-- Fix blurry icons on macOS HiDPI screens ([#102](https://github.com/cbrnr/mnelab/pull/102) by [Clemens Brunner](https://github.com/cbrnr))
-- Use `mne.channels.make_standard_montage` instead of deprecated `mne.channels.read_montage` ([#107](https://github.com/cbrnr/mnelab/pull/107) by [Clemens Brunner](https://github.com/cbrnr))
-- Ensure MNELAB is run using a "framework build" of Python on `conda` installations on macOS ([#119](https://github.com/cbrnr/mnelab/pull/119) by [Richard Höchenberger](https://github.com/hoechenberger))
-
 ### Changed
 - Use environment markers in `setup.py` for `install_requires` ([#105](https://github.com/cbrnr/mnelab/pull/105) by [Clemens Brunner](https://github.com/cbrnr))
 - Bump required minimum MNE version to 0.19 ([#107](https://github.com/cbrnr/mnelab/pull/107) by [Clemens Brunner](https://github.com/cbrnr))
 - Spawn ICA process pool via `Pebble` instead of `multiprocessing` to avoid Python segfaulting on macOS `conda` installations ([#119](https://github.com/cbrnr/mnelab/pull/119) by [Richard Höchenberger](https://github.com/hoechenberger))
+
+### Fixed
+- Fix blurry icons on macOS HiDPI screens ([#102](https://github.com/cbrnr/mnelab/pull/102) by [Clemens Brunner](https://github.com/cbrnr))
+- Use `mne.channels.make_standard_montage` instead of deprecated `mne.channels.read_montage` ([#107](https://github.com/cbrnr/mnelab/pull/107) by [Clemens Brunner](https://github.com/cbrnr))
+- Ensure MNELAB is run using a "framework build" of Python on `conda` installations on macOS ([#119](https://github.com/cbrnr/mnelab/pull/119) by [Richard Höchenberger](https://github.com/hoechenberger))
 
 ## [0.5.2] - 2019-10-30
 ### Fixed
@@ -217,13 +220,13 @@
 - Add support for loading Neuroscan .cnt, EGI Netstation .mff, and Nexstim eXimia .nxe file formats ([#77](https://github.com/cbrnr/mnelab/pull/77) by [Clemens Brunner](https://github.com/cbrnr))
 - Add support for cropping data ([#78](https://github.com/cbrnr/mnelab/pull/78) by [Clemens Brunner](https://github.com/cbrnr))
 
+### Changed
+- The internally used ``have`` dictionary now contains version numbers for existing modules ([#76](https://github.com/cbrnr/mnelab/pull/76) by [Clemens Brunner](https://github.com/cbrnr))
+
 ### Fixed
 - Correctly report file size for BrainVision data ([#69](https://github.com/cbrnr/mnelab/pull/69) by [Clemens Brunner](https://github.com/cbrnr))
 - Retain events when creating epochs ([#73](https://github.com/cbrnr/mnelab/pull/73) by [Clemens Brunner](https://github.com/cbrnr))
 - Better handling of file extensions (especially when there are multiple extensions such as .fif.gz) ([#74](https://github.com/cbrnr/mnelab/pull/74) by [Clemens Brunner](https://github.com/cbrnr))
-
-### Changed
-- The internally used ``have`` dictionary now contains version numbers for existing modules ([#76](https://github.com/cbrnr/mnelab/pull/76) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [0.3.0] - 2019-08-13
 ### Added

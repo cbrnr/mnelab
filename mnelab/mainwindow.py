@@ -13,7 +13,7 @@ from sys import version_info
 
 import mne
 import numpy as np
-from mne.io.pick import channel_type
+from mne import channel_type
 from PySide6.QtCore import QEvent, QMetaObject, QModelIndex, QObject, Qt, QUrl, Slot
 from PySide6.QtGui import QAction, QDesktopServices, QDropEvent, QIcon, QKeySequence
 from PySide6.QtWidgets import (
@@ -1084,7 +1084,7 @@ class MainWindow(QMainWindow):
         # use first stim channel as default in dialog
         default_stim = 0
         for i in range(info["nchan"]):
-            if mne.io.pick.channel_type(info, i) == "stim":
+            if channel_type(info, i) == "stim":
                 default_stim = i
                 break
         dialog = FindEventsDialog(self, info["ch_names"], default_stim)

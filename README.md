@@ -58,19 +58,19 @@ python -m mnelab
 
 ### Dependencies
 
-MNELAB requires Python ≥ 3.8 and the following packages:
-- [mne](https://mne.tools/stable/index.html) ≥ 1.2.0
-- [PySide6](https://www.qt.io/qt-for-python) ≥ 6.4.2
-- [numpy](http://www.numpy.org/) ≥ 1.20.0
-- [scipy](https://scipy.org/) ≥ 1.7.0
-- [matplotlib](https://matplotlib.org/) ≥ 3.6.2
-- [pyxdf](https://github.com/xdf-modules/xdf-Python) ≥ 1.16.0
-- [pyobjc-framework-Cocoa](https://pyobjc.readthedocs.io/en/latest/) ≥ 7.3.0 (macOS only)
+MNELAB requires Python ≥ 3.9 and the following packages:
+- [mne](https://mne.tools/stable/index.html) ≥ 1.6.0
+- [PySide6](https://www.qt.io/qt-for-python) ≥ 6.6.0
+- [numpy](http://www.numpy.org/) ≥ 1.25.0
+- [scipy](https://scipy.org/) ≥ 1.10.0
+- [matplotlib](https://matplotlib.org/) ≥ 3.8.0
+- [pyxdf](https://github.com/xdf-modules/xdf-Python) ≥ 1.16.4
+- [pyobjc-framework-Cocoa](https://pyobjc.readthedocs.io/en/latest/) ≥ 10.0 (macOS only)
 
 Optional dependencies provide additional features:
-- [scikit-learn](https://scikit-learn.org/stable/) ≥ 1.0.0 (ICA computation with FastICA)
+- [scikit-learn](https://scikit-learn.org/stable/) ≥ 1.3.0 (ICA computation with FastICA)
 - [python-picard](https://pierreablin.github.io/picard/) ≥ 0.7.0 (ICA computation with PICARD)
-- [pyEDFlib](https://pyedflib.readthedocs.io/en/latest/) ≥ 0.1.22 (EDF/BDF export)
+- [pyEDFlib](https://pyedflib.readthedocs.io/en/latest/) ≥ 0.1.35 (EDF/BDF export)
 - [pybv](https://pybv.readthedocs.io/en/stable/) ≥ 0.7.4 (BrainVision VHDR/VMRK/EEG export)
 
 

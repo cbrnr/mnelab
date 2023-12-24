@@ -3,7 +3,7 @@
 # License: BSD (3-clause)
 
 from mne.channels.channels import _unit2human
-from mne.io.pick import get_channel_type_constants
+from mne.io import get_channel_type_constants
 from PySide6.QtCore import Slot
 from PySide6.QtWidgets import (
     QDialog,
