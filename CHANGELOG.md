@@ -2,6 +2,7 @@
 ### Added
 - Add automatic light/dark theme switching on Windows ([#398](https://github.com/cbrnr/mnelab/pull/398) by [Clemens Brunner](https://github.com/cbrnr))
 - Add support for importing .npy files ([#213](https://github.com/cbrnr/mnelab/pull/213) by [jgcaffari1](https://github.com/jgcaffari1) and [Clemens Brunner](https://github.com/cbrnr))
+- Add ability to import selected XDF marker streams (previously, all marker streams were imported) ([#395](https://github.com/cbrnr/mnelab/pull/395) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### Removed
 - Remove support for Python 3.8 ([#396](https://github.com/cbrnr/mnelab/pull/396) by [Clemens Brunner](https://github.com/cbrnr))
