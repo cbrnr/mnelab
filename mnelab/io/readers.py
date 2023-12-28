@@ -21,7 +21,7 @@ def _read_unsupported(fname, **kwargs):
     raise ValueError(msg)
 
 
-def read_numpy(fname, sfreq, *args, **kwargs):
+def read_numpy(fname, sfreq, transpose=False, *args, **kwargs):
     """Load 2D array from .npy file.
 
     Parameters
@@ -30,6 +30,8 @@ def read_numpy(fname, sfreq, *args, **kwargs):
         File name to load.
     sfreq : float
         Sampling frequency.
+    transpose : bool
+        Whether to transpose the array.
 
     Returns
     -------
@@ -37,6 +39,8 @@ def read_numpy(fname, sfreq, *args, **kwargs):
         Raw object.
     """
     npy = np.load(fname)
+    if transpose:
+        npy = npy.T
 
     if npy.ndim != 2:
         raise ValueError(f"Array must have two dimensions (got {npy.ndim}).")
@@ -46,6 +50,25 @@ def read_numpy(fname, sfreq, *args, **kwargs):
     raw = mne.io.RawArray(npy, info=info)
     raw._filenames = [fname]
     return raw
+
+
+def parse_npy(fname):
+    """Return shape of array contained in .npy file.
+
+    Parameters
+    ----------
+    fname : str
+        File name to load.
+
+    Returns
+    -------
+    shape : tuple[int, int]
+        The shape of the array.
+    """
+    with open(fname, "rb") as f:
+        np.lib.format.read_magic(f)
+        shape, _, _ = np.lib.format.read_array_header_1_0(f)
+    return shape
 
 
 # supported read file formats
