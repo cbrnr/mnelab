@@ -1,5 +1,11 @@
-from qtpy.QtWidgets import (QGridLayout, QDoubleSpinBox, QVBoxLayout, QDialogButtonBox,
-                            QDialog, QLabel)
+from PySide6.QtWidgets import (
+    QDialog,
+    QDialogButtonBox,
+    QDoubleSpinBox,
+    QGridLayout,
+    QLabel,
+    QVBoxLayout,
+)
 
 
 class NpyDialog(QDialog):

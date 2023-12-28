@@ -12,7 +12,6 @@ from mnelab.io.mat import read_raw_mat
 from mnelab.io.xdf import read_raw_xdf
 
 
-
 def _read_unsupported(fname, **kwargs):
     ext = "".join(Path(fname).suffixes)
     msg = f"Unsupported file type ({ext})."
