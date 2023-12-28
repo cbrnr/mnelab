@@ -1,6 +1,8 @@
 ## [UNRELEASED] - YYYY-MM-DD
 ### Added
 - Add automatic light/dark theme switching on Windows ([#398](https://github.com/cbrnr/mnelab/pull/398) by [Clemens Brunner](https://github.com/cbrnr))
+- Add support for importing .npy files ([#213](https://github.com/cbrnr/mnelab/pull/213) by [jgcaffari1](https://github.com/jgcaffari1) and [Clemens Brunner](https://github.com/cbrnr))
+
 
 ### Removed
 - Remove support for Python 3.8 ([#396](https://github.com/cbrnr/mnelab/pull/396) by [Clemens Brunner](https://github.com/cbrnr))
@@ -117,9 +119,6 @@
 - XDF files with missing channel units can now be imported ([#225](https://github.com/cbrnr/mnelab/pull/225) by [Clemens Brunner](https://github.com/cbrnr))
 - Fix export to BrainVision files for newer versions of `pybv` ([#226](https://github.com/cbrnr/mnelab/pull/226) by [Clemens Brunner](https://github.com/cbrnr))
 - XDF files containing channels in microvolts are now correctly scaled during import ([#227](https://github.com/cbrnr/mnelab/pull/227) by [Clemens Brunner](https://github.com/cbrnr))
-
-### Added
-- Add support for importing .npy files ([#213](https://github.com/cbrnr/mnelab/pull/213) by [jgcaffari1](https://github.com/jgcaffari1) and [Clemens Brunner](https://github.com/cbrnr))
 
 ## [0.6.3] - 2021-01-05
 ### Added
