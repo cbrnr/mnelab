@@ -6,6 +6,7 @@ from functools import partial
 from pathlib import Path
 
 import mne
+import numpy as np
 
 from mnelab.io.mat import read_raw_mat
 from mnelab.io.xdf import read_raw_xdf
@@ -18,6 +19,56 @@ def _read_unsupported(fname, **kwargs):
     if suggest is not None:
         msg += f" Try reading a {suggest} file instead."
     raise ValueError(msg)
+
+
+def read_numpy(fname, sfreq, transpose=False, *args, **kwargs):
+    """Load 2D array from .npy file.
+
+    Parameters
+    ----------
+    fname : str
+        File name to load.
+    sfreq : float
+        Sampling frequency.
+    transpose : bool
+        Whether to transpose the array.
+
+    Returns
+    -------
+    raw : mne.io.Raw
+        Raw object.
+    """
+    npy = np.load(fname)
+    if transpose:
+        npy = npy.T
+
+    if npy.ndim != 2:
+        raise ValueError(f"Array must have two dimensions (got {npy.ndim}).")
+
+    # create Raw structure
+    info = mne.create_info(npy.shape[0], sfreq)
+    raw = mne.io.RawArray(npy, info=info)
+    raw._filenames = [fname]
+    return raw
+
+
+def parse_npy(fname):
+    """Return shape of array contained in .npy file.
+
+    Parameters
+    ----------
+    fname : str
+        File name to load.
+
+    Returns
+    -------
+    shape : tuple[int, int]
+        The shape of the array.
+    """
+    with open(fname, "rb") as f:
+        np.lib.format.read_magic(f)
+        shape, _, _ = np.lib.format.read_array_header_1_0(f)
+    return shape
 
 
 # supported read file formats
@@ -38,6 +89,7 @@ supported = {
     ".xdfz": read_raw_xdf,
     ".xdf.gz": read_raw_xdf,
     ".mat": read_raw_mat,
+    ".npy": read_numpy,
 }
 
 # known but unsupported file formats

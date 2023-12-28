@@ -32,6 +32,7 @@ from pyxdf import resolve_streams
 from mnelab.dialogs import *  # noqa: F403
 from mnelab.io import writers
 from mnelab.io.mat import parse_mat
+from mnelab.io.readers import parse_npy
 from mnelab.io.xdf import get_xml, list_chunks
 from mnelab.model import InvalidAnnotationsError, LabelsNotFoundError, Model
 from mnelab.settings import SettingsDialog, read_settings, write_settings
@@ -614,6 +615,10 @@ class MainWindow(QMainWindow):
                         fs=dialog.fs,
                         transpose=dialog.transpose,
                     )
+            elif ext == ".npy":
+                dialog = NpyDialog(self, parse_npy(fname))
+                if dialog.exec_():
+                    self.model.load(fname, dialog.fs, dialog.transpose)
             else:  # all other file formats
                 try:
                     self.model.load(fname)
