@@ -40,7 +40,6 @@ def main():
         app.setWindowIcon(QIcon(f"{Path(__file__).parent}/icons/mnelab-logo.svg"))
     if sys.platform.startswith("win"):
         app.setStyle("fusion")
-    app.setAttribute(Qt.ApplicationAttribute.AA_UseHighDpiPixmaps)
     model = Model()
     model.view = MainWindow(model)
     if len(sys.argv) > 1:  # open files from command line arguments
