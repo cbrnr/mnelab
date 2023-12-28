@@ -1,4 +1,7 @@
 ## [UNRELEASED] - YYYY-MM-DD
+### Added
+- Add automatic light/dark theme switching on Windows ([#398](https://github.com/cbrnr/mnelab/pull/398) by [Clemens Brunner](https://github.com/cbrnr))
+
 ### Removed
 - Remove support for Python 3.8 ([#396](https://github.com/cbrnr/mnelab/pull/396) by [Clemens Brunner](https://github.com/cbrnr))
 

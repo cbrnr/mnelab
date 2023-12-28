@@ -35,7 +35,7 @@ from mnelab.io.mat import parse_mat
 from mnelab.io.xdf import get_xml, list_chunks
 from mnelab.model import InvalidAnnotationsError, LabelsNotFoundError, Model
 from mnelab.settings import SettingsDialog, read_settings, write_settings
-from mnelab.utils import count_locations, have, image_path, interface_style, natural_sort
+from mnelab.utils import count_locations, have, image_path, natural_sort
 from mnelab.viz import (
     _calc_tfr,
     plot_erds,
@@ -1401,9 +1401,8 @@ class MainWindow(QMainWindow):
     def event(self, ev):
         """Catch system events."""
         if ev.type() == QEvent.PaletteChange:  # detect theme switches
-            style = interface_style()  # light or dark
-            if style is not None:
-                QIcon.setThemeName(style)
+            if (style := QApplication.styleHints().colorScheme()) != Qt.ColorScheme.Unknown:
+                QIcon.setThemeName(style.name.lower())
             else:
                 QIcon.setThemeName("light")  # fallback
         return super().event(ev)
