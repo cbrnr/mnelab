@@ -20,19 +20,6 @@ def image_path(fname):
     return str((root / "images" / Path(fname)).resolve())
 
 
-def interface_style():
-    """Return current platform interface style (light or dark)."""
-    try:  # currently only works on macOS
-        from Foundation import NSUserDefaults as NSUD
-    except ImportError:
-        return None
-    style = NSUD.standardUserDefaults().stringForKey_("AppleInterfaceStyle")
-    if style == "Dark":
-        return "dark"
-    else:
-        return "light"
-
-
 def natural_sort(lst):
     """Sort a list in natural order."""
 
