@@ -8,7 +8,7 @@
 
 ### Fixed
 - Correctly scale data when exporting to BrainVision ([#376](https://github.com/cbrnr/mnelab/pull/376) by [Clemens Brunner](https://github.com/cbrnr))
-- Fix ERDS maps plotting not working for MNE >= 1.1 ([#382](https://github.com/cbrnr/mnelab/pull/382) by [Jérémy Frey](https://github.com/jfrey-xx))
+- Fix ERDS maps plotting not working for MNE ≥ 1.1 ([#382](https://github.com/cbrnr/mnelab/pull/382) by [Jérémy Frey](https://github.com/jfrey-xx))
 
 ## [0.8.6] - 2023-04-05
 ### Added
@@ -175,7 +175,7 @@
 - Remove resource file and include icons directly ([#125](https://github.com/cbrnr/mnelab/pull/125) by [Clemens Brunner](https://github.com/cbrnr))
 - Improve internal logic of the ICA dialog ([#136](https://github.com/cbrnr/mnelab/pull/136) by [Lukas Stranger](https://github.com/stralu) and [Clemens Brunner](https://github.com/cbrnr))
 - Remove Pebble again and use `multiprocessing.Pool` ([#140](https://github.com/cbrnr/mnelab/pull/140) by [Clemens Brunner](https://github.com/cbrnr))
-- Require MNE >= 0.20 ([#146](https://github.com/cbrnr/mnelab/pull/146) by [Clemens Brunner](https://github.com/cbrnr))
+- Require MNE ≥ 0.20 ([#146](https://github.com/cbrnr/mnelab/pull/146) by [Clemens Brunner](https://github.com/cbrnr))
 - Add function `utils.has_locations` to determine if channel locations are available ([#147](https://github.com/cbrnr/mnelab/pull/147) by [Clemens Brunner](https://github.com/cbrnr))
 - Refactor readers and writers ([#148](https://github.com/cbrnr/mnelab/pull/148) by [Clemens Brunner](https://github.com/cbrnr))
 
