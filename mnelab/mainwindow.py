@@ -568,8 +568,8 @@ class MainWindow(QMainWindow):
             ext = "".join(Path(fname).suffixes)
 
             if any([ext.endswith(e) for e in (".xdf", ".xdfz", ".xdf.gz")]):  # XDF
-                rows, disabled = [], []
-                for idx, s in enumerate(resolve_streams(fname)):
+                rows = []
+                for s in resolve_streams(fname):
                     rows.append(
                         [
                             s["stream_id"],
@@ -580,32 +580,23 @@ class MainWindow(QMainWindow):
                             s["nominal_srate"],
                         ]
                     )
-                    is_marker = s["nominal_srate"] == 0 or s["channel_format"] == "string"
-                    if is_marker:  # disable marker streams
-                        disabled.append(idx)
-
-                enabled = list(set(range(len(rows))) - set(disabled))
-                if enabled:
-                    selected = enabled[0]
-                else:
-                    selected = None
                 dialog = XDFStreamsDialog(
                     self,
                     rows,
                     fname=fname,
-                    selected=selected,
-                    disabled=disabled,
+                    selected=None,
                 )
                 if dialog.exec():
-                    rows = [r.row() for r in dialog.view.selectionModel().selectedRows()]
-                    stream_ids = [dialog.view.item(r, 0).value() for r in rows]
-                    prefix_markers = dialog.prefix_markers
-                    kwargs = {}
-                    if prefix_markers:
-                        kwargs["prefix_markers"] = prefix_markers
+                    fs_new = None
                     if dialog.resample.isChecked():
-                        kwargs["fs_new"] = float(dialog.fs_new.value())
-                    self.model.load(fname, stream_ids=stream_ids, **kwargs)
+                        fs_new = float(dialog.fs_new.value())
+                    self.model.load(
+                        fname,
+                        stream_ids=dialog.selected_streams,
+                        marker_ids=dialog.selected_markers,
+                        prefix_markers=dialog.prefix_markers,
+                        fs_new=fs_new,
+                    )
             elif ext.lower() == ".mat":
                 dialog = MatDialog(self, Path(fname).name, parse_mat(fname))
                 if dialog.exec():

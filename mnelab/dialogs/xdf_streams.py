@@ -22,7 +22,7 @@ from mnelab.dialogs.utils import FloatTableWidgetItem, IntTableWidgetItem
 
 
 class XDFStreamsDialog(QDialog):
-    def __init__(self, parent, rows, fname, selected=None, disabled=None):
+    def __init__(self, parent, rows, fname, selected=None):
         super().__init__(parent)
         self.setWindowTitle("Select XDF Stream")
         self.fname = fname
@@ -35,9 +35,7 @@ class XDFStreamsDialog(QDialog):
             self.view.setItem(i, 3, IntTableWidgetItem(row[3]))
             self.view.setItem(i, 4, QTableWidgetItem(row[4]))
             self.view.setItem(i, 5, FloatTableWidgetItem(row[5]))
-            if i in disabled:
-                for col in range(6):
-                    self.view.item(i, col).setFlags(Qt.NoItemFlags)
+
         self.view.setHorizontalHeaderLabels(
             [
                 "ID",
@@ -71,8 +69,6 @@ class XDFStreamsDialog(QDialog):
 
         self._prefix_markers = QCheckBox("Prefix markers with stream ID")
         self._prefix_markers.setChecked(False)
-        if len(disabled) < 2:
-            self._prefix_markers.setEnabled(False)
 
         hbox1 = QHBoxLayout()
         hbox1.addWidget(self.resample)
@@ -113,15 +109,23 @@ class XDFStreamsDialog(QDialog):
     @Slot()
     def toggle_buttons(self):
         # toggle the resample selection
-        if len(self.view.selectionModel().selectedRows()) > 1:
-            self.resample.setChecked(True)
+        if len(self.selected_streams) > 1:
             self.resample.setEnabled(False)
-        else:
-            self.resample.setChecked(False)
+            self.resample.setChecked(True)
+        elif len(self.selected_streams) == 1:
             self.resample.setEnabled(True)
+            self.resample.setChecked(False)
+        else:
+            self.resample.setEnabled(False)
+            self.resample.setChecked(False)
 
-        # if there is no selection disable OK
-        if not self.view.selectionModel().selectedRows():
+        if len(self.selected_markers) > 1:
+            self._prefix_markers.setEnabled(True)
+        else:
+            self._prefix_markers.setEnabled(False)
+
+        # if there is no stream selection disable OK
+        if not self.selected_streams:
             self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(False)
         else:
             self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(True)
@@ -140,3 +144,23 @@ class XDFStreamsDialog(QDialog):
 
             suggested_fs = max(counts, key=counts.get)
             self.fs_new.setValue(suggested_fs)
+
+    @property
+    def selected_streams(self):
+        streams = []
+        for row in self.view.selectionModel().selectedRows():
+            type_ = self.view.item(row.row(), 2).text()
+            fs = self.view.item(row.row(), 5).value()
+            if type_ != "Markers" and fs != 0:
+                streams.append(self.view.item(row.row(), 0).value())
+        return streams
+
+    @property
+    def selected_markers(self):
+        markers = []
+        for row in self.view.selectionModel().selectedRows():
+            type_ = self.view.item(row.row(), 2).text()
+            fs = self.view.item(row.row(), 5).value()
+            if type_ == "Markers" and fs == 0:
+                markers.append(self.view.item(row.row(), 0).value())
+        return markers
