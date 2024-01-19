@@ -268,7 +268,7 @@ class Model:
             with open(fname) as f:
                 f.readline()  # skip header
                 for line in f:
-                    p, d = [int(token.strip()) for token in line.split(",")]
+                    p, d = (int(token.strip()) for token in line.split(","))
                     pos.append(p)
                     desc.append(d)
             events = np.column_stack((pos, desc))
