@@ -84,8 +84,8 @@ def read_raw_xdf(
         IDs of streams to load. A list of available streams can be obtained with
         `pyxdf.resolve_streams(fname)`.
     marker_ids : list[int] | None
-        IDs of marker streams to load. If None, load all marker streams. A marker stream is
-        a stream with a nominal sampling frequency of 0 Hz.
+        IDs of marker streams to load. If `None`, load all marker streams. A marker stream
+        is a stream with a nominal sampling frequency of 0 Hz.
     prefix_markers : bool
         Whether or not to prefix marker streams with their corresponding stream ID.
     fs_new : float | None
