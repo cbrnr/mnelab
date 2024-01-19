@@ -24,13 +24,14 @@ jobs:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
       with:
-        python-version: '3.10'
+        python-version: '3.11'
     - name: Build wheel
       run: |
         pip install wheel
         pip wheel -w ~/.wheelhouse .
     - uses: actions/upload-artifact@v4
       with:
+        name: mnelab-wheel
         path: ~/.wheelhouse/mnelab*.whl
 
   build-sdist:
@@ -48,6 +49,7 @@ jobs:
           python -m build --sdist
       - uses: actions/upload-artifact@v4
         with:
+          name: mnelab-sdist
           path: dist/*.tar.gz
 
   upload-pypi:
@@ -57,9 +59,10 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: artifact
+          pattern: mnelab-*
+          merge-multiple: true
           path: dist
-      - uses: pypa/gh-action-pypi-publish@release/v1
+      - uses: pypa/gh-action-pypi-publish@v1.8.11
         with:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
