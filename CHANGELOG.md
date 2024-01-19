@@ -1,3 +1,5 @@
+## [UNRELEASED] - YYYY-MM-DD
+
 ## [0.9.0] - 2024-01-19
 ### Added
 - Add automatic light/dark theme switching on Windows ([#398](https://github.com/cbrnr/mnelab/pull/398) by [Clemens Brunner](https://github.com/cbrnr))
