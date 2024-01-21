@@ -818,16 +818,20 @@ class MainWindow(QMainWindow):
             title=self.model.current["name"],
             scalings="auto",
             show=False,
+            block=False,
         )
         if events is not None:
             hist = f"data.plot(events=events, n_channels={nchan})"
         else:
             hist = f"data.plot(n_channels={nchan})"
         self.model.history.append(hist)
-        win = fig.canvas.manager.window
-        win.setWindowTitle(self.model.current["name"])
-        win.statusBar().hide()  # not necessary since matplotlib 3.3
-        win.installEventFilter(self)  # detect if the figure is closed
+        if mne.viz.get_browser_backend() == "matplotlib":
+            win = fig.canvas.manager.window
+            win.setWindowTitle(self.model.current["name"])
+            win.statusBar().hide()  # not necessary since matplotlib 3.3
+            fig.canvas.mpl_connect("close_event", self._plot_closed)
+        else:
+            fig.gotClosed.connect(partial(self._plot_closed, None))
 
         # prevent closing the window with the escape key
         try:
@@ -1391,14 +1395,11 @@ class MainWindow(QMainWindow):
             print("\n".join(self.model.history))
         QApplication.quit()
 
-    def eventFilter(self, source, event):
-        # currently the only source is the raw plot window
-        if event.type() == QEvent.Close:
-            self.data_changed()
-            bads = self.model.current["data"].info["bads"]
-            if self.bads != bads:
-                self.model.history.append(f'data.info["bads"] = {bads}')
-        return QObject.eventFilter(self, source, event)
+    def _plot_closed(self, _):
+        self.data_changed()
+        bads = self.model.current["data"].info["bads"]
+        if self.bads != bads:
+            self.model.history.append(f'data.info["bads"] = {bads}')
 
     def event(self, ev):
         """Catch system events."""
