@@ -1,4 +1,6 @@
 ## [UNRELEASED] - YYYY-MM-DD
+### Changed
+- Use Qt Resource System to include icons ([#408](https://github.com/cbrnr/mnelab/pull/408) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [0.9.0] - 2024-01-19
 ### Added
