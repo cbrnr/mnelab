@@ -78,6 +78,9 @@ class MainWindow(QMainWindow):
         # trigger theme setting
         self.event(QEvent(QEvent.PaletteChange))
 
+        # set MNE browser backend to Matplotlib
+        mne.viz.set_browser_backend("matplotlib")
+
         self.actions = {}  # contains all actions
 
         # initialize menus
