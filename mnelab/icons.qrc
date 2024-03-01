@@ -1,0 +1,26 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/">
+    <file>icons/dark/index.theme</file>
+    <file>icons/dark/actions/chan-props.svg</file>
+    <file>icons/dark/actions/epoch-data.svg</file>
+    <file>icons/dark/actions/filter-data.svg</file>
+    <file>icons/dark/actions/find-events.svg</file>
+    <file>icons/dark/actions/open-file.svg</file>
+    <file>icons/dark/actions/plot-data.svg</file>
+    <file>icons/dark/actions/plot-locations.svg</file>
+    <file>icons/dark/actions/plot-psd.svg</file>
+    <file>icons/dark/actions/run-ica.svg</file>
+    <file>icons/dark/actions/xdf-metadata.svg</file>
+    <file>icons/light/index.theme</file>
+    <file>icons/light/actions/chan-props.svg</file>
+    <file>icons/light/actions/epoch-data.svg</file>
+    <file>icons/light/actions/filter-data.svg</file>
+    <file>icons/light/actions/find-events.svg</file>
+    <file>icons/light/actions/open-file.svg</file>
+    <file>icons/light/actions/plot-data.svg</file>
+    <file>icons/light/actions/plot-locations.svg</file>
+    <file>icons/light/actions/plot-psd.svg</file>
+    <file>icons/light/actions/run-ica.svg</file>
+    <file>icons/light/actions/xdf-metadata.svg</file>
+</qresource>
+</RCC>
