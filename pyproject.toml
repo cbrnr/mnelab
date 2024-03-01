@@ -54,10 +54,13 @@ repository = "https://github.com/cbrnr/mnelab"
 changelog = "https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md"
 
 [tool.ruff]
-select = ["E", "F", "I", "W", "UP"]
 line-length = 92
+exclude = ["rc_icons.py"]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
 "mainwindow.py" = ["F405"]
 
