@@ -29,7 +29,6 @@ from PySide6.QtWidgets import (
 )
 from pyxdf import resolve_streams
 
-import mnelab.rc_icons  # noqa: F401
 from mnelab.dialogs import *  # noqa: F403
 from mnelab.io import writers
 from mnelab.io.mat import parse_mat
@@ -76,6 +75,10 @@ class MainWindow(QMainWindow):
         self.recent = [recent for recent in self.recent if recent is not None]
 
         # trigger theme setting
+        QIcon.setThemeSearchPaths(
+            [f"{Path(__file__).parent}/icons"] + QIcon.themeSearchPaths()
+        )
+        QIcon.setFallbackThemeName("light")
         self.event(QEvent(QEvent.PaletteChange))
 
         # set MNE browser backend to Matplotlib
