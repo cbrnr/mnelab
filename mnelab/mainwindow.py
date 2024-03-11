@@ -831,7 +831,7 @@ class MainWindow(QMainWindow):
             win.statusBar().hide()  # not necessary since matplotlib 3.3
             fig.canvas.mpl_connect("close_event", self._plot_closed)
         else:
-            fig.gotClosed.connect(partial(self._plot_closed, None))
+            fig.gotClosed.connect(self._plot_closed)
 
         # prevent closing the window with the escape key
         try:
@@ -1395,7 +1395,7 @@ class MainWindow(QMainWindow):
             print("\n".join(self.model.history))
         QApplication.quit()
 
-    def _plot_closed(self, _):
+    def _plot_closed(self):
         self.data_changed()
         bads = self.model.current["data"].info["bads"]
         if self.bads != bads:
