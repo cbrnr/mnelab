@@ -829,14 +829,10 @@ class MainWindow(QMainWindow):
             win.setWindowTitle(self.model.current["name"])
             win.statusBar().hide()  # not necessary since matplotlib 3.3
             fig.canvas.mpl_connect("close_event", self._plot_closed)
+            fig.mne.close_key = None
         else:
             fig.gotClosed.connect(self._plot_closed)
-
-        # prevent closing the window with the escape key
-        try:
-            fig.mne.close_key = None
-        except AttributeError:  # does not exist in older MNE versions
-            pass
+            fig.mne.keyboard_shortcuts.pop("escape")
 
         fig.show()
 
