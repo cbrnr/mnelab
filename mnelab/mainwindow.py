@@ -834,7 +834,7 @@ class MainWindow(QMainWindow):
 
         # prevent closing the window with the escape key
         try:
-            fig._mne_params["close_key"] = None
+            fig.mne.close_key = None
         except AttributeError:  # does not exist in older MNE versions
             pass
 
