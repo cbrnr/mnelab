@@ -818,7 +818,6 @@ class MainWindow(QMainWindow):
             title=self.model.current["name"],
             scalings="auto",
             show=False,
-            block=False,
         )
         if events is not None:
             hist = f"data.plot(events=events, n_channels={nchan})"
@@ -1393,9 +1392,9 @@ class MainWindow(QMainWindow):
         if self.model.history:
             print("\n# Command History\n")
             print("\n".join(self.model.history))
-        QApplication.quit()
+        event.accept()
 
-    def _plot_closed(self):
+    def _plot_closed(self, event=None):
         self.data_changed()
         bads = self.model.current["data"].info["bads"]
         if self.bads != bads:
