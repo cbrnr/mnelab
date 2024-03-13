@@ -60,7 +60,7 @@ python -m mnelab
 
 MNELAB requires Python ≥ 3.9 and the following packages:
 - [mne](https://mne.tools/stable/index.html) ≥ 1.6.0
-- [PySide6](https://www.qt.io/qt-for-python) ≥ 6.6.0
+- [PySide6](https://www.qt.io/qt-for-python) ≥ 6.6.2
 - [numpy](http://www.numpy.org/) ≥ 1.25.0
 - [scipy](https://scipy.org/) ≥ 1.10.0
 - [matplotlib](https://matplotlib.org/) ≥ 3.8.0

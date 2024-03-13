@@ -14,7 +14,7 @@ from sys import version_info
 import mne
 import numpy as np
 from mne import channel_type
-from PySide6.QtCore import QEvent, QMetaObject, QModelIndex, QObject, Qt, QUrl, Slot
+from PySide6.QtCore import QEvent, QMetaObject, QModelIndex, Qt, QUrl, Slot
 from PySide6.QtGui import QAction, QDesktopServices, QDropEvent, QIcon, QKeySequence
 from PySide6.QtWidgets import (
     QApplication,
@@ -824,16 +824,15 @@ class MainWindow(QMainWindow):
         else:
             hist = f"data.plot(n_channels={nchan})"
         self.model.history.append(hist)
-        win = fig.canvas.manager.window
-        win.setWindowTitle(self.model.current["name"])
-        win.statusBar().hide()  # not necessary since matplotlib 3.3
-        win.installEventFilter(self)  # detect if the figure is closed
-
-        # prevent closing the window with the escape key
-        try:
-            fig._mne_params["close_key"] = None
-        except AttributeError:  # does not exist in older MNE versions
-            pass
+        if mne.viz.get_browser_backend() == "matplotlib":
+            win = fig.canvas.manager.window
+            win.setWindowTitle(self.model.current["name"])
+            win.statusBar().hide()  # not necessary since matplotlib 3.3
+            fig.canvas.mpl_connect("close_event", self._plot_closed)
+            fig.mne.close_key = None
+        else:
+            fig.gotClosed.connect(self._plot_closed)
+            fig.mne.keyboard_shortcuts.pop("escape")
 
         fig.show()
 
@@ -1389,16 +1388,13 @@ class MainWindow(QMainWindow):
         if self.model.history:
             print("\n# Command History\n")
             print("\n".join(self.model.history))
-        QApplication.quit()
+        event.accept()
 
-    def eventFilter(self, source, event):
-        # currently the only source is the raw plot window
-        if event.type() == QEvent.Close:
-            self.data_changed()
-            bads = self.model.current["data"].info["bads"]
-            if self.bads != bads:
-                self.model.history.append(f'data.info["bads"] = {bads}')
-        return QObject.eventFilter(self, source, event)
+    def _plot_closed(self, event=None):
+        self.data_changed()
+        bads = self.model.current["data"].info["bads"]
+        if self.bads != bads:
+            self.model.history.append(f'data.info["bads"] = {bads}')
 
     def event(self, ev):
         """Catch system events."""
