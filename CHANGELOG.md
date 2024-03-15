@@ -1,4 +1,7 @@
 ## [UNRELEASED] - YYYY-MM-DD
+### Added
+- Add option to select browser backend in settings ([#415](https://github.com/cbrnr/mnelab/pull/415) by [Clemens Brunner](https://github.com/cbrnr))
+
 ### Fixed
 - Prepare support for plotting raw data with MNE-Qt-Browser ([#403](https://github.com/cbrnr/mnelab/pull/403) by [Martin Schulz](https://github.com/marsipu) and [Clemens Brunner](https://github.com/cbrnr))
 
