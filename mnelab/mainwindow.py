@@ -74,15 +74,21 @@ class MainWindow(QMainWindow):
         # remove None entries from self.recent
         self.recent = [recent for recent in self.recent if recent is not None]
 
+        # plot backend
+        self.plot_backends = ["Matplotlib"]
+        if have["mne-qt-browser"]:
+            self.plot_backends.append("Qt")
+        plot_backend = settings["plot_backend"]
+        if plot_backend not in self.plot_backends:
+            plot_backend = "Matplotlib"
+        mne.viz.set_browser_backend(plot_backend)
+
         # trigger theme setting
         QIcon.setThemeSearchPaths(
             [f"{Path(__file__).parent}/icons"] + QIcon.themeSearchPaths()
         )
         QIcon.setFallbackThemeName("light")
         self.event(QEvent(QEvent.PaletteChange))
-
-        # set MNE browser backend to Matplotlib
-        mne.viz.set_browser_backend("matplotlib")
 
         self.actions = {}  # contains all actions
 
@@ -158,7 +164,7 @@ class MainWindow(QMainWindow):
         file_menu.addSeparator()
         self.actions["settings"] = file_menu.addAction(
             "Settings...",
-            SettingsDialog(self).exec,
+            self.settings,
         )
         file_menu.addSeparator()
         self.actions["quit"] = file_menu.addAction("&Quit", self.close, QKeySequence.Quit)
@@ -1250,6 +1256,10 @@ class MainWindow(QMainWindow):
         url = QUrl("https://mnelab.readthedocs.io/")
         if not QDesktopServices.openUrl(url):
             QMessageBox.warning(self, "Open Url", "Could not open url")
+
+    def settings(self):
+        SettingsDialog(self, self.plot_backends).exec()
+        mne.viz.set_browser_backend(read_settings("plot_backend"))
 
     def auto_duplicate(self):
         """Automatically duplicate current data set.
