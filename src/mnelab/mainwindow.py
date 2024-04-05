@@ -94,9 +94,8 @@ class MainWindow(QMainWindow):
 
         # initialize menus
         file_menu = self.menuBar().addMenu("&File")
-        icon = QIcon.fromTheme("open-file")
         self.actions["open_file"] = file_menu.addAction(
-            icon, "&Open...", self.open_data, QKeySequence.Open
+            QIcon.fromTheme("open-file"), "&Open...", self.open_data, QKeySequence.Open
         )
         self.recent_menu = file_menu.addMenu("Open recent")
         self.recent_menu.aboutToShow.connect(self._update_recent_menu)
@@ -153,8 +152,8 @@ class MainWindow(QMainWindow):
             lambda: self.export_file(model.export_ica, "Export ICA", "*.fif *.fif.gz"),
         )
         file_menu.addSeparator()
-        icon = QIcon.fromTheme("xdf-metadata")
         self.actions["xdf_metadata"] = file_menu.addAction(
+            QIcon.fromTheme("xdf-metadata"),
             "Show XDF metadata",
             self.xdf_metadata,
         )
@@ -163,6 +162,7 @@ class MainWindow(QMainWindow):
         )
         file_menu.addSeparator()
         self.actions["settings"] = file_menu.addAction(
+            QIcon.fromTheme("settings"),
             "Settings...",
             self.settings,
         )
@@ -261,13 +261,11 @@ class MainWindow(QMainWindow):
         )
 
         tools_menu = self.menuBar().addMenu("&Tools")
-        icon = QIcon.fromTheme("filter-data")
         self.actions["filter"] = tools_menu.addAction(
-            icon, "&Filter data...", self.filter_data
+            QIcon.fromTheme("filter-data"), "&Filter data...", self.filter_data
         )
-        icon = QIcon.fromTheme("find-events")
         self.actions["find_events"] = tools_menu.addAction(
-            icon, "Find &events...", self.find_events
+            QIcon.fromTheme("find-events"), "Find &events...", self.find_events
         )
         self.actions["events_from_annotations"] = tools_menu.addAction(
             "Create events from annotations", self.events_from_annotations
@@ -286,17 +284,17 @@ class MainWindow(QMainWindow):
         )
         tools_menu.addSeparator()
 
-        icon = QIcon.fromTheme("run-ica")
-        self.actions["run_ica"] = tools_menu.addAction(icon, "Run &ICA...", self.run_ica)
+        self.actions["run_ica"] = tools_menu.addAction(
+            QIcon.fromTheme("run-ica"), "Run &ICA...", self.run_ica
+        )
         self.actions["apply_ica"] = tools_menu.addAction("Apply &ICA", self.apply_ica)
         tools_menu.addSeparator()
         self.actions["interpolate_bads"] = tools_menu.addAction(
             "Interpolate bad channels...", self.interpolate_bads
         )
         tools_menu.addSeparator()
-        icon = QIcon.fromTheme("epoch-data")
         self.actions["epoch_data"] = tools_menu.addAction(
-            icon, "Create epochs...", self.epoch_data
+            QIcon.fromTheme("epoch-data"), "Create epochs...", self.epoch_data
         )
         self.actions["drop_bad_epochs"] = tools_menu.addAction(
             "Drop bad epochs...",
@@ -353,6 +351,8 @@ class MainWindow(QMainWindow):
         self.toolbar.addAction(self.actions["find_events"])
         self.toolbar.addAction(self.actions["epoch_data"])
         self.toolbar.addAction(self.actions["run_ica"])
+        self.toolbar.addSeparator()
+        self.toolbar.addAction(self.actions["settings"])
         self.toolbar.setMovable(False)
         self.setUnifiedTitleAndToolBarOnMac(True)
         if settings["toolbar"]:
