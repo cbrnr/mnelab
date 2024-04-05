@@ -164,6 +164,7 @@ class MainWindow(QMainWindow):
         self.actions["settings"] = file_menu.addAction(
             QIcon.fromTheme("settings"),
             "Settings...",
+            QKeySequence(Qt.CTRL | Qt.Key_Comma),
             self.settings,
         )
         file_menu.addSeparator()
@@ -380,7 +381,9 @@ class MainWindow(QMainWindow):
 
         self.infowidget = QStackedWidget()
         self.infowidget.addWidget(InfoWidget())
-        emptywidget = EmptyWidget(itemgetter("open_file", "history")(self.actions))
+        emptywidget = EmptyWidget(
+            itemgetter("open_file", "history", "settings")(self.actions)
+        )
         self.infowidget.addWidget(emptywidget)
         splitter.addWidget(self.infowidget)
         width = splitter.size().width()
