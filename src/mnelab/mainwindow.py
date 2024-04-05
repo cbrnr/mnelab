@@ -198,11 +198,11 @@ class MainWindow(QMainWindow):
         )
         edit_menu.addSeparator()
         self.actions["annotations"] = edit_menu.addAction(
-            "Edit &Annotations...",
+            "Edit &annotations...",
             self.edit_annotations,
         )
         self.actions["events"] = edit_menu.addAction(
-            "Edit &Events...",
+            "Edit &events...",
             self.edit_events,
         )
 
@@ -215,7 +215,7 @@ class MainWindow(QMainWindow):
         plot_menu = self.menuBar().addMenu("&Plot")
         self.actions["plot_data"] = plot_menu.addAction(
             QIcon.fromTheme("plot-data"),
-            "Plot &Data",
+            "Plot &data",
             self.plot_data,
         )
         self.actions["plot_psd"] = plot_menu.addAction(
