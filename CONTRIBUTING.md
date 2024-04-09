@@ -44,7 +44,7 @@ Once you have committed all of your changes, you can push them to your remote fo
 
 MNELAB bundles its icons in the `icons` folder, which contains two themes "light" and "dark". If you want to modify an existing icon or add a new one, make sure to apply your changes to both the "light" and "dark" themes. All icons are in SVG format and taken from the [Material Symbols](https://fonts.google.com/icons) icon set.
 
-If you want to add a new icon, download it from the Material Symbols website, rename it (use a suitable name reflecting its intended action), and place it in the `icons/light/actions` folder. Next, edit the SVG file in a text editor and add the `fill="black"` attribute to the `<svg>` tag (this attribute might already be present as `fill="none"`, in which case you should change it to `fill="black"`). Finally, copy the SVG file to the `icons/dark/actions` folder and change the `fill` attribute to `fill="white"`.
+If you want to add a new icon, download it from the Material Symbols website, rename it (use a suitable name reflecting its intended action), and place it in the `icons/light/actions` folder. Next, edit the SVG file in a text editor and add the `fill="black"` attribute to the `<svg>` tag. Finally, copy the SVG file to the `icons/dark/actions` folder and change the `fill` attribute to `fill="white"`.
 
 
 ### Adding a changelog entry
