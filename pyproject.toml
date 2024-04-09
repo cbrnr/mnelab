@@ -56,7 +56,6 @@ changelog = "https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md"
 
 [tool.ruff]
 line-length = 92
-exclude = ["rc_icons.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W", "UP"]
