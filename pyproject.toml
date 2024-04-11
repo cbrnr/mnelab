@@ -9,6 +9,7 @@ license = {text = "BSD 3-Clause"}
 authors = [
     {name = "Clemens Brunner", email = "clemens.brunner@gmail.com"},
 ]
+readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
     "License :: OSI Approved :: BSD License",
@@ -28,7 +29,7 @@ dependencies = [
     "pyxdf >= 1.16.4",
     "pyobjc-framework-Cocoa >= 10.0; platform_system=='Darwin'",
 ]
-dynamic = ["version", "readme"]
+dynamic = ["version"]
 
 [project.optional-dependencies]
 full = [
@@ -66,4 +67,3 @@ select = ["E", "F", "I", "W", "UP"]
 
 [tool.setuptools.dynamic]
 version = {attr = "mnelab.__version__"}
-readme = {file = "README.md", content-type = "text/markdown"}
