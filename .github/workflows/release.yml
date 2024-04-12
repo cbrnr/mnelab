@@ -31,7 +31,9 @@ jobs:
         python -m build
     - uses: actions/upload-artifact@v4
       with:
-        path: dist
+        path: |
+          dist/*.whl
+          dist/*.tar.gz
 
   upload-pypi:
     name: Upload to PyPI
@@ -39,8 +41,6 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/download-artifact@v4
-        with:
-          path: dist
       # - uses: pypa/gh-action-pypi-publish@v1.8.14
       #   with:
       #     user: __token__
