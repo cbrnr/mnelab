@@ -44,6 +44,7 @@ dev = [
     "build",
     "pre-commit",
     "pytest",
+    "pytest-qt",
     "ruff",
 ]
 
