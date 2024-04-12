@@ -57,7 +57,7 @@ repository = "https://github.com/cbrnr/mnelab"
 changelog = "https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md"
 
 [tool.hatch.version]
-path = "mnelab/__init__.py"
+path = "src/mnelab/__init__.py"
 
 [tool.ruff]
 line-length = 92
