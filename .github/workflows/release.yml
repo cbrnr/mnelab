@@ -31,18 +31,18 @@ jobs:
         python -m build
     - uses: actions/upload-artifact@v4
       with:
-        path: |
-          dist/*.whl
-          dist/*.tar.gz
+        name: dist
+        path: dist
 
   upload-pypi:
     name: Upload to PyPI
     needs: build
     runs-on: ubuntu-22.04
     steps:
-      - name: pwd
-        run: pwd
       - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
       # - uses: pypa/gh-action-pypi-publish@v1.8.14
       #   with:
       #     user: __token__
