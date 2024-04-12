@@ -1,13 +1,13 @@
 name: Release
 
 on:
-  release:
-    types: [published]
-  workflow_dispatch:
+  # release:
+  #   types: [published]
+  push
 
 jobs:
   style:
-    name: Style
+    name: Check style
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
@@ -16,53 +16,30 @@ jobs:
         python-version: '3.12'
     - uses: pre-commit/action@v3.0.1
 
-  build-wheel:
+  build:
     needs: style
-    name: Build wheel
+    name: Build package
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
       with:
         python-version: '3.12'
-    - name: Build wheel
+    - name: Build sdist and wheel
       run: |
-        pip install wheel
-        pip wheel -w ~/.wheelhouse .
+        pip install build
+        python -m build
     - uses: actions/upload-artifact@v4
       with:
-        name: mnelab-wheel
-        path: ~/.wheelhouse/mnelab*.whl
-
-  build-sdist:
-    needs: style
-    name: Build sdist
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Build sdist
-        run: |
-          pip install build
-          python -m build --sdist
-      - uses: actions/upload-artifact@v4
-        with:
-          name: mnelab-sdist
-          path: dist/*.tar.gz
+        path: dist/*
 
   upload-pypi:
     name: Upload to PyPI
-    needs: [build-wheel, build-sdist]
+    needs: build
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/download-artifact@v4
-        with:
-          pattern: mnelab-*
-          merge-multiple: true
-          path: dist
-      - uses: pypa/gh-action-pypi-publish@v1.8.14
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_API_TOKEN }}
+      # - uses: pypa/gh-action-pypi-publish@v1.8.14
+      #   with:
+      #     user: __token__
+      #     password: ${{ secrets.PYPI_API_TOKEN }}
