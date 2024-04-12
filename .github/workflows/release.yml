@@ -31,8 +31,7 @@ jobs:
         python -m build
     - uses: actions/upload-artifact@v4
       with:
-        name: dist
-        path: dist/*
+        path: dist
 
   upload-pypi:
     name: Upload to PyPI
@@ -41,7 +40,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: dist
+          path: dist
       # - uses: pypa/gh-action-pypi-publish@v1.8.14
       #   with:
       #     user: __token__
