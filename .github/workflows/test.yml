@@ -42,6 +42,6 @@ jobs:
     - name: Install wheel
       run: |
         pip install pytest-qt pytest-xvfb
-        pip install "mnelab[dev] @ file:///$(pwd)/$(echo dist/mnelab*.whl)"
+        pip install "$(pwd)/$(echo dist/mnelab*.whl)[dev]"
     - name: Run tests
       run: pytest
