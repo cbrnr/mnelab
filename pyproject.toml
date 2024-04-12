@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "mnelab"
@@ -9,9 +9,11 @@ license = {text = "BSD 3-Clause"}
 authors = [
     {name = "Clemens Brunner", email = "clemens.brunner@gmail.com"},
 ]
+readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
     "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -28,7 +30,7 @@ dependencies = [
     "pyxdf >= 1.16.4",
     "pyobjc-framework-Cocoa >= 10.0; platform_system=='Darwin'",
 ]
-dynamic = ["version", "readme"]
+dynamic = ["version"]
 
 [project.optional-dependencies]
 full = [
@@ -39,10 +41,11 @@ full = [
 ]
 dev = [
     "mnelab[full]",
+    "build",
     "pre-commit",
     "pytest",
+    "pytest-qt",
     "ruff",
-    "setuptools",
 ]
 
 [project.gui-scripts]
@@ -54,6 +57,9 @@ documentation = "https://mnelab.readthedocs.io/en/latest/"
 repository = "https://github.com/cbrnr/mnelab"
 changelog = "https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md"
 
+[tool.hatch.version]
+path = "src/mnelab/__init__.py"
+
 [tool.ruff]
 line-length = 92
 
@@ -63,7 +69,3 @@ select = ["E", "F", "I", "W", "UP"]
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
 "mainwindow.py" = ["F405"]
-
-[tool.setuptools.dynamic]
-version = {attr = "mnelab.__version__"}
-readme = {file = "README.md", content-type = "text/markdown"}
