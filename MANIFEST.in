@@ -1,5 +1,0 @@
-include CHANGELOG.md
-include CONTRIBUTING.md
-include mnelab.png
-recursive-include mnelab/images *
-recursive-include mnelab/icons *
