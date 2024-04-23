@@ -3,14 +3,16 @@
 # License: BSD (3-clause)
 
 from PySide6.QtCore import QPoint, QSettings, QSize, Slot
+from PySide6.QtGui import Qt
 from PySide6.QtWidgets import (
+    QComboBox,
     QDialog,
     QDialogButtonBox,
-    QDoubleSpinBox,
     QGridLayout,
     QHBoxLayout,
     QLabel,
     QPushButton,
+    QSpinBox,
 )
 
 _DEFAULTS = {
@@ -20,6 +22,7 @@ _DEFAULTS = {
     "statusbar": True,
     "size": QSize(700, 500),
     "pos": QPoint(100, 100),
+    "plot_backend": "Matplotlib",
 }
 
 
@@ -60,33 +63,42 @@ def write_settings(**kwargs):
 
 
 class SettingsDialog(QDialog):
-    def __init__(self, parent):
+    def __init__(self, parent, backends):
         super().__init__(parent)
         self.setWindowTitle("MNELAB settings")
 
         grid = QGridLayout(self)
 
-        grid.addWidget(QLabel("Maximum recent files:"), 0, 0)
-        self.max_recent = QDoubleSpinBox()
+        backend = read_settings("plot_backend")
+        if backend not in backends:
+            backend = _DEFAULTS["plot_backend"]
+        grid.addWidget(QLabel("Plot backend:"), 0, 0)
+        self.plot_backend = QComboBox()
+        self.plot_backend.addItems(backends)
+        self.plot_backend.setCurrentIndex(backends.index(backend))
+        grid.addWidget(self.plot_backend, 0, 1)
+
+        grid.addWidget(QLabel("Maximum recent files:"), 1, 0)
+        self.max_recent = QSpinBox()
         self.max_recent.setRange(5, 25)
         self.max_recent.setValue(_get_value("max_recent"))
-        self.max_recent.setDecimals(0)
-        grid.addWidget(self.max_recent, 0, 1)
+        self.max_recent.setAlignment(Qt.AlignRight)
+        grid.addWidget(self.max_recent, 1, 1)
 
         self.reset_to_defaults = QPushButton("Reset to defaults")
         self.reset_to_defaults.clicked.connect(self.reset_settings)
-        grid.addWidget(self.reset_to_defaults, 1, 0)
+        grid.addWidget(self.reset_to_defaults, 2, 0)
 
         self.reset_to_defaults = QPushButton("Reset window")
         self.reset_to_defaults.clicked.connect(self.reset_window)
-        grid.addWidget(self.reset_to_defaults, 2, 0)
+        grid.addWidget(self.reset_to_defaults, 3, 0)
 
         hbox = QHBoxLayout()
         self.buttonbox = QDialogButtonBox(
             QDialogButtonBox.Apply | QDialogButtonBox.Ok | QDialogButtonBox.Cancel
         )
         hbox.addWidget(self.buttonbox)
-        grid.addLayout(hbox, 3, 0, 1, 2)
+        grid.addLayout(hbox, 4, 0, 1, 2)
         self.buttonbox.button(QDialogButtonBox.Apply).clicked.connect(self.apply_settings)
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.accepted.connect(self.apply_settings)
@@ -97,10 +109,12 @@ class SettingsDialog(QDialog):
         QSettings().setValue("max_recent", int(self.max_recent.text()))
         self.parent().recent = self.parent().recent[: _get_value("max_recent")]
         QSettings().setValue("recent", self.parent().recent)
+        QSettings().setValue("plot_backend", self.plot_backend.currentText())
 
     @Slot()
     def reset_settings(self):
         self.max_recent.setValue(_DEFAULTS["max_recent"])
+        self.plot_backend.setValue(_DEFAULTS["plot_backend"])
 
     @Slot()
     def reset_window(self):

@@ -22,8 +22,8 @@ classifiers = [
 ]
 keywords = ["EEG", "MEG", "MNE", "GUI", "electrophysiology"]
 dependencies = [
-    "mne >= 1.6.0",
-    "PySide6 >= 6.6.2",
+    "mne >= 1.7.0",
+    "PySide6 >= 6.6.2, < 6.7.0",
     "numpy >= 1.25.0",
     "scipy >= 1.10.0",
     "matplotlib >= 3.8.0",
@@ -38,6 +38,7 @@ full = [
     "python-picard >= 0.7.0",  # picard
     "pyEDFlib >= 0.1.35",  # edf
     "pybv >= 0.7.4",  # brainvision
+    "mne-qt-browser >= 0.6.2",  # alternative browser backend
 ]
 dev = [
     "mnelab[full]",
