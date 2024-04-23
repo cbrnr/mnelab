@@ -82,6 +82,8 @@ class MainWindow(QMainWindow):
         if plot_backend not in self.plot_backends:
             plot_backend = "Matplotlib"
         mne.viz.set_browser_backend(plot_backend)
+        self.model.history.append(f'mne.viz.set_browser_backend("{plot_backend}")')
+        self.model.history.append("")
 
         # trigger theme setting
         QIcon.setThemeSearchPaths(
@@ -1261,8 +1263,12 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Open Url", "Could not open url")
 
     def settings(self):
+        old_backend = read_settings("plot_backend")
         SettingsDialog(self, self.plot_backends).exec()
-        mne.viz.set_browser_backend(read_settings("plot_backend"))
+        new_backend = read_settings("plot_backend")
+        if old_backend != new_backend:
+            mne.viz.set_browser_backend(new_backend)
+            self.model.history.append(f'mne.viz.set_browser_backend("{new_backend}")')
 
     def auto_duplicate(self):
         """Automatically duplicate current data set.
