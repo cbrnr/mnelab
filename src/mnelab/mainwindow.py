@@ -14,8 +14,8 @@ from sys import version_info
 import mne
 import numpy as np
 from mne import channel_type
-from PySide6.QtCore import QEvent, QMetaObject, QModelIndex, Qt, QUrl, Slot
-from PySide6.QtGui import QAction, QDesktopServices, QDropEvent, QIcon, QKeySequence
+from PySide6.QtCore import QEvent, QMetaObject, QModelIndex, QObject, Qt, QUrl, Slot
+from PySide6.QtGui import QAction, QDesktopServices, QIcon, QKeySequence
 from PySide6.QtWidgets import (
     QApplication,
     QFileDialog,
@@ -71,6 +71,8 @@ class MainWindow(QMainWindow):
         self.resize(settings["size"])
         self.move(settings["pos"])
 
+        self.installEventFilter(self)
+
         # remove None entries from self.recent
         self.recent = [recent for recent in self.recent if recent is not None]
 
@@ -90,7 +92,6 @@ class MainWindow(QMainWindow):
             [f"{Path(__file__).parent}/icons"] + QIcon.themeSearchPaths()
         )
         QIcon.setFallbackThemeName("light")
-        self.event(QEvent(QEvent.PaletteChange))
 
         self.actions = {}  # contains all actions
 
@@ -1378,12 +1379,16 @@ class MainWindow(QMainWindow):
             self.statusBar().hide()
         write_settings(statusbar=not self.statusBar().isHidden())
 
-    @Slot(QDropEvent)
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
             event.acceptProposedAction()
 
-    @Slot(QDropEvent)
+    def dragMoveEvent(self, event):
+        event.acceptProposedAction()
+
+    def dragLeaveEvent(self, event):
+        event.accept()
+
     def dropEvent(self, event):
         mime = event.mimeData()
         if mime.hasUrls():
@@ -1393,6 +1398,7 @@ class MainWindow(QMainWindow):
                     self.open_data(url.toLocalFile())
                 except FileNotFoundError as e:
                     QMessageBox.critical(self, "File not found", str(e))
+        event.acceptProposedAction()
 
     @Slot(QEvent)
     def closeEvent(self, event):
@@ -1415,11 +1421,10 @@ class MainWindow(QMainWindow):
         if self.bads != bads:
             self.model.history.append(f'data.info["bads"] = {bads}')
 
-    def event(self, ev):
-        """Catch system events."""
-        if ev.type() == QEvent.PaletteChange:  # detect theme switches
+    def eventFilter(self, source, event):
+        if event.type() == QEvent.PaletteChange:
             if (style := QApplication.styleHints().colorScheme()) != Qt.ColorScheme.Unknown:
                 QIcon.setThemeName(style.name.lower())
             else:
                 QIcon.setThemeName("light")  # fallback
-        return super().event(ev)
+        return QObject.eventFilter(self, source, event)
