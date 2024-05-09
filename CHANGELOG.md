@@ -4,6 +4,7 @@
 
 ### Fixed
 - Prepare support for plotting raw data with MNE-Qt-Browser ([#403](https://github.com/cbrnr/mnelab/pull/403) by [Martin Schulz](https://github.com/marsipu) and [Clemens Brunner](https://github.com/cbrnr))
+- Fix drag and drop for PySide ≥ 6.7.0 ([#422](https://github.com/cbrnr/mnelab/pull/422) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [0.9.0] - 2024-01-19
 ### Added
