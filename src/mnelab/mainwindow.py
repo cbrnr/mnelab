@@ -14,7 +14,7 @@ from sys import version_info
 import mne
 import numpy as np
 from mne import channel_type
-from PySide6.QtCore import QEvent, QMetaObject, QModelIndex, QObject, Qt, QUrl, Slot
+from PySide6.QtCore import QEvent, QMetaObject, QModelIndex, QObject, Qt, QUrl, Signal, Slot
 from PySide6.QtGui import QAction, QDesktopServices, QIcon, QKeySequence
 from PySide6.QtWidgets import (
     QApplication,
@@ -92,6 +92,7 @@ class MainWindow(QMainWindow):
             [f"{Path(__file__).parent}/icons"] + QIcon.themeSearchPaths()
         )
         QIcon.setFallbackThemeName("light")
+        QApplication.sendEvent(self, QEvent(QEvent.PaletteChange))
 
         self.actions = {}  # contains all actions
 
