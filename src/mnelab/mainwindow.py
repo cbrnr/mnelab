@@ -92,6 +92,7 @@ class MainWindow(QMainWindow):
             [f"{Path(__file__).parent}/icons"] + QIcon.themeSearchPaths()
         )
         QIcon.setFallbackThemeName("light")
+        QApplication.sendEvent(self, QEvent(QEvent.PaletteChange))
 
         self.actions = {}  # contains all actions
 
