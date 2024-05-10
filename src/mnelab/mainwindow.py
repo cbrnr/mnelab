@@ -14,7 +14,7 @@ from sys import version_info
 import mne
 import numpy as np
 from mne import channel_type
-from PySide6.QtCore import QEvent, QMetaObject, QModelIndex, QObject, Qt, QUrl, Signal, Slot
+from PySide6.QtCore import QEvent, QMetaObject, QModelIndex, QObject, Qt, QUrl, Slot
 from PySide6.QtGui import QAction, QDesktopServices, QIcon, QKeySequence
 from PySide6.QtWidgets import (
     QApplication,
