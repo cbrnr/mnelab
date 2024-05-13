@@ -1,4 +1,4 @@
-## [UNRELEASED] - YYYY-MM-DD
+## [0.9.1] - 2024-05-13
 ### Added
 - Add option to select browser backend in settings ([#415](https://github.com/cbrnr/mnelab/pull/415) by [Clemens Brunner](https://github.com/cbrnr))
 
