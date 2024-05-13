@@ -14,7 +14,7 @@ from PySide6.QtWidgets import QApplication
 from mnelab.mainwindow import MainWindow
 from mnelab.model import Model
 
-__version__ = "0.9.1"
+__version__ = "1.0.0.dev0"
 
 
 def main():
