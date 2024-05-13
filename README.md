@@ -72,7 +72,7 @@ Optional dependencies provide additional features:
 - [python-picard](https://pierreablin.github.io/picard/) ≥ 0.7.0 (ICA computation with PICARD)
 - [pyEDFlib](https://pyedflib.readthedocs.io/en/latest/) ≥ 0.1.35 (EDF/BDF export)
 - [pybv](https://pybv.readthedocs.io/en/stable/) ≥ 0.7.4 (BrainVision VHDR/VMRK/EEG export)
-- [mne-qt-browser](https://github.com/mne-tools/mne-qt-browser) ≥ 0.6.2
+- [mne-qt-browser](https://github.com/mne-tools/mne-qt-browser) ≥ 0.6.2 (alternative raw plot backend)
 
 
 ### Contributing
