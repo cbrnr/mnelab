@@ -37,9 +37,6 @@ jobs:
     name: Upload to PyPI
     needs: build
     runs-on: ubuntu-22.04
-        environment:
-    name: pypi
-      url: https://pypi.org/p/mnelab
     permissions:
       id-token: write
     steps:
