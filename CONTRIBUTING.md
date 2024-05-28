@@ -24,7 +24,7 @@ Open a terminal and change into the folder where you would like your MNELAB fork
 In a terminal, change to the `mnelab` folder containing your MNELAB fork. You can install the package and all dependencies with the following command:
 
 ```
-pip install -e ".[full]"
+pip install -e ".[dev]"
 ```
 
 You might want to [create a virtual environment](https://docs.python.org/3/library/venv.html#creating-virtual-environments) instead of installing everything into your global environment.

@@ -1,21 +1,26 @@
 # Tutorial
+
 ## Dependencies
-MNELAB requires Python ≥ 3.8 and the following packages:
-- [mne](https://mne.tools/stable/index.html) ≥ 1.0.0
-- [PySide6](https://www.qt.io/qt-for-python) ≥ 6.2.0
-- [numpy](http://www.numpy.org/) ≥ 1.20.0
-- [scipy](https://scipy.org/) ≥ 1.7.0
-- [matplotlib](https://matplotlib.org/) ≥ 3.5.0
-- [pyxdf](https://github.com/xdf-modules/xdf-Python) ≥ 1.16.0
-- [pyobjc-framework-Cocoa](https://pyobjc.readthedocs.io/en/latest/) ≥ 7.3.0 (macOS only)
+
+MNELAB requires Python ≥ 3.9 and the following packages:
+- [mne](https://mne.tools/stable/index.html) ≥ 1.7.0
+- [PySide6](https://www.qt.io/qt-for-python) ≥ 6.7.1
+- [numpy](http://www.numpy.org/) ≥ 1.25.0
+- [scipy](https://scipy.org/) ≥ 1.10.0
+- [matplotlib](https://matplotlib.org/) ≥ 3.8.0
+- [pyxdf](https://github.com/xdf-modules/xdf-Python) ≥ 1.16.4
+- [pyobjc-framework-Cocoa](https://pyobjc.readthedocs.io/en/latest/) ≥ 10.0 (macOS only)
 
 Optional dependencies provide additional features:
-- [scikit-learn](https://scikit-learn.org/stable/) ≥ 1.0.0 (ICA computation with FastICA)
+- [scikit-learn](https://scikit-learn.org/stable/) ≥ 1.3.0 (ICA computation with FastICA)
 - [python-picard](https://pierreablin.github.io/picard/) ≥ 0.7.0 (ICA computation with PICARD)
-- [pyEDFlib](https://pyedflib.readthedocs.io/en/latest/) ≥ 0.1.22 (EDF/BDF export)
+- [pyEDFlib](https://pyedflib.readthedocs.io/en/latest/) ≥ 0.1.35 (EDF/BDF export)
 - [pybv](https://pybv.readthedocs.io/en/stable/) ≥ 0.7.4 (BrainVision VHDR/VMRK/EEG export)
+- [mne-qt-browser](https://github.com/mne-tools/mne-qt-browser) ≥ 0.6.2 (alternative raw plot backend)
+
 
 ## Installation
+
 You can install MNELAB with [pip](https://pip.pypa.io/en/stable/):
 
 ```
@@ -25,7 +30,7 @@ pip install mnelab
 If you want to use all MNELAB features, the full package including optional dependencies can be installed with:
 
 ```
-pip install mnelab[full]
+pip install "mnelab[full]"
 ```
 
 You can also use [pipx](https://pypa.github.io/pipx/) to install MNELAB in a completely isolated environment:
@@ -40,10 +45,24 @@ If you want the latest development version, use the following command:
 pip install git+https://github.com/cbrnr/mnelab
 ```
 
-Then start MNELAB in a terminal with `mnelab`.
+
+## Running MNELAB
+
+MNELAB must be started from a terminal with the following command:
+
+```
+mnelab
+```
+
+If you get an error, try the following alternative:
+
+```
+python -m mnelab
+```
 
 
 ## First steps
+
 The main window of MNELAB consists of a menu bar (A), a toolbar (B), a sidebar (C), an info panel (D), and a status bar (E):
 
 ![empty window](./empty_window.png)
