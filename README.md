@@ -4,11 +4,15 @@
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.04650/status.svg)](https://doi.org/10.21105/joss.04650)
 [![License](https://img.shields.io/github/license/cbrnr/mnelab)](LICENSE)
 
+
+## MNELAB
+
 ![](https://raw.githubusercontent.com/cbrnr/mnelab/main/mnelab/images/mnelab_logo.png)
 
 MNELAB is a graphical user interface (GUI) for [MNE-Python](https://mne.tools/stable/index.html), a Python package for EEG/MEG analysis.
 
 ![](https://raw.githubusercontent.com/cbrnr/mnelab/main/mnelab.png)
+
 
 ### Documentation
 
