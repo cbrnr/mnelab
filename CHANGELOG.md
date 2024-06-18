@@ -1,4 +1,9 @@
 ## [UNRELEASED] - YYYY-MM-DD
+### Changed
+- Add [edfio](https://edfio.readthedocs.io/en/stable/index.html) as core dependency and replace pyedflib, which means that EDF export is now supported out of the box ([#425](https://github.com/cbrnr/mnelab/pull/425) by [Clemens Brunner](https://github.com/cbrnr))
+
+### Removed
+- Remove support for exporting to BDF ([#425](https://github.com/cbrnr/mnelab/pull/425) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [0.9.1] - 2024-05-13
 ### Added
