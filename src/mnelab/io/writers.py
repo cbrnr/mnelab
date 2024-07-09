@@ -57,7 +57,7 @@ def write_edf(fname, raw):
 
 def write_bv(fname, raw):
     """Export data to BrainVision EEG/VHDR/VMRK file (requires pybv)."""
-    raw.export(fname=Path(fname).with_suffix(".vhdr"), events=events)
+    raw.export(fname=Path(fname).with_suffix(".vhdr"))
 
 
 # this dict contains each supported file extension as a key; the corresponding value is
