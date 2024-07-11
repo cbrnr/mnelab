@@ -17,7 +17,7 @@ from PySide6.QtWidgets import (
 
 _DEFAULTS = {
     "max_recent": 6,
-    "max_channels": 32,
+    "max_channels": 20,
     "recent": [],
     "toolbar": True,
     "statusbar": True,
@@ -117,7 +117,6 @@ class SettingsDialog(QDialog):
         QSettings().setValue("max_recent", int(self.max_recent.text()))
         self.parent().recent = self.parent().recent[: _get_value("max_recent")]
         QSettings().setValue("max_channels", int(self.max_channels.text()))
-        self.parent().recent = self.parent().recent[: _get_value("max_channels")]
         QSettings().setValue("recent", self.parent().recent)
         QSettings().setValue("plot_backend", self.plot_backend.currentText())
 
