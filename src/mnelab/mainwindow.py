@@ -825,9 +825,7 @@ class MainWindow(QMainWindow):
         self.bads = self.model.current["data"].info["bads"]
         events = self.model.current["events"]
         nchan = self.model.current["data"].info["nchan"]
-
-        if nchan >= read_settings("max_channels"):
-            nchan = read_settings("max_channels")
+        nchan = min(nchan, read_settings("max_channels"))
 
         fig = self.model.current["data"].plot(
             events=events,
