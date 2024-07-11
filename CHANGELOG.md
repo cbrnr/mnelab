@@ -1,4 +1,7 @@
 ## [UNRELEASED] - YYYY-MM-DD
+### Added
+- Add initial number of displayed channels in the raw plot to settings dialog and set default to 32 channels ([#428](https://github.com/cbrnr/mnelab/pull/428) by [Dennis Wambacher](https://github.com/d3njo))
+
 ### Changed
 - Add [edfio](https://edfio.readthedocs.io/en/stable/index.html) as core dependency and replace pyedflib, which means that EDF export is now supported out of the box ([#425](https://github.com/cbrnr/mnelab/pull/425) by [Clemens Brunner](https://github.com/cbrnr))
 

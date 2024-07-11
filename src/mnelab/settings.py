@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
 
 _DEFAULTS = {
     "max_recent": 6,
+    "max_channels": 20,
     "recent": [],
     "toolbar": True,
     "statusbar": True,
@@ -78,27 +79,34 @@ class SettingsDialog(QDialog):
         self.plot_backend.setCurrentIndex(backends.index(backend))
         grid.addWidget(self.plot_backend, 0, 1)
 
-        grid.addWidget(QLabel("Maximum recent files:"), 1, 0)
+        grid.addWidget(QLabel("Recent files:"), 1, 0)
         self.max_recent = QSpinBox()
         self.max_recent.setRange(5, 25)
         self.max_recent.setValue(_get_value("max_recent"))
         self.max_recent.setAlignment(Qt.AlignRight)
         grid.addWidget(self.max_recent, 1, 1)
 
+        grid.addWidget(QLabel("Displayed channels:"), 2, 0)
+        self.max_channels = QSpinBox()
+        self.max_channels.setRange(1, 256)
+        self.max_channels.setValue(_get_value("max_channels"))
+        self.max_channels.setAlignment(Qt.AlignRight)
+        grid.addWidget(self.max_channels, 2, 1)
+
         self.reset_to_defaults = QPushButton("Reset to defaults")
         self.reset_to_defaults.clicked.connect(self.reset_settings)
-        grid.addWidget(self.reset_to_defaults, 2, 0)
+        grid.addWidget(self.reset_to_defaults, 3, 0)
 
         self.reset_to_defaults = QPushButton("Reset window")
         self.reset_to_defaults.clicked.connect(self.reset_window)
-        grid.addWidget(self.reset_to_defaults, 3, 0)
+        grid.addWidget(self.reset_to_defaults, 4, 0)
 
         hbox = QHBoxLayout()
         self.buttonbox = QDialogButtonBox(
             QDialogButtonBox.Apply | QDialogButtonBox.Ok | QDialogButtonBox.Cancel
         )
         hbox.addWidget(self.buttonbox)
-        grid.addLayout(hbox, 4, 0, 1, 2)
+        grid.addLayout(hbox, 5, 0, 1, 2)
         self.buttonbox.button(QDialogButtonBox.Apply).clicked.connect(self.apply_settings)
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.accepted.connect(self.apply_settings)
@@ -108,12 +116,14 @@ class SettingsDialog(QDialog):
     def apply_settings(self):
         QSettings().setValue("max_recent", int(self.max_recent.text()))
         self.parent().recent = self.parent().recent[: _get_value("max_recent")]
+        QSettings().setValue("max_channels", int(self.max_channels.text()))
         QSettings().setValue("recent", self.parent().recent)
         QSettings().setValue("plot_backend", self.plot_backend.currentText())
 
     @Slot()
     def reset_settings(self):
         self.max_recent.setValue(_DEFAULTS["max_recent"])
+        self.max_channels.setValue(_DEFAULTS["max_channels"])
         self.plot_backend.setValue(_DEFAULTS["plot_backend"])
 
     @Slot()
