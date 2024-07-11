@@ -17,7 +17,7 @@ from PySide6.QtWidgets import (
 
 _DEFAULTS = {
     "max_recent": 6,
-    "max_channels":32,
+    "max_channels": 32,
     "recent": [],
     "toolbar": True,
     "statusbar": True,
