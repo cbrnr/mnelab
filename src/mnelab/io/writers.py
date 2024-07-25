@@ -96,9 +96,8 @@ writers = {
     ".fif": [write_fif, "Elekta Neuromag", "raw,epoch"],
     ".fif.gz": [write_fif, "Elekta Neuromag", "raw,epoch"],
     ".set": [write_set, "EEGLAB", "raw"],
+    ".eeg": [write_bv, "BrainVision", "raw"],
 }
-if have["pybv"]:
-    writers.update({".eeg": [write_bv, "BrainVision", "raw"]})
 
 
 def write_raw(fname, raw):

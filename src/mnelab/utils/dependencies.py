@@ -4,8 +4,8 @@
 
 from importlib import import_module
 
-required = ["mne", "PySide6", "edfio", "matplotlib", "numpy", "pyxdf", "scipy"]
-optional = ["mne-qt-browser", "picard", "pybv", "sklearn"]
+required = ["mne", "PySide6", "edfio", "matplotlib", "numpy", "pyxdf", "scipy", "pybv"]
+optional = ["mne-qt-browser", "picard", "sklearn"]
 
 have = {}
 for package in required + optional:
