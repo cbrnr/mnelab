@@ -9,8 +9,6 @@ import numpy as np
 from numpy.core.records import fromarrays
 from scipy.io import savemat
 
-from mnelab.utils import have
-
 
 def write_fif(fname, raw):
     raw.save(fname, overwrite=True)
