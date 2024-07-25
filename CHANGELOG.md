@@ -4,6 +4,7 @@
 
 ### Changed
 - Add [edfio](https://edfio.readthedocs.io/en/stable/index.html) as core dependency and replace pyedflib, which means that EDF export is now supported out of the box ([#425](https://github.com/cbrnr/mnelab/pull/425) by [Clemens Brunner](https://github.com/cbrnr))
+- Add pybv to required dependencies ([#429](https://github.com/cbrnr/mnelab/pull/429) by [Dennis Wambacher](https://github.com/d3njo))
 
 ### Removed
 - Remove support for exporting to BDF ([#425](https://github.com/cbrnr/mnelab/pull/425) by [Clemens Brunner](https://github.com/cbrnr))
