@@ -32,7 +32,7 @@ from pyxdf import resolve_streams
 from mnelab.dialogs import *  # noqa: F403
 from mnelab.io import writers
 from mnelab.io.mat import parse_mat
-from mnelab.io.readers import parse_npy
+from mnelab.io.npy import parse_npy
 from mnelab.io.xdf import get_xml, list_chunks
 from mnelab.model import InvalidAnnotationsError, LabelsNotFoundError, Model
 from mnelab.settings import SettingsDialog, read_settings, write_settings
