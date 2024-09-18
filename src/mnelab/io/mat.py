@@ -6,10 +6,10 @@ from numpy import atleast_2d
 from scipy.io import loadmat
 
 
-class RawMat(BaseRaw):
+class RawMAT(BaseRaw):
     """Raw data from .mat file."""
 
-    def __init__(self, fname, variable, fs, transpose=False, *args, **kwargs):
+    def __init__(self, fname, variable, fs, transpose=False):
         """Read raw data from .mat file.
 
         Parameters
@@ -53,10 +53,10 @@ def read_raw_mat(fname, variable, fs, transpose=False, *args, **kwargs):
 
     Returns
     -------
-    RawMat
+    RawMAT
         The raw data.
     """
-    return RawMat(fname, variable, fs, transpose)
+    return RawMAT(fname, variable, fs, transpose)
 
 
 def parse_mat(fname):

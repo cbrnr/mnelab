@@ -3,10 +3,10 @@ import numpy as np
 from mne.io import BaseRaw
 
 
-class RawNpy(BaseRaw):
+class RawNPY(BaseRaw):
     """Raw data from .npy file."""
 
-    def __init__(self, fname, fs, transpose=False, *args, **kwargs):
+    def __init__(self, fname, fs, transpose=False):
         """Read raw data from .npy file.
 
         Parameters
@@ -41,10 +41,10 @@ def read_raw_npy(fname, fs, transpose=False, *args, **kwargs):
 
     Returns
     -------
-    RawNpy
+    RawNPY
         The raw data.
     """
-    return RawNpy(fname, fs, transpose)
+    return RawNPY(fname, fs, transpose)
 
 
 def parse_npy(fname):
