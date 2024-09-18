@@ -5,9 +5,102 @@ from collections import defaultdict
 import mne
 import numpy as np
 import scipy.signal
-from mne.io import get_channel_type_constants
+from mne.io import BaseRaw, get_channel_type_constants
 from pyxdf import load_xdf
 from pyxdf.pyxdf import _read_varlen_int, open_xdf
+
+
+class RawXDF(BaseRaw):
+    """Raw data from .xdf file."""
+
+    def __init__(
+        self, fname, stream_ids, marker_ids=None, prefix_markers=False, fs_new=None
+    ):
+        """Read raw data from .xdf file.
+
+        Parameters
+        ----------
+        fname : str
+            File name to load.
+        stream_ids : list[int]
+            IDs of streams to load. A list of available streams can be obtained with
+            `pyxdf.resolve_streams(fname)`.
+        marker_ids : list[int] | None
+            IDs of marker streams to load. If `None`, load all marker streams. A marker
+            stream is a stream with a nominal sampling frequency of 0 Hz.
+        prefix_markers : bool
+            Whether to prefix marker streams with their corresponding stream ID.
+        fs_new : float | None
+            Resampling target frequency in Hz. If only one stream_id is given, this can be
+            `None`, in which case no resampling is performed.
+        """
+        if len(stream_ids) > 1 and fs_new is None:
+            raise ValueError("Argument `fs_new` required when reading multiple streams.")
+
+        streams, _ = load_xdf(fname)
+        streams = {stream["info"]["stream_id"]: stream for stream in streams}
+
+        if all(_is_markerstream(streams[stream_id]) for stream_id in stream_ids):
+            raise RuntimeError(
+                "Loading only marker streams is not supported, at least one stream must be "
+                "a regular stream."
+            )
+
+        labels_all, types_all, units_all = [], [], []
+        channel_types = get_channel_type_constants(True)
+        for stream_id in stream_ids:
+            stream = streams[stream_id]
+
+            n_chans = int(stream["info"]["channel_count"][0])
+            labels, types, units = [], [], []
+            try:
+                for ch in stream["info"]["desc"][0]["channels"][0]["channel"]:
+                    labels.append(str(ch["label"][0]))
+                    if ch["type"] and ch["type"][0].lower() in channel_types:
+                        types.append(ch["type"][0].lower())
+                    else:
+                        types.append("misc")
+                    units.append(ch["unit"][0] if ch["unit"] else "NA")
+            except (TypeError, IndexError):  # no channel labels found
+                pass
+            if not labels:
+                labels = [f"{stream['info']['name'][0]}_{n}" for n in range(n_chans)]
+            if not units:
+                units = ["NA" for _ in range(n_chans)]
+            if not types:
+                types = ["misc" for _ in range(n_chans)]
+            labels_all.extend(labels)
+            types_all.extend(types)
+            units_all.extend(units)
+
+        if fs_new is not None:
+            data, first_time = _resample_streams(streams, stream_ids, fs_new)
+            fs = fs_new
+        else:  # only possible if a single stream was selected
+            data = streams[stream_ids[0]]["time_series"]
+            first_time = streams[stream_ids[0]]["time_stamps"][0]
+            fs = float(np.array(stream["info"]["effective_srate"]).item())
+
+        info = mne.create_info(ch_names=labels_all, sfreq=fs, ch_types=types_all)
+
+        microvolts = ("microvolt", "microvolts", "µV", "μV", "uV")
+        scale = np.array([1e-6 if u in microvolts else 1 for u in units_all])
+        data = (data * scale).T
+
+        super().__init__(preload=data, info=info, filenames=[fname])
+
+        # convert marker streams to annotations
+        for stream_id, stream in streams.items():
+            if marker_ids is not None and stream_id not in marker_ids:
+                continue
+            if not _is_markerstream(stream):
+                continue
+            onsets = stream["time_stamps"] - first_time
+            prefix = f"{stream_id}-" if prefix_markers else ""
+            descriptions = [
+                f"{prefix}{item}" for sub in stream["time_series"] for item in sub
+            ]
+            self.annotations.append(onsets, [0] * len(onsets), descriptions)
 
 
 def _resample_streams(streams, stream_ids, fs_new):
@@ -66,20 +159,14 @@ def _resample_streams(streams, stream_ids, fs_new):
 
 
 def read_raw_xdf(
-    fname,
-    stream_ids,
-    marker_ids=None,
-    prefix_markers=False,
-    fs_new=None,
-    *args,
-    **kwargs,
+    fname, stream_ids, marker_ids=None, prefix_markers=False, fs_new=None, *args, **kwargs
 ):
     """Read XDF file.
 
     Parameters
     ----------
     fname : str
-        Name of the XDF file.
+        File name to load.
     stream_ids : list[int]
         IDs of streams to load. A list of available streams can be obtained with
         `pyxdf.resolve_streams(fname)`.
@@ -87,84 +174,18 @@ def read_raw_xdf(
         IDs of marker streams to load. If `None`, load all marker streams. A marker stream
         is a stream with a nominal sampling frequency of 0 Hz.
     prefix_markers : bool
-        Whether or not to prefix marker streams with their corresponding stream ID.
+        Whether to prefix marker streams with their corresponding stream ID.
     fs_new : float | None
         Resampling target frequency in Hz. If only one stream_id is given, this can be
         `None`, in which case no resampling is performed.
 
     Returns
     -------
-    raw : mne.io.Raw
-        XDF file data.
+    RawXDF
+        The raw data.
     """
 
-    if len(stream_ids) > 1 and fs_new is None:
-        raise ValueError("Argument `fs_new` required when reading multiple streams.")
-
-    streams, _ = load_xdf(fname)
-    streams = {stream["info"]["stream_id"]: stream for stream in streams}
-
-    if all(_is_markerstream(streams[stream_id]) for stream_id in stream_ids):
-        raise RuntimeError(
-            "Loading only marker streams is not supported, at least one stream must be a "
-            "regular stream."
-        )
-
-    labels_all, types_all, units_all = [], [], []
-    for stream_id in stream_ids:
-        stream = streams[stream_id]
-
-        n_chans = int(stream["info"]["channel_count"][0])
-        labels, types, units = [], [], []
-        try:
-            for ch in stream["info"]["desc"][0]["channels"][0]["channel"]:
-                labels.append(str(ch["label"][0]))
-                if ch["type"] and ch["type"][0].lower() in get_channel_type_constants(True):
-                    types.append(ch["type"][0].lower())
-                else:
-                    types.append("misc")
-                units.append(ch["unit"][0] if ch["unit"] else "NA")
-        except (TypeError, IndexError):  # no channel labels found
-            pass
-        if not labels:
-            labels = [f"{stream['info']['name'][0]}_{n}" for n in range(n_chans)]
-        if not units:
-            units = ["NA" for _ in range(n_chans)]
-        if not types:
-            types = ["misc" for _ in range(n_chans)]
-        labels_all.extend(labels)
-        types_all.extend(types)
-        units_all.extend(units)
-
-    if fs_new is not None:
-        all_time_series, first_time = _resample_streams(streams, stream_ids, fs_new)
-        fs = fs_new
-    else:  # only possible if a single stream was selected
-        all_time_series = streams[stream_ids[0]]["time_series"]
-        first_time = streams[stream_ids[0]]["time_stamps"][0]
-        fs = float(np.array(stream["info"]["effective_srate"]).item())
-
-    info = mne.create_info(ch_names=labels_all, sfreq=fs, ch_types=types_all)
-
-    microvolts = ("microvolt", "microvolts", "µV", "μV", "uV")
-    scale = np.array([1e-6 if u in microvolts else 1 for u in units_all])
-    all_time_series_scaled = (all_time_series * scale).T
-
-    raw = mne.io.RawArray(all_time_series_scaled, info)
-    raw._filenames = [fname]
-
-    # convert marker streams to annotations
-    for stream_id, stream in streams.items():
-        if marker_ids is not None and stream_id not in marker_ids:
-            continue
-        if not _is_markerstream(stream):
-            continue
-        onsets = stream["time_stamps"] - first_time
-        prefix = f"{stream_id}-" if prefix_markers else ""
-        descriptions = [f"{prefix}{item}" for sub in stream["time_series"] for item in sub]
-        raw.annotations.append(onsets, [0] * len(onsets), descriptions)
-
-    return raw
+    return RawXDF(fname, stream_ids, marker_ids, prefix_markers, fs_new)
 
 
 def _is_markerstream(stream):
