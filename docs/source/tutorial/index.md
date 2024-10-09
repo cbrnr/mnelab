@@ -1,24 +1,5 @@
 # Tutorial
 
-## Dependencies
-
-MNELAB requires Python ≥ 3.9 and the following packages:
-- [mne](https://mne.tools/stable/index.html) ≥ 1.7.0
-- [PySide6](https://www.qt.io/qt-for-python) ≥ 6.7.1
-- [edfio](https://edfio.readthedocs.io/en/stable/index.html) ≥ 0.4.2
-- [matplotlib](https://matplotlib.org/) ≥ 3.8.0
-- [numpy](http://www.numpy.org/) ≥ 1.25.0
-- [scipy](https://scipy.org/) ≥ 1.10.0
-- [pyxdf](https://github.com/xdf-modules/xdf-Python) ≥ 1.16.4
-- [pyobjc-framework-Cocoa](https://pyobjc.readthedocs.io/en/latest/) ≥ 10.0 (macOS only)
-- [pybv](https://pybv.readthedocs.io/en/stable/) ≥ 0.7.4 (BrainVision VHDR/VMRK/EEG export)
-
-Optional dependencies provide additional features:
-- [mne-qt-browser](https://github.com/mne-tools/mne-qt-browser) ≥ 0.6.2 (alternative raw plot backend)
-- [python-picard](https://pierreablin.github.io/picard/) ≥ 0.7.0 (ICA computation with PICARD)
-- [scikit-learn](https://scikit-learn.org/stable/) ≥ 1.3.0 (ICA computation with FastICA)
-
-
 ## Installation
 
 You can install MNELAB with [pip](https://pip.pypa.io/en/stable/):
