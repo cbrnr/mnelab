@@ -7,7 +7,7 @@ on:
 jobs:
   style:
     name: Check style
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
     - uses: astral-sh/ruff-action@v1
@@ -18,7 +18,7 @@ jobs:
   build:
     needs: style
     name: Build package
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
@@ -36,7 +36,7 @@ jobs:
   upload-pypi:
     name: Upload to PyPI
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       id-token: write
     steps:
