@@ -54,7 +54,7 @@ Once you have an open pull request, add an entry to the top of `CHANGELOG.md` in
 
 ### Coding style
 
-MNELAB uses [Ruff](https://docs.astral.sh/ruff/formatter/) for formatting (with the noteable customization that we use a maximum line length of 92 characters as opposed to the default 88 characters). Because [PySide6](https://doc.qt.io/qtforpython-6/index.html) is based on the C++-based Qt library, most of its names use camel case instead of snake case. In your own code, please use snake case whereever possible.
+MNELAB uses [Ruff](https://docs.astral.sh/ruff/formatter/) for formatting. Because [PySide6](https://doc.qt.io/qtforpython-6/index.html) is based on the C++-based Qt library, most of its names use camel case instead of snake case. In your own code, please use snake case whereever possible.
 
 
 ## Making a PyPI release

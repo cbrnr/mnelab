@@ -114,11 +114,15 @@ class Model:
         data = read_raw(fname, *args, **kwargs, preload=True)
         argstr = ", " + f"{', '.join(f'{v}' for v in args)}" if args else ""
         if kwargs:
-            kwargstr = ", " + f"{', '.join(f'{k}={repr(v)}' for k, v in kwargs.items())}"
+            kwargstr = (
+                ", " + f"{', '.join(f'{k}={repr(v)}' for k, v in kwargs.items())}"
+            )
         else:
             kwargstr = ""
         self.history.append(
-            f'data = read_raw("{fname}"{argstr}{kwargstr}, preload=True)'.replace("'", '"')
+            f'data = read_raw("{fname}"{argstr}{kwargstr}, preload=True)'.replace(
+                "'", '"'
+            )
         )
         fsize = getsize(data.filenames[0]) / 1024**2  # convert to MB
         name, ext = split_name_ext(fname)
@@ -190,7 +194,9 @@ class Model:
         """Convert events to annotations."""
         mapping = self.current.get("event_mapping")
         annots = mne.annotations_from_events(
-            self.current["events"], self.current["data"].info["sfreq"], event_desc=mapping
+            self.current["events"],
+            self.current["data"].info["sfreq"],
+            event_desc=mapping,
         )
         if len(annots) > 0:
             self.current["data"].set_annotations(annots)
@@ -254,8 +260,8 @@ class Model:
             unknown = set(bads) - set(self.current["data"].info["ch_names"])
             if unknown:
                 raise LabelsNotFoundError(
-                    "The following imported channel labels are not contained in the data: "
-                    + ",".join(unknown)
+                    "The following imported channel labels are not contained in the "
+                    "data: " + ",".join(unknown)
                 )
             else:
                 self.current["data"].info["bads"] = bads
@@ -352,7 +358,9 @@ class Model:
             nchan = f"{data.info['nchan']} ({nbads} bad)"
         else:
             nchan = data.info["nchan"]
-        chans = Counter([mne.channel_type(data.info, i) for i in range(data.info["nchan"])])
+        chans = Counter(
+            [mne.channel_type(data.info, i) for i in range(data.info["nchan"])]
+        )
         # sort by channel type (always move "stim" to end of list)
         chans = sorted(dict(chans).items(), key=lambda x: (x[0] == "stim", x[0]))
         chans = ", ".join([" ".join([str(v), k.upper()]) for k, v in chans])
@@ -542,7 +550,9 @@ class Model:
     @data_changed
     def apply_ica(self):
         self.current["ica"].apply(self.current["data"])
-        self.history.append(f"ica.apply(inst=data, exclude={self.current['ica'].exclude})")
+        self.history.append(
+            f"ica.apply(inst=data, exclude={self.current['ica'].exclude})"
+        )
         self.current["name"] += " (ICA)"
 
     @data_changed
@@ -582,13 +592,17 @@ class Model:
 
     @data_changed
     def convert_od(self):
-        self.current["data"] = mne.preprocessing.nirs.optical_density(self.current["data"])
+        self.current["data"] = mne.preprocessing.nirs.optical_density(
+            self.current["data"]
+        )
         self.current["name"] += " (OD)"
         self.history.append("data = mne.preprocessing.nirs.optical_density(data)")
 
     @data_changed
     def convert_beer_lambert(self):
-        self.current["data"] = mne.preprocessing.nirs.beer_lambert_law(self.current["data"])
+        self.current["data"] = mne.preprocessing.nirs.beer_lambert_law(
+            self.current["data"]
+        )
         self.current["name"] += " (BL)"
         self.history.append("data = mne.preprocessing.nirs.beer_lambert_law(data)")
 
@@ -615,7 +629,9 @@ class Model:
 
     @data_changed
     def set_annotations(self, onset, duration, description):
-        self.current["data"].set_annotations(mne.Annotations(onset, duration, description))
+        self.current["data"].set_annotations(
+            mne.Annotations(onset, duration, description)
+        )
 
     @data_changed
     def move_data(self, source, target):
@@ -635,8 +651,8 @@ class Model:
         # if moved to the front, the source index is increased by 1
         if source > target:
             source += 1
-        # if moved to the back, the new index (after removing the original data set) will be
-        # 1 less that the target index
+        # if moved to the back, the new index (after removing the original data set)
+        # will be 1 less that the target index
         else:
             target -= 1
         self.index = target

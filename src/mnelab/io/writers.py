@@ -86,9 +86,9 @@ def write_bv(fname, raw, events=None):
     )
 
 
-# this dict contains each supported file extension as a key; the corresponding value is a
-# list with three elements: (1) the writer function, (2) the full file format name, and (3)
-# a (comma-separated) string indicating the supported objects
+# this dict contains each supported file extension as a key; the corresponding value is
+# a list with three elements: (1) the writer function, (2) the full file format name,
+# and (3) a (comma-separated) string indicating the supported objects
 writers = {
     ".edf": [write_edf, "European Data Format", "raw"],
     ".fif": [write_fif, "Elekta Neuromag", "raw,epoch"],

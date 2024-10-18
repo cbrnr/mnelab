@@ -39,9 +39,9 @@ def populate_tree(parent, nodes):
                 if isinstance(v, np.ndarray):
                     item.setText(1, f"{type(v).__name__} ({v.dtype.name})")  # add dtype
                     item.setText(2, " × ".join(map(str, v.shape)))
-                    if v.ndim > 2:  # arrays with more than two dimensions cannot be loaded
+                    if v.ndim > 2:  # arrays cannot have more than two dimensions
                         item.setFlags(Qt.NoItemFlags)
-                    elif v.dtype not in (np.float32, np.float64):  # must be numeric types
+                    elif v.dtype not in (np.float32, np.float64):  # must be numeric
                         item.setFlags(Qt.NoItemFlags)
                 else:
                     item.setFlags(Qt.NoItemFlags)

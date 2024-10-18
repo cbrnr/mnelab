@@ -16,7 +16,8 @@ class RawNPY(BaseRaw):
         fs : float
             Sampling frequency (in Hz).
         transpose : bool
-            Whether to transpose the data, the data should be of shape (channels, samples).
+            Whether to transpose the data; set to `True` if the original shape is *not*
+            (channels, samples).
         """
         data = np.load(fname)
         if transpose:

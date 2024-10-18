@@ -36,11 +36,11 @@ def _center_cmap(cmap, vmin, vmax, name="cmap_centered"):
     Notes
     -----
     This function can be used in situations where vmin and vmax are not symmetric around
-    zero. Normally, this results in the value zero not being mapped to white anymore in many
-    colormaps. Using this function, the value zero will be mapped to white even for
-    asymmetric positive and negative value ranges. Note that this could also be achieved by
-    re-normalizing a given colormap by subclassing matplotlib.colors.Normalize as described
-    here:
+    zero. Normally, this results in the value zero not being mapped to white anymore in
+    many colormaps. Using this function, the value zero will be mapped to white even for
+    asymmetric positive and negative value ranges. Note that this could also be achieved
+    by re-normalizing a given colormap by subclassing matplotlib.colors. Normalize as
+    described here:
     https://matplotlib.org/users/colormapnorms.html#custom-normalization-two-linear-ranges
     """
     from matplotlib.colors import LinearSegmentedColormap
@@ -88,7 +88,7 @@ def _calc_tfr(epochs, freqs, baseline, times, alpha=None):
     times : array_like, shape (2,)
         Start and end of crop time interval.
     alpha : float, optional
-        If specified, calculate significance maps with threshold `alpha`, by default `None`.
+        If specified, calculate significance maps with threshold `alpha`.
 
     Returns
     -------
@@ -119,9 +119,13 @@ def _calc_tfr(epochs, freqs, baseline, times, alpha=None):
             mask = None
             if alpha is not None:
                 # positive clusters
-                _, c1, p1, _ = pcluster_test(tfr_ev.data[:, ch], tail=1, **pcluster_kwargs)
+                _, c1, p1, _ = pcluster_test(
+                    tfr_ev.data[:, ch], tail=1, **pcluster_kwargs
+                )
                 # negative clusters
-                _, c2, p2, _ = pcluster_test(tfr_ev.data[:, ch], tail=-1, **pcluster_kwargs)
+                _, c2, p2, _ = pcluster_test(
+                    tfr_ev.data[:, ch], tail=-1, **pcluster_kwargs
+                )
 
                 c = np.stack(c1 + c2, axis=2)  # combined clusters
                 p = np.concatenate((p1, p2))  # combined p-values
@@ -152,7 +156,9 @@ def plot_erds(tfr_and_masks):
     for event, (tfr_ev, masks) in tfr_and_masks.items():
         n_rows, n_cols = _get_rows_cols(tfr_ev.info["nchan"])
         widths = n_cols * [10] + [1]  # each map has width 10, each colorbar width 1
-        fig, axes = plt.subplots(n_rows, n_cols + 1, gridspec_kw={"width_ratios": widths})
+        fig, axes = plt.subplots(
+            n_rows, n_cols + 1, gridspec_kw={"width_ratios": widths}
+        )
         vmin, vmax = -1, 2  # default for ERDS maps
         cmap = _center_cmap(plt.cm.RdBu, vmin, vmax)
 
@@ -207,7 +213,9 @@ def plot_erds_topomaps(epochs, events, freqs, baseline, times):
 
     figs = []
     for event in events:
-        tfr = tfr_multitaper(epochs[event], freqs, freqs, average=True, return_itc=False)
+        tfr = tfr_multitaper(
+            epochs[event], freqs, freqs, average=True, return_itc=False
+        )
         tfr.apply_baseline(baseline, mode="percent")
         tfr.crop(*times)
         fig = tfr.plot_topomap(
@@ -249,8 +257,9 @@ def plot_evoked(
         Plot the global field power (GFP).
     spatial_colors : bool
         If `True`, the lines are color coded by mapping physical sensor coordinates into
-        color values. Spatially similar channels will have similar colors. Bad channels will
-        be dotted. If `False`, the good channels are plotted black and bad channels red.
+        color values. Spatially similar channels will have similar colors. Bad channels
+        will be dotted. If `False`, the good channels are plotted in black and bad
+        channels are plotted in red.
     topomap_times : list[float] | "auto" | "peaks"
         The time point(s) to plot. If `"auto"`, 5 evenly spaced topographies between the
         first and last time instant will be shown. If `"peaks"`, finds time points
