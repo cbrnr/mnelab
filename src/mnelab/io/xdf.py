@@ -285,7 +285,8 @@ def list_chunks(fname):
                 collection_time = struct.unpack("<d", f.read(8))[0]
                 offset_value = struct.unpack("<d", f.read(8))[0]
                 chunk["content"] = (
-                    f"Collection time: {collection_time}\nOffset value: {offset_value}"
+                    f"Collection time: {collection_time}\n"
+                    f"Offset value: {offset_value}"
                 )
             elif tag == 3:
                 chunk["stream_id"] = struct.unpack("<I", f.read(4))[0]

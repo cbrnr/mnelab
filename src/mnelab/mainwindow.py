@@ -118,7 +118,9 @@ class MainWindow(QMainWindow):
         self.actions["import_events"] = file_menu.addAction(
             "Import events...",
             lambda: self.import_file(
+                
                 model.import_events, "Import events", "*.csv *.fif"
+            
             ),
         )
         self.actions["import_annotations"] = file_menu.addAction(
@@ -1085,7 +1087,8 @@ class MainWindow(QMainWindow):
             else:
                 self.model.current["ica"] = res.get(timeout=1)
                 self.model.history.append(
-                    f"ica.fit(inst=raw, reject_by_annotation={exclude_bad_segments})"
+                    f"ica.fit(inst=raw, reject_by_annotation="
+                    f"{exclude_bad_segments})"
                 )
                 self.data_changed()
 
