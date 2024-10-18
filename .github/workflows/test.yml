@@ -8,13 +8,13 @@ on:
 jobs:
   style:
     name: Check style
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
+    - uses: astral-sh/ruff-action@v1
+    - uses: astral-sh/ruff-action@v1
       with:
-        python-version: '3.12'
-    - uses: pre-commit/action@v3.0.1
+        args: "format --check"
 
   test:
     needs: style
@@ -22,7 +22,7 @@ jobs:
       matrix:
         python-version: ['3.9', '3.10', '3.11', '3.12']
     name: Run tests (Python ${{ matrix.python-version }})
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v5

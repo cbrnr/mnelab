@@ -7,18 +7,18 @@ on:
 jobs:
   style:
     name: Check style
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
+    - uses: astral-sh/ruff-action@v1
+    - uses: astral-sh/ruff-action@v1
       with:
-        python-version: '3.12'
-    - uses: pre-commit/action@v3.0.1
+        args: "format --check"
 
   build:
     needs: style
     name: Build package
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
@@ -36,7 +36,7 @@ jobs:
   upload-pypi:
     name: Upload to PyPI
     needs: build
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     permissions:
       id-token: write
     steps:

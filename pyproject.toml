@@ -43,7 +43,6 @@ full = [
 dev = [
     "mnelab[full]",
     "build",
-    "pre-commit",
     "pytest",
     "pytest-qt",
     "ruff",
