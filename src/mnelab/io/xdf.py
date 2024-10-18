@@ -31,19 +31,21 @@ class RawXDF(BaseRaw):
         prefix_markers : bool
             Whether to prefix marker streams with their corresponding stream ID.
         fs_new : float | None
-            Resampling target frequency in Hz. If only one stream_id is given, this can be
-            `None`, in which case no resampling is performed.
+            Resampling target frequency in Hz. If only one stream_id is given, this can
+            be `None`, in which case no resampling is performed.
         """
         if len(stream_ids) > 1 and fs_new is None:
-            raise ValueError("Argument `fs_new` required when reading multiple streams.")
+            raise ValueError(
+                "Argument `fs_new` is required when reading multiple streams."
+            )
 
         streams, _ = load_xdf(fname)
         streams = {stream["info"]["stream_id"]: stream for stream in streams}
 
         if all(_is_markerstream(streams[stream_id]) for stream_id in stream_ids):
             raise RuntimeError(
-                "Loading only marker streams is not supported, at least one stream must be "
-                "a regular stream."
+                "Loading only marker streams is not supported, at least one stream must"
+                " be a regular stream."
             )
 
         labels_all, types_all, units_all = [], [], []
@@ -119,8 +121,8 @@ def _resample_streams(streams, stream_ids, fs_new):
     Returns
     -------
     all_time_series : np.ndarray
-        Array of shape (n_samples, n_channels) containing raw data. Time intervals where a
-        stream has no data contain `np.nan`.
+        Array of shape (n_samples, n_channels) containing raw data. Time intervals where
+        a stream has no data contain `np.nan`.
     first_time : float
         Time of the very first sample in seconds.
     """
@@ -159,7 +161,13 @@ def _resample_streams(streams, stream_ids, fs_new):
 
 
 def read_raw_xdf(
-    fname, stream_ids, marker_ids=None, prefix_markers=False, fs_new=None, *args, **kwargs
+    fname,
+    stream_ids,
+    marker_ids=None,
+    prefix_markers=False,
+    fs_new=None,
+    *args,
+    **kwargs,
 ):
     """Read XDF file.
 
@@ -171,8 +179,8 @@ def read_raw_xdf(
         IDs of streams to load. A list of available streams can be obtained with
         `pyxdf.resolve_streams(fname)`.
     marker_ids : list[int] | None
-        IDs of marker streams to load. If `None`, load all marker streams. A marker stream
-        is a stream with a nominal sampling frequency of 0 Hz.
+        IDs of marker streams to load. If `None`, load all marker streams. A marker
+        stream is a stream with a nominal sampling frequency of 0 Hz.
     prefix_markers : bool
         Whether to prefix marker streams with their corresponding stream ID.
     fs_new : float | None
@@ -229,8 +237,8 @@ def get_xml(fname):
 def list_chunks(fname):
     """List all chunks contained in an XDF file.
 
-    Listing chunks summarizes the content of the XDF file. Because this function does not
-    attempt to parse the data, this also works for corrupted files.
+    Listing chunks summarizes the content of the XDF file. Because this function does
+    not attempt to parse the data, this also works for corrupted files.
 
     Parameters
     ----------
@@ -262,13 +270,16 @@ def list_chunks(fname):
                 f.seek(chunk["nbytes"] - 2, 1)  # skip remaining chunk contents
             elif tag in [2, 6]:  # XML
                 chunk["stream_id"] = struct.unpack("<I", f.read(4))[0]
-                chunk["content"] = f.read(chunk["nbytes"] - 6).decode().replace("\t", "  ")
+                chunk["content"] = (
+                    f.read(chunk["nbytes"] - 6).decode().replace("\t", "  ")
+                )
             elif tag == 4:
                 chunk["stream_id"] = struct.unpack("<I", f.read(4))[0]
                 collection_time = struct.unpack("<d", f.read(8))[0]
                 offset_value = struct.unpack("<d", f.read(8))[0]
                 chunk["content"] = (
-                    f"Collection time: {collection_time}\n" f"Offset value: {offset_value}"
+                    f"Collection time: {collection_time}\n"
+                    f"Offset value: {offset_value}"
                 )
             elif tag == 3:
                 chunk["stream_id"] = struct.unpack("<I", f.read(4))[0]

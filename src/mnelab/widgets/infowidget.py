@@ -50,7 +50,7 @@ class InfoWidget(QWidget):
     Parameters
     ----------
     values : dict
-        Each key/value pair in this dict will be displayed in a row, separated by a colon.
+        Each key/value pair in this dict is displayed in a row separated by a colon.
     """
 
     def __init__(self, values=None):

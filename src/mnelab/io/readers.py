@@ -88,5 +88,5 @@ def read_raw(fname, *args, **kwargs):
         ext = "".join(Path(fname).suffixes)
         msg = f"Unsupported file type ({ext})." if ext else "Unsupported file type."
         raise ValueError(msg)
-    # here we could inspect the file signature to determine its type, which would allow us
-    # to read file independently of their extensions
+    # here we could inspect the file signature to determine its type, which would allow
+    # us to read file independently of their extensions

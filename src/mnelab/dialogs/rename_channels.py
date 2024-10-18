@@ -99,7 +99,9 @@ class RenameChannelsDialog(QDialog):
                 new_names = [n[int(self.slice_num.value()) :] for n in self.old_names]
             else:
                 if self.slice_num.value() > 0:
-                    new_names = [n[: -int(self.slice_num.value())] for n in self.old_names]
+                    new_names = [
+                        n[: -int(self.slice_num.value())] for n in self.old_names
+                    ]
                 else:
                     new_names = self.old_names[:]
 

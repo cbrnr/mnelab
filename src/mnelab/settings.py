@@ -29,12 +29,14 @@ _DEFAULTS = {
 
 def _get_value(key):
     # The third argument to QSettings().value is a typecast which is applied to the
-    # retrieved value. Since booleans are stored as "true" and "false" (at least on Win10),
-    # we need that typecast. However, lists would get replaced with an empty list for some
-    # reason, so here's a special case:
+    # retrieved value. Since booleans are stored as "true" and "false" (at least on
+    # Windows), we need that typecast. However, lists would get replaced with an empty
+    # list for some reason, so here's a special case:
     if isinstance(_DEFAULTS[key], list):
         return QSettings().value(key, defaultValue=_DEFAULTS[key])
-    return QSettings().value(key, defaultValue=_DEFAULTS[key], type=type(_DEFAULTS[key]))
+    return QSettings().value(
+        key, defaultValue=_DEFAULTS[key], type=type(_DEFAULTS[key])
+    )
 
 
 def read_settings(key=None):
@@ -49,8 +51,8 @@ def read_settings(key=None):
     Returns
     -------
     str | dict
-        If `key` is given, the corresponding value. If key is `None`, return all settings in
-        a dictionary.
+        If `key` is given, the corresponding value. If key is `None`, return all
+        settings in a dictionary.
     """
     if key is not None:
         return _get_value(key)
@@ -107,7 +109,9 @@ class SettingsDialog(QDialog):
         )
         hbox.addWidget(self.buttonbox)
         grid.addLayout(hbox, 5, 0, 1, 2)
-        self.buttonbox.button(QDialogButtonBox.Apply).clicked.connect(self.apply_settings)
+        self.buttonbox.button(QDialogButtonBox.Apply).clicked.connect(
+            self.apply_settings
+        )
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.accepted.connect(self.apply_settings)
         self.buttonbox.rejected.connect(self.reject)

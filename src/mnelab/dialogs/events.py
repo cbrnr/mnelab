@@ -163,7 +163,9 @@ class EventMappingDialog(QDialog):
             id_item.setFlags(id_item.flags() ^ Qt.ItemIsEditable)
             self.mapping_table.insertRow(row)
             self.mapping_table.setItem(row, 0, id_item)
-            self.mapping_table.setItem(row, 1, QTableWidgetItem(self.event_mapping[id_]))
+            self.mapping_table.setItem(
+                row, 1, QTableWidgetItem(self.event_mapping[id_])
+            )
 
     def store_mapping(self):
         for i in range(self.mapping_table.rowCount()):

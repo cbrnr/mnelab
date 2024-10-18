@@ -17,14 +17,16 @@ class RawMAT(BaseRaw):
         fname : str
             File name to load.
         variable : str
-            Name of the variable to use. If nested within a struct, separate all names with
-            dots. For example, `y.X` corresponds to a variable `X` contained in a struct
-            `y`. If the cell array has multiple items, use `y.[0].X` to access the first
-            item named `X`, `y.[1].X` to access the second item named `X`, and so on.
+            Name of the variable to use. If nested within a struct, separate all names
+            with dots. For example, `y.X` corresponds to a variable `X` contained in a
+            struct `y`. If the cell array has multiple items, use `y.[0].X` to access
+            the first item named `X`, `y.[1].X` to access the second item named `X`, and
+            so on.
         fs : float
             Sampling frequency (in Hz).
         transpose : bool
-            Whether to transpose the data, the data should be of shape (channels, samples).
+            Whether to transpose the data; set to `True` if the original shape is *not*
+            (channels, samples).
         """
         mat = loadmat(fname, simplify_cells=True)
         data = atleast_2d(_get_dict_value(mat, variable.split(".")))
@@ -43,9 +45,9 @@ def read_raw_mat(fname, variable, fs, transpose=False, *args, **kwargs):
         File name to load.
     variable : str
         Name of the variable to use. If nested within a struct, separate all names with
-        dots. For example, `y.X` corresponds to a variable `X` contained in a struct `y`. If
-        the cell array has multiple items, use `y.[0].X` to access the first item named `X`,
-        `y.[1].X` to access the second item named `X`, and so on.
+        dots. For example, `y.X` corresponds to a variable `X` contained in a struct
+        `y`. If the cell array has multiple items, use `y.[0].X` to access the first
+        item named `X`, `y.[1].X` to access the second item named `X`, and so on.
     fs : float
         Sampling frequency (in Hz).
     transpose : bool
@@ -62,7 +64,9 @@ def read_raw_mat(fname, variable, fs, transpose=False, *args, **kwargs):
 def parse_mat(fname):
     """Remove dunder variables from dict returned by scipy.io.loadmat()."""
     mat = loadmat(fname, simplify_cells=True)
-    return {k: v for k, v in mat.items() if not k.startswith("__") and not k.endswith("__")}
+    return {
+        k: v for k, v in mat.items() if not k.startswith("__") and not k.endswith("__")
+    }
 
 
 def _get_dict_value(d, keys):

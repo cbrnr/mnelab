@@ -61,9 +61,6 @@ changelog = "https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md"
 [tool.hatch.version]
 path = "src/mnelab/__init__.py"
 
-[tool.ruff]
-line-length = 92
-
 [tool.ruff.lint]
 select = ["E", "F", "I", "W", "UP"]
 

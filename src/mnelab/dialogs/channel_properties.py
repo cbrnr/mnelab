@@ -74,8 +74,8 @@ class ChannelPropertiesDialog(QDialog):
 class MySortFilterProxyModel(QSortFilterProxyModel):
     """Add ability to filter on Qt.UserRole if Qt.DisplayRole is None.
 
-    This is useful for the 'Bad' column, which stores its data (True/False) as Qt.UserRole
-    instead of the default Qt.DisplayRole.
+    This is useful for the 'Bad' column, which stores its data (True/False) as
+    Qt.UserRole instead of the default Qt.DisplayRole.
     """
 
     def lessThan(self, left, right):

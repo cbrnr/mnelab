@@ -117,7 +117,9 @@ class MainWindow(QMainWindow):
         )
         self.actions["import_events"] = file_menu.addAction(
             "Import events...",
-            lambda: self.import_file(model.import_events, "Import events", "*.csv *.fif"),
+            lambda: self.import_file(
+                model.import_events, "Import events", "*.csv *.fif"
+            ),
         )
         self.actions["import_annotations"] = file_menu.addAction(
             "Import annotations...",
@@ -172,7 +174,9 @@ class MainWindow(QMainWindow):
             self.settings,
         )
         file_menu.addSeparator()
-        self.actions["quit"] = file_menu.addAction("&Quit", self.close, QKeySequence.Quit)
+        self.actions["quit"] = file_menu.addAction(
+            "&Quit", self.close, QKeySequence.Quit
+        )
 
         edit_menu = self.menuBar().addMenu("&Edit")
         self.actions["pick_chans"] = edit_menu.addAction(
@@ -519,7 +523,9 @@ class MainWindow(QMainWindow):
             self.actions["plot_evoked_topomaps"].setEnabled(
                 enabled and locations and self.model.current["dtype"] == "epochs"
             )
-            self.actions["plot_ica_components"].setEnabled(enabled and ica and locations)
+            self.actions["plot_ica_components"].setEnabled(
+                enabled and ica and locations
+            )
             self.actions["plot_ica_sources"].setEnabled(enabled and ica)
             self.actions["interpolate_bads"].setEnabled(enabled and locations and bads)
             self.actions["events"].setEnabled(enabled)
@@ -542,7 +548,9 @@ class MainWindow(QMainWindow):
             )
             append = bool(self.model.get_compatibles())
             self.actions["append_data"].setEnabled(
-                enabled and append and (self.model.current["dtype"] in ("raw", "epochs"))
+                enabled
+                and append
+                and (self.model.current["dtype"] in ("raw", "epochs"))
             )
             self.actions["xdf_metadata"].setEnabled(
                 enabled and self.model.current["ftype"] in ["XDF", "XDFZ", "XDF.GZ"]
@@ -747,14 +755,16 @@ class MainWindow(QMainWindow):
                     name,
                     match_case=dialog.match_case.isChecked(),
                     match_alias=dialog.match_alias.isChecked(),
-                    on_missing="ignore" if dialog.ignore_missing.isChecked() else "raise",
+                    on_missing="ignore"
+                    if dialog.ignore_missing.isChecked()
+                    else "raise",
                 )
             else:
                 QMessageBox.critical(
                     self,
                     "No matching channel names",
-                    "Channel names defined in the montage do not match any channel name in "
-                    "the data.",
+                    "Channel names defined in the montage do not match any channel name"
+                    " in the data.",
                 )
 
     def clear_montage(self):
@@ -954,7 +964,8 @@ class MainWindow(QMainWindow):
                     topomap_times = "auto"
                 else:
                     topomap_times = [
-                        float(t.strip()) for t in dialog.topomaps_timelist.text().split(",")
+                        float(t.strip())
+                        for t in dialog.topomaps_timelist.text().split(",")
                     ]
             else:
                 topomap_times = []
@@ -1058,7 +1069,8 @@ class MainWindow(QMainWindow):
             else:
                 self.model.current["ica"] = res.get(timeout=1)
                 self.model.history.append(
-                    f"ica.fit(inst=raw, reject_by_annotation=" f"{exclude_bad_segments})"
+                    f"ica.fit(inst=raw, reject_by_annotation="
+                    f"{exclude_bad_segments})"
                 )
                 self.data_changed()
 
@@ -1073,7 +1085,9 @@ class MainWindow(QMainWindow):
         if dialog.exec():
             duplicated = self.auto_duplicate()
             try:
-                self.model.interpolate_bads(dialog.reset_bads, dialog.mode, dialog.origin)
+                self.model.interpolate_bads(
+                    dialog.reset_bads, dialog.mode, dialog.origin
+                )
             except ValueError as e:
                 if duplicated:  # undo
                     self.model.remove_data()
@@ -1277,16 +1291,16 @@ class MainWindow(QMainWindow):
     def auto_duplicate(self):
         """Automatically duplicate current data set.
 
-        If the current data set is stored in a file (i.e. was loaded directly from a file),
-        a new data set is automatically created. If the current data set is not stored in a
-        file (i.e. was created by operations in MNELAB), a dialog box asks the user if the
-        current data set should be overwritten or duplicated.
+        If the current data set is stored in a file (i.e. was loaded directly from a
+        file), a new data set is automatically created. If the current data set is not
+        stored in a file (i.e. was created by operations in MNELAB), a dialog box asks
+        the user if the current data set should be overwritten or duplicated.
 
         Returns
         -------
         duplicated : bool
-            True if the current data set was automatically duplicated, False if the current
-            data set was overwritten.
+            True if the current data set was automatically duplicated, False if the
+            current data set was overwritten.
         """
         # if current data is stored in a file create a new data set
         if self.model.current["fname"]:
@@ -1426,7 +1440,9 @@ class MainWindow(QMainWindow):
 
     def eventFilter(self, source, event):
         if event.type() == QEvent.PaletteChange:
-            if (style := QApplication.styleHints().colorScheme()) != Qt.ColorScheme.Unknown:
+            if (
+                style := QApplication.styleHints().colorScheme()
+            ) != Qt.ColorScheme.Unknown:
                 QIcon.setThemeName(style.name.lower())
             else:
                 QIcon.setThemeName("light")  # fallback
