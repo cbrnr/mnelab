@@ -1,44 +1,11 @@
 # Tutorial
 
-## Installation
-
-You can install MNELAB with [pip](https://pip.pypa.io/en/stable/):
-
-```
-pip install mnelab
-```
-
-If you want to use all MNELAB features, the full package including optional dependencies can be installed with:
-
-```
-pip install "mnelab[full]"
-```
-
-You can also use [pipx](https://pypa.github.io/pipx/) to install MNELAB in a completely isolated environment:
-
-```
-pipx install mnelab
-```
-
-If you want the latest development version, use the following command:
-
-```
-pip install git+https://github.com/cbrnr/mnelab
-```
-
-
 ## Running MNELAB
 
-MNELAB must be started from a terminal with the following command:
+We recommend using [uv](https://docs.astral.sh/uv/) to install and run MNELAB. After installing uv, you can start MNELAB with the following command:
 
 ```
-mnelab
-```
-
-If you get an error, try the following alternative:
-
-```
-python -m mnelab
+uvx mnelab
 ```
 
 
