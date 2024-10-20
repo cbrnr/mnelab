@@ -29,9 +29,10 @@ jobs:
       uses: astral-sh/setup-uv@v3
     - name: Set up Python ${{ matrix.python-version }}
       run: uv python install ${{ matrix.python-version }}
-    # - name: Install Linux packages
-    #   run: |
-    #     sudo apt update
+    - name: Install Linux packages
+      run: |
+        sudo apt update
+        sudo apt install libegl-dev
     #     sudo apt install libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
     #                      libxkbcommon-x11-0 xvfb libxcb-randr0 \
     #                      libxcb-render-util0 libxcb-xinerama0 libegl1 \
