@@ -21,7 +21,7 @@ Open a terminal and change into the folder where you would like your MNELAB fork
 
 ### Installing the project
 
-In a terminal, change to the `mnelab` folder containing your MNELAB fork. We recommend [uv](https://docs.astral.sh/uv/) as a package and project manager, but you can use any standard-compliant tool of your choice. With uv, you can install MNELAB and all development dependencies with the following command in the project root:
+In a terminal, change to the `mnelab` folder containing your MNELAB fork and run the following command:
 
 ```
 uv sync --python=3.9 --all-extras
