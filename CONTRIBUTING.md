@@ -21,13 +21,13 @@ Open a terminal and change into the folder where you would like your MNELAB fork
 
 ### Installing required Python packages
 
-In a terminal, change to the `mnelab` folder containing your MNELAB fork. You can install the package and all dependencies with the following command:
+In a terminal, change to the `mnelab` folder containing your MNELAB fork. We recommend [`uv`](https://docs.astral.sh/uv/) as a package and project manager, but you can use any standard-compliant tool of your choice. With `uv`, you can install MNELAB and all development dependencies with the following command in the project root:
 
 ```
-pip install -e ".[dev]"
+uv sync --python=3.9 --all-extras
 ```
 
-You might want to [create a virtual environment](https://docs.python.org/3/library/venv.html#creating-virtual-environments) instead of installing everything into your global environment.
+You can then run MNELAB with `uv run mnelab`, or run the tests with `uv run pytest`. We recommend to use the minimum required Python version (currently 3.9) to ensure compatibility with this release.
 
 
 ### Creating a new branch
