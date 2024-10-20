@@ -43,7 +43,7 @@ full = [
 dev = [
     "mnelab[full]",
     "pytest",
-    # "pytest-qt",
+    "pytest-qt",
     "ruff",
 ]
 
