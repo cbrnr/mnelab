@@ -1,9 +1,13 @@
 name: Test
 
 on:
+  push:
+    branches:
+    - main
   pull_request:
     paths-ignore:
     - 'docs/**'
+  workflow_call:
 
 jobs:
   style:
