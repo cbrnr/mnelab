@@ -26,9 +26,9 @@ dependencies = [
     "PySide6 >= 6.7.1",
     "edfio >= 0.4.2",
     "matplotlib >= 3.8.0",
-    "numpy >= 1.25.0",
+    "numpy >= 2.0.0",
     "scipy >= 1.10.0",
-    "pybv >= 0.7.4",  # brainvision
+    "pybv >= 0.7.4",
     "pyxdf >= 1.16.4",
     "pyobjc-framework-Cocoa >= 10.0; platform_system=='Darwin'",
 ]
