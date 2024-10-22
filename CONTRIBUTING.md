@@ -9,7 +9,7 @@ Before you start working on your contribution, please make sure to follow the gu
 
 We recommend using [uv](https://docs.astral.sh/uv/) to install and manage your Python environment. Install the tool according to the instructions on the website and you are all set (there is no need to install Python separately as uv will automatically download and install the required version).
 
-In addition to uv, you will also need a working [Git](https://git-scm.com/) installation. Again, installation methods are different depending on which platform you are using. If you are on Windows, you can install [Git for Windows](https://gitforwindows.org/). If you are on macOS, you can install the XCode command line tools with `xcode-select --install`, which contain Git. On Linux, use your package manager to install Git.
+In addition to uv, you will also need a working [Git](https://git-scm.com/) installation. If you are on Windows, you can install [Git for Windows](https://gitforwindows.org/). If you are on macOS, you can install the XCode command line tools with `xcode-select --install`, which contain Git. On Linux, use your package manager to install Git.
 
 
 ### Forking and cloning MNELAB
@@ -70,6 +70,6 @@ Follow these steps to make a new [PyPI](https://pypi.org/project/mnelab/) releas
 This concludes the new release. Now prepare the source for the next planned release as follows:
 
 - Update the `__version__` string to the next planned release and append `.dev0`
-- Start a new section at the top of `CHANGELOG.md` titled `[UNRELEASED] - YYYY-MM-DD`
+- Start a new section at the top of `CHANGELOG.md` titled `## [UNRELEASED] - YYYY-MM-DD`
 
 Don't forget to push these changes!
