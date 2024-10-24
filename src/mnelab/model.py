@@ -534,17 +534,21 @@ class Model:
     def append_data(self, names):
         """Append the given raw data sets."""
         files = [self.current["data"]]
-        for d in self.data:
+        current_index = self.index - 1
+        indices = [current_index]
+        data_without_current = self.data[:current_index] + self.data[current_index + 1:]
+
+        for idx, d in enumerate(data_without_current):
             if d["name"] in names:
                 files.append(d["data"])
+                indices.append(idx)
 
-        names.insert(0, self.current["name"])
         if self.current["dtype"] == "raw":
             self.current["data"] = mne.concatenate_raws(files)
-            self.history.append(f"mne.concatenate_raws({names})")
+            self.history.append(f"mne.concatenate_raws({indices})")
         elif self.current["dtype"] == "epochs":
             self.current["data"] = mne.concatenate_epochs(files)
-            self.history.append(f"mne.concatenate_epochs({names})")
+            self.history.append(f"mne.concatenate_epochs({indices})")
         self.current["name"] += " (appended)"
 
     @data_changed
