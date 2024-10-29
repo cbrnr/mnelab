@@ -533,25 +533,24 @@ class Model:
     @data_changed
     def append_data(self, names):
         """Append the given raw data sets."""
-        files = [self.current["data"]]
-        current_index = self.index - 1
-        indices = [f"datasets[{current_index}]"]
-        data_without_current = (
-            self.data[:current_index] + self.data[current_index + 1 :]
-        )
+        self.current["name"] += " (appended)"
+        files = []
+        indices = []
 
-        for idx, d in enumerate(data_without_current):
+        for idx, d in enumerate(self.data):
             if d["name"] in names:
                 files.append(d["data"])
                 indices.append(f"datasets[{idx}]")
+            elif d["name"] == self.current["name"]:
+                files.insert(0, d["data"])
+                indices.insert(0, f"datasets[{idx}]")
 
         if self.current["dtype"] == "raw":
             self.current["data"] = mne.concatenate_raws(files)
             self.history.append(f"mne.concatenate_raws({', '.join(indices)})")
         elif self.current["dtype"] == "epochs":
             self.current["data"] = mne.concatenate_epochs(files)
-            self.history.append(f"mne.concatenate_raws({', '.join(indices)})")
-        self.current["name"] += " (appended)"
+            self.history.append(f"mne.concatenate_epochs({', '.join(indices)})")
 
     @data_changed
     def apply_ica(self):
