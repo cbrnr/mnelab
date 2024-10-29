@@ -536,7 +536,9 @@ class Model:
         files = [self.current["data"]]
         current_index = self.index - 1
         indices = [f"datasets[{current_index}]"]
-        data_without_current = self.data[:current_index] + self.data[current_index + 1:]
+        data_without_current = (
+            self.data[:current_index] + self.data[current_index + 1 :]
+        )
 
         for idx, d in enumerate(data_without_current):
             if d["name"] in names:
