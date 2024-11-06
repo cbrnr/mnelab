@@ -82,7 +82,7 @@ def test_append_data(generate_edf_files):
 
     assert (
         len(model.data) == count_files
-    ), "Number of data in model mismatches number of files after loading."
+    ), "Number of data in model mismatches number of files after loading"
 
     # Use case 1: Duplicate before appending:
     model.index = 0
@@ -93,7 +93,7 @@ def test_append_data(generate_edf_files):
 
     assert (
         len(model.data) == count_files + 1
-    ), "Use-Case #1: Number of data in model mismatches number of files after appending."
+    ), "Use-Case #1: Number of data in model mismatches number of files after appending"
 
     assert (
         "(appended)" in model.current["name"]
@@ -122,7 +122,7 @@ def test_append_data(generate_edf_files):
 
     assert (
         len(model.data) == count_files + 1
-    ), "Use-Case #2: Number of data in model mismatches number of files after appending."
+    ), "Use-Case #2: Number of data in model mismatches number of files after appending"
 
     assert (
         "(appended)" in model.current["name"]
