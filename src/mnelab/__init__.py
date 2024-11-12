@@ -3,6 +3,7 @@
 # License: BSD (3-clause)
 
 import multiprocessing as mp
+import os
 import sys
 from pathlib import Path
 
@@ -18,6 +19,7 @@ __version__ = "1.0.0.dev0"
 
 
 def main():
+    os.environ["QT_LOGGING_RULES"] = "*.debug=false;*.warning=false"
     mp.set_start_method("spawn", force=True)  # required for Linux
     app_name = "MNELAB"
     if sys.platform.startswith("darwin"):
