@@ -3,12 +3,11 @@
 # License: BSD (3-clause)
 
 import multiprocessing as mp
-import os
 import sys
 from pathlib import Path
 
 import matplotlib
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QLoggingCategory, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
@@ -19,7 +18,7 @@ __version__ = "1.0.0.dev0"
 
 
 def main():
-    os.environ["QT_LOGGING_RULES"] = "*.debug=false;*.warning=false"
+    QLoggingCategory.setFilterRules("*.debug=false\n*.warning=false")
     mp.set_start_method("spawn", force=True)  # required for Linux
     app_name = "MNELAB"
     if sys.platform.startswith("darwin"):
