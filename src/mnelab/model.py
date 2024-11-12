@@ -43,8 +43,8 @@ def data_changed(f):
 class Model:
     """Data model for MNELAB."""
 
-    def __init__(self):
-        self.view = None  # current view
+    def __init__(self, view=None):
+        self.view = view  # current view, default = None
         self.data = []  # list of data sets
         self.index = -1  # index of currently active data set
         self.history = [

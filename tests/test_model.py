@@ -27,8 +27,7 @@ def model():
         def data_changed(self):
             pass
 
-    model_instance = Model()
-    model_instance.view = DummyView()
+    model_instance = Model(view=DummyView())
     return model_instance
 
 
