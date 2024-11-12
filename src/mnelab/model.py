@@ -29,13 +29,16 @@ class AddReferenceError(Exception):
 
 
 def data_changed(f):
-    """Call self.view.data_changed method after function call."""
+    """Call self.view.data_changed method after function call if view is not None."""
 
     @wraps(f)
     def wrapper(*args, **kwargs):
-        with args[0].view._wait_cursor():
+        if getattr(args[0], "view", None) is not None:
+            with args[0].view._wait_cursor():
+                f(*args, **kwargs)
+                args[0].view.data_changed()
+        else:
             f(*args, **kwargs)
-            args[0].view.data_changed()
 
     return wrapper
 
@@ -43,8 +46,8 @@ def data_changed(f):
 class Model:
     """Data model for MNELAB."""
 
-    def __init__(self, view=None):
-        self.view = view  # current view, default = None
+    def __init__(self):
+        self.view = None  # current view
         self.data = []  # list of data sets
         self.index = -1  # index of currently active data set
         self.history = [

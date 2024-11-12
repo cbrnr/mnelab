@@ -3,32 +3,12 @@
 # License: BSD (3-clause)
 
 import math
-from contextlib import contextmanager
 
 import numpy as np
 import pytest
 from edfio import Edf, EdfSignal
 
 from mnelab import Model
-
-
-@pytest.fixture
-def model():
-    """
-    Fixture to create a Model instance and attach a DummyView
-    """
-
-    # Dummy class for view
-    class DummyView:
-        @contextmanager
-        def _wait_cursor(self):
-            yield
-
-        def data_changed(self):
-            pass
-
-    model_instance = Model(view=DummyView())
-    return model_instance
 
 
 @pytest.fixture(scope="module")
@@ -70,11 +50,12 @@ def calculate_expected_length(model, names_to_append):
     return expected_length
 
 
-def test_append_data(model, edf_files):
+def test_append_data(edf_files):
     """
     Test append_data model function with generated temporary .edf files for
     duplicate and overwrite use cases.
     """
+    model = Model()
 
     count_files = 0
     for file_path in edf_files:
