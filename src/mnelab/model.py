@@ -29,17 +29,16 @@ class AddReferenceError(Exception):
 
 
 def data_changed(f):
-    """Call self.view.data_changed method after function call if view is not None."""
-
+    """Call self.view.data_changed method after function call."""
     @wraps(f)
-    def wrapper(*args, **kwargs):
-        if getattr(args[0], "view", None) is not None:
-            with args[0].view._wait_cursor():
-                f(*args, **kwargs)
-                args[0].view.data_changed()
+    def wrapper(self, *args, **kwargs):
+        if self.view is not None:
+            with self.view._wait_cursor():
+                result = f(self, *args, **kwargs)
+                self.view.data_changed()
         else:
-            f(*args, **kwargs)
-
+            result = f(self, *args, **kwargs)
+        return result
     return wrapper
 
 
