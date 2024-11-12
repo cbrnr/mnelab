@@ -13,32 +13,19 @@ from mnelab import Model
 
 @pytest.fixture(scope="module")
 def edf_files(tmp_path_factory):
-    """
-    Use edfio package to generate three temporary .edf files with
-    sample EEG data for testing purposes.
-    """
-    # Define the signals and labels to use
+    """Generate three .edf files for testing purposes."""
     signals = [
         np.linspace(-1, 1, 30 * 256),
         np.sin(np.linspace(0, 4 * np.pi, 30 * 256)),
         np.cos(np.linspace(0, 4 * np.pi, 30 * 256)),
     ]
-    file_paths = []
-
+    paths = []
     for i, signal_data in enumerate(signals):
-        file_path = tmp_path_factory.mktemp("data") / f"sample_{i}.edf"
-        signal = [
-            EdfSignal(
-                signal_data,
-                sampling_frequency=256,
-                label="sample_EEG_sig",
-            )
-        ]
-        edf = Edf(signal)
-        edf.write(str(file_path))
-        file_paths.append(file_path)
+        path = tmp_path_factory.mktemp("data") / f"sample_{i}.edf"
+        Edf([EdfSignal(signal_data, sampling_frequency=256, label="EEG")]).write(path)
+        paths.append(path)
 
-    return file_paths
+    return paths
 
 
 # helper functions
@@ -51,39 +38,36 @@ def calculate_expected_length(model, names_to_append):
 
 
 def test_append_data(edf_files):
-    """
-    Test append_data model function with generated temporary .edf files for
-    duplicate and overwrite use cases.
-    """
+    """Test append_data method."""
     model = Model()
 
-    count_files = 0
-    for file_path in edf_files:
-        model.load(file_path)
-        count_files += 1
+    for file in edf_files:
+        model.load(file)
+
+    n_files = len(edf_files)
 
     assert (
-        len(model.data) == count_files
-    ), "Number of data in model mismatches number of files after loading"
+        len(model.data) == n_files
+    ), "Number of data sets in model is not equal to number of files after loading"
 
-    # Use case 1: Duplicate before appending:
+    # use case 1: duplicate before appending
     model.index = 0
     model.duplicate_data()
     names_to_append = ["sample_1", "sample_2"]
-    expected_len_after_appending = calculate_expected_length(model, names_to_append)
+    expected_len = calculate_expected_length(model, names_to_append)
     model.append_data(names_to_append)
 
     assert (
-        len(model.data) == count_files + 1
-    ), "Use-Case #1: Number of data in model mismatches number of files after appending"
+        len(model.data) == n_files + 1
+    ), "Number of data sets in model is not equal to number of files after appending"
 
     assert (
-        "(appended)" in model.current["name"]
-    ), "Use-Case #1: Name of appended dataset not changed."
+        model.current["name"].endswith("(appended)")
+    ), "Name of appended data set does not match expected name"
 
     assert (
-        len(model.current["data"].times) == expected_len_after_appending
-    ), "Use-Case #1: Expected length mismatch after appending."
+        len(model.current["data"].times) == expected_len
+    ), "Length of appended data set does not match expected length"
 
     appended_data = model.current["data"].get_data()[0]
     assert math.isclose(
@@ -105,11 +89,11 @@ def test_append_data(edf_files):
     # Use case 2: Overwrite:
     model.index = 1
     names_to_append = ["sample_1", "sample_2"]
-    expected_len_after_appending = calculate_expected_length(model, names_to_append)
+    expected_len = calculate_expected_length(model, names_to_append)
     model.append_data(names_to_append)
 
     assert (
-        len(model.data) == count_files + 1
+        len(model.data) == n_files + 1
     ), "Use-Case #2: Number of data in model mismatches number of files after appending"
 
     assert (
@@ -117,7 +101,7 @@ def test_append_data(edf_files):
     ), "Use-Case #2: Name of appended dataset not changed."
 
     assert (
-        len(model.current["data"].times) == expected_len_after_appending
+        len(model.current["data"].times) == expected_len
     ), "Use-Case #2: Expected length mismatch after appending."
 
     appended_data = model.current["data"].get_data()[0]
