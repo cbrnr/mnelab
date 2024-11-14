@@ -1,4 +1,6 @@
 ## [UNRELEASED] - YYYY-MM-DD
+### Fixed 
+- Fix a bug where appending data would not be correctly displayed in the history ([#446]) https://github.com/cbrnr/mnelab/pull/446 by [Benedikt Kloeckl](https://github.com/bkloeckl))
 
 ## [0.9.2] - 2024-10-20
 ### Added

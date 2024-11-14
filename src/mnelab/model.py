@@ -32,10 +32,14 @@ def data_changed(f):
     """Call self.view.data_changed method after function call."""
 
     @wraps(f)
-    def wrapper(*args, **kwargs):
-        with args[0].view._wait_cursor():
-            f(*args, **kwargs)
-            args[0].view.data_changed()
+    def wrapper(self, *args, **kwargs):
+        if self.view is not None:
+            with self.view._wait_cursor():
+                result = f(self, *args, **kwargs)
+                self.view.data_changed()
+        else:
+            result = f(self, *args, **kwargs)
+        return result
 
     return wrapper
 
@@ -533,19 +537,21 @@ class Model:
     @data_changed
     def append_data(self, names):
         """Append the given raw data sets."""
+        self.current["name"] += " (appended)"
         files = [self.current["data"]]
-        for d in self.data:
+        indices = []
+
+        for idx, d in enumerate(self.data):
             if d["name"] in names:
                 files.append(d["data"])
+                indices.append(f"datasets[{idx}]")
 
-        names.insert(0, self.current["name"])
         if self.current["dtype"] == "raw":
             self.current["data"] = mne.concatenate_raws(files)
-            self.history.append(f"mne.concatenate_raws({names})")
+            self.history.append(f"mne.concatenate_raws(data, {', '.join(indices)})")
         elif self.current["dtype"] == "epochs":
             self.current["data"] = mne.concatenate_epochs(files)
-            self.history.append(f"mne.concatenate_epochs({names})")
-        self.current["name"] += " (appended)"
+            self.history.append(f"mne.concatenate_epochs({', '.join(indices)})")
 
     @data_changed
     def apply_ica(self):
