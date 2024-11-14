@@ -38,8 +38,8 @@ def test_append_data(edf_files, duplicate_data):
 
     data = [d["data"].get_data()[0] for d in model.data]
 
-    assert (
-        len(model.data) == len(edf_files)
+    assert len(model.data) == len(
+        edf_files
     ), "Number of data sets in model is not equal to number of files after loading"
 
     model.index = 0  # set to sample_0
@@ -56,8 +56,8 @@ def test_append_data(edf_files, duplicate_data):
         "(appended)"
     ), "Name of appended data set does not match expected name"
 
-    assert (
-        len(model.current["data"].times) == sum(len(d) for d in data)
+    assert len(model.current["data"].times) == sum(
+        len(d) for d in data
     ), "Length of appended data set does not match expected length"
 
     appended_data = model.current["data"].get_data()[0]
