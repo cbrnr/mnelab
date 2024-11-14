@@ -67,21 +67,21 @@ def test_append_data(edf_files, duplicate_data):
     ), "Value at index 0 is incorrect"
 
     assert math.isclose(
-        appended_data[idx := len(data[0]) - 1], data[0][-1], rel_tol=1e-12
+        appended_data[(idx := len(data[0]) - 1)], data[0][-1], rel_tol=1e-12
     ), f"Value at index {idx} is incorrect"
 
     assert math.isclose(
-        appended_data[idx := len(data[0])], data[1][0], rel_tol=1e-12
+        appended_data[(idx := len(data[0]))], data[1][0], rel_tol=1e-12
     ), f"Value at index {idx} is incorrect"
 
     assert math.isclose(
-        appended_data[idx := len(data[0]) + len(data[1]) - 1],
+        appended_data[(idx := len(data[0]) + len(data[1]) - 1)],
         data[1][-1],
         rel_tol=1e-12,
     ), f"Value at index {idx} is incorrect"
 
     assert math.isclose(
-        appended_data[idx := len(data[0]) + len(data[1])], data[2][0], rel_tol=1e-12
+        appended_data[(idx := len(data[0]) + len(data[1]))], data[2][0], rel_tol=1e-12
     ), f"Value at index {idx} is incorrect"
 
     assert math.isclose(
