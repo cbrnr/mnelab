@@ -39,10 +39,18 @@ def calculate_expected_length(model, names_to_append):
 
 def test_append_data(edf_files):
     """Test append_data method."""
+
     model = Model()
 
     for file in edf_files:
         model.load(file)
+
+    sample_data_0 = model.data[0]["data"].get_data()[0]
+    sample_data_1 = model.data[1]["data"].get_data()[0]
+    sample_data_2 = model.data[2]["data"].get_data()[0]
+    len_sample_data_0 = len(sample_data_0)
+    len_sample_data_1 = len(sample_data_1)
+    len_sample_data_2 = len(sample_data_2)
 
     n_files = len(edf_files)
 
@@ -61,8 +69,8 @@ def test_append_data(edf_files):
         len(model.data) == n_files + 1
     ), "Number of data sets in model is not equal to number of files after appending"
 
-    assert (
-        model.current["name"].endswith("(appended)")
+    assert model.current["name"].endswith(
+        "(appended)"
     ), "Name of appended data set does not match expected name"
 
     assert (
@@ -70,23 +78,42 @@ def test_append_data(edf_files):
     ), "Length of appended data set does not match expected length"
 
     appended_data = model.current["data"].get_data()[0]
-    assert math.isclose(
-        appended_data[0], -1.0, rel_tol=1e-12
-    ), "Value at index 0 is incorrect"
-    assert math.isclose(
-        appended_data[5000], 0.3022659647516594, rel_tol=1e-12
-    ), "Value at index 5000 is incorrect"
-    assert math.isclose(
-        appended_data[10000], -0.6091554131380178, rel_tol=1e-12
-    ), "Value at index 10000 is incorrect"
-    assert math.isclose(
-        appended_data[15000], -0.5542839703974975, rel_tol=1e-12
-    ), "Value at index 15000 is incorrect"
-    assert math.isclose(
-        appended_data[-1], 1.0, rel_tol=1e-12
-    ), "Value at the last index is incorrect"
 
-    # Use case 2: Overwrite:
+    assert math.isclose(
+        appended_data[0], sample_data_0[0], rel_tol=1e-12
+    ), "Value at index 0 is incorrect"
+
+    assert math.isclose(
+        appended_data[len_sample_data_0 - 1],
+        sample_data_0[len_sample_data_0 - 1],
+        rel_tol=1e-12,
+    ), f"Value at index {len_sample_data_0 - 1} is incorrect"
+
+    assert math.isclose(
+        appended_data[len_sample_data_0],
+        sample_data_1[0],
+        rel_tol=1e-12,
+    ), f"Value at index {len_sample_data_0} is incorrect"
+
+    assert math.isclose(
+        appended_data[len_sample_data_0 + len_sample_data_1 - 1],
+        sample_data_1[len_sample_data_1 - 1],
+        rel_tol=1e-12,
+    ), f"Value at index {len_sample_data_0 + len_sample_data_1 - 1} is incorrect"
+
+    assert math.isclose(
+        appended_data[len_sample_data_0 + len_sample_data_1],
+        sample_data_2[0],
+        rel_tol=1e-12,
+    ), f"Value at index {len_sample_data_0 + len_sample_data_1} is incorrect"
+
+    assert math.isclose(
+        appended_data[-1],
+        sample_data_2[len_sample_data_2 - 1],
+        rel_tol=1e-12,
+    ), "Value at last index is incorrect"
+
+    # use case 2: Overwrite:
     model.index = 1
     names_to_append = ["sample_1", "sample_2"]
     expected_len = calculate_expected_length(model, names_to_append)
@@ -106,17 +133,35 @@ def test_append_data(edf_files):
 
     appended_data = model.current["data"].get_data()[0]
     assert math.isclose(
-        appended_data[0], -1.0, rel_tol=1e-12
+        appended_data[0], sample_data_0[0], rel_tol=1e-12
     ), "Value at index 0 is incorrect"
+
     assert math.isclose(
-        appended_data[10000], -0.6091554131380178, rel_tol=1e-12
-    ), "Value at index 10000 is incorrect"
+        appended_data[len_sample_data_0 - 1],
+        sample_data_0[len_sample_data_0 - 1],
+        rel_tol=1e-12,
+    ), f"Value at index {len_sample_data_0 - 1} is incorrect"
+
     assert math.isclose(
-        appended_data[20000], 0.25786221103227286, rel_tol=1e-12
-    ), "Value at index 20000 is incorrect"
+        appended_data[len_sample_data_0],
+        sample_data_1[0],
+        rel_tol=1e-12,
+    ), f"Value at index {len_sample_data_0} is incorrect"
+
     assert math.isclose(
-        appended_data[30000], -0.9233081559472038, rel_tol=1e-12
-    ), "Value at index 30000 is incorrect"
+        appended_data[len_sample_data_0 + len_sample_data_1 - 1],
+        sample_data_1[len_sample_data_1 - 1],
+        rel_tol=1e-12,
+    ), f"Value at index {len_sample_data_0 + len_sample_data_1 - 1} is incorrect"
+
     assert math.isclose(
-        appended_data[-1], 1.0, rel_tol=1e-12
-    ), "Value at the last index is incorrect"
+        appended_data[len_sample_data_0 + len_sample_data_1],
+        sample_data_2[0],
+        rel_tol=1e-12,
+    ), f"Value at index {len_sample_data_0 + len_sample_data_1} is incorrect"
+
+    assert math.isclose(
+        appended_data[-1],
+        sample_data_2[len_sample_data_2 - 1],
+        rel_tol=1e-12,
+    ), "Value at last index is incorrect"

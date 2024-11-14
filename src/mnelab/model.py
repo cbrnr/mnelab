@@ -30,6 +30,7 @@ class AddReferenceError(Exception):
 
 def data_changed(f):
     """Call self.view.data_changed method after function call."""
+
     @wraps(f)
     def wrapper(self, *args, **kwargs):
         if self.view is not None:
@@ -39,6 +40,7 @@ def data_changed(f):
         else:
             result = f(self, *args, **kwargs)
         return result
+
     return wrapper
 
 
