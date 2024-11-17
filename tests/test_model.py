@@ -46,7 +46,7 @@ def test_append_data(edf_files, duplicate_data):
     if duplicate_data:
         model.duplicate_data()
 
-    model.append_data(["sample_1", "sample_2"])
+    model.append_data([1, 2])
 
     assert (
         len(model.data) == len(edf_files) + 1 if duplicate_data else len(edf_files)
