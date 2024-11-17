@@ -42,11 +42,13 @@ def test_append_data(edf_files, duplicate_data):
         edf_files
     ), "Number of data sets in model is not equal to number of files after loading"
 
+    idx_list = [1, 2]
     model.index = 0  # set to sample_0
     if duplicate_data:
         model.duplicate_data()
+        idx_list = [idx + 1 if idx >= model.index else idx for idx in idx_list]
 
-    model.append_data([1, 2])
+    model.append_data(idx_list)
 
     assert (
         len(model.data) == len(edf_files) + 1 if duplicate_data else len(edf_files)
