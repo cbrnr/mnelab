@@ -2,18 +2,18 @@
 #
 # License: BSD (3-clause)
 
-from PySide6.QtCore import Qt, Slot
+from PySide6.QtCore import Slot, Qt
 from PySide6.QtWidgets import (
-    QAbstractItemView,
     QDialog,
     QDialogButtonBox,
     QGridLayout,
     QLabel,
     QPushButton,
-    QVBoxLayout,
     QTableWidget,
     QTableWidgetItem,
-    QHeaderView
+    QHeaderView,
+    QAbstractItemView,
+    QVBoxLayout,
 )
 
 
@@ -37,7 +37,7 @@ class AppendDialog(QDialog):
 
         self.destination = QTableWidget(self)
         self.setup_table(self.destination, [])
-        
+
         grid.addWidget(self.source, 1, 0)
         grid.addWidget(self.destination, 1, 2)
         vbox.addLayout(grid)
@@ -68,7 +68,9 @@ class AppendDialog(QDialog):
 
         table_widget.setSelectionBehavior(QAbstractItemView.SelectRows)
         table_widget.verticalHeader().setVisible(False)
-        table_widget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        table_widget.horizontalHeader().setSectionResizeMode(
+            0, QHeaderView.ResizeToContents
+        )
         table_widget.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
         table_widget.horizontalHeader().setStretchLastSection(True)
 
@@ -110,9 +112,13 @@ class AppendDialog(QDialog):
     @Slot()
     def move(self):
         source_table = self.source if self.source.selectedRanges() else self.destination
-        destination_table = self.destination if self.source.selectedRanges() else self.source
+        destination_table = (
+            self.destination if self.source.selectedRanges() else self.source
+        )
 
-        rows = sorted(set(index.row() for index in source_table.selectedIndexes()), reverse=True)
+        rows = sorted(
+            set(index.row() for index in source_table.selectedIndexes()), reverse=True
+        )
         for row in rows:
             idx_item = source_table.item(row, 0).clone()
             name_item = source_table.item(row, 1).clone()
