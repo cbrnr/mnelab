@@ -826,7 +826,7 @@ class MainWindow(QMainWindow):
         dialog = AppendDialog(self, compatibles)
         if dialog.exec():
             self.auto_duplicate()
-            self.model.append_data(dialog.names)
+            self.model.append_data(dialog.selected_idx)
 
     def plot_data(self):
         """Plot data."""
