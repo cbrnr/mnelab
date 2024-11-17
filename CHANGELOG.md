@@ -2,6 +2,9 @@
 ### Fixed 
 - Fix a bug where appending data would not be correctly displayed in the history ([#446]) https://github.com/cbrnr/mnelab/pull/446 by [Benedikt Kloeckl](https://github.com/bkloeckl))
 
+### Changed
+- Change the append dialog appearance to include original indices used for identifying the data ([#449]) https://github.com/cbrnr/mnelab/pull/449 by [Benedikt Kloeckl](https://github.com/bkloeckl))
+
 ## [0.9.2] - 2024-10-20
 ### Added
 - Add initial number of displayed channels in the raw plot to settings dialog and set default to 32 channels ([#428](https://github.com/cbrnr/mnelab/pull/428) by [Dennis Wambacher](https://github.com/d3njo))
