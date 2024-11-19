@@ -3,6 +3,7 @@
 # License: BSD (3-clause)
 
 from PySide6.QtCore import Qt, Slot
+from PySide6.QtGui import QColor, QPainter, QPen
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QDialog,
@@ -17,6 +18,89 @@ from PySide6.QtWidgets import (
 )
 
 
+class DragDropTableWidget(QTableWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setDragEnabled(True)
+        self.setAcceptDrops(True)
+        self.setDragDropMode(QAbstractItemView.InternalMove)
+        self.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.setDefaultDropAction(Qt.MoveAction)
+        self.setDropIndicatorShown(False)
+        self.setDragDropOverwriteMode(False)
+        self.drop_row = -1
+
+    def dragEnterEvent(self, event):
+        event.accept()
+        super().dragEnterEvent(event)
+
+    def dragMoveEvent(self, event):
+        drop_row = self.indexAt(event.pos()).row()
+        if drop_row == -1:
+            drop_row = self.rowCount()
+        if drop_row != self.drop_row:
+            self.drop_row = drop_row
+            self.viewport().update()
+        event.accept()
+        super().dragMoveEvent(event)
+
+    def dragLeaveEvent(self, event):
+        self.drop_row = -1
+        self.viewport().update()
+        super().dragLeaveEvent(event)
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        if self.drop_row >= 0:
+            painter = QPainter(self.viewport())
+            pen = QPen(QColor("black"))
+            pen.setWidth(1.5)
+            painter.setPen(pen)
+            if self.drop_row < self.rowCount():
+                rect = self.visualRect(self.model().index(self.drop_row, 0))
+                y = rect.top()
+            else:
+                last_row_rect = self.visualRect(
+                    self.model().index(self.rowCount() - 1, 0)
+                )
+                y = last_row_rect.bottom()
+            painter.drawLine(0, y, self.viewport().width(), y)
+
+    def dropEvent(self, event):
+        self.drop_row = -1
+        self.viewport().update()
+        if event.source() == self:
+            drop_row = self.indexAt(event.pos()).row()
+            if drop_row == -1:
+                drop_row = self.rowCount()
+            selected_rows = sorted(set(index.row() for index in self.selectedIndexes()))
+            if selected_rows and drop_row > selected_rows[-1]:
+                drop_row -= len(selected_rows)
+            row_data = []
+            for row in selected_rows:
+                row_data.append(
+                    [self.item(row, col).text() for col in range(self.columnCount())]
+                )
+            for row in reversed(selected_rows):
+                self.removeRow(row)
+            for i, data in enumerate(row_data):
+                self.insertRow(drop_row + i)
+                for col, value in enumerate(data):
+                    item = QTableWidgetItem(value)
+                    item.setTextAlignment(
+                        Qt.AlignLeft | Qt.AlignVCenter
+                        if col == 1
+                        else Qt.AlignRight | Qt.AlignVCenter
+                    )
+                    item.setFlags(item.flags() & ~Qt.ItemIsEditable)
+                    if col == 0:
+                        item.setForeground(QColor("gray"))
+                    self.setItem(drop_row + i, col, item)
+            event.accept()
+        else:
+            event.ignore()
+
+
 class AppendDialog(QDialog):
     def __init__(self, parent, compatibles, title="Append data"):
         super().__init__(parent)
@@ -28,14 +112,14 @@ class AppendDialog(QDialog):
         grid.addWidget(QLabel("Source"), 0, 0, Qt.AlignCenter)
         grid.addWidget(QLabel("Destination"), 0, 2, Qt.AlignCenter)
 
-        self.source = QTableWidget(self)
+        self.source = DragDropTableWidget(self)
         self.setup_table(self.source, compatibles)
 
         self.move_button = QPushButton("→")
         self.move_button.setEnabled(False)
         grid.addWidget(self.move_button, 1, 1, Qt.AlignHCenter)
 
-        self.destination = QTableWidget(self)
+        self.destination = DragDropTableWidget(self)
         self.setup_table(self.destination, [])
 
         grid.addWidget(self.source, 1, 0)
@@ -59,20 +143,43 @@ class AppendDialog(QDialog):
 
     def setup_table(self, table_widget, compatibles):
         table_widget.setColumnCount(2)
-        table_widget.setHorizontalHeaderLabels(["Index", "Name"])
         table_widget.setRowCount(len(compatibles))
 
+        # Populate the table
         for i, (idx, name) in enumerate(compatibles):
-            table_widget.setItem(i, 0, QTableWidgetItem(str(idx)))
-            table_widget.setItem(i, 1, QTableWidgetItem(name))
+            # Left column (Index): Right-aligned text and gray color
+            index_item = QTableWidgetItem(str(idx))
+            index_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            index_item.setForeground(QColor("gray"))
+            index_item.setFlags(
+                index_item.flags() & ~Qt.ItemIsEditable
+            )  # Make non-editable
+            table_widget.setItem(i, 0, index_item)
 
-        table_widget.setSelectionBehavior(QAbstractItemView.SelectRows)
-        table_widget.verticalHeader().setVisible(False)
+            # Right column (Name)
+            name_item = QTableWidgetItem(name)
+            name_item.setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+            name_item.setFlags(
+                name_item.flags() & ~Qt.ItemIsEditable
+            )  # Make non-editable
+            table_widget.setItem(i, 1, name_item)
+
+        # Hide headers completely
+        table_widget.horizontalHeader().hide()
+        table_widget.verticalHeader().hide()
+
+        # Remove grid lines for a cleaner look
+        table_widget.setShowGrid(False)
+
+        # Adjust column widths
         table_widget.horizontalHeader().setSectionResizeMode(
             0, QHeaderView.ResizeToContents
         )
         table_widget.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
         table_widget.horizontalHeader().setStretchLastSection(True)
+
+        # Disable focus on individual cells for further editing prevention
+        table_widget.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
     @property
     def selected_idx(self):
