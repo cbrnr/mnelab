@@ -90,7 +90,7 @@ class DragDropTableWidget(QTableWidget):
                     item.setTextAlignment(
                         Qt.AlignLeft | Qt.AlignVCenter
                         if col == 1
-                        else Qt.AlignVCenter | Qt.AlignVCenter
+                        else Qt.AlignRight | Qt.AlignVCenter
                     )
                     item.setFlags(item.flags() & ~Qt.ItemIsEditable)
                     if col == 0:
