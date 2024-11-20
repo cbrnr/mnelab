@@ -90,15 +90,22 @@ class DragDropTableWidget(QTableWidget):
                     item.setTextAlignment(
                         Qt.AlignLeft | Qt.AlignVCenter
                         if col == 1
-                        else Qt.AlignRight | Qt.AlignVCenter
+                        else Qt.AlignVCenter | Qt.AlignVCenter
                     )
                     item.setFlags(item.flags() & ~Qt.ItemIsEditable)
                     if col == 0:
                         item.setForeground(QColor("gray"))
                     self.setItem(drop_row + i, col, item)
+
+            self.styleRows()
             event.accept()
         else:
             event.ignore()
+
+    def styleRows(self):
+        for i in range(self.rowCount()):
+            self.resizeRowToContents(i)
+            self.setRowHeight(i, 10)
 
 
 class AppendDialog(QDialog):
@@ -145,40 +152,28 @@ class AppendDialog(QDialog):
         table_widget.setColumnCount(2)
         table_widget.setRowCount(len(compatibles))
 
-        # Populate the table
         for i, (idx, name) in enumerate(compatibles):
-            # Left column (Index): Right-aligned text and gray color
             index_item = QTableWidgetItem(str(idx))
             index_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
             index_item.setForeground(QColor("gray"))
-            index_item.setFlags(
-                index_item.flags() & ~Qt.ItemIsEditable
-            )  # Make non-editable
+            index_item.setFlags(index_item.flags() & ~Qt.ItemIsEditable)
             table_widget.setItem(i, 0, index_item)
 
-            # Right column (Name)
             name_item = QTableWidgetItem(name)
             name_item.setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-            name_item.setFlags(
-                name_item.flags() & ~Qt.ItemIsEditable
-            )  # Make non-editable
+            name_item.setFlags(name_item.flags() & ~Qt.ItemIsEditable)
             table_widget.setItem(i, 1, name_item)
+            table_widget.resizeRowToContents(i)
+            table_widget.setRowHeight(i, 10)
 
-        # Hide headers completely
         table_widget.horizontalHeader().hide()
         table_widget.verticalHeader().hide()
-
-        # Remove grid lines for a cleaner look
         table_widget.setShowGrid(False)
 
-        # Adjust column widths
         table_widget.horizontalHeader().setSectionResizeMode(
             0, QHeaderView.ResizeToContents
         )
-        table_widget.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
         table_widget.horizontalHeader().setStretchLastSection(True)
-
-        # Disable focus on individual cells for further editing prevention
         table_widget.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
     @property
@@ -232,6 +227,8 @@ class AppendDialog(QDialog):
             destination_table.insertRow(row_count)
             destination_table.setItem(row_count, 0, idx_item)
             destination_table.setItem(row_count, 1, name_item)
+
+        destination_table.styleRows()
 
         for row in reversed(rows):
             source_table.removeRow(row)
