@@ -650,16 +650,17 @@ class Model:
         target : int
             The index the data set should be moved to.
         """
-        # first the data set is copied to the target index
-        self.data.insert(target, self.data[source])
-        self.history.append(f"datasets.insert({target}, datasets[{source}])")
-        # if moved to the front, the source index is increased by 1
-        if source > target:
-            source += 1
-        # if moved to the back, the new index (after removing the original data set)
-        # will be 1 less that the target index
-        else:
-            target -= 1
+        
+        # pop and save
+        item = self.data.pop(source)
+        self.history.append(f"item = datasets.pop({source})")
+
+        # insert
+        self.data.insert(target, item)
+        self.history.append(f"datasets.insert({target}, item)")
+
+        # select
         self.index = target
-        self.data.pop(source)
-        self.history.append(f"datasets.pop({source})")
+        self.history.append(f"data = datasets[{target}]")
+        
+        
