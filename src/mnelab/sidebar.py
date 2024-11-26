@@ -37,8 +37,8 @@ class SidebarTableWidget(QTableWidget):
         self.horizontalHeader().setSectionResizeMode(1, QHeaderView.Fixed)
         self.setColumnWidth(1, 20)
 
-        self.setMouseTracking(True)
-        self.viewport().installEventFilter(self)
+        # self.setMouseTracking(True)
+        # self.viewport().installEventFilter(self)
 
     def mousePressEvent(self, event):
         item = self.itemAt(event.pos())
