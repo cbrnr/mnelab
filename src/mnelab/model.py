@@ -70,6 +70,11 @@ class Model:
         """Update/overwrite data set at current index."""
         self.current = dataset
 
+    def remove_data_at(self, index):
+        """Remove data set at certain index."""
+        self.index = index
+        self.remove_data()
+
     @data_changed
     def remove_data(self):
         """Remove data set at current index."""

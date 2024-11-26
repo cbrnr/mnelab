@@ -3,6 +3,7 @@
 # License: BSD (3-clause)
 
 import multiprocessing as mp
+import os
 import sys
 import traceback
 from contextlib import contextmanager
@@ -22,6 +23,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QMainWindow,
     QMessageBox,
+    QPushButton,
     QSplitter,
     QStackedWidget,
     QTableWidgetItem,
@@ -456,12 +458,29 @@ class MainWindow(QMainWindow):
         # update sidebar
         self.sidebar.setRowCount(0)
         self.sidebar.setRowCount(len(self.model.names))
-        self.sidebar.setColumnCount(1)
+        self.sidebar.setColumnCount(2)
 
         for row_index, name in enumerate(self.model.names):
             item = QTableWidgetItem(name)
             item.setFlags(item.flags() | Qt.ItemIsEditable)
             self.sidebar.setItem(row_index, 0, item)
+
+            # add delete button
+            delete_button = QPushButton(self)
+            icon_path = os.path.join(
+                os.path.dirname(__file__),
+                "icons",
+                "close-data.svg",
+            )
+
+            delete_button.setIcon(QIcon(icon_path))
+            delete_button.setStyleSheet(
+                "background: transparent; border: none; margin: auto;"
+            )
+            delete_button.clicked.connect(
+                lambda _, index=row_index: self.model.remove_data_at(index)
+            )
+            self.sidebar.setCellWidget(row_index, 1, delete_button)
 
         self.sidebar.styleRows()
         self.sidebar.selectRow(self.model.index)

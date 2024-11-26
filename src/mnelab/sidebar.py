@@ -9,14 +9,13 @@ from PySide6.QtWidgets import (
     QFrame,
     QHeaderView,
     QTableWidget,
-    QTableWidgetItem,
 )
 
 
 class SidebarTableWidget(QTableWidget):
     rowsMoved = Signal(int, int)  # custom signal emitted, when drag&dropping rows
 
-    def __init__(self, parent=None):
+    def __init__(self, parent):
         super().__init__(parent)
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
@@ -29,12 +28,17 @@ class SidebarTableWidget(QTableWidget):
         self.setFocusPolicy(Qt.NoFocus)
         self.setEditTriggers(QAbstractItemView.DoubleClicked)
         self.setColumnCount(2)
-        self.horizontalHeader().hide()
         self.setShowGrid(False)
         self.drop_row = -1
 
-        self.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
-        self.horizontalHeader().setStretchLastSection(True)
+        self.horizontalHeader().hide()
+        self.horizontalHeader().setStretchLastSection(False)
+        self.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
+        self.horizontalHeader().setSectionResizeMode(1, QHeaderView.Fixed)
+        self.setColumnWidth(1, 20)
+
+        self.setMouseTracking(True)
+        self.viewport().installEventFilter(self)
 
     def mousePressEvent(self, event):
         item = self.itemAt(event.pos())
@@ -106,3 +110,32 @@ class SidebarTableWidget(QTableWidget):
     def update_vertical_header(self):
         row_count = self.rowCount()
         self.setVerticalHeaderLabels([str(i) for i in range(row_count)])
+
+    """
+    # SHOW ON HOVER:
+    def eventFilter(self, source, event):
+        if source == self.viewport() and event.type() == QEvent.MouseMove:
+            index = self.indexAt(event.pos())
+            if index.isValid():
+                self.showCloseButton(index.row())
+        return super().eventFilter(source, event)
+
+    def showCloseButton(self, row_index):
+        for i in range(self.rowCount()):
+            if i == row_index:
+                delete_button = QPushButton(self)
+                icon_path = os.path.join(
+                    os.path.dirname(__file__),
+                    "icons",
+                    "close-data.svg",
+                )
+
+                delete_button.setIcon(QIcon(icon_path))
+                delete_button.setStyleSheet(
+                    "background: transparent; border: none; margin: auto;"
+                )
+                # TODO: connect to model.remove_data()
+                self.setCellWidget(row_index, 1, delete_button)
+            else:
+                self.removeCellWidget(i, 1)
+    """
