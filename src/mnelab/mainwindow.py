@@ -28,7 +28,6 @@ from PySide6.QtWidgets import (
 )
 from pyxdf import resolve_streams
 
-from mnelab.sidebar import SidebarTableWidget
 from mnelab.dialogs import *  # noqa: F403
 from mnelab.io import writers
 from mnelab.io.mat import parse_mat
@@ -36,6 +35,7 @@ from mnelab.io.npy import parse_npy
 from mnelab.io.xdf import get_xml, list_chunks
 from mnelab.model import InvalidAnnotationsError, LabelsNotFoundError, Model
 from mnelab.settings import SettingsDialog, read_settings, write_settings
+from mnelab.sidebar import SidebarTableWidget
 from mnelab.utils import count_locations, have, image_path, natural_sort
 from mnelab.viz import (
     _calc_tfr,
@@ -373,10 +373,9 @@ class MainWindow(QMainWindow):
 
         # set up data model for sidebar (list of open files)
         self.sidebar = SidebarTableWidget(self)
-        self.sidebar.rowsMoved.connect(self._sidebar_move_event)
+        # self.sidebar.rowsMoved.connect(self._sidebar_move_event)
         self.sidebar.itemDelegate().commitData.connect(self._sidebar_edit_event)
         self.sidebar.cellClicked.connect(self._update_data)
-
 
         splitter = QSplitter()
         splitter.addWidget(self.sidebar)
@@ -465,7 +464,7 @@ class MainWindow(QMainWindow):
             self.sidebar.setItem(row_index, 0, item)
 
         self.sidebar.styleRows()
-        # self.sidebar.selectRow(self.model.index)
+        self.sidebar.selectRow(self.model.index)
 
         # update info widget
         if self.model.data:

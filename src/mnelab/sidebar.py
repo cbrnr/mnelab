@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
 
 
 class SidebarTableWidget(QTableWidget):
-    rowsMoved = Signal(int, int) # custom signal emitted, when drag&dropping rows
+    rowsMoved = Signal(int, int)  # custom signal emitted, when drag&dropping rows
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -33,13 +33,8 @@ class SidebarTableWidget(QTableWidget):
         self.setShowGrid(False)
         self.drop_row = -1
 
-        self.horizontalHeader().setSectionResizeMode(
-            0, QHeaderView.ResizeToContents
-        )
-
+        self.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
         self.horizontalHeader().setStretchLastSection(True)
-        self.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        
 
     def dragEnterEvent(self, event):
         event.accept()
@@ -78,8 +73,6 @@ class SidebarTableWidget(QTableWidget):
             painter.drawLine(0, y, self.viewport().width(), y)
 
     def dropEvent(self, event):
-        self.drop_row = -1
-        self.viewport().update()
         if event.source() == self:
             drop_row = self.indexAt(event.pos()).row()
             if drop_row == -1:
@@ -87,10 +80,13 @@ class SidebarTableWidget(QTableWidget):
             selected_rows = sorted(set(index.row() for index in self.selectedIndexes()))
             if selected_rows and drop_row > selected_rows[-1]:
                 drop_row -= len(selected_rows)
-            
+
+            self.drop_row = -1
+            self.viewport().update()
             self.rowsMoved.emit(selected_rows[0], drop_row)
-            self.styleRows()
+            event.setDropAction(Qt.IgnoreAction)
             event.accept()
+
         else:
             event.ignore()
 
@@ -99,7 +95,7 @@ class SidebarTableWidget(QTableWidget):
             self.resizeRowToContents(i)
             self.setRowHeight(i, 10)
         self.update_vertical_header()
-    
+
     def update_vertical_header(self):
         row_count = self.rowCount()
         self.setVerticalHeaderLabels([str(i) for i in range(row_count)])

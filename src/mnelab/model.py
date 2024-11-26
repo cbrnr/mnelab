@@ -650,7 +650,7 @@ class Model:
         target : int
             The index the data set should be moved to.
         """
-        
+
         # pop and save
         item = self.data.pop(source)
         self.history.append(f"item = datasets.pop({source})")
@@ -662,5 +662,3 @@ class Model:
         # select
         self.index = target
         self.history.append(f"data = datasets[{target}]")
-        
-        
