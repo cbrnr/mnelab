@@ -2,17 +2,17 @@
 #
 # License: BSD (3-clause)
 
-from PySide6.QtCore import Slot, Qt
+from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import (
+    QAbstractItemView,
     QDialog,
     QDialogButtonBox,
     QGridLayout,
+    QHeaderView,
     QLabel,
     QPushButton,
     QTableWidget,
     QTableWidgetItem,
-    QHeaderView,
-    QAbstractItemView,
     QVBoxLayout,
 )
 
