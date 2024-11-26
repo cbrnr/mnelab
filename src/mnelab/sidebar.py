@@ -36,6 +36,13 @@ class SidebarTableWidget(QTableWidget):
         self.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
         self.horizontalHeader().setStretchLastSection(True)
 
+    def mousePressEvent(self, event):
+        item = self.itemAt(event.pos())
+        if item:
+            super().mousePressEvent(event)
+        else:
+            event.ignore()
+
     def dragEnterEvent(self, event):
         event.accept()
         super().dragEnterEvent(event)

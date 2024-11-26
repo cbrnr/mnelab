@@ -373,7 +373,7 @@ class MainWindow(QMainWindow):
 
         # set up data model for sidebar (list of open files)
         self.sidebar = SidebarTableWidget(self)
-        # self.sidebar.rowsMoved.connect(self._sidebar_move_event)
+        self.sidebar.rowsMoved.connect(self._sidebar_move_event)
         self.sidebar.itemDelegate().commitData.connect(self._sidebar_edit_event)
         self.sidebar.cellClicked.connect(self._update_data)
 
