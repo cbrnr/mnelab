@@ -6,8 +6,6 @@
 - Fix a bug where appending data would not be correctly displayed in the history ([#446]) https://github.com/cbrnr/mnelab/pull/446 by [Benedikt Kloeckl](https://github.com/bkloeckl))
 
 ### Changed
-- Change the append dialog appearance to include original indices used for identifying the data ([#449]) https://github.com/cbrnr/mnelab/pull/449 by [Benedikt Kloeckl](https://github.com/bkloeckl))
-
 - Change sidebar UIWidget from List to Table in order to display unique indices of datasets ([#454]) https://github.com/cbrnr/mnelab/pull/454 by [Benedikt Kloeckl](https://github.com/bkloeckl))
 
 ## [0.9.2] - 2024-10-20
