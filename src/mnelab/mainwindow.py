@@ -3,7 +3,6 @@
 # License: BSD (3-clause)
 
 import multiprocessing as mp
-import os
 import sys
 import traceback
 from contextlib import contextmanager
@@ -23,7 +22,6 @@ from PySide6.QtWidgets import (
     QLabel,
     QMainWindow,
     QMessageBox,
-    QPushButton,
     QSplitter,
     QStackedWidget,
     QTableWidgetItem,
