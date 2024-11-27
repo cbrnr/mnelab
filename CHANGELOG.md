@@ -1,6 +1,6 @@
 ## [UNRELEASED] - YYYY-MM-DD
-###
-- Add close-button icon to sidebar table ([#454]) https://github.com/cbrnr/mnelab/pull/454 by [Benedikt Kloeckl](https://github.com/bkloeckl))
+### Added
+- Add close-button icon to sidebar table on hover ([#454]) https://github.com/cbrnr/mnelab/pull/454 by [Benedikt Kloeckl](https://github.com/bkloeckl))
 
 ### Fixed 
 - Fix a bug where appending data would not be correctly displayed in the history ([#446]) https://github.com/cbrnr/mnelab/pull/446 by [Benedikt Kloeckl](https://github.com/bkloeckl))

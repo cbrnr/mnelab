@@ -70,15 +70,13 @@ class Model:
         """Update/overwrite data set at current index."""
         self.current = dataset
 
-    def remove_data_at(self, index):
-        """Remove data set at certain index."""
-        self.index = index
-        self.remove_data()
-
     @data_changed
-    def remove_data(self):
+    def remove_data(self, index=-1):
         """Remove data set at current index."""
-        self.data.pop(self.index)
+        if index == -1:
+            index = self.index
+
+        self.data.pop(index)
         if self.index >= len(self.data):  # if last entry was removed
             self.index = len(self.data) - 1  # reset index to last entry
 

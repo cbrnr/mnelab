@@ -2,12 +2,13 @@
 #
 # License: BSD (3-clause)
 
-from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QColor, QPainter, QPen
+from PySide6.QtCore import QEvent, Qt, Signal
+from PySide6.QtGui import QColor, QIcon, QPainter, QPen
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QFrame,
     QHeaderView,
+    QPushButton,
     QTableWidget,
 )
 
@@ -17,6 +18,7 @@ class SidebarTableWidget(QTableWidget):
 
     def __init__(self, parent):
         super().__init__(parent)
+        self.parent = parent
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
         self.setDragDropMode(QAbstractItemView.InternalMove)
@@ -37,8 +39,8 @@ class SidebarTableWidget(QTableWidget):
         self.horizontalHeader().setSectionResizeMode(1, QHeaderView.Fixed)
         self.setColumnWidth(1, 20)
 
-        # self.setMouseTracking(True)
-        # self.viewport().installEventFilter(self)
+        self.setMouseTracking(True)
+        self.viewport().installEventFilter(self)
 
     def mousePressEvent(self, event):
         item = self.itemAt(event.pos())
@@ -111,31 +113,23 @@ class SidebarTableWidget(QTableWidget):
         row_count = self.rowCount()
         self.setVerticalHeaderLabels([str(i) for i in range(row_count)])
 
-    """
-    # SHOW ON HOVER:
     def eventFilter(self, source, event):
         if source == self.viewport() and event.type() == QEvent.MouseMove:
             index = self.indexAt(event.pos())
             if index.isValid():
                 self.showCloseButton(index.row())
-        return super().eventFilter(source, event)
 
     def showCloseButton(self, row_index):
         for i in range(self.rowCount()):
             if i == row_index:
                 delete_button = QPushButton(self)
-                icon_path = os.path.join(
-                    os.path.dirname(__file__),
-                    "icons",
-                    "close-data.svg",
-                )
-
-                delete_button.setIcon(QIcon(icon_path))
+                delete_button.setIcon(QIcon.fromTheme("close-data"))
                 delete_button.setStyleSheet(
                     "background: transparent; border: none; margin: auto;"
                 )
-                # TODO: connect to model.remove_data()
+                delete_button.clicked.connect(
+                    lambda _, index=row_index: self.parent.model.remove_data(index)
+                )
                 self.setCellWidget(row_index, 1, delete_button)
             else:
                 self.removeCellWidget(i, 1)
-    """
