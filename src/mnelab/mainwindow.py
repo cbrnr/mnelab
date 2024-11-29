@@ -826,8 +826,7 @@ class MainWindow(QMainWindow):
         dialog = AppendDialog(self, compatibles)
         if dialog.exec():
             idx_list = dialog.selected_idx
-            # adjust for index change if duplicated
-            if self.auto_duplicate():
+            if self.auto_duplicate():  # adjust for index change if duplicated
                 idx_list = [
                     idx + 1 if idx >= self.model.index else idx for idx in idx_list
                 ]
