@@ -190,7 +190,6 @@ class AppendDialog(QDialog):
 
     @property
     def selected_idx(self):
-        """Return a list of all original indices in the destination."""
         selected = []
         for it in range(self.destination.rowCount()):
             index_item = self.destination.item(it, 0)
