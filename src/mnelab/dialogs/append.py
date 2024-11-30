@@ -23,7 +23,7 @@ class DragDropTableWidget(QTableWidget):
         super().__init__(parent)
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
-        self.setDragDropMode(QAbstractItemView.InternalMove)
+        self.setDragDropMode(QAbstractItemView.DragDrop)
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.setDefaultDropAction(Qt.MoveAction)
         self.setDropIndicatorShown(False)
@@ -69,38 +69,47 @@ class DragDropTableWidget(QTableWidget):
     def dropEvent(self, event):
         self.drop_row = -1
         self.viewport().update()
-        if event.source() == self:
+
+        if isinstance(event.source(), DragDropTableWidget):
+            source_table = event.source()
             drop_row = self.indexAt(event.pos()).row()
             if drop_row == -1:
                 drop_row = self.rowCount()
-            selected_rows = sorted(set(index.row() for index in self.selectedIndexes()))
-            if selected_rows and drop_row > selected_rows[-1]:
-                drop_row -= len(selected_rows)
-            row_data = []
-            for row in selected_rows:
-                row_data.append(
-                    [self.item(row, col).text() for col in range(self.columnCount())]
-                )
-            for row in reversed(selected_rows):
-                self.removeRow(row)
-            for i, data in enumerate(row_data):
-                self.insertRow(drop_row + i)
-                for col, value in enumerate(data):
-                    item = QTableWidgetItem(value)
-                    item.setTextAlignment(
-                        Qt.AlignLeft | Qt.AlignVCenter
-                        if col == 1
-                        else Qt.AlignRight | Qt.AlignVCenter
-                    )
-                    item.setFlags(item.flags() & ~Qt.ItemIsEditable)
-                    if col == 0:
-                        item.setForeground(QColor("gray"))
-                    self.setItem(drop_row + i, col, item)
 
-            self.styleRows()
-            event.accept()
+            selected_rows = sorted(set(index.row() for index in source_table.selectedIndexes()))
+            if selected_rows:
+                row_data = []
+                for row in selected_rows:
+                    row_data.append(
+                        [source_table.item(row, col).text() for col in range(source_table.columnCount())]
+                    )
+
+                if source_table == self:
+                    for row in selected_rows:
+                        if row < drop_row:
+                            drop_row -= 1
+
+                for row in reversed(selected_rows):
+                    source_table.removeRow(row)
+
+                for i, data in enumerate(row_data):
+                    self.insertRow(drop_row + i)
+                    for col, value in enumerate(data):
+                        item = QTableWidgetItem(value)
+                        item.setTextAlignment(
+                            Qt.AlignLeft | Qt.AlignVCenter
+                            if col == 1
+                            else Qt.AlignRight | Qt.AlignVCenter
+                        )
+                        item.setFlags(item.flags() & ~Qt.ItemIsEditable)
+                        if col == 0:
+                            item.setForeground(QColor("gray"))
+                        self.setItem(drop_row + i, col, item)
+
+                self.styleRows()
+                event.accept()
         else:
-            event.ignore()
+            super().dropEvent(event)
 
     def styleRows(self):
         for i in range(self.rowCount()):
