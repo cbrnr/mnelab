@@ -76,13 +76,16 @@ class DragDropTableWidget(QTableWidget):
             if drop_row == -1:
                 drop_row = self.rowCount()
 
-            selected_rows = sorted(set(index.row() for index in source_table.selectedIndexes()))
+            selected_rows = sorted(set(
+                index.row() for index in source_table.selectedIndexes()
+            ))
             if selected_rows:
                 row_data = []
                 for row in selected_rows:
-                    row_data.append(
-                        [source_table.item(row, col).text() for col in range(source_table.columnCount())]
-                    )
+                    row_data.append([
+                        source_table.item(row, col).text()
+                        for col in range(source_table.columnCount())
+                    ])
 
                 if source_table == self:
                     for row in selected_rows:
