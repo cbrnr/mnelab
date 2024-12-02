@@ -21,7 +21,7 @@ ROW_HEIGHT = 10
 
 
 class DragDropTableWidget(QTableWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, items=None):
         super().__init__(parent)
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
@@ -31,6 +31,30 @@ class DragDropTableWidget(QTableWidget):
         self.setDropIndicatorShown(False)
         self.setDragDropOverwriteMode(False)
         self.drop_row = -1
+
+        self.setColumnCount(2)
+        self.horizontalHeader().hide()
+        self.verticalHeader().hide()
+        self.setShowGrid(False)
+        self.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        self.horizontalHeader().setStretchLastSection(True)
+        self.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        if items is not None:
+            self.setRowCount(len(items))
+            for i, (idx, name) in enumerate(items):
+                self.setItem(i, 0, QTableWidgetItem(str(idx)))
+                self.setItem(i, 1, QTableWidgetItem(name))
+            self.style_rows()
+
+    def style_rows(self):
+        for i in range(self.rowCount()):
+            self.resizeRowToContents(i)
+            self.setRowHeight(i, ROW_HEIGHT)
+            self.item(i, 0).setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            self.item(i, 0).setForeground(QColor("gray"))
+            self.item(i, 0).setFlags(self.item(i, 0).flags() & ~Qt.ItemIsEditable)
+            self.item(i, 1).setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+            self.item(i, 1).setFlags(self.item(i, 1).flags() & ~Qt.ItemIsEditable)
 
     def dragMoveEvent(self, event):
         drop_row = self.indexAt(event.pos()).row()
@@ -42,18 +66,11 @@ class DragDropTableWidget(QTableWidget):
 
     def dragLeaveEvent(self, event):
         self.drop_row = -1
+        self.style_rows()
         event.accept()
 
     def paintEvent(self, event):
         super().paintEvent(event)
-        for i in range(self.rowCount()):
-            self.resizeRowToContents(i)
-            self.setRowHeight(i, ROW_HEIGHT)
-            self.item(i, 0).setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
-            self.item(i, 0).setForeground(QColor("gray"))
-            self.item(i, 0).setFlags(self.item(i, 0).flags() & ~Qt.ItemIsEditable)
-            self.item(i, 1).setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-            self.item(i, 1).setFlags(self.item(i, 1).flags() & ~Qt.ItemIsEditable)
         if self.drop_row >= 0:
             painter = QPainter(self.viewport())
             pen = QPen(QColor("black"))
@@ -99,7 +116,7 @@ class DragDropTableWidget(QTableWidget):
                     self.insertRow(drop_row + i)
                     for col, value in enumerate(data):
                         self.setItem(drop_row + i, col, QTableWidgetItem(value))
-
+                self.style_rows()
                 event.accept()
 
 
@@ -114,15 +131,15 @@ class AppendDialog(QDialog):
         grid.addWidget(QLabel("Source"), 0, 0, Qt.AlignCenter)
         grid.addWidget(QLabel("Destination"), 0, 2, Qt.AlignCenter)
 
-        self.source = DragDropTableWidget(self)
-        self.setup_table(self.source, compatibles)
+        self.source = DragDropTableWidget(self, items=compatibles)
+        # self.setup_table(self.source, compatibles)
 
         self.move_button = QPushButton("→")
         self.move_button.setEnabled(False)
         grid.addWidget(self.move_button, 1, 1, Qt.AlignHCenter)
 
         self.destination = DragDropTableWidget(self)
-        self.setup_table(self.destination, [])
+        # self.setup_table(self.destination, [])
 
         grid.addWidget(self.source, 1, 0)
         grid.addWidget(self.destination, 1, 2)
