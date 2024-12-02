@@ -38,12 +38,10 @@ class DragDropTableWidget(QTableWidget):
             drop_row = self.rowCount()
         if drop_row != self.drop_row:
             self.drop_row = drop_row
-            self.viewport().update()
         event.accept()
 
     def dragLeaveEvent(self, event):
         self.drop_row = -1
-        self.viewport().update()
         event.accept()
 
     def paintEvent(self, event):
@@ -69,7 +67,6 @@ class DragDropTableWidget(QTableWidget):
 
     def dropEvent(self, event):
         self.drop_row = -1
-        self.viewport().update()
 
         if isinstance(event.source(), DragDropTableWidget):
             source_table = event.source()
