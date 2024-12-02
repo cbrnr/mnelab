@@ -17,6 +17,8 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
+ROW_HEIGHT = 10
+
 
 class DragDropTableWidget(QTableWidget):
     def __init__(self, parent=None):
@@ -48,7 +50,7 @@ class DragDropTableWidget(QTableWidget):
         super().paintEvent(event)
         for i in range(self.rowCount()):
             self.resizeRowToContents(i)
-            self.setRowHeight(i, 10)
+            self.setRowHeight(i, ROW_HEIGHT)
             self.item(i, 0).setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
             self.item(i, 0).setForeground(QColor("gray"))
             self.item(i, 0).setFlags(self.item(i, 0).flags() & ~Qt.ItemIsEditable)
