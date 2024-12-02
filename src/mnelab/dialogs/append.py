@@ -30,10 +30,6 @@ class DragDropTableWidget(QTableWidget):
         self.setDragDropOverwriteMode(False)
         self.drop_row = -1
 
-    def dragEnterEvent(self, event):
-        event.accept()
-        super().dragEnterEvent(event)
-
     def dragMoveEvent(self, event):
         drop_row = self.indexAt(event.pos()).row()
         if drop_row == -1:
@@ -42,28 +38,31 @@ class DragDropTableWidget(QTableWidget):
             self.drop_row = drop_row
             self.viewport().update()
         event.accept()
-        super().dragMoveEvent(event)
 
     def dragLeaveEvent(self, event):
         self.drop_row = -1
         self.viewport().update()
-        super().dragLeaveEvent(event)
+        event.accept()
 
     def paintEvent(self, event):
         super().paintEvent(event)
+        for i in range(self.rowCount()):
+            self.resizeRowToContents(i)
+            self.setRowHeight(i, 10)
+            self.item(i, 0).setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            self.item(i, 0).setForeground(QColor("gray"))
+            self.item(i, 0).setFlags(self.item(i, 0).flags() & ~Qt.ItemIsEditable)
+            self.item(i, 1).setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+            self.item(i, 1).setFlags(self.item(i, 1).flags() & ~Qt.ItemIsEditable)
         if self.drop_row >= 0:
             painter = QPainter(self.viewport())
             pen = QPen(QColor("black"))
             pen.setWidth(1.5)
             painter.setPen(pen)
             if self.drop_row < self.rowCount():
-                rect = self.visualRect(self.model().index(self.drop_row, 0))
-                y = rect.top()
+                y = self.visualRect(self.model().index(self.drop_row, 0)).top()
             else:
-                last_row_rect = self.visualRect(
-                    self.model().index(self.rowCount() - 1, 0)
-                )
-                y = last_row_rect.bottom()
+                y = self.visualRect(self.model().index(self.rowCount() - 1, 0)).bottom()
             painter.drawLine(0, y, self.viewport().width(), y)
 
     def dropEvent(self, event):
@@ -100,26 +99,9 @@ class DragDropTableWidget(QTableWidget):
                 for i, data in enumerate(row_data):
                     self.insertRow(drop_row + i)
                     for col, value in enumerate(data):
-                        item = QTableWidgetItem(value)
-                        item.setTextAlignment(
-                            Qt.AlignLeft | Qt.AlignVCenter
-                            if col == 1
-                            else Qt.AlignRight | Qt.AlignVCenter
-                        )
-                        item.setFlags(item.flags() & ~Qt.ItemIsEditable)
-                        if col == 0:
-                            item.setForeground(QColor("gray"))
-                        self.setItem(drop_row + i, col, item)
+                        self.setItem(drop_row + i, col, QTableWidgetItem(value))
 
-                self.styleRows()
                 event.accept()
-        else:
-            super().dropEvent(event)
-
-    def styleRows(self):
-        for i in range(self.rowCount()):
-            self.resizeRowToContents(i)
-            self.setRowHeight(i, 10)
 
 
 class AppendDialog(QDialog):
@@ -167,18 +149,8 @@ class AppendDialog(QDialog):
         table_widget.setRowCount(len(compatibles))
 
         for i, (idx, name) in enumerate(compatibles):
-            index_item = QTableWidgetItem(str(idx))
-            index_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
-            index_item.setForeground(QColor("gray"))
-            index_item.setFlags(index_item.flags() & ~Qt.ItemIsEditable)
-            table_widget.setItem(i, 0, index_item)
-
-            name_item = QTableWidgetItem(name)
-            name_item.setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-            name_item.setFlags(name_item.flags() & ~Qt.ItemIsEditable)
-            table_widget.setItem(i, 1, name_item)
-            table_widget.resizeRowToContents(i)
-            table_widget.setRowHeight(i, 10)
+            table_widget.setItem(i, 0, QTableWidgetItem(str(idx)))
+            table_widget.setItem(i, 1, QTableWidgetItem(name))
 
         table_widget.horizontalHeader().hide()
         table_widget.verticalHeader().hide()
@@ -240,8 +212,6 @@ class AppendDialog(QDialog):
             destination_table.insertRow(row_count)
             destination_table.setItem(row_count, 0, idx_item)
             destination_table.setItem(row_count, 1, name_item)
-
-        destination_table.styleRows()
 
         for row in reversed(rows):
             source_table.removeRow(row)
