@@ -823,8 +823,12 @@ class MainWindow(QMainWindow):
         compatibles = self.model.get_compatibles()
         dialog = AppendDialog(self, compatibles)
         if dialog.exec():
-            self.auto_duplicate()
-            self.model.append_data(dialog.names)
+            idx_list = dialog.selected_idx
+            if self.auto_duplicate():  # adjust for index change if duplicated
+                idx_list = [
+                    idx + 1 if idx >= self.model.index else idx for idx in idx_list
+                ]
+            self.model.append_data(idx_list)
 
     def plot_data(self):
         """Plot data."""
