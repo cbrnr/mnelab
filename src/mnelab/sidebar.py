@@ -1,6 +1,7 @@
 # © MNELAB developers
 #
 # License: BSD (3-clause)
+import os
 
 from PySide6.QtCore import QEvent, Qt, Signal
 from PySide6.QtGui import QColor, QIcon, QPainter
@@ -42,7 +43,7 @@ class SidebarTableWidget(QTableWidget):
         self.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
         self.horizontalHeader().setSectionResizeMode(2, QHeaderView.Fixed)
         self.setColumnWidth(2, 20)
-        self.setColumnWidth(0, 20)
+        self.resizeColumnToContents(0)
 
         self.setMouseTracking(True)
         self.viewport().installEventFilter(self)
@@ -55,17 +56,27 @@ class SidebarTableWidget(QTableWidget):
             event.ignore()
 
     def dragEnterEvent(self, event):
-        event.accept()
-        super().dragEnterEvent(event)
+        if event.mimeData().hasUrls():
+            event.accept()
+        elif event.source() == self:
+            event.accept()
+            super().dragEnterEvent(event)
+        else:
+            event.ignore()
 
     def dragMoveEvent(self, event):
-        drop_row = self.indexAt(event.pos()).row()
-        if drop_row == -1:
-            drop_row = self.rowCount()
-        if drop_row != self.drop_row:
-            self.drop_row = drop_row
-        event.accept()
-        super().dragMoveEvent(event)
+        if event.mimeData().hasUrls():
+            event.accept()
+        elif event.source() == self:
+            drop_row = self.indexAt(event.pos()).row()
+            if drop_row == -1:
+                drop_row = self.rowCount()
+            if drop_row != self.drop_row:
+                self.drop_row = drop_row
+            event.accept()
+            super().dragMoveEvent(event)
+        else:
+            event.ignore()
 
     def dragLeaveEvent(self, event):
         self.drop_row = -1
@@ -83,7 +94,14 @@ class SidebarTableWidget(QTableWidget):
             painter.drawLine(0, y, self.viewport().width(), y)
 
     def dropEvent(self, event):
-        if event.source() == self:
+        if event.mimeData().hasUrls():
+            event.accept()
+            for url in event.mimeData().urls():
+                file_path = url.toLocalFile()
+                if os.path.isfile(file_path):
+                    self.parent.model.load(file_path)
+
+        elif event.source() == self:
             drop_row = self.indexAt(event.pos()).row()
             if drop_row == -1:
                 drop_row = self.rowCount()
@@ -98,11 +116,11 @@ class SidebarTableWidget(QTableWidget):
             self.rowsMoved.emit(selected_rows[0], drop_row)
             event.setDropAction(Qt.IgnoreAction)
             event.accept()
-
         else:
             event.ignore()
 
     def style_rows(self):
+        self.resizeColumnToContents(0)
         for i in range(self.rowCount()):
             self.resizeRowToContents(i)
             self.setRowHeight(i, ROW_HEIGHT)
@@ -121,6 +139,7 @@ class SidebarTableWidget(QTableWidget):
             index = self.indexAt(event.pos())
             if index.isValid():
                 self.showCloseButton(index.row())
+        return False
 
     def showCloseButton(self, row_index):
         for i in range(self.rowCount()):
