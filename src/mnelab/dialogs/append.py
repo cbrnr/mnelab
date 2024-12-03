@@ -85,39 +85,39 @@ class DragDropTableWidget(QTableWidget):
     def dropEvent(self, event):
         self.drop_row = -1
 
-        if isinstance(event.source(), DragDropTableWidget):
-            source_table = event.source()
-            drop_row = self.indexAt(event.pos()).row()
-            if drop_row == -1:
-                drop_row = self.rowCount()
+        source_table = event.source()
+        drop_row = self.indexAt(event.pos()).row()
+        if drop_row == -1:
+            drop_row = self.rowCount()
 
-            selected_rows = sorted(
-                set(index.row() for index in source_table.selectedIndexes())
-            )
-            if selected_rows:
-                row_data = []
+        selected_rows = sorted(
+            index.row() for index in source_table.selectionModel().selectedRows()
+        )
+
+        if selected_rows:
+            row_data = []
+            for row in selected_rows:
+                row_data.append(
+                    [
+                        source_table.item(row, col).text()
+                        for col in range(source_table.columnCount())
+                    ]
+                )
+
+            if source_table == self:
                 for row in selected_rows:
-                    row_data.append(
-                        [
-                            source_table.item(row, col).text()
-                            for col in range(source_table.columnCount())
-                        ]
-                    )
+                    if row < drop_row:
+                        drop_row -= 1
 
-                if source_table == self:
-                    for row in selected_rows:
-                        if row < drop_row:
-                            drop_row -= 1
+            for row in reversed(selected_rows):
+                source_table.removeRow(row)
 
-                for row in reversed(selected_rows):
-                    source_table.removeRow(row)
-
-                for i, data in enumerate(row_data):
-                    self.insertRow(drop_row + i)
-                    for col, value in enumerate(data):
-                        self.setItem(drop_row + i, col, QTableWidgetItem(value))
-                self.style_rows()
-                event.accept()
+            for i, data in enumerate(row_data):
+                self.insertRow(drop_row + i)
+                for col, value in enumerate(data):
+                    self.setItem(drop_row + i, col, QTableWidgetItem(value))
+            self.style_rows()
+            event.accept()
 
 
 class AppendDialog(QDialog):
