@@ -3,7 +3,7 @@
 # License: BSD (3-clause)
 
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtGui import QColor, QPainter, QPen
+from PySide6.QtGui import QColor, QPainter
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QDialog,
@@ -129,14 +129,12 @@ class AppendDialog(QDialog):
         grid.addWidget(QLabel("Destination"), 0, 2, Qt.AlignCenter)
 
         self.source = DragDropTableWidget(self, items=compatibles)
-        # self.setup_table(self.source, compatibles)
 
         self.move_button = QPushButton("→")
         self.move_button.setEnabled(False)
         grid.addWidget(self.move_button, 1, 1, Qt.AlignHCenter)
 
         self.destination = DragDropTableWidget(self)
-        # self.setup_table(self.destination, [])
 
         grid.addWidget(self.source, 1, 0)
         grid.addWidget(self.destination, 1, 2)
@@ -156,24 +154,6 @@ class AppendDialog(QDialog):
         self.toggle_ok_button()
         self.toggle_move_source()
         self.toggle_move_destination()
-
-    def setup_table(self, table_widget, compatibles):
-        table_widget.setColumnCount(2)
-        table_widget.setRowCount(len(compatibles))
-
-        for i, (idx, name) in enumerate(compatibles):
-            table_widget.setItem(i, 0, QTableWidgetItem(str(idx)))
-            table_widget.setItem(i, 1, QTableWidgetItem(name))
-
-        table_widget.horizontalHeader().hide()
-        table_widget.verticalHeader().hide()
-        table_widget.setShowGrid(False)
-
-        table_widget.horizontalHeader().setSectionResizeMode(
-            0, QHeaderView.ResizeToContents
-        )
-        table_widget.horizontalHeader().setStretchLastSection(True)
-        table_widget.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
     @property
     def selected_idx(self):
