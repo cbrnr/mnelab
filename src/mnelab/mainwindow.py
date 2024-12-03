@@ -456,14 +456,18 @@ class MainWindow(QMainWindow):
         # update sidebar
         self.sidebar.setRowCount(0)
         self.sidebar.setRowCount(len(self.model.names))
-        self.sidebar.setColumnCount(2)
+        self.sidebar.setColumnCount(3)
 
         for row_index, name in enumerate(self.model.names):
-            item = QTableWidgetItem(name)
-            item.setFlags(item.flags() | Qt.ItemIsEditable)
-            self.sidebar.setItem(row_index, 0, item)
+            item_index = QTableWidgetItem(str(row_index))
+            item_index.setFlags(item_index.flags() | Qt.ItemIsEditable)
+            self.sidebar.setItem(row_index, 0, item_index)
 
-        self.sidebar.styleRows()
+            item_name = QTableWidgetItem(name)
+            item_name.setFlags(item_name.flags() | Qt.ItemIsEditable)
+            self.sidebar.setItem(row_index, 1, item_name)
+
+        self.sidebar.style_rows()
         self.sidebar.selectRow(self.model.index)
 
         # update info widget

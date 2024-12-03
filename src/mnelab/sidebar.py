@@ -3,7 +3,7 @@
 # License: BSD (3-clause)
 
 from PySide6.QtCore import QEvent, Qt, Signal
-from PySide6.QtGui import QColor, QIcon, QPainter, QPen
+from PySide6.QtGui import QColor, QIcon, QPainter
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QFrame,
@@ -11,6 +11,8 @@ from PySide6.QtWidgets import (
     QPushButton,
     QTableWidget,
 )
+
+ROW_HEIGHT = 10
 
 
 class SidebarTableWidget(QTableWidget):
@@ -29,15 +31,18 @@ class SidebarTableWidget(QTableWidget):
         self.setFrameStyle(QFrame.NoFrame)
         self.setFocusPolicy(Qt.NoFocus)
         self.setEditTriggers(QAbstractItemView.DoubleClicked)
-        self.setColumnCount(2)
+        self.setColumnCount(3)
         self.setShowGrid(False)
         self.drop_row = -1
 
         self.horizontalHeader().hide()
+        self.verticalHeader().hide()
         self.horizontalHeader().setStretchLastSection(False)
-        self.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
-        self.horizontalHeader().setSectionResizeMode(1, QHeaderView.Fixed)
-        self.setColumnWidth(1, 20)
+        self.horizontalHeader().setSectionResizeMode(0, QHeaderView.Fixed)
+        self.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+        self.horizontalHeader().setSectionResizeMode(2, QHeaderView.Fixed)
+        self.setColumnWidth(2, 20)
+        self.setColumnWidth(0, 20)
 
         self.setMouseTracking(True)
         self.viewport().installEventFilter(self)
@@ -59,7 +64,6 @@ class SidebarTableWidget(QTableWidget):
             drop_row = self.rowCount()
         if drop_row != self.drop_row:
             self.drop_row = drop_row
-            self.viewport().update()
         event.accept()
         super().dragMoveEvent(event)
 
@@ -72,17 +76,10 @@ class SidebarTableWidget(QTableWidget):
         super().paintEvent(event)
         if self.drop_row >= 0:
             painter = QPainter(self.viewport())
-            pen = QPen(QColor("black"))
-            pen.setWidth(1.5)
-            painter.setPen(pen)
             if self.drop_row < self.rowCount():
-                rect = self.visualRect(self.model().index(self.drop_row, 0))
-                y = rect.top()
+                y = self.visualRect(self.model().index(self.drop_row, 0)).top()
             else:
-                last_row_rect = self.visualRect(
-                    self.model().index(self.rowCount() - 1, 0)
-                )
-                y = last_row_rect.bottom()
+                y = self.visualRect(self.model().index(self.rowCount() - 1, 0)).bottom()
             painter.drawLine(0, y, self.viewport().width(), y)
 
     def dropEvent(self, event):
@@ -90,7 +87,9 @@ class SidebarTableWidget(QTableWidget):
             drop_row = self.indexAt(event.pos()).row()
             if drop_row == -1:
                 drop_row = self.rowCount()
-            selected_rows = sorted(set(index.row() for index in self.selectedIndexes()))
+            selected_rows = sorted(
+                index.row() for index in self.selectionModel().selectedRows()
+            )
             if selected_rows and drop_row > selected_rows[-1]:
                 drop_row -= len(selected_rows)
 
@@ -103,11 +102,15 @@ class SidebarTableWidget(QTableWidget):
         else:
             event.ignore()
 
-    def styleRows(self):
+    def style_rows(self):
         for i in range(self.rowCount()):
             self.resizeRowToContents(i)
-            self.setRowHeight(i, 10)
-        self.update_vertical_header()
+            self.setRowHeight(i, ROW_HEIGHT)
+            self.item(i, 0).setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            self.item(i, 0).setForeground(QColor("gray"))
+            self.item(i, 0).setFlags(self.item(i, 0).flags() & ~Qt.ItemIsEditable)
+            self.item(i, 1).setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+            self.item(i, 1).setFlags(self.item(i, 1).flags() | Qt.ItemIsEditable)
 
     def update_vertical_header(self):
         row_count = self.rowCount()
@@ -130,6 +133,6 @@ class SidebarTableWidget(QTableWidget):
                 delete_button.clicked.connect(
                     lambda _, index=row_index: self.parent.model.remove_data(index)
                 )
-                self.setCellWidget(row_index, 1, delete_button)
+                self.setCellWidget(row_index, 2, delete_button)
             else:
-                self.removeCellWidget(i, 1)
+                self.removeCellWidget(i, 2)
