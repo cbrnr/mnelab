@@ -63,6 +63,7 @@ class DragDropTableWidget(QTableWidget):
         if drop_row != self.drop_row:
             self.drop_row = drop_row
         event.accept()
+        super().dragMoveEvent(event)
 
     def dragLeaveEvent(self, event):
         self.drop_row = -1
@@ -73,9 +74,6 @@ class DragDropTableWidget(QTableWidget):
         super().paintEvent(event)
         if self.drop_row >= 0:
             painter = QPainter(self.viewport())
-            pen = QPen(QColor("black"))
-            pen.setWidth(1.5)
-            painter.setPen(pen)
             if self.drop_row < self.rowCount():
                 y = self.visualRect(self.model().index(self.drop_row, 0)).top()
             else:
@@ -83,8 +81,6 @@ class DragDropTableWidget(QTableWidget):
             painter.drawLine(0, y, self.viewport().width(), y)
 
     def dropEvent(self, event):
-        self.drop_row = -1
-
         source_table = event.source()
         drop_row = self.indexAt(event.pos()).row()
         if drop_row == -1:
@@ -118,6 +114,7 @@ class DragDropTableWidget(QTableWidget):
                     self.setItem(drop_row + i, col, QTableWidgetItem(value))
             self.style_rows()
             event.accept()
+        self.drop_row = -1
 
 
 class AppendDialog(QDialog):
