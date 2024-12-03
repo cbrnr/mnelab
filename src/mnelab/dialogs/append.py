@@ -210,3 +210,6 @@ class AppendDialog(QDialog):
 
         for row in reversed(rows):
             source_table.removeRow(row)
+
+        source_table.style_rows()
+        destination_table.style_rows()
