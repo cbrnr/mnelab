@@ -196,7 +196,9 @@ class AppendDialog(QDialog):
             self.destination if self.source.selectedRanges() else self.source
         )
 
-        rows = sorted(set(index.row() for index in source_table.selectedIndexes()))
+        rows = sorted(
+            index.row() for index in source_table.selectionModel().selectedRows()
+        )
 
         for row in rows:
             idx_item = source_table.item(row, 0).clone()
