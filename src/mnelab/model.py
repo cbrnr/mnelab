@@ -492,14 +492,14 @@ class Model:
         self.history.append(f"data.crop({start}, {stop})")
 
     def get_compatibles(self):
-        """Return a list of data sets that are compatible with the current one.
+        """Return indices and names of data sets compatible with the current one.
 
         This function checks which data sets can be appended to the current data set.
 
         Returns
         -------
-        compatibles : list
-            List with compatible data sets.
+        compatibles: List[Tuple[int, str]]
+            List of tuples (index, name) with compatible data sets.
         """
         compatibles = []
         data = self.current["data"]
@@ -531,27 +531,26 @@ class Model:
                     continue
                 if d["data"].baseline != data.baseline:
                     continue
-            compatibles.append(d)
+            compatibles.append((idx, d["name"]))
         return compatibles
 
     @data_changed
-    def append_data(self, names):
+    def append_data(self, selected_idx):
         """Append the given raw data sets."""
         self.current["name"] += " (appended)"
-        files = [self.current["data"]]
+        datasets = [self.current["data"]]
         indices = []
 
-        for idx, d in enumerate(self.data):
-            if d["name"] in names:
-                files.append(d["data"])
-                indices.append(f"datasets[{idx}]")
+        for idx in selected_idx:
+            datasets.append(self.data[idx]["data"])
+            indices.append(f"datasets[{idx}]")
 
         if self.current["dtype"] == "raw":
-            self.current["data"] = mne.concatenate_raws(files)
+            self.current["data"] = mne.concatenate_raws(datasets)
             self.history.append(f"mne.concatenate_raws(data, {', '.join(indices)})")
         elif self.current["dtype"] == "epochs":
-            self.current["data"] = mne.concatenate_epochs(files)
-            self.history.append(f"mne.concatenate_epochs({', '.join(indices)})")
+            self.current["data"] = mne.concatenate_epochs(datasets)
+            self.history.append(f"mne.concatenate_epochs(data, {', '.join(indices)})")
 
     @data_changed
     def apply_ica(self):
