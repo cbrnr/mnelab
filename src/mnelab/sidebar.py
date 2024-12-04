@@ -95,11 +95,7 @@ class SidebarTableWidget(QTableWidget):
 
     def dropEvent(self, event):
         if event.mimeData().hasUrls():
-            event.accept()
-            for url in event.mimeData().urls():
-                file_path = url.toLocalFile()
-                if os.path.isfile(file_path):
-                    self.parent.model.load(file_path)
+            self.parent.dropEvent(event)
 
         elif event.source() == self:
             drop_row = self.indexAt(event.pos()).row()
