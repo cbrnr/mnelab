@@ -77,6 +77,8 @@ class Model:
             index = self.index
 
         self.data.pop(index)
+        self.history.append(f"datasets.pop({index})")
+
         if self.index >= len(self.data):  # if last entry was removed
             self.index = len(self.data) - 1  # reset index to last entry
 
