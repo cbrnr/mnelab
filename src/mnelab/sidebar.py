@@ -1,7 +1,6 @@
 # © MNELAB developers
 #
 # License: BSD (3-clause)
-import os
 
 from PySide6.QtCore import QEvent, Qt, Signal
 from PySide6.QtGui import QColor, QIcon, QPainter
