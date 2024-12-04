@@ -139,6 +139,11 @@ class SidebarTableWidget(QTableWidget):
             index = self.indexAt(event.pos())
             if index.isValid():
                 self.showCloseButton(index.row())
+            else:
+                self.showCloseButton(-1)
+        elif source == self.viewport() and event.type() == QEvent.Leave:
+            self.showCloseButton(-1)
+
         return False
 
     def showCloseButton(self, row_index):
