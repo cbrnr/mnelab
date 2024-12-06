@@ -16,7 +16,7 @@ ROW_HEIGHT = 10
 
 
 class SidebarTableWidget(QTableWidget):
-    rowsMoved = Signal(int, int)  # custom signal emitted, when drag&dropping rows
+    rowsMoved = Signal(int, int)  # custom signal emitted when drag-and-dropping rows
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -96,7 +96,6 @@ class SidebarTableWidget(QTableWidget):
     def dropEvent(self, event):
         if event.mimeData().hasUrls():
             self.parent.dropEvent(event)
-
         elif event.source() == self:
             drop_row = self.indexAt(event.pos()).row()
             if drop_row == -1:
