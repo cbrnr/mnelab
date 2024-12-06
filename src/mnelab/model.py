@@ -71,9 +71,14 @@ class Model:
         self.current = dataset
 
     @data_changed
-    def remove_data(self):
+    def remove_data(self, index=-1):
         """Remove data set at current index."""
-        self.data.pop(self.index)
+        if index == -1:
+            index = self.index
+
+        self.data.pop(index)
+        self.history.append(f"datasets.pop({index})")
+
         if self.index >= len(self.data):  # if last entry was removed
             self.index = len(self.data) - 1  # reset index to last entry
 
@@ -650,16 +655,15 @@ class Model:
         target : int
             The index the data set should be moved to.
         """
-        # first the data set is copied to the target index
-        self.data.insert(target, self.data[source])
-        self.history.append(f"datasets.insert({target}, datasets[{source}])")
-        # if moved to the front, the source index is increased by 1
-        if source > target:
-            source += 1
-        # if moved to the back, the new index (after removing the original data set)
-        # will be 1 less that the target index
-        else:
-            target -= 1
+
+        # pop and save
+        item = self.data.pop(source)
+        self.history.append(f"item = datasets.pop({source})")
+
+        # insert
+        self.data.insert(target, item)
+        self.history.append(f"datasets.insert({target}, item)")
+
+        # select
         self.index = target
-        self.data.pop(source)
-        self.history.append(f"datasets.pop({source})")
+        self.history.append(f"data = datasets[{target}]")

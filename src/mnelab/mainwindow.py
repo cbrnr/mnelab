@@ -19,13 +19,12 @@ from PySide6.QtGui import QAction, QDesktopServices, QIcon, QKeySequence
 from PySide6.QtWidgets import (
     QApplication,
     QFileDialog,
-    QFrame,
     QLabel,
-    QListWidget,
     QMainWindow,
     QMessageBox,
     QSplitter,
     QStackedWidget,
+    QTableWidgetItem,
 )
 from pyxdf import resolve_streams
 
@@ -45,7 +44,7 @@ from mnelab.viz import (
     plot_evoked_comparison,
     plot_evoked_topomaps,
 )
-from mnelab.widgets import EmptyWidget, InfoWidget
+from mnelab.widgets import EmptyWidget, InfoWidget, SidebarTableWidget
 
 
 class MainWindow(QMainWindow):
@@ -372,17 +371,10 @@ class MainWindow(QMainWindow):
             self.actions["toolbar"].setChecked(False)
 
         # set up data model for sidebar (list of open files)
-        self.sidebar = QListWidget()
-        self.sidebar.setFrameStyle(QFrame.NoFrame)
-        self.sidebar.setFocusPolicy(Qt.NoFocus)
-        self.sidebar.setAcceptDrops(True)
-        self.sidebar.setDragEnabled(True)
-        self.sidebar.setDragDropMode(QListWidget.InternalMove)
-        self.sidebar.setDefaultDropAction(Qt.DropAction.MoveAction)
-        self.sidebar.setEditTriggers(QListWidget.DoubleClicked)
-        self.sidebar.model().rowsMoved.connect(self._sidebar_move_event)
+        self.sidebar = SidebarTableWidget(self)
+        self.sidebar.rowsMoved.connect(self._sidebar_move_event)
         self.sidebar.itemDelegate().commitData.connect(self._sidebar_edit_event)
-        self.sidebar.clicked.connect(self._update_data)
+        self.sidebar.cellClicked.connect(self._update_data)
 
         splitter = QSplitter()
         splitter.addWidget(self.sidebar)
@@ -427,7 +419,7 @@ class MainWindow(QMainWindow):
         """
         self.model.current["name"] = edit.text()
 
-    def _sidebar_move_event(self, parent, start, end, destination, row):
+    def _sidebar_move_event(self, from_row, to_row):
         """
         Triggered when an item in the sidebar is moved.
 
@@ -444,7 +436,7 @@ class MainWindow(QMainWindow):
         row : int
             The target index.
         """
-        self.model.move_data(start, row)
+        self.model.move_data(from_row, to_row)
 
     @contextmanager
     def _wait_cursor(self):
@@ -461,12 +453,20 @@ class MainWindow(QMainWindow):
 
     def data_changed(self):
         # update sidebar
-        self.sidebar.clear()
-        self.sidebar.insertItems(0, self.model.names)
-        self.sidebar.setCurrentRow(self.model.index)
-        for it in range(self.sidebar.count()):
-            item = self.sidebar.item(it)
-            item.setFlags(item.flags() | Qt.ItemIsEditable)
+        self.sidebar.setRowCount(0)
+        self.sidebar.setRowCount(len(self.model.names))
+        self.sidebar.setColumnCount(3)
+
+        for row_index, name in enumerate(self.model.names):
+            item_index = QTableWidgetItem(str(row_index))
+            self.sidebar.setItem(row_index, 0, item_index)
+
+            item_name = QTableWidgetItem(name)
+            item_name.setFlags(item_name.flags() | Qt.ItemIsEditable)
+            self.sidebar.setItem(row_index, 1, item_name)
+
+        self.sidebar.style_rows()
+        self.sidebar.selectRow(self.model.index)
 
         # update info widget
         if self.model.data:
@@ -1361,7 +1361,7 @@ class MainWindow(QMainWindow):
                 self.recent_menu.setEnabled(False)
 
     @Slot(QModelIndex)
-    def _update_data(self, selected):
+    def _update_data(self, row, column):
         """Update index and information based on the state of the sidebar.
 
         Parameters
@@ -1369,9 +1369,10 @@ class MainWindow(QMainWindow):
         selected : QModelIndex
             Index of the selected row.
         """
-        if selected.row() != self.model.index:
-            self.model.index = selected.row()
+        if row != self.model.index:
+            self.model.index = row
             self.data_changed()
+            self.sidebar.showCloseButton(row)
             self.model.history.append(f"data = datasets[{self.model.index}]")
 
     @Slot()
