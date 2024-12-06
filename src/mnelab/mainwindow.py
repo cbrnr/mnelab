@@ -35,7 +35,6 @@ from mnelab.io.npy import parse_npy
 from mnelab.io.xdf import get_xml, list_chunks
 from mnelab.model import InvalidAnnotationsError, LabelsNotFoundError, Model
 from mnelab.settings import SettingsDialog, read_settings, write_settings
-from mnelab.sidebar import SidebarTableWidget
 from mnelab.utils import count_locations, have, image_path, natural_sort
 from mnelab.viz import (
     _calc_tfr,
@@ -45,7 +44,7 @@ from mnelab.viz import (
     plot_evoked_comparison,
     plot_evoked_topomaps,
 )
-from mnelab.widgets import EmptyWidget, InfoWidget
+from mnelab.widgets import EmptyWidget, InfoWidget, SidebarTableWidget
 
 
 class MainWindow(QMainWindow):
