@@ -11,6 +11,7 @@
 - Remove Python 3.9 support ([#457](https://github.com/cbrnr/mnelab/pull/457) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### Fixed
+- Fix an issue, where the channel montage figure couldnt be closed one MacOS by embedding the preview within the same window. ([#459](https://github.com/cbrnr/mnelab/pull/459) by [Benedikt Klöckl](https://github.com/bkloeckl)) 
 - Fix a bug where appending data would not be correctly displayed in the history ([#446](https://github.com/cbrnr/mnelab/pull/446) by [Benedikt Klöckl](https://github.com/bkloeckl))
 - Fix resetting the settings to default values ([#456](https://github.com/cbrnr/mnelab/pull/456) by [Clemens Brunner](https://github.com/cbrnr))
 
