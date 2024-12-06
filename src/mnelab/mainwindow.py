@@ -459,7 +459,6 @@ class MainWindow(QMainWindow):
 
         for row_index, name in enumerate(self.model.names):
             item_index = QTableWidgetItem(str(row_index))
-            item_index.setFlags(item_index.flags() | Qt.ItemIsEditable)
             self.sidebar.setItem(row_index, 0, item_index)
 
             item_name = QTableWidgetItem(name)
