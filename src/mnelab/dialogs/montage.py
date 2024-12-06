@@ -41,6 +41,7 @@ class MontageDialog(QDialog):
         hbox.addLayout(vbox, stretch=1)
         self.figure = Figure()
         self.canvas = FigureCanvas(self.figure)
+
         self.canvas_container = QWidget(self)
         self.canvas_container.setMinimumWidth(240)
         self.canvas_container.setMinimumHeight(220)
@@ -48,6 +49,7 @@ class MontageDialog(QDialog):
         self.canvas_layout.setContentsMargins(0, 0, 0, 0)
         self.canvas_layout.setSpacing(0)
         self.canvas_layout.addWidget(self.canvas)
+
         self.canvas_container.setLayout(self.canvas_layout)
         hbox.addWidget(self.canvas_container, stretch=2)
 
