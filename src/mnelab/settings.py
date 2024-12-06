@@ -128,7 +128,9 @@ class SettingsDialog(QDialog):
     def reset_settings(self):
         self.max_recent.setValue(_DEFAULTS["max_recent"])
         self.max_channels.setValue(_DEFAULTS["max_channels"])
-        self.plot_backend.setValue(_DEFAULTS["plot_backend"])
+        self.plot_backend.setCurrentIndex(
+            self.plot_backend.findText(_DEFAULTS["plot_backend"])
+        )
 
     @Slot()
     def reset_window(self):

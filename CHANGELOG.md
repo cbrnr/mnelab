@@ -8,6 +8,7 @@
 
 ### Fixed
 - Fix a bug where appending data would not be correctly displayed in the history ([#446](https://github.com/cbrnr/mnelab/pull/446) by [Benedikt Klöckl](https://github.com/bkloeckl))
+- Fix resetting the settings to default values ([#456](https://github.com/cbrnr/mnelab/pull/456) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [0.9.2] - 2024-10-20
 ### Added
