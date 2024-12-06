@@ -24,6 +24,7 @@ class SidebarTableWidget(QTableWidget):
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
         self.setDragDropMode(QAbstractItemView.InternalMove)
+        self.setSelectionMode(QAbstractItemView.SingleSelection)
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.setDefaultDropAction(Qt.MoveAction)
         self.setDropIndicatorShown(False)
