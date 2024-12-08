@@ -29,7 +29,6 @@ class MontageDialog(QDialog):
         self.montages.setSelectionMode(QListWidget.SingleSelection)
         vbox.addWidget(self.montages)
         self.montages.itemSelectionChanged.connect(self.view_montage)
-
         self.match_case = QCheckBox("Match case-sensitive", self)
         self.match_alias = QCheckBox("Match aliases", self)
         self.ignore_missing = QCheckBox("Ignore missing", self)
@@ -38,31 +37,32 @@ class MontageDialog(QDialog):
         vbox.addWidget(self.match_alias)
         vbox.addWidget(self.ignore_missing)
 
-        button_layout = QHBoxLayout()
-        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        button_layout.addWidget(self.buttonbox, alignment=Qt.AlignLeft)
-        self.buttonbox.accepted.connect(self.accept)
-        self.buttonbox.rejected.connect(self.reject)
-        vbox.addLayout(button_layout)
-
-        hbox = QHBoxLayout(self)
+        hbox = QHBoxLayout()
         hbox.addLayout(vbox, stretch=1)
-
         self.figure = Figure()
         self.canvas = FigureCanvas(self.figure)
-
         self.canvas_container = QWidget(self)
         self.canvas_container.setMinimumWidth(240)
         self.canvas_container.setMinimumHeight(220)
         self.canvas_container.setStyleSheet("border: 1px solid lightgray;")
-
         self.canvas_layout = QVBoxLayout(self.canvas_container)
         self.canvas_layout.setContentsMargins(1, 1, 1, 1)
         self.canvas_layout.setSpacing(1)
         self.canvas_layout.addWidget(self.canvas)
-
         self.canvas_container.setLayout(self.canvas_layout)
         hbox.addWidget(self.canvas_container, stretch=2)
+
+        button_layout = QHBoxLayout()
+        button_layout.addStretch()
+        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttonbox.accepted.connect(self.accept)
+        self.buttonbox.rejected.connect(self.reject)
+        button_layout.addWidget(self.buttonbox, alignment=Qt.AlignLeft)
+
+        main_layout = QVBoxLayout(self)
+        main_layout.addLayout(hbox)
+        main_layout.addLayout(button_layout)
+        self.setLayout(main_layout)
 
         if self.montages.count() > 0:
             self.montages.setCurrentRow(0)
