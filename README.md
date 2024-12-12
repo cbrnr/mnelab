@@ -30,7 +30,7 @@ uvx mnelab
 If you want to run the latest development version, you can use the following command:
 
 ```
-uvx --from git+https://github.com/cbrnr/mnelab mnelab
+uvx --from https://github.com/cbrnr/mnelab/archive/refs/heads/main.zip mnelab
 ```
 
 
