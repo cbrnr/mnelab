@@ -29,6 +29,7 @@ from PySide6.QtWidgets import (
 from pyxdf import resolve_streams
 
 from mnelab.dialogs import *  # noqa: F403
+from mnelab.dialogs.channel_stats import ChannelStats
 from mnelab.io import writers
 from mnelab.io.mat import parse_mat
 from mnelab.io.npy import parse_npy
@@ -315,6 +316,10 @@ class MainWindow(QMainWindow):
             self.show_history,
             QKeySequence(Qt.CTRL | Qt.Key_Y),
         )
+        self.actions["channel_stats"] = view_menu.addAction(
+            "&Channel Stats",
+            self.show_channel_stats,
+        )
         self.actions["toolbar"] = view_menu.addAction("&Toolbar", self._toggle_toolbar)
         self.actions["toolbar"].setCheckable(True)
         self.actions["statusbar"] = view_menu.addAction(
@@ -541,6 +546,9 @@ class MainWindow(QMainWindow):
             )
             self.actions["epoch_data"].setEnabled(
                 enabled and events and self.model.current["dtype"] == "raw"
+            )
+            self.actions["channel_stats"].setEnabled(
+                enabled and self.model.current["dtype"] == "raw"
             )
             self.actions["drop_bad_epochs"].setEnabled(
                 enabled and events and self.model.current["dtype"] == "epochs"
@@ -1247,6 +1255,11 @@ class MainWindow(QMainWindow):
         """Show history."""
         dialog = HistoryDialog(self, "\n".join(self.model.history))
         dialog.exec()
+
+    def show_channel_stats(self):
+        """Show channel stats."""
+        dialog = ChannelStats(self, self.model.current["data"].describe(True))
+        dialog.exec_()
 
     def show_about(self):
         """Show About dialog."""
