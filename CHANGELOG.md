@@ -2,6 +2,7 @@
 ### Added
 - Add close icon to sidebar on hover ([#454](https://github.com/cbrnr/mnelab/pull/454) by [Benedikt Klöckl](https://github.com/bkloeckl))
 - Add Python 3.13 support ([#457](https://github.com/cbrnr/mnelab/pull/457) by [Clemens Brunner](https://github.com/cbrnr))
+- Add functionality to display channel stats ([#462](https://github.com/cbrnr/mnelab/pull/462) by [Benedikt Klöckl](https://github.com/bkloeckl))
 
 ### Changed
 - Change the append dialog appearance to include original indices used for identifying the data ([#449](https://github.com/cbrnr/mnelab/pull/449) by [Benedikt Klöckl](https://github.com/bkloeckl))
