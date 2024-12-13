@@ -372,6 +372,7 @@ class MainWindow(QMainWindow):
 
         # set up data model for sidebar (list of open files)
         self.sidebar = SidebarTableWidget(self)
+        self.sidebar.hide()
         self.sidebar.rowsMoved.connect(self._sidebar_move_event)
         self.sidebar.itemDelegate().commitData.connect(self._sidebar_edit_event)
         self.sidebar.cellClicked.connect(self._update_data)
@@ -453,20 +454,24 @@ class MainWindow(QMainWindow):
 
     def data_changed(self):
         # update sidebar
-        self.sidebar.setRowCount(0)
-        self.sidebar.setRowCount(len(self.model.names))
-        self.sidebar.setColumnCount(3)
+        if len(self.model.data) > 0:
+            self.sidebar.show()
+            self.sidebar.setRowCount(0)
+            self.sidebar.setRowCount(len(self.model.names))
+            self.sidebar.setColumnCount(3)
 
-        for row_index, name in enumerate(self.model.names):
-            item_index = QTableWidgetItem(str(row_index))
-            self.sidebar.setItem(row_index, 0, item_index)
+            for row_index, name in enumerate(self.model.names):
+                item_index = QTableWidgetItem(str(row_index))
+                self.sidebar.setItem(row_index, 0, item_index)
 
-            item_name = QTableWidgetItem(name)
-            item_name.setFlags(item_name.flags() | Qt.ItemIsEditable)
-            self.sidebar.setItem(row_index, 1, item_name)
+                item_name = QTableWidgetItem(name)
+                item_name.setFlags(item_name.flags() | Qt.ItemIsEditable)
+                self.sidebar.setItem(row_index, 1, item_name)
 
-        self.sidebar.style_rows()
-        self.sidebar.selectRow(self.model.index)
+            self.sidebar.style_rows()
+            self.sidebar.selectRow(self.model.index)
+        else:
+            self.sidebar.hide()
 
         # update info widget
         if self.model.data:
