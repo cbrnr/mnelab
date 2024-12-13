@@ -7,6 +7,7 @@
 - Change the append dialog appearance to include original indices used for identifying the data ([#449](https://github.com/cbrnr/mnelab/pull/449) by [Benedikt Klöckl](https://github.com/bkloeckl))
 - Include unique dataset indices in sidebar ([#454](https://github.com/cbrnr/mnelab/pull/454) by [Benedikt Klöckl](https://github.com/bkloeckl))
 - Show a montage preview in the channel montage dialog ([#459](https://github.com/cbrnr/mnelab/pull/459) by [Benedikt Klöckl](https://github.com/bkloeckl)) 
+- Hide sidebar when no datasets are loaded ([#463](https://github.com/cbrnr/mnelab/pull/463) by [Benedikt Klöckl](https://github.com/bkloeckl))
 
 ### 🗑️ Removed
 - Remove Python 3.9 support ([#457](https://github.com/cbrnr/mnelab/pull/457) by [Clemens Brunner](https://github.com/cbrnr))
