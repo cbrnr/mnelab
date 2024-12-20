@@ -151,8 +151,9 @@ class XDFStreamsDialog(QDialog):
         for row in self.view.selectionModel().selectedRows():
             type_ = self.view.item(row.row(), 2).text()
             fs = self.view.item(row.row(), 5).value()
-            if type_ != "Markers" and fs != 0:
+            if not _is_marker(type_) and fs != 0:
                 streams.append(self.view.item(row.row(), 0).value())
+        print("return streams: ", streams)
         return streams
 
     @property
@@ -160,7 +161,13 @@ class XDFStreamsDialog(QDialog):
         markers = []
         for row in self.view.selectionModel().selectedRows():
             type_ = self.view.item(row.row(), 2).text()
-            fs = self.view.item(row.row(), 5).value()
-            if type_ == "Markers" and fs == 0:
+            # fs = self.view.item(row.row(), 5).value()
+            if _is_marker(type_):
                 markers.append(self.view.item(row.row(), 0).value())
+        print("return markers: ", markers)
         return markers
+
+
+def _is_marker(type):
+    marker_types = ["Markers", "Marker", "StringMarker"]
+    return type in marker_types

@@ -34,6 +34,10 @@ class RawXDF(BaseRaw):
             Resampling target frequency in Hz. If only one stream_id is given, this can
             be `None`, in which case no resampling is performed.
         """
+
+        print("stream_ids: ", stream_ids)
+        print("marker_ids: ", marker_ids)
+
         if len(stream_ids) > 1 and fs_new is None:
             raise ValueError(
                 "Argument `fs_new` is required when reading multiple streams."
@@ -42,7 +46,7 @@ class RawXDF(BaseRaw):
         streams, _ = load_xdf(fname)
         streams = {stream["info"]["stream_id"]: stream for stream in streams}
 
-        if all(_is_markerstream(streams[stream_id]) for stream_id in stream_ids):
+        if (not stream_ids) and marker_ids:
             raise RuntimeError(
                 "Loading only marker streams is not supported, at least one stream must"
                 " be a regular stream."
@@ -51,7 +55,9 @@ class RawXDF(BaseRaw):
         labels_all, types_all, units_all = [], [], []
         channel_types = get_channel_type_constants(True)
         for stream_id in stream_ids:
+            print("loading stream: ", stream_id)
             stream = streams[stream_id]
+            print("stream: ", stream)
 
             n_chans = int(stream["info"]["channel_count"][0])
             labels, types, units = [], [], []
@@ -92,17 +98,47 @@ class RawXDF(BaseRaw):
         super().__init__(preload=data, info=info, filenames=[fname])
 
         # convert marker streams to annotations
-        for stream_id, stream in streams.items():
-            if marker_ids is not None and stream_id not in marker_ids:
-                continue
-            if not _is_markerstream(stream):
-                continue
-            onsets = stream["time_stamps"] - first_time
-            prefix = f"{stream_id}-" if prefix_markers else ""
-            descriptions = [
-                f"{prefix}{item}" for sub in stream["time_series"] for item in sub
-            ]
-            self.annotations.append(onsets, [0] * len(onsets), descriptions)
+        for marker_id in marker_ids:
+            print("converting marker: ", marker_id)
+            # get marker stream from .xdf file
+            marker = streams[marker_id]
+            print("marker content: ", marker)
+
+            # convert standard marker stream (fs=0 and 1 channel) to annotation
+            if _is_standard_markerstream(marker):
+                onsets = stream["time_stamps"] - first_time
+                prefix = f"{stream_id}-" if prefix_markers else ""
+                descriptions = [
+                    f"{prefix}{item}" for sub in stream["time_series"] for item in sub
+                ]
+                self.annotations.append(onsets, [0] * len(onsets), descriptions)
+
+            # convert non-standard marker stream to annotation
+            elif _is_multichannel_markerstream(marker):
+                # calculate onsets relative to first_time
+                onsets = marker["time_stamps"] - first_time
+
+                # combine descriptions from multiple channels
+                descriptions = []
+                for marker_set in marker["time_series"]:
+                    descriptions.append(", ".join(marker_set))
+
+                # set durations to 0 (instantaneous markers)
+                durations = [0] * len(onsets)
+
+                # add to annotations
+                for onset, duration, description in zip(
+                    onsets, durations, descriptions
+                ):
+                    print("adding annotation: ")
+                    print("onset: ", onset)
+                    print("duration: ", duration)
+                    print("description: ", description)
+                    self.annotations.append(onset, duration, description)
+            else:
+                raise RuntimeError(
+                    "Error while loading .xdf file: Unknown marker-stream type."
+                )
 
 
 def _resample_streams(streams, stream_ids, fs_new):
@@ -196,10 +232,16 @@ def read_raw_xdf(
     return RawXDF(fname, stream_ids, marker_ids, prefix_markers, fs_new)
 
 
-def _is_markerstream(stream):
+def _is_standard_markerstream(stream):
     srate = float(stream["info"]["nominal_srate"][0])
     n_chans = int(stream["info"]["channel_count"][0])
     return srate == 0 and n_chans == 1
+
+
+def _is_multichannel_markerstream(stream):
+    srate = float(stream["info"]["nominal_srate"][0])
+    type = str(stream["info"]["channel_format"][0])
+    return srate != 0 and type == "string"
 
 
 def get_xml(fname):
