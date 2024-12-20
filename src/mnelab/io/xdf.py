@@ -35,9 +35,6 @@ class RawXDF(BaseRaw):
             be `None`, in which case no resampling is performed.
         """
 
-        print("stream_ids: ", stream_ids)
-        print("marker_ids: ", marker_ids)
-
         if len(stream_ids) > 1 and fs_new is None:
             raise ValueError(
                 "Argument `fs_new` is required when reading multiple streams."
@@ -55,28 +52,19 @@ class RawXDF(BaseRaw):
         labels_all, types_all, units_all = [], [], []
         channel_types = get_channel_type_constants(True)
         for stream_id in stream_ids:
-            print("loading stream: ", stream_id)
             stream = streams[stream_id]
-            print("stream: ", stream)
 
+            # check if the dtype is valid
             dtype = stream["time_series"].dtype
-            print(f"Stream name: {stream['info']['name']}")
-            print(f"Original Data type: {dtype}")
-
-            # Check if the dtype is valid
             if dtype not in [np.float64, np.complex128]:
                 try:
-                    # Try converting to float64
                     stream["time_series"] = stream["time_series"].astype(np.float64)
-                    print(f"Converted to float64 for stream {stream['info']['name']}")
                 except ValueError:
                     try:
-                        # Try converting to complex128
                         stream["time_series"] = stream["time_series"].astype(
                             np.complex128
                         )
                     except ValueError as e:
-                        # Raise an error if both conversions fail
                         raise RuntimeError(
                             f"Stream {stream['info']['name']} has unsupported"
                             " dtype {dtype}. "
@@ -123,12 +111,7 @@ class RawXDF(BaseRaw):
 
         # convert marker streams to annotations
         for marker_id in marker_ids:
-            print("converting marker: ", marker_id)
-            # get marker stream from .xdf file
             marker = streams[marker_id]
-            print("marker content: ", marker)
-
-            print("_is_standard_markerstream: ", _is_standard_markerstream)
 
             # convert standard marker stream (fs=0 and 1 channel) to annotation
             if _is_standard_markerstream(marker):
@@ -141,26 +124,13 @@ class RawXDF(BaseRaw):
 
             # convert non-standard marker stream to annotation
             elif _is_multichannel_markerstream(marker):
-                # Calculate onsets relative to first_time
                 onsets = marker["time_stamps"] - first_time
-
-                # Set durations to 0 (instantaneous markers)
                 durations = [0] * len(onsets)
-
-                # Add a new annotation for each channel in the marker stream
                 for marker_set, onset, duration in zip(
                     marker["time_series"], onsets, durations
                 ):
                     for channel_index, description in enumerate(marker_set):
-                        # Prepare description including channel information
                         channel_description = f"Channel {channel_index}: {description}"
-
-                        print("Adding annotation:")
-                        print("Onset:", onset)
-                        print("Duration:", duration)
-                        print("Description:", channel_description)
-
-                        # Append the annotation for this channel
                         self.annotations.append(onset, duration, channel_description)
 
             else:
