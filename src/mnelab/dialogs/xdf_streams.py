@@ -153,7 +153,6 @@ class XDFStreamsDialog(QDialog):
             fs = self.view.item(row.row(), 5).value()
             if not _is_marker(type_) and fs != 0:
                 streams.append(self.view.item(row.row(), 0).value())
-        print("return streams: ", streams)
         return streams
 
     @property
@@ -164,7 +163,6 @@ class XDFStreamsDialog(QDialog):
             # fs = self.view.item(row.row(), 5).value()
             if _is_marker(type_):
                 markers.append(self.view.item(row.row(), 0).value())
-        print("return markers: ", markers)
         return markers
 
 
