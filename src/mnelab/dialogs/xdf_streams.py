@@ -160,7 +160,6 @@ class XDFStreamsDialog(QDialog):
         markers = []
         for row in self.view.selectionModel().selectedRows():
             type_ = self.view.item(row.row(), 2).text()
-            # fs = self.view.item(row.row(), 5).value()
             if _is_marker(type_):
                 markers.append(self.view.item(row.row(), 0).value())
         return markers

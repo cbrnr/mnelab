@@ -54,7 +54,7 @@ class RawXDF(BaseRaw):
         for stream_id in stream_ids:
             stream = streams[stream_id]
 
-            # check if the dtype is valid
+            # check if the dtype is valid, try convertion otherwise
             dtype = stream["time_series"].dtype
             if dtype not in [np.float64, np.complex128]:
                 try:
@@ -111,17 +111,22 @@ class RawXDF(BaseRaw):
 
         # convert marker streams to annotations
         for marker_id in marker_ids:
-            if int(stream["info"]["channel_count"][0]) == 1:
-                marker = streams[marker_id]
-                onsets = marker["time_stamps"] - first_time
-                prefix = f"{marker_id}-" if prefix_markers else ""
-                descriptions = [
-                    f"{prefix}{item}" for sub in marker["time_series"] for item in sub
-                ]
+            stream = streams[marker_id]
+            channel_count = int(stream["info"]["channel_count"][0])
+            onsets = stream["time_stamps"] - first_time
+            prefix = f"{marker_id}-" if prefix_markers else ""
+
+            if channel_count == 1:
+                # handle single-channel markers
+                descriptions = [f"{prefix}{item[0]}" for item in stream["time_series"]]
                 self.annotations.append(onsets, [0] * len(onsets), descriptions)
             else:
-                # handle multi-channel marker streams
-                continue
+                # handle multi-channel markers
+                for sample in stream["time_series"]:
+                    for _, description in enumerate(sample):
+                        self.annotations.append(
+                            onsets, [0] * len(onsets), str(description)
+                        )
 
 
 def _resample_streams(streams, stream_ids, fs_new):
