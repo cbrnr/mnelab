@@ -4,17 +4,25 @@
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from mne.channels import make_standard_montage
+from mne.channels import make_standard_montage, read_custom_montage
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QCheckBox,
     QDialog,
     QDialogButtonBox,
+    QFileDialog,
     QHBoxLayout,
     QListWidget,
+    QListWidgetItem,
+    QPushButton,
     QVBoxLayout,
     QWidget,
 )
+
+class MontageItem(QListWidgetItem):
+    def __init__(self, montage, name):
+        super().__init__(name)
+        self.montage = montage
 
 
 class MontageDialog(QDialog):
@@ -25,9 +33,13 @@ class MontageDialog(QDialog):
 
         vbox = QVBoxLayout()
         self.montages = QListWidget()
-        self.montages.insertItems(0, montages)
         self.montages.setSelectionMode(QListWidget.SingleSelection)
+        for name in montages:
+            montage = make_standard_montage(name)
+            item = MontageItem(montage, name)
+            self.montages.addItem(item)
         vbox.addWidget(self.montages)
+
         self.montages.itemSelectionChanged.connect(self.view_montage)
         self.match_case = QCheckBox("Match case-sensitive", self)
         self.match_alias = QCheckBox("Match aliases", self)
@@ -36,6 +48,10 @@ class MontageDialog(QDialog):
         vbox.addWidget(self.match_case)
         vbox.addWidget(self.match_alias)
         vbox.addWidget(self.ignore_missing)
+
+        self.open_file_button = QPushButton('Custom montage file', self)
+        self.open_file_button.clicked.connect(self.openFileDialog)
+        vbox.addWidget(self.open_file_button)
 
         hbox = QHBoxLayout()
         hbox.addLayout(vbox, stretch=1)
@@ -67,13 +83,41 @@ class MontageDialog(QDialog):
             self.montages.setCurrentRow(0)
             self.view_montage()
 
+
+    def accept(self):
+        selected_item = self.montages.selectedItems()[0]
+        self.selected_montage = selected_item.montage
+        super().accept()
+
+
     def view_montage(self):
-        name = self.montages.selectedItems()[0].data(0)
-        montage = make_standard_montage(name)
-        self.figure.clear()
-        ax = self.figure.add_subplot()
-        montage.plot(show_names=True, show=False, axes=ax)
-        ax.set_aspect("equal")
-        self.figure.tight_layout(pad=0.5)
-        ax.margins(0)
-        self.canvas.draw()
+        item = self.montages.currentItem()
+        if item:
+            montage = item.montage
+            self.figure.clear()
+            ax = self.figure.add_subplot(111)
+            montage.plot(show_names=True, show=False, axes=ax)
+            ax.set_aspect("equal")
+            self.figure.tight_layout(pad=0.5)
+            ax.margins(0)
+            self.canvas.draw()
+
+    
+    def openFileDialog(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        file_filter = 'All Supported Files (*.loc *.locs *.eloc *.sfp *.csd *.elc *.txt *.elp *.bvef *.csv *.tsv *.xyz);;Other (*)'
+        file_name, _ = QFileDialog.getOpenFileName(self, "Open File", "", file_filter, options=options)
+        if file_name:
+            self.loadMontage(file_name)
+
+
+    def loadMontage(self, file_name):
+        try:
+            montage = read_custom_montage(file_name)
+            item = MontageItem(montage,
+                                file_name.split('/')[-1].rsplit('.', 1)[0])
+            self.montages.addItem(item)
+            self.montages.setCurrentRow(self.montages.count() - 1)
+        except Exception as e:
+            print(f"Error while loading montage: {e}")
