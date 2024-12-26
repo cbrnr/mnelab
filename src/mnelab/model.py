@@ -5,7 +5,7 @@
 from collections import Counter, defaultdict
 from copy import deepcopy
 from functools import wraps
-from os.path import getsize, join, split, splitext
+from os.path import exists, getsize, join, split, splitext
 from pathlib import Path
 
 import mne
@@ -400,7 +400,7 @@ class Model:
         elif montage is None and locations:
             montage_text = f"custom ({locations}/{data.info['nchan']} locations)"
         elif montage:
-            montage_text = f"{montage} ({locations}/{data.info['nchan']} locations)"
+            montage_text = f"{montage.split('/')[-1]} ({locations}/{data.info['nchan']} locations)"
 
         if ica is not None:
             method = ica.method.title()
@@ -461,11 +461,12 @@ class Model:
             return
         mne.rename_channels(self.current["data"].info, mapping)
         self.history.append(f"mne.rename_channels(data.info, {mapping})")
-
+    
     @data_changed
     def set_montage(
         self,
         montage,
+        montage_name=None,
         match_case=False,
         match_alias=False,
         on_missing="raise",
@@ -476,12 +477,16 @@ class Model:
             match_alias=match_alias,
             on_missing=on_missing,
         )
-        self.current["montage"] = montage
+        self.current["montage"] = montage_name
         if montage is None:
             self.history.append("data.set_montage(None)")
         else:
+            if exists(montage_name):
+                self.history.append(f"montage = mne.read_custom_montage(\'{montage_name}\')")
+            else:
+                self.history.append(f"montage = mne.channels.make_standard_montage(\'{montage_name}\')")
             self.history.append(
-                f"data.set_montage({montage!r}, match_case={match_case}, "
+                f"data.set_montage(montage, match_case={match_case}, "
                 f"match_alias={match_alias}, on_missing={on_missing!r})"
             )
 

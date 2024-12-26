@@ -21,8 +21,9 @@ from PySide6.QtWidgets import (
 
 class MontageItem(QListWidgetItem):
     def __init__(self, montage, name):
-        super().__init__(name)
+        super().__init__(name.split('/')[-1])
         self.montage = montage
+        self.name = name
 
 
 class MontageDialog(QDialog):
@@ -87,6 +88,7 @@ class MontageDialog(QDialog):
     def accept(self):
         selected_item = self.montages.selectedItems()[0]
         self.selected_montage = selected_item.montage
+        self.selected_montage_name = selected_item.name
         super().accept()
 
 
@@ -115,8 +117,7 @@ class MontageDialog(QDialog):
     def loadMontage(self, file_name):
         try:
             montage = read_custom_montage(file_name)
-            item = MontageItem(montage,
-                                file_name.split('/')[-1].rsplit('.', 1)[0])
+            item = MontageItem(montage, file_name)
             self.montages.addItem(item)
             self.montages.setCurrentRow(self.montages.count() - 1)
         except Exception as e:
