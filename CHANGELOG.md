@@ -18,6 +18,7 @@
 - Fix a bug where appending data would not be correctly displayed in the history ([#446](https://github.com/cbrnr/mnelab/pull/446) by [Benedikt Klöckl](https://github.com/bkloeckl))
 - Fix resetting the settings to default values ([#456](https://github.com/cbrnr/mnelab/pull/456) by [Clemens Brunner](https://github.com/cbrnr))
 - Fix an issue where the channel montage figure could not be closed on macOS ([#459](https://github.com/cbrnr/mnelab/pull/459) by [Benedikt Klöckl](https://github.com/bkloeckl))
+- Fix a bug where gaps in data results in incorrect loading of XDF files ([#467](https://github.com/cbrnr/mnelab/pull/467) by [Benedikt Klöckl](https://github.com/bkloeckl))
 
 ## [0.9.2] · 2024-10-20
 ### ✨ Added
