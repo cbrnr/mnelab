@@ -485,10 +485,23 @@ class Model:
             )
 
     @data_changed
-    def filter(self, low, high):
-        self.current["data"].filter(low, high)
-        self.current["name"] += f" ({low}-{high} Hz)"
-        self.history.append(f"data.filter({low}, {high})")
+    def filter(self, low, high, notch, savgol):
+        if low is not None or high is not None:
+            self.current["data"].filter(low, high)
+            self.current["name"] += f" ({low}-{high} Hz)"
+            self.history.append(f"data.filter({low}, {high})")
+
+        if notch is not None:
+            self.current["data"].notch_filter(notch)
+            self.current["name"] += f"(notch {notch} Hz)"
+            self.history.append(f"data.notch_filter({notch})")
+
+        if savgol is not None:
+            self.current["data"].savgol_filter(savgol)
+            self.current["name"] += f"(savgol {savgol} Hz)"
+            self.history.append(f"data.savgol_filter({savgol})")
+
+
 
     @data_changed
     def crop(self, start, stop):
