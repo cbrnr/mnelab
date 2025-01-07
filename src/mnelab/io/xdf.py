@@ -41,14 +41,6 @@ class RawXDF(BaseRaw):
             )
 
         streams, header = load_xdf(fname)
-        try:
-            # Needs Python >= 3.11
-            meas_date = datetime.fromisoformat(header["info"]["datetime"][0])
-        except ValueError:
-            from dateutil import parser
-
-            meas_date = parser.parse(header["info"]["datetime"][0])
-
         streams = {stream["info"]["stream_id"]: stream for stream in streams}
 
         if all(_is_markerstream(streams[stream_id]) for stream_id in stream_ids):
@@ -113,7 +105,17 @@ class RawXDF(BaseRaw):
             ]
             self.annotations.append(onsets, [0] * len(onsets), descriptions)
 
-        self.set_meas_date(meas_date.astimezone(timezone.utc))
+        recording_datetime = header.get("info", {}).get("datetime", [None])[0]
+        if recording_datetime:
+            try:
+                # Needs Python >= 3.11
+                meas_date = datetime.fromisoformat(recording_datetime)
+            except ValueError:
+                from dateutil import parser
+
+                meas_date = parser.parse(recording_datetime)
+
+            self.set_meas_date(meas_date.astimezone(timezone.utc))
 
 
 def _resample_streams(streams, stream_ids, fs_new):
