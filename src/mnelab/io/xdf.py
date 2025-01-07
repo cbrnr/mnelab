@@ -105,7 +105,7 @@ class RawXDF(BaseRaw):
             ]
             self.annotations.append(onsets, [0] * len(onsets), descriptions)
 
-        recording_datetime = header.get("info", {}).get("datetime", [None])[0]
+        recording_datetime = header["info"].get("datetime", [None])[0]
         if recording_datetime is not None:
             try:
                 # Needs Python >= 3.11
