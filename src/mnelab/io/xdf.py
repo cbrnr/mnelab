@@ -107,14 +107,8 @@ class RawXDF(BaseRaw):
 
         recording_datetime = header["info"].get("datetime", [None])[0]
         if recording_datetime is not None:
-            try:
-                # Needs Python >= 3.11
-                meas_date = datetime.fromisoformat(recording_datetime)
-            except ValueError:
-                from dateutil import parser
-
-                meas_date = parser.parse(recording_datetime)
-
+            recording_datetime = recording_datetime[:-2] + ":" + recording_datetime[-2:]
+            meas_date = datetime.fromisoformat(recording_datetime)
             self.set_meas_date(meas_date.astimezone(timezone.utc))
 
 
