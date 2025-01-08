@@ -15,8 +15,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
-    - uses: astral-sh/ruff-action@v2
-    - uses: astral-sh/ruff-action@v2
+    - uses: astral-sh/ruff-action@v3
+    - uses: astral-sh/ruff-action@v3
       with:
         args: "format --diff"
 
