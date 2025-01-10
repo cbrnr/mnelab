@@ -54,7 +54,8 @@ class Model:
         self.history = [
             "from copy import deepcopy",
             "import mne",
-            "from mnelab.io import read_raw" "\n",
+            "from mnelab.io import read_raw",
+            "",
             "datasets = []",
         ]
 
