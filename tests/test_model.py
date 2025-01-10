@@ -38,9 +38,9 @@ def test_append_data(edf_files, duplicate_data):
 
     data = [d["data"].get_data()[0] for d in model.data]
 
-    assert len(model.data) == len(
-        edf_files
-    ), "Number of data sets in model is not equal to number of files after loading"
+    assert len(model.data) == len(edf_files), (
+        "Number of data sets in model is not equal to number of files after loading"
+    )
 
     idx_list = [1, 2]  # data sets to append
     model.index = 0  # set current data set
@@ -54,19 +54,19 @@ def test_append_data(edf_files, duplicate_data):
         len(model.data) == len(edf_files) + 1 if duplicate_data else len(edf_files)
     ), "Number of data sets in model is not equal to number of files after appending"
 
-    assert model.current["name"].endswith(
-        "(appended)"
-    ), "Name of appended data set does not match expected name"
+    assert model.current["name"].endswith("(appended)"), (
+        "Name of appended data set does not match expected name"
+    )
 
-    assert len(model.current["data"].times) == sum(
-        len(d) for d in data
-    ), "Length of appended data set does not match expected length"
+    assert len(model.current["data"].times) == sum(len(d) for d in data), (
+        "Length of appended data set does not match expected length"
+    )
 
     appended_data = model.current["data"].get_data()[0]
 
-    assert math.isclose(
-        appended_data[0], data[0][0], rel_tol=1e-12
-    ), "Value at index 0 is incorrect"
+    assert math.isclose(appended_data[0], data[0][0], rel_tol=1e-12), (
+        "Value at index 0 is incorrect"
+    )
 
     assert math.isclose(
         appended_data[(idx := len(data[0]) - 1)], data[0][-1], rel_tol=1e-12
@@ -86,6 +86,6 @@ def test_append_data(edf_files, duplicate_data):
         appended_data[(idx := len(data[0]) + len(data[1]))], data[2][0], rel_tol=1e-12
     ), f"Value at index {idx} is incorrect"
 
-    assert math.isclose(
-        appended_data[-1], data[2][-1], rel_tol=1e-12
-    ), "Value at last index is incorrect"
+    assert math.isclose(appended_data[-1], data[2][-1], rel_tol=1e-12), (
+        "Value at last index is incorrect"
+    )
