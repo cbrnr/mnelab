@@ -19,6 +19,21 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+SUPPORTED_FILES = [
+    "*.loc",
+    "*.locs",
+    "*.eloc",
+    "*.sfp",
+    "*.csd",
+    "*.elc",
+    "*.txt",
+    "*.elp",
+    "*.bvef",
+    "*.csv",
+    "*.tsv",
+    "*.xyz",
+]
+
 
 class MontageItem(QListWidgetItem):
     def __init__(self, montage, name):
@@ -105,12 +120,8 @@ class MontageDialog(QDialog):
             self.canvas.draw()
 
     def openFileDialog(self):
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        file_filter = "All Supported Files (*.loc *.locs *.eloc *.sfp *.csd *.elc *.txt *.elp *.bvef *.csv *.tsv *.xyz);;Other (*)"
-        file_name, _ = QFileDialog.getOpenFileName(
-            self, "Open File", "", file_filter, options=options
-        )
+        file_filter = f"Supported Files ({" ".join(SUPPORTED_FILES)});;All Files (*)"
+        file_name, _ = QFileDialog.getOpenFileName(self, "Open File", "", file_filter)
         if file_name:
             self.loadMontage(file_name)
 
