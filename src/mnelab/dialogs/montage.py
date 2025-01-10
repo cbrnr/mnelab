@@ -19,9 +19,10 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+
 class MontageItem(QListWidgetItem):
     def __init__(self, montage, name):
-        super().__init__(name.split('/')[-1])
+        super().__init__(name.split("/")[-1])
         self.montage = montage
         self.name = name
 
@@ -50,7 +51,7 @@ class MontageDialog(QDialog):
         vbox.addWidget(self.match_alias)
         vbox.addWidget(self.ignore_missing)
 
-        self.open_file_button = QPushButton('Custom montage file', self)
+        self.open_file_button = QPushButton("Custom montage file", self)
         self.open_file_button.clicked.connect(self.openFileDialog)
         vbox.addWidget(self.open_file_button)
 
@@ -91,7 +92,6 @@ class MontageDialog(QDialog):
         self.selected_montage_name = selected_item.name
         super().accept()
 
-
     def view_montage(self):
         item = self.montages.currentItem()
         if item:
@@ -104,15 +104,15 @@ class MontageDialog(QDialog):
             ax.margins(0)
             self.canvas.draw()
 
-    
     def openFileDialog(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        file_filter = 'All Supported Files (*.loc *.locs *.eloc *.sfp *.csd *.elc *.txt *.elp *.bvef *.csv *.tsv *.xyz);;Other (*)'
-        file_name, _ = QFileDialog.getOpenFileName(self, "Open File", "", file_filter, options=options)
+        file_filter = "All Supported Files (*.loc *.locs *.eloc *.sfp *.csd *.elc *.txt *.elp *.bvef *.csv *.tsv *.xyz);;Other (*)"
+        file_name, _ = QFileDialog.getOpenFileName(
+            self, "Open File", "", file_filter, options=options
+        )
         if file_name:
             self.loadMontage(file_name)
-
 
     def loadMontage(self, file_name):
         try:

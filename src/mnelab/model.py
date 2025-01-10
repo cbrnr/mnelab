@@ -400,7 +400,9 @@ class Model:
         elif montage is None and locations:
             montage_text = f"custom ({locations}/{data.info['nchan']} locations)"
         elif montage:
-            montage_text = f"{montage.split('/')[-1]} ({locations}/{data.info['nchan']} locations)"
+            montage_text = (
+                f"{montage.split('/')[-1]} ({locations}/{data.info['nchan']} locations)"
+            )
 
         if ica is not None:
             method = ica.method.title()
@@ -461,7 +463,7 @@ class Model:
             return
         mne.rename_channels(self.current["data"].info, mapping)
         self.history.append(f"mne.rename_channels(data.info, {mapping})")
-    
+
     @data_changed
     def set_montage(
         self,
@@ -482,9 +484,13 @@ class Model:
             self.history.append("data.set_montage(None)")
         else:
             if exists(montage_name):
-                self.history.append(f"montage = mne.read_custom_montage(\'{montage_name}\')")
+                self.history.append(
+                    f"montage = mne.read_custom_montage('{montage_name}')"
+                )
             else:
-                self.history.append(f"montage = mne.channels.make_standard_montage(\'{montage_name}\')")
+                self.history.append(
+                    f"montage = mne.channels.make_standard_montage('{montage_name}')"
+                )
             self.history.append(
                 f"data.set_montage(montage, match_case={match_case}, "
                 f"match_alias={match_alias}, on_missing={on_missing!r})"
