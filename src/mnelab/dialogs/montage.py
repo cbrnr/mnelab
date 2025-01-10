@@ -120,7 +120,7 @@ class MontageDialog(QDialog):
             self.canvas.draw()
 
     def openFileDialog(self):
-        file_filter = f"Supported Files ({" ".join(SUPPORTED_FILES)});;All Files (*)"
+        file_filter = f"Supported Files ({' '.join(SUPPORTED_FILES)});;All Files (*)"
         file_name, _ = QFileDialog.getOpenFileName(self, "Open File", "", file_filter)
         if file_name:
             self.loadMontage(file_name)
