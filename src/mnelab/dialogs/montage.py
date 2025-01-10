@@ -97,7 +97,7 @@ class MontageDialog(QDialog):
         if item:
             montage = item.montage
             self.figure.clear()
-            ax = self.figure.add_subplot(111)
+            ax = self.figure.add_subplot()
             montage.plot(show_names=True, show=False, axes=ax)
             ax.set_aspect("equal")
             self.figure.tight_layout(pad=0.5)
