@@ -100,7 +100,6 @@ class MontageDialog(QDialog):
             self.montages.setCurrentRow(0)
             self.view_montage()
 
-
     def accept(self):
         selected_item = self.montages.selectedItems()[0]
         self.selected_montage = selected_item.montage
