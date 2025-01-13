@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QListWidget,
     QListWidgetItem,
+    QMessageBox,
     QPushButton,
     QVBoxLayout,
     QWidget,
@@ -66,10 +67,6 @@ class MontageDialog(QDialog):
         vbox.addWidget(self.match_alias)
         vbox.addWidget(self.ignore_missing)
 
-        self.open_file_button = QPushButton("Custom montage file", self)
-        self.open_file_button.clicked.connect(self.openFileDialog)
-        vbox.addWidget(self.open_file_button)
-
         hbox = QHBoxLayout()
         hbox.addLayout(vbox, stretch=1)
         self.figure = Figure()
@@ -85,6 +82,9 @@ class MontageDialog(QDialog):
         hbox.addWidget(self.canvas_container, stretch=2)
 
         button_layout = QHBoxLayout()
+        self.open_file_button = QPushButton("Load custom montage...", self)
+        self.open_file_button.clicked.connect(self.openFileDialog)
+        button_layout.addWidget(self.open_file_button)
         button_layout.addStretch()
         self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.buttonbox.accepted.connect(self.accept)
@@ -127,8 +127,9 @@ class MontageDialog(QDialog):
     def loadMontage(self, file_name):
         try:
             montage = read_custom_montage(file_name)
+        except Exception as e:
+            QMessageBox.critical(self, "Unsupported montage file", str(e))
+        else:
             item = MontageItem(montage, file_name)
             self.montages.addItem(item)
             self.montages.setCurrentRow(self.montages.count() - 1)
-        except Exception as e:
-            print(f"Error while loading montage: {e}")
