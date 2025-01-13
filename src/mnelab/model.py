@@ -511,8 +511,6 @@ class Model:
             self.current["name"] += f"(savgol {savgol} Hz)"
             self.history.append(f"data.savgol_filter({savgol})")
 
-
-
     @data_changed
     def crop(self, start, stop):
         self.current["data"].crop(start, stop)
