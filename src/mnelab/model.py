@@ -5,7 +5,7 @@
 from collections import Counter, defaultdict
 from copy import deepcopy
 from functools import wraps
-from os.path import exists, getsize, join, split, splitext
+from os.path import getsize, join, split, splitext
 from pathlib import Path
 
 import mne
