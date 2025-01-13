@@ -1,34 +1,68 @@
 # © MNELAB developers
 #
 # License: BSD (3-clause)
+from pathlib import Path
 
-from mne.channels import make_standard_montage
-from PySide6.QtCore import Qt, Slot
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+from mne.channels import make_standard_montage, read_custom_montage
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QCheckBox,
     QDialog,
     QDialogButtonBox,
+    QFileDialog,
     QHBoxLayout,
     QListWidget,
+    QListWidgetItem,
+    QMessageBox,
     QPushButton,
     QVBoxLayout,
+    QWidget,
 )
+
+from mnelab.utils import Montage
+
+SUPPORTED_FILES = [
+    "*.loc",
+    "*.locs",
+    "*.eloc",
+    "*.sfp",
+    "*.csd",
+    "*.elc",
+    "*.txt",
+    "*.elp",
+    "*.bvef",
+    "*.csv",
+    "*.tsv",
+    "*.xyz",
+]
+
+
+class MontageItem(QListWidgetItem):
+    def __init__(self, montage, name, path=None):
+        super().__init__(name)
+        self.montage = montage
+        self.name = name
+        self.path = path
 
 
 class MontageDialog(QDialog):
-    def __init__(self, parent, montages, selected=None):
+    def __init__(self, parent, montages):
         super().__init__(parent)
         self.setWindowTitle("Set montage")
-        vbox = QVBoxLayout(self)
+        self.resize(760, 500)
+
+        vbox = QVBoxLayout()
         self.montages = QListWidget()
-        self.montages.insertItems(0, montages)
         self.montages.setSelectionMode(QListWidget.SingleSelection)
-        if selected is not None:
-            for i in range(self.montages.count()):
-                if self.montages.item(i).data(0) == selected:
-                    self.montages.item(i).setSelected(True)
+        for name in montages:
+            montage = make_standard_montage(name)
+            item = MontageItem(montage, name)
+            self.montages.addItem(item)
         vbox.addWidget(self.montages)
 
+        self.montages.itemSelectionChanged.connect(self.view_montage)
         self.match_case = QCheckBox("Match case-sensitive", self)
         self.match_alias = QCheckBox("Match aliases", self)
         self.ignore_missing = QCheckBox("Ignore missing", self)
@@ -38,34 +72,64 @@ class MontageDialog(QDialog):
         vbox.addWidget(self.ignore_missing)
 
         hbox = QHBoxLayout()
-        self.view_button = QPushButton("View")
-        self.view_button.clicked.connect(self.view_montage)
-        hbox.addWidget(self.view_button)
-        hbox.addStretch()
+        hbox.addLayout(vbox, stretch=1)
+        self.figure = Figure()
+        self.canvas = FigureCanvas(self.figure)
+        self.canvas_container = QWidget(self)
+        self.canvas_container.setMinimumWidth(240)
+        self.canvas_container.setMinimumHeight(220)
+        self.canvas_layout = QVBoxLayout(self.canvas_container)
+        self.canvas_layout.setContentsMargins(0, 0, 0, 0)
+        self.canvas_layout.setSpacing(0)
+        self.canvas_layout.addWidget(self.canvas)
+        self.canvas_container.setLayout(self.canvas_layout)
+        hbox.addWidget(self.canvas_container, stretch=2)
+
+        button_layout = QHBoxLayout()
+        self.open_file_button = QPushButton("Load custom montage...", self)
+        self.open_file_button.clicked.connect(self.load_custom_montage)
+        button_layout.addWidget(self.open_file_button)
+        button_layout.addStretch()
         self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        hbox.addWidget(self.buttonbox)
-        vbox.addLayout(hbox)
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
-        self.montages.itemSelectionChanged.connect(self.toggle_buttons)
-        self.toggle_buttons()  # initialize OK and View buttons state
+        button_layout.addWidget(self.buttonbox, alignment=Qt.AlignLeft)
 
-    @Slot()
-    def toggle_buttons(self):
-        """Toggle OK and View buttons."""
-        if self.montages.selectedItems():
-            self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(True)
-            self.view_button.setEnabled(True)
-        else:
-            self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(False)
-            self.view_button.setEnabled(False)
+        main_layout = QVBoxLayout(self)
+        main_layout.addLayout(hbox)
+        main_layout.addLayout(button_layout)
+        self.setLayout(main_layout)
+
+        if self.montages.count() > 0:
+            self.montages.setCurrentRow(0)
+            self.view_montage()
+
+    def accept(self):
+        item = self.montages.selectedItems()[0]
+        self.montage = Montage(item.montage, item.name, item.path)
+        super().accept()
 
     def view_montage(self):
-        name = self.montages.selectedItems()[0].data(0)
-        montage = make_standard_montage(name)
-        fig = montage.plot(show_names=True, show=False)
-        win = fig.canvas.manager.window
-        win.setWindowModality(Qt.WindowModal)
-        win.setWindowTitle("Montage")
-        win.statusBar().hide()  # not necessary since matplotlib 3.3
-        fig.show()
+        item = self.montages.currentItem()
+        if item:
+            montage = item.montage
+            self.figure.clear()
+            ax = self.figure.add_subplot()
+            montage.plot(show_names=True, show=False, axes=ax)
+            ax.set_aspect("equal")
+            self.figure.tight_layout(pad=0.5)
+            ax.margins(0)
+            self.canvas.draw()
+
+    def load_custom_montage(self):
+        file_filter = f"Supported Files ({' '.join(SUPPORTED_FILES)});;All Files (*)"
+        fpath, _ = QFileDialog.getOpenFileName(self, "Open File", "", file_filter)
+        if fpath:
+            try:
+                montage = read_custom_montage(fpath)
+            except Exception as e:
+                QMessageBox.critical(self, "Unsupported montage file", str(e))
+            else:
+                item = MontageItem(montage, Path(fpath).name, Path(fpath))
+                self.montages.addItem(item)
+                self.montages.setCurrentRow(self.montages.count() - 1)

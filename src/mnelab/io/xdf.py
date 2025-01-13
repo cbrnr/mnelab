@@ -1,6 +1,7 @@
 import struct
 import xml.etree.ElementTree as ETree
 from collections import defaultdict
+from datetime import datetime, timezone
 
 import mne
 import numpy as np
@@ -39,7 +40,7 @@ class RawXDF(BaseRaw):
                 "Argument `fs_new` is required when reading multiple streams."
             )
 
-        streams, _ = load_xdf(fname)
+        streams, header = load_xdf(fname)
         streams = {stream["info"]["stream_id"]: stream for stream in streams}
 
         if all(_is_markerstream(streams[stream_id]) for stream_id in stream_ids):
@@ -103,6 +104,12 @@ class RawXDF(BaseRaw):
                 f"{prefix}{item}" for sub in stream["time_series"] for item in sub
             ]
             self.annotations.append(onsets, [0] * len(onsets), descriptions)
+
+        recording_datetime = header["info"].get("datetime", [None])[0]
+        if recording_datetime is not None:
+            recording_datetime = recording_datetime[:-2] + ":" + recording_datetime[-2:]
+            meas_date = datetime.fromisoformat(recording_datetime)
+            self.set_meas_date(meas_date.astimezone(timezone.utc))
 
 
 def _resample_streams(streams, stream_ids, fs_new):
@@ -278,8 +285,7 @@ def list_chunks(fname):
                 collection_time = struct.unpack("<d", f.read(8))[0]
                 offset_value = struct.unpack("<d", f.read(8))[0]
                 chunk["content"] = (
-                    f"Collection time: {collection_time}\n"
-                    f"Offset value: {offset_value}"
+                    f"Collection time: {collection_time}\nOffset value: {offset_value}"
                 )
             elif tag == 3:
                 chunk["stream_id"] = struct.unpack("<I", f.read(4))[0]

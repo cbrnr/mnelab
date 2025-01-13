@@ -54,7 +54,8 @@ class Model:
         self.history = [
             "from copy import deepcopy",
             "import mne",
-            "from mnelab.io import read_raw" "\n",
+            "from mnelab.io import read_raw",
+            "",
             "datasets = []",
         ]
 
@@ -398,9 +399,10 @@ class Model:
             montage_text = "none"
         elif montage is None and locations:
             montage_text = f"custom ({locations}/{data.info['nchan']} locations)"
-        elif montage:
-            montage_text = f"{montage} ({locations}/{data.info['nchan']} locations)"
-
+        else:
+            montage_text = (
+                f"{montage.name} ({locations}/{data.info['nchan']} locations)"
+            )
         if ica is not None:
             method = ica.method.title()
             if method == "Fastica":
@@ -469,18 +471,26 @@ class Model:
         match_alias=False,
         on_missing="raise",
     ):
+        self.current["montage"] = montage
         self.current["data"].set_montage(
-            montage=montage,
+            montage=montage.montage if montage is not None else None,
             match_case=match_case,
             match_alias=match_alias,
             on_missing=on_missing,
         )
-        self.current["montage"] = montage
         if montage is None:
             self.history.append("data.set_montage(None)")
         else:
+            if montage.path is not None:
+                self.history.append(
+                    f"montage = mne.read_custom_montage('{montage.path}')"
+                )
+            else:
+                self.history.append(
+                    f"montage = mne.channels.make_standard_montage('{montage.name}')"
+                )
             self.history.append(
-                f"data.set_montage({montage!r}, match_case={match_case}, "
+                f"data.set_montage(montage, match_case={match_case}, "
                 f"match_alias={match_alias}, on_missing={on_missing!r})"
             )
 

@@ -27,6 +27,12 @@ We recommend using [uv](https://docs.astral.sh/uv/) to install and run MNELAB. A
 uvx mnelab
 ```
 
+If you want to run the latest development version, you can use the following command:
+
+```
+uvx --from https://github.com/cbrnr/mnelab/archive/refs/heads/main.zip mnelab
+```
+
 
 ### Contributing
 
