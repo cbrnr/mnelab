@@ -751,15 +751,12 @@ class MainWindow(QMainWindow):
         montages = natural_sort(mne.channels.get_builtin_montages())
         dialog = MontageDialog(self, montages)
         if dialog.exec():
-            montage = dialog.selected_montage
-            montage_name = dialog.selected_montage_name
-
+            montage = dialog.montage
             ch_names = self.model.current["data"].info["ch_names"]
             # check if at least one channel name matches a name in the montage
-            if set(ch_names) & set(montage.ch_names):
+            if set(ch_names) & set(montage.montage.ch_names):
                 self.model.set_montage(
                     montage,
-                    montage_name,
                     match_case=dialog.match_case.isChecked(),
                     match_alias=dialog.match_alias.isChecked(),
                     on_missing="ignore"

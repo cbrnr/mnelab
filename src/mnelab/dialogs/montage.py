@@ -1,6 +1,7 @@
 # © MNELAB developers
 #
 # License: BSD (3-clause)
+from pathlib import Path
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -20,6 +21,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from mnelab.utils import Montage
+
 SUPPORTED_FILES = [
     "*.loc",
     "*.locs",
@@ -37,10 +40,11 @@ SUPPORTED_FILES = [
 
 
 class MontageItem(QListWidgetItem):
-    def __init__(self, montage, name):
-        super().__init__(name.split("/")[-1])
+    def __init__(self, montage, name, path=None):
+        super().__init__(name)
         self.montage = montage
         self.name = name
+        self.path = path
 
 
 class MontageDialog(QDialog):
@@ -83,7 +87,7 @@ class MontageDialog(QDialog):
 
         button_layout = QHBoxLayout()
         self.open_file_button = QPushButton("Load custom montage...", self)
-        self.open_file_button.clicked.connect(self.openFileDialog)
+        self.open_file_button.clicked.connect(self.load_custom_montage)
         button_layout.addWidget(self.open_file_button)
         button_layout.addStretch()
         self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
@@ -101,9 +105,8 @@ class MontageDialog(QDialog):
             self.view_montage()
 
     def accept(self):
-        selected_item = self.montages.selectedItems()[0]
-        self.selected_montage = selected_item.montage
-        self.selected_montage_name = selected_item.name
+        item = self.montages.selectedItems()[0]
+        self.montage = Montage(item.montage, item.name, item.path)
         super().accept()
 
     def view_montage(self):
@@ -118,18 +121,15 @@ class MontageDialog(QDialog):
             ax.margins(0)
             self.canvas.draw()
 
-    def openFileDialog(self):
+    def load_custom_montage(self):
         file_filter = f"Supported Files ({' '.join(SUPPORTED_FILES)});;All Files (*)"
-        file_name, _ = QFileDialog.getOpenFileName(self, "Open File", "", file_filter)
-        if file_name:
-            self.loadMontage(file_name)
-
-    def loadMontage(self, file_name):
-        try:
-            montage = read_custom_montage(file_name)
-        except Exception as e:
-            QMessageBox.critical(self, "Unsupported montage file", str(e))
-        else:
-            item = MontageItem(montage, file_name)
-            self.montages.addItem(item)
-            self.montages.setCurrentRow(self.montages.count() - 1)
+        fpath, _ = QFileDialog.getOpenFileName(self, "Open File", "", file_filter)
+        if fpath:
+            try:
+                montage = read_custom_montage(fpath)
+            except Exception as e:
+                QMessageBox.critical(self, "Unsupported montage file", str(e))
+            else:
+                item = MontageItem(montage, Path(fpath).name, Path(fpath))
+                self.montages.addItem(item)
+                self.montages.setCurrentRow(self.montages.count() - 1)

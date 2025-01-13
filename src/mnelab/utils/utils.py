@@ -3,9 +3,11 @@
 # License: BSD (3-clause)
 
 import re
+from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
+from mne.channels import DigMontage
 
 
 def count_locations(info):
@@ -29,3 +31,10 @@ def natural_sort(lst):
         ]
 
     return sorted(lst, key=key)
+
+
+@dataclass
+class Montage:
+    montage: DigMontage
+    name: str
+    path: Path = None
