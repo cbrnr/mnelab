@@ -21,7 +21,7 @@ class RawXDF(BaseRaw):
         marker_ids=None,
         prefix_markers=False,
         fs_new=None,
-        gap_threshold=1.0
+        gap_threshold=1.0,
     ):
         """Read raw data from .xdf file.
 
@@ -49,7 +49,6 @@ class RawXDF(BaseRaw):
         streams, header = load_xdf(fname)
         streams = {stream["info"]["stream_id"]: stream for stream in streams}
 
-        # Use these functions after loading the data
         if all(_is_markerstream(streams[stream_id]) for stream_id in stream_ids):
             raise RuntimeError(
                 "Loading only marker streams is not supported, at least one stream must"
@@ -92,10 +91,9 @@ class RawXDF(BaseRaw):
 
         # insert nan for missing data instead of interpolation
         gap_indices = _detect_gaps(streams[stream_ids[0]]["time_stamps"], gap_threshold)
-        data, first_time = _insert_nans(data,
-                                        streams[stream_ids[0]]["time_stamps"],
-                                        gap_indices,
-                                        fs)
+        data, first_time = _insert_nans(
+            data, streams[stream_ids[0]]["time_stamps"], gap_indices, fs
+        )
 
         info = mne.create_info(ch_names=labels_all, sfreq=fs, ch_types=types_all)
 
@@ -133,19 +131,18 @@ def _detect_gaps(timestamps, gap_threshold):
 def _insert_nans(data, timestamps, gap_indices, fs):
     for index in gap_indices:
         gap_size = int((timestamps[index + 1] - timestamps[index]) * fs)
-        data = np.insert(data,
-                        index + 1,
-                        np.full((gap_size, data.shape[1]), np.nan),
-                        axis=0)
+        data = np.insert(
+            data, index + 1, np.full((gap_size, data.shape[1]), np.nan), axis=0
+        )
         timestamps = np.insert(
             timestamps,
             index + 1,
             np.linspace(
-                timestamps[index] + 1/fs,
+                timestamps[index] + 1 / fs,
                 timestamps[index + 1],
                 gap_size,
-                endpoint=False
-            )
+                endpoint=False,
+            ),
         )
     return data, timestamps
 
