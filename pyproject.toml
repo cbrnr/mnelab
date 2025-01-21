@@ -26,7 +26,6 @@ dependencies = [
     "matplotlib >= 3.8.0",
     "mne >= 1.7.0",
     "numpy >= 2.0.0",
-    "pandas >= 2.2.3",
     "pybv >= 0.7.4",
     "pyobjc-framework-cocoa >= 10.0; platform_system=='darwin'",
     "pyxdf >= 1.16.4",

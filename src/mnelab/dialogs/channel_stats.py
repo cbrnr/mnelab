@@ -1,12 +1,6 @@
 # © MNELAB developers
 #
 # License: BSD (3-clause)
-
-from collections import defaultdict
-
-import numpy as np
-from mne import channel_type
-from mne.defaults import _handle_default
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QDialog,
@@ -15,6 +9,8 @@ from PySide6.QtWidgets import (
     QTableWidgetItem,
     QVBoxLayout,
 )
+
+from mnelab.utils.channelstats_calculations import calculate_channel_stats
 
 
 class SortableTableWidgetItem(QTableWidgetItem):
@@ -35,7 +31,7 @@ class ChannelStats(QDialog):
 
         # window
         self.setWindowTitle("Channel Stats")
-        self.resize(630, 550)
+        self.resize(650, 550)
         self.setMinimumSize(400, 300)
         layout = QVBoxLayout(self)
 
@@ -56,68 +52,44 @@ class ChannelStats(QDialog):
         self.setLayout(layout)
 
     def populate_table(self, raw):
-        # extract channel stats (logic from raw.describe())
-        nchan = raw.info["nchan"]
-        cols = defaultdict(list)
-        cols["name"] = raw.ch_names
-        for i in range(nchan):
-            ch = raw.info["chs"][i]
-            data = raw[i][0]
-            cols["type"].append(channel_type(raw.info, i))
-            cols["unit"].append(ch.get("unit", ""))
-            cols["min"].append(np.min(data))
-            cols["Q1"].append(np.percentile(data, 25))
-            cols["median"].append(np.median(data))
-            cols["Q3"].append(np.percentile(data, 75))
-            cols["max"].append(np.max(data))
-
-        # unit scaling
-        scalings = _handle_default("scalings")
-        units = _handle_default("units")
-        for i in range(nchan):
-            unit = units.get(cols["type"][i])
-            scaling = scalings.get(cols["type"][i], 1)
-            if scaling != 1:
-                cols["unit"][i] = unit
-                for col in ["min", "Q1", "median", "Q3", "max"]:
-                    cols[col][i] *= scaling
-
-        # set up tabel
-        headers = [
-            "Channel",
-            "Name",
-            "Type",
-            "Unit",
-            "Min",
-            "Q1",
-            "Median",
-            "Q3",
-            "Max",
-        ]
-        self.table.setColumnCount(len(headers))
+        cols, nchan = calculate_channel_stats(raw)
+        self.table.setColumnCount(9)
         self.table.setRowCount(nchan)
-        self.table.setHorizontalHeaderLabels(headers)
+        self.table.setHorizontalHeaderLabels(
+            [
+                "Channel",
+                "Name",
+                "Type",
+                "Unit",
+                "Min",
+                "Q1",
+                "Mean",
+                "Median",
+                "Q3",
+                "Max",
+            ]
+        )
 
-        # populate
         for i in range(nchan):
-            item = SortableTableWidgetItem(i)
+            item = QTableWidgetItem(str(i))
             item.setFlags(item.flags() & ~Qt.ItemIsEditable)
             self.table.setItem(i, 0, item)
 
-            item = SortableTableWidgetItem(cols["name"][i])
+            item = QTableWidgetItem(cols["name"][i])
             item.setFlags(item.flags() & ~Qt.ItemIsEditable)
             self.table.setItem(i, 1, item)
 
-            item = SortableTableWidgetItem(cols["type"][i].upper())
+            item = QTableWidgetItem(cols["type"][i].upper())
             item.setFlags(item.flags() & ~Qt.ItemIsEditable)
             self.table.setItem(i, 2, item)
 
-            item = SortableTableWidgetItem(cols["unit"][i])
+            item = QTableWidgetItem(cols["unit"][i])
             item.setFlags(item.flags() & ~Qt.ItemIsEditable)
             self.table.setItem(i, 3, item)
 
             for j, key in enumerate(["min", "Q1", "median", "Q3", "max"], start=4):
                 formatted_value = f"{cols[key][i]:.2f}"
-                item = SortableTableWidgetItem(float(formatted_value))
+                item = QTableWidgetItem(formatted_value)
                 item.setFlags(item.flags() & ~Qt.ItemIsEditable)
+                item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
                 self.table.setItem(i, j, item)
