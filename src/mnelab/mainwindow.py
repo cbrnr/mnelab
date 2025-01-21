@@ -1258,7 +1258,7 @@ class MainWindow(QMainWindow):
 
     def show_channel_stats(self):
         """Show channel stats."""
-        dialog = ChannelStats(self, self.model.current["data"].describe(True))
+        dialog = ChannelStats(self, self.model.current["data"])
         dialog.exec_()
 
     def show_about(self):
