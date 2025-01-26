@@ -3,11 +3,14 @@
 # License: BSD (3-clause)
 
 import re
+from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
+from mne import channel_type
 from mne.channels import DigMontage
+from mne.defaults import _handle_default
 
 
 def count_locations(info):
@@ -31,6 +34,37 @@ def natural_sort(lst):
         ]
 
     return sorted(lst, key=key)
+
+
+def calculate_channel_stats(raw):
+    # extract channel info
+    nchan = raw.info["nchan"]
+    data = raw.get_data()
+    cols = defaultdict(list)
+    cols["name"] = raw.ch_names
+    cols["type"] = [channel_type(raw.info, i) for i in range(nchan)]
+
+    # vectorized calculations
+    cols["min"] = np.min(data, axis=1).tolist()
+    cols["Q1"] = np.percentile(data, 25, axis=1).tolist()
+    cols["mean"] = np.mean(data, axis=1).tolist()
+    cols["median"] = np.median(data, axis=1).tolist()
+    cols["Q3"] = np.percentile(data, 75, axis=1).tolist()
+    cols["max"] = np.max(data, axis=1).tolist()
+
+    # scaling and units
+    scalings = _handle_default("scalings")
+    units = _handle_default("units")
+    cols["unit"] = []
+    for i in range(nchan):
+        unit = units.get(cols["type"][i])
+        scaling = scalings.get(cols["type"][i], 1)
+        cols["unit"].append(unit if scaling != 1 else "")
+        if scaling != 1:
+            for col in ["min", "Q1", "mean", "median", "Q3", "max"]:
+                cols[col][i] *= scaling
+
+    return cols, nchan
 
 
 @dataclass

@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from mnelab.utils.channelstats_calculations import calculate_channel_stats
+from mnelab.utils import calculate_channel_stats
 
 
 class SortableTableWidgetItem(QTableWidgetItem):
@@ -31,7 +31,6 @@ class ChannelStats(QDialog):
 
         # window
         self.setWindowTitle("Channel Stats")
-        self.resize(650, 550)
         self.setMinimumSize(400, 300)
         layout = QVBoxLayout(self)
 
@@ -49,6 +48,13 @@ class ChannelStats(QDialog):
         close_button.clicked.connect(self.close)
         layout.addWidget(close_button)
 
+        # calculate table width
+        table_width = self.table.verticalHeader().width()
+        table_width += sum(
+            self.table.columnWidth(i) for i in range(self.table.columnCount())
+        )
+        table_width += self.table.verticalScrollBar().width()
+        self.resize(table_width - 30, 550)
         self.setLayout(layout)
 
     def populate_table(self, raw):
