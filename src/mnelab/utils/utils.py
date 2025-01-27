@@ -45,12 +45,12 @@ def calculate_channel_stats(raw):
     cols["type"] = [channel_type(raw.info, i) for i in range(nchan)]
 
     # vectorized calculations
-    cols["min"] = np.min(data, axis=1).tolist()
-    cols["Q1"] = np.percentile(data, 25, axis=1).tolist()
-    cols["mean"] = np.mean(data, axis=1).tolist()
-    cols["median"] = np.median(data, axis=1).tolist()
-    cols["Q3"] = np.percentile(data, 75, axis=1).tolist()
-    cols["max"] = np.max(data, axis=1).tolist()
+    cols["min"] = np.min(data, axis=1)
+    cols["Q1"] = np.percentile(data, 25, axis=1)
+    cols["mean"] = np.mean(data, axis=1)
+    cols["median"] = np.median(data, axis=1)
+    cols["Q3"] = np.percentile(data, 75, axis=1)
+    cols["max"] = np.max(data, axis=1)
 
     # scaling and units
     scalings = _handle_default("scalings")
