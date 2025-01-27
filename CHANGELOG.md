@@ -5,6 +5,7 @@
 - XDF reader now parses measurement date ([#470](https://github.com/cbrnr/mnelab/pull/470) by [Stefan Appelhoff](https://stefanappelhoff.com))
 - Add support for loading custom montage files ([#468](https://github.com/cbrnr/mnelab/pull/468) by [Benedikt Klöckl](https://github.com/bkloeckl) and [Clemens Brunner](https://github.com/cbrnr))
 - Add new filter dialog option for notch filter and improve UI ([#469](https://github.com/cbrnr/mnelab/pull/469) by [Benedikt Klöckl](https://github.com/bkloeckl))
+- Add functionality to display channel stats ([#462](https://github.com/cbrnr/mnelab/pull/462) by [Benedikt Klöckl](https://github.com/bkloeckl))
 
 ### 🌀 Changed
 - Change the append dialog appearance to include original indices used for identifying the data ([#449](https://github.com/cbrnr/mnelab/pull/449) by [Benedikt Klöckl](https://github.com/bkloeckl))
