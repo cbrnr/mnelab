@@ -93,10 +93,6 @@ class FilterDialog(QDialog):
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
 
-        # validation message
-        self.error_label = QLabel("")
-        self.error_label.setStyleSheet("color: gray;")
-        vbox.addWidget(self.error_label)
         self.lowedit.valueChanged.connect(self.validate_inputs)
         self.highedit.valueChanged.connect(self.validate_inputs)
         self.notchedit.valueChanged.connect(self.validate_inputs)
@@ -141,27 +137,21 @@ class FilterDialog(QDialog):
         self.validate_inputs()
 
     def validate_inputs(self):
-        error_message = ""
         is_valid = True
 
         if self.selected_filter_type == "Bandpass":
             if self.highedit.value() <= self.lowedit.value():
-                error_message = "High cutoff must be greater than low cutoff."
                 is_valid = False
         elif self.selected_filter_type == "Lowpass":
             if self.lowedit.value() <= 0:
-                error_message = "Low cutoff must be greater than 0."
                 is_valid = False
         elif self.selected_filter_type == "Highpass":
             if self.highedit.value() <= 0:
-                error_message = "High cutoff must be greater than 0."
                 is_valid = False
         elif self.selected_filter_type == "Notch":
             if self.notchedit.value() <= 0:
-                error_message = "Notch frequency must be greater than 0."
                 is_valid = False
 
-        self.error_label.setText(error_message)
         self.ok_button.setEnabled(is_valid)
 
     @property
