@@ -2,6 +2,7 @@
 #
 # License: BSD (3-clause)
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QButtonGroup,
     QDialog,
@@ -57,16 +58,22 @@ class FilterDialog(QDialog):
         self.grid = QGridLayout()
         self.low_label = QLabel("Low cutoff frequency (Hz):")
         self.lowedit = QDoubleSpinBox()
-        self.lowedit.setRange(0.0, 10000.0)
-        self.lowedit.setDecimals(3)
+        self.lowedit.setMinimum(0)
+        self.lowedit.setDecimals(2)
+        self.lowedit.setValue(1)
+        self.lowedit.setAlignment(Qt.AlignRight)
         self.high_label = QLabel("High cutoff frequency (Hz):")
         self.highedit = QDoubleSpinBox()
-        self.highedit.setRange(0.0, 10000.0)
-        self.highedit.setDecimals(3)
+        self.highedit.setMinimum(0)
+        self.highedit.setDecimals(2)
+        self.highedit.setValue(30)
+        self.highedit.setAlignment(Qt.AlignRight)
         self.notch_label = QLabel("Notch frequency (Hz):")
         self.notchedit = QDoubleSpinBox()
-        self.notchedit.setRange(0.0, 10000.0)
-        self.notchedit.setDecimals(3)
+        self.notchedit.setMinimum(0)
+        self.notchedit.setDecimals(2)
+        self.notchedit.setValue(50)
+        self.notchedit.setAlignment(Qt.AlignRight)
 
         self.grid.addWidget(self.low_label, 0, 0)
         self.grid.addWidget(self.lowedit, 0, 1)
