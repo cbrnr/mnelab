@@ -5,7 +5,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QDialog,
-    QPushButton,
+    QDialogButtonBox,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -45,9 +45,9 @@ class ChannelStats(QDialog):
         self.table.resizeColumnsToContents()
 
         # add close button
-        close_button = QPushButton("Close")
-        close_button.clicked.connect(self.close)
-        layout.addWidget(close_button)
+        buttonbox = QDialogButtonBox(QDialogButtonBox.Close)
+        layout.addWidget(buttonbox)
+        buttonbox.rejected.connect(self.reject)
 
         # calculate table width
         table_width = self.table.verticalHeader().width()
