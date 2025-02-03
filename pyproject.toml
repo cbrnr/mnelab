@@ -32,7 +32,6 @@ dependencies = [
     "pyside6 >= 6.7.1",
     "scipy >= 1.14.1",
 ]
-
 dynamic = ["version"]
 
 [project.optional-dependencies]
