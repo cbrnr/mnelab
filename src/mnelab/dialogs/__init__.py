@@ -4,6 +4,7 @@
 
 from mnelab.dialogs.annotations import AnnotationsDialog
 from mnelab.dialogs.append import AppendDialog
+from mnelab.dialogs.brainvision import BrainVisionDialog
 from mnelab.dialogs.calc import CalcDialog
 from mnelab.dialogs.channel_properties import ChannelPropertiesDialog
 from mnelab.dialogs.crop import CropDialog
