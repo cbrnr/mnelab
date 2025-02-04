@@ -1,4 +1,4 @@
-## [UNRELEASED] · YYYY-MM-DD
+## [1.0.0] · 2025-02-04
 ### ✨ Added
 - Add close icon to sidebar on hover ([#454](https://github.com/cbrnr/mnelab/pull/454) by [Benedikt Klöckl](https://github.com/bkloeckl))
 - Add Python 3.13 support ([#457](https://github.com/cbrnr/mnelab/pull/457) by [Clemens Brunner](https://github.com/cbrnr))
