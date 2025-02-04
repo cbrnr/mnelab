@@ -1,3 +1,5 @@
+## [UNRELEASED] - YYYY-MM-DD
+
 ## [1.0.0] · 2025-02-04
 ### ✨ Added
 - Add close icon to sidebar on hover ([#454](https://github.com/cbrnr/mnelab/pull/454) by [Benedikt Klöckl](https://github.com/bkloeckl))
