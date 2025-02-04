@@ -650,6 +650,12 @@ class MainWindow(QMainWindow):
                 dialog = NpyDialog(self, parse_npy(fname))
                 if dialog.exec_():
                     self.model.load(fname, dialog.fs, dialog.transpose)
+            elif ext == ".vhdr":
+                dialog = BrainVisionDialog(self)
+                if dialog.exec():
+                    self.model.load(
+                        fname, ignore_marker_types=dialog.ignore_marker_types
+                    )
             else:  # all other file formats
                 try:
                     self.model.load(fname)

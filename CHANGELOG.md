@@ -6,12 +6,14 @@
 - Add support for loading custom montage files ([#468](https://github.com/cbrnr/mnelab/pull/468) by [Benedikt Klöckl](https://github.com/bkloeckl) and [Clemens Brunner](https://github.com/cbrnr))
 - Add new filter dialog option for notch filter and improve UI ([#469](https://github.com/cbrnr/mnelab/pull/469) by [Benedikt Klöckl](https://github.com/bkloeckl))
 - Add functionality to display channel stats ([#462](https://github.com/cbrnr/mnelab/pull/462) by [Benedikt Klöckl](https://github.com/bkloeckl))
+- Add option to ignore marker types (and only use marker descriptions) when importing BrainVision files ([#417](https://github.com/cbrnr/mnelab/pull/417) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🌀 Changed
 - Change the append dialog appearance to include original indices used for identifying the data ([#449](https://github.com/cbrnr/mnelab/pull/449) by [Benedikt Klöckl](https://github.com/bkloeckl))
 - Include unique dataset indices in sidebar ([#454](https://github.com/cbrnr/mnelab/pull/454) by [Benedikt Klöckl](https://github.com/bkloeckl))
 - Show a montage preview in the channel montage dialog ([#459](https://github.com/cbrnr/mnelab/pull/459) by [Benedikt Klöckl](https://github.com/bkloeckl))
 - Hide sidebar when no datasets are loaded ([#463](https://github.com/cbrnr/mnelab/pull/463) by [Benedikt Klöckl](https://github.com/bkloeckl))
+- Exporting data to BrainVision now uses annotations "as is" (i.e., no conversion to "S  1", etc.) instead of events ([#417](https://github.com/cbrnr/mnelab/pull/417) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🗑️ Removed
 - Remove Python 3.9 support ([#457](https://github.com/cbrnr/mnelab/pull/457) by [Clemens Brunner](https://github.com/cbrnr))
