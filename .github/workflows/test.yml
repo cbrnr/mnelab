@@ -43,4 +43,4 @@ jobs:
     - name: Install the project
       run: uv sync --all-extras
     - name: Run tests
-      run: uv run pytest tests
+      run: uv run pytest -W error tests
