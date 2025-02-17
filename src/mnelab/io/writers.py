@@ -4,7 +4,7 @@
 
 from pathlib import Path
 
-from numpy.core.records import fromarrays
+from numpy.rec import fromarrays
 from scipy.io import savemat
 
 
