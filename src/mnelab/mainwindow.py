@@ -74,7 +74,8 @@ class MainWindow(QMainWindow):
         self.installEventFilter(self)
 
         # remove None entries from self.recent
-        self.recent = [recent for recent in self.recent if recent is not None]
+        if self.recent != None:
+            self.recent = [recent for recent in self.recent if recent is not None]
 
         # plot backend
         self.plot_backends = ["Matplotlib"]
