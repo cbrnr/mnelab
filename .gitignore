@@ -1,3 +1,6 @@
 .pytest_cache/
 .ruff_cache/
 __pycache__/
+/dist/
+/build/
+/*.spec
