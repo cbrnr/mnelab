@@ -73,3 +73,34 @@ This concludes the new release. Now prepare the source for the next planned rele
 - Start a new section at the top of `CHANGELOG.md` titled `## [UNRELEASED] - YYYY-MM-DD`
 
 Don't forget to push these changes!
+
+
+## Creating standalone packages
+
+To create standalone packages for Windows, macOS, and Linux, we use [PyInstaller](https://www.pyinstaller.org/). In general, you need to run the corresponding command on the respective platform. For example, to create a standalone package for macOS, you would run the following command in the project root:
+
+```
+./pyinstaller-macos.sh
+```
+
+This will create a standalone package in the `dist` folder, which has to be packaged into a platform-specific installer, which, together with other platform-specific notes, we will describe below.
+
+
+### macOS
+
+To create the app icon from `mnelab-logo-macos.svg`, change into the `src/mnelab/icons` folder and run the following commands:
+
+```
+inkscape --export-filename=icon_16x16.png --export-width=16 --export-height=16 mnelab-logo-macos.svg
+inkscape --export-filename=icon_32x32.png --export-width=32 --export-height=32 mnelab-logo-macos.svg
+inkscape --export-filename=icon_128x128.png --export-width=128 --export-height=128 mnelab-logo-macos.svg
+inkscape --export-filename=icon_256x256.png --export-width=256 --export-height=256 mnelab-logo-macos.svg
+inkscape --export-filename=icon_512x512.png --export-width=512 --export-height=512 mnelab-logo-macos.svg
+inkscape --export-filename=icon_512x512@2x.png --export-width=1024 --export-height=1024 mnelab-logo-macos.svg
+mkdir icon.iconset
+mv *.png icon.iconset
+iconutil -c mnelab-logo-macos icon.iconset
+rm -rf icon.iconset
+```
+
+This is only necessary if the SVG logo has been modified.
