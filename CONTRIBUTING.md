@@ -103,4 +103,4 @@ iconutil -c mnelab-logo-macos icon.iconset
 rm -rf icon.iconset
 ```
 
-This is only necessary if the SVG logo has been modified.
+Recreating the app icon is only necessary if the SVG logo has been modified.
