@@ -83,7 +83,7 @@ To create standalone packages for Windows, macOS, and Linux, we use [PyInstaller
 ./pyinstaller-macos.sh
 ```
 
-This will create a standalone package in the `dist` folder, which has to be packaged into a platform-specific installer, which, together with other platform-specific notes, we will describe below.
+This creates a standalone package in the `dist` folder, which must be packaged into a platform-specific installer. The following sections describe this process along with other platform-specific notes.
 
 
 ### macOS
