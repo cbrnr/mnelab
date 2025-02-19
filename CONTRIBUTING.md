@@ -88,7 +88,7 @@ This creates a standalone package in the `dist` folder, which must be packaged i
 
 ### macOS
 
-To create the app icon from `mnelab-logo-macos.svg`, change into the `src/mnelab/icons` folder and run the following commands:
+To create the app icon from `mnelab-logo-macos.svg`, change into the `src/mnelab/icons` folder and run the following commands (requires [Inkscape](https://inkscape.org/)):
 
 ```
 inkscape --export-filename=icon_16x16.png --export-width=16 --export-height=16 mnelab-logo-macos.svg
