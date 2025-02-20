@@ -28,12 +28,6 @@ _DEFAULTS = {
 
 
 def _get_value(key):
-    # The third argument to QSettings().value is a typecast which is applied to the
-    # retrieved value. Since booleans are stored as "true" and "false" (at least on
-    # Windows), we need that typecast. However, lists would get replaced with an empty
-    # list for some reason, so here's a special case:
-    if isinstance(_DEFAULTS[key], list):
-        return QSettings().value(key, defaultValue=_DEFAULTS[key])
     return QSettings().value(
         key, defaultValue=_DEFAULTS[key], type=type(_DEFAULTS[key])
     )
