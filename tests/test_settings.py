@@ -1,7 +1,7 @@
 import pytest
 from PySide6.QtCore import QSettings
 
-from mnelab.settings import _DEFAULTS, read_settings, write_settings
+from mnelab.settings import _DEFAULTS, clear_settings, read_settings, write_settings
 
 
 @pytest.fixture(autouse=True)
@@ -22,3 +22,6 @@ def test_read_default_settings():
 def test_write_and_read_settings():
     write_settings(max_recent=10)
     assert read_settings("max_recent") == 10
+    assert read_settings() == {**_DEFAULTS, "max_recent": 10}
+    clear_settings()
+    assert read_settings() == _DEFAULTS
