@@ -1,4 +1,6 @@
 ## [UNRELEASED] - YYYY-MM-DD
+### 🌀 Changed
+- Streamline settings (by using INI format on all platforms) as well as the settings dialog ([#482](https://github.com/cbrnr/mnelab/pull/482) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.0.0] · 2025-02-04
 ### ✨ Added
