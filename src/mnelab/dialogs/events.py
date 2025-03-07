@@ -45,10 +45,12 @@ class EventsDialog(QDialog):
         hbox = QHBoxLayout()
         self.add_button = QPushButton("+")
         self.remove_button = QPushButton("-")
+        self.counts_button = QPushButton("Counts...")
         self.mapping_button = QPushButton("Mapping...")
         buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         hbox.addWidget(self.add_button)
         hbox.addWidget(self.remove_button)
+        hbox.addWidget(self.counts_button)
         hbox.addWidget(self.mapping_button)
         hbox.addStretch()
         hbox.addWidget(buttonbox)
@@ -60,6 +62,7 @@ class EventsDialog(QDialog):
         self.add_button.clicked.connect(self.add_event)
         self.remove_button.clicked.connect(self.toggle_buttons)
         self.add_button.clicked.connect(self.toggle_buttons)
+        self.counts_button.clicked.connect(self.open_counts_dialog)
         self.mapping_button.clicked.connect(self.open_mapping_dialog)
         self.toggle_buttons()
         self.setMinimumSize(500, 500)
@@ -67,11 +70,16 @@ class EventsDialog(QDialog):
 
     @property
     def unique_events(self):
-        _unique_events = set()
+        _unique_events = defaultdict(int)
         for i in range(self.event_table.rowCount()):
             if item := self.event_table.item(i, 1):
-                _unique_events.add(int(item.value()))
+                _unique_events[int(item.value())] += 1
         return _unique_events
+
+    @Slot()
+    def open_counts_dialog(self):
+        dialog = EventCountsDialog(self)
+        dialog.exec()
 
     @Slot()
     def open_mapping_dialog(self):
@@ -119,8 +127,41 @@ class EventsDialog(QDialog):
         for row in sorted(rows, reverse=True):
             value = self.event_table.item(row, 1).value()
             self.event_table.removeRow(row)
-            if value not in self.unique_events:
+            if value not in self.unique_events.keys():
                 self.event_mapping.pop(value, None)
+
+
+class EventCountsDialog(QDialog):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setWindowTitle("Event Counts")
+        self.event_table = parent.event_table
+        self.unique_events = parent.unique_events
+
+        self.counts_table = QTableWidget(0, 2)
+        self.counts_table.setHorizontalHeaderLabels(["Type", "Count"])
+        self.counts_table.horizontalHeader().setStretchLastSection(True)
+        self.counts_table.verticalHeader().setVisible(False)
+        self.counts_table.setShowGrid(False)
+        self.counts_table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.fill_counts_table()
+
+        vbox = QVBoxLayout(self)
+        vbox.addWidget(self.counts_table)
+        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok)
+        vbox.addWidget(buttonbox)
+        buttonbox.accepted.connect(self.accept)
+
+        self.counts_table.setMinimumHeight(225)
+
+    def fill_counts_table(self):
+        self.counts_table.setRowCount(0)
+        for row, (id_, count) in enumerate(sorted(self.unique_events.items())):
+            id_item = IntTableWidgetItem(id_)
+            id_item.setFlags(id_item.flags() ^ Qt.ItemIsEditable)
+            self.counts_table.insertRow(row)
+            self.counts_table.setItem(row, 0, id_item)
+            self.counts_table.setItem(row, 1, QTableWidgetItem(str(count)))
 
 
 class EventMappingDialog(QDialog):
@@ -154,11 +195,11 @@ class EventMappingDialog(QDialog):
         self.mapping_table.itemChanged.connect(self.store_mapping)
         self.clear_button.clicked.connect(self.clear_mapping)
 
-        self.mapping_table.setMinimumHeight(150)
+        self.mapping_table.setMinimumHeight(225)
 
     def fill_mapping_table(self):
         self.mapping_table.setRowCount(0)
-        for row, id_ in enumerate(sorted(self.unique_events)):
+        for row, id_ in enumerate(sorted(self.unique_events.keys())):
             id_item = IntTableWidgetItem(id_)
             id_item.setFlags(id_item.flags() ^ Qt.ItemIsEditable)
             self.mapping_table.insertRow(row)
@@ -170,7 +211,7 @@ class EventMappingDialog(QDialog):
     def store_mapping(self):
         for i in range(self.mapping_table.rowCount()):
             event_id = int(self.mapping_table.item(i, 0).value())
-            if event_id not in self.unique_events:
+            if event_id not in self.unique_events.keys():
                 del self.event_mapping[event_id]
             if self.mapping_table.item(i, 1) is not None:
                 self.event_mapping[event_id] = self.mapping_table.item(i, 1).text()

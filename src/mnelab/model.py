@@ -202,7 +202,14 @@ class Model:
     @data_changed
     def annotations_from_events(self):
         """Convert events to annotations."""
-        mapping = self.current.get("event_mapping")
+        # get unique event types
+        unique_events = {
+            int(v): str(v) for v in np.unique(self.current["events"][:, 2])
+        }
+        event_mapping = {
+            k: v for k, v in self.current.get("event_mapping").items() if v
+        }
+        mapping = {**unique_events, **event_mapping}
         annots = mne.annotations_from_events(
             self.current["events"],
             self.current["data"].info["sfreq"],
