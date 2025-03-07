@@ -2,6 +2,8 @@
 #
 # License: BSD (3-clause)
 
+from collections import defaultdict
+
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -42,9 +44,11 @@ class AnnotationsDialog(QDialog):
         hbox = QHBoxLayout()
         self.add_button = QPushButton("+")
         self.remove_button = QPushButton("-")
+        self.counts_button = QPushButton("Counts...")
         buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         hbox.addWidget(self.add_button)
         hbox.addWidget(self.remove_button)
+        hbox.addWidget(self.counts_button)
         hbox.addStretch()
         hbox.addWidget(buttonbox)
         vbox.addLayout(hbox)
@@ -55,9 +59,18 @@ class AnnotationsDialog(QDialog):
         self.add_button.clicked.connect(self.add_event)
         self.remove_button.clicked.connect(self.toggle_buttons)
         self.add_button.clicked.connect(self.toggle_buttons)
+        self.counts_button.clicked.connect(self.open_counts_dialog)
         self.toggle_buttons()
         self.setMinimumSize(500, 500)
         self.resize(500, 500)
+
+    @property
+    def unique_annotations(self):
+        _unique_annotations = defaultdict(int)
+        for i in range(self.table.rowCount()):
+            if item := self.table.item(i, 2):
+                _unique_annotations[item.text()] += 1
+        return _unique_annotations
 
     @Slot()
     def toggle_buttons(self):
@@ -66,6 +79,7 @@ class AnnotationsDialog(QDialog):
         if self.table.rowCount() == 0:  # no annotations available
             self.add_button.setEnabled(True)
             self.remove_button.setEnabled(False)
+            self.counts_button.setEnabled(False)
         elif n_items == 3:  # one row (3 items) selected
             self.add_button.setEnabled(True)
             self.remove_button.setEnabled(True)
@@ -75,6 +89,7 @@ class AnnotationsDialog(QDialog):
         else:  # no rows selected
             self.add_button.setEnabled(False)
             self.remove_button.setEnabled(False)
+            self.counts_button.setEnabled(True)
 
     def add_event(self):
         if self.table.selectedIndexes():
@@ -95,3 +110,39 @@ class AnnotationsDialog(QDialog):
         self.table.clearSelection()
         for row in sorted(rows, reverse=True):
             self.table.removeRow(row)
+
+    def open_counts_dialog(self):
+        dialog = EventCountsDialog(self)
+        dialog.exec()
+
+
+class EventCountsDialog(QDialog):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setWindowTitle("Annotation Counts")
+        self.unique_annotations = parent.unique_annotations
+
+        self.counts_table = QTableWidget(0, 2)
+        self.counts_table.setHorizontalHeaderLabels(["Description", "Count"])
+        self.counts_table.horizontalHeader().setStretchLastSection(True)
+        self.counts_table.verticalHeader().setVisible(False)
+        self.counts_table.setShowGrid(False)
+        self.counts_table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.fill_counts_table()
+
+        vbox = QVBoxLayout(self)
+        vbox.addWidget(self.counts_table)
+        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok)
+        vbox.addWidget(buttonbox)
+        buttonbox.accepted.connect(self.accept)
+
+        self.counts_table.setMinimumHeight(225)
+
+    def fill_counts_table(self):
+        self.counts_table.setRowCount(0)
+        for row, (id_, count) in enumerate(sorted(self.unique_annotations.items())):
+            id_item = IntTableWidgetItem(id_)
+            id_item.setFlags(id_item.flags() ^ Qt.ItemIsEditable)
+            self.counts_table.insertRow(row)
+            self.counts_table.setItem(row, 0, id_item)
+            self.counts_table.setItem(row, 1, QTableWidgetItem(str(count)))
