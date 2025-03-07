@@ -43,6 +43,8 @@ full = [
 
 [dependency-groups]
 dev = [
+    "pillow",
+    "pyinstaller",
     "pytest",
     "pytest-qt",
     "pytest-xvfb",
