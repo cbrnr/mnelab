@@ -203,7 +203,9 @@ class Model:
     def annotations_from_events(self):
         """Convert events to annotations."""
         # get unique event types
-        unique_events = {v: str(v) for v in np.unique(self.current["events"][:, 2])}
+        unique_events = {
+            int(v): str(v) for v in np.unique(self.current["events"][:, 2])
+        }
         event_mapping = {
             k: v for k, v in self.current.get("event_mapping").items() if v
         }
