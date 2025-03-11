@@ -35,8 +35,10 @@ def main():
 
     matplotlib.use("QtAgg")
     app = QApplication(sys.argv)
-    app.setApplicationName("mnelab")
-    app.setOrganizationName("mnelab")
+    app.setApplicationName("MNELAB")
+    app.setApplicationDisplayName("MNELAB")
+    app.setDesktopFileName("mnelab")
+    app.setOrganizationName("cbrnr")
     if sys.platform.startswith("darwin"):
         app.setAttribute(Qt.ApplicationAttribute.AA_DontShowIconsInMenus, True)
         app.setWindowIcon(QIcon(f"{Path(__file__).parent}/icons/mnelab-logo-macos.svg"))
