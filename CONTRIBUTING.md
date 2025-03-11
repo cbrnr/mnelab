@@ -77,13 +77,13 @@ Don't forget to push these changes!
 
 ## Creating standalone packages
 
-To create standalone packages for Windows, macOS, and Linux, we use [PyInstaller](https://www.pyinstaller.org/). In general, you need to run the corresponding command on the respective platform. For example, to create a standalone package for macOS, you would run the following command in the project root:
+To create standalone packages for Windows, macOS, and Linux, we use [PyInstaller](https://www.pyinstaller.org/). In general, you need to run the corresponding script on the respective platform. For example, to create a standalone package for macOS, you would run the following command in the project root:
 
 ```
 ./pyinstaller-macos.sh
 ```
 
-This creates a standalone package in the `dist` folder, which must be packaged into a platform-specific installer. The following sections describe this process along with other platform-specific notes.
+This creates a standalone package in the `dist` folder, which must be packaged into a platform-specific installer. It is also important that all optional dependencies are available in the current environment by installing the project with `uv sync --all-extras`. The following sections describe this process along with other platform-specific notes.
 
 
 ### macOS
