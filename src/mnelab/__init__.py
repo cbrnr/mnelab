@@ -35,7 +35,7 @@ def main():
 
     matplotlib.use("QtAgg")
     app = QApplication(sys.argv)
-    app.setApplicationName("MNELAB")
+    app.setApplicationName("mnelab")
     app.setApplicationDisplayName("MNELAB")
     app.setDesktopFileName("mnelab")
     app.setOrganizationName("cbrnr")
