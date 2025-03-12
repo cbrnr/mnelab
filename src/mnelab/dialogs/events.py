@@ -65,8 +65,7 @@ class EventsDialog(QDialog):
         self.counts_button.clicked.connect(self.open_counts_dialog)
         self.mapping_button.clicked.connect(self.open_mapping_dialog)
         self.toggle_buttons()
-        self.setMinimumSize(500, 500)
-        self.resize(500, 500)
+        self.setMinimumSize(600, 500)
 
     @property
     def unique_events(self):
