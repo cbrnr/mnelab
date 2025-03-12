@@ -105,6 +105,20 @@ rm -rf icon.iconset
 
 Recreating the app icon is only necessary if the SVG logo has been modified.
 
+To create the app bundle, run the following script in the project root:
+
+```
+./pyinstaller-macos.sh
+```
+
+This creates a standalone package in the `dist` folder, which can be packaged into a DMG file using the following command:
+
+```
+./create-dmg.py
+```
+
+The DMG file is also created in the `dist` folder and can be distributed to macOS users.
+
 
 ### Windows
 
