@@ -46,6 +46,7 @@ full = [
 
 [dependency-groups]
 dev = [
+    "dmgbuild; platform_system=='Darwin'",
     "pillow",
     "pyinstaller",
     "pytest",
