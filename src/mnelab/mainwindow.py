@@ -14,7 +14,7 @@ from sys import version_info
 import mne
 import numpy as np
 from mne import channel_type
-from PySide6.QtCore import QEvent, QMetaObject, QModelIndex, QObject, Qt, QUrl, Slot
+from PySide6.QtCore import QEvent, QMetaObject, QModelIndex, Qt, QUrl, Slot
 from PySide6.QtGui import QAction, QDesktopServices, QIcon, QKeySequence
 from PySide6.QtWidgets import (
     QApplication,
@@ -70,8 +70,6 @@ class MainWindow(QMainWindow):
         self.recent = settings["recent"]  # list of recent files
         self.resize(settings["size"])
         self.move(settings["pos"])
-
-        self.installEventFilter(self)
 
         # remove None entries from self.recent
         self.recent = [recent for recent in self.recent if recent is not None]
@@ -1423,54 +1421,37 @@ class MainWindow(QMainWindow):
             self.statusBar().hide()
         write_settings(statusbar=not self.statusBar().isHidden())
 
-    def dragEnterEvent(self, event):
-        if event.mimeData().hasUrls():
-            event.acceptProposedAction()
-
-    def dragMoveEvent(self, event):
-        event.acceptProposedAction()
-
-    def dragLeaveEvent(self, event):
-        event.accept()
-
-    def dropEvent(self, event):
-        mime = event.mimeData()
-        if mime.hasUrls():
-            urls = mime.urls()
-            for url in urls:
-                try:
-                    self.open_data(url.toLocalFile())
-                except FileNotFoundError as e:
-                    QMessageBox.critical(self, "File not found", str(e))
-        event.acceptProposedAction()
-
-    @Slot(QEvent)
-    def closeEvent(self, event):
-        """Close application.
-
-        Parameters
-        ----------
-        event : QEvent
-            Close event.
-        """
-        write_settings(size=self.size(), pos=self.pos())
-        if self.model.history:
-            print("\n# Command History\n")
-            print("\n".join(self.model.history))
-        event.accept()
-
     def _plot_closed(self, event=None):
         self.data_changed()
         bads = self.model.current["data"].info["bads"]
         if self.bads != bads:
             self.model.history.append(f'data.info["bads"] = {bads}')
 
-    def eventFilter(self, source, event):
-        if event.type() == QEvent.PaletteChange:
+    def event(self, event):
+        if event.type() == QEvent.Close:
+            write_settings(size=self.size(), pos=self.pos())
+            if self.model.history:
+                print("\n# Command History\n")
+                print("\n".join(self.model.history))
+            event.accept()
+        elif event.type() == QEvent.PaletteChange:
             if (
                 style := QApplication.styleHints().colorScheme()
             ) != Qt.ColorScheme.Unknown:
                 QIcon.setThemeName(style.name.lower())
             else:
                 QIcon.setThemeName("light")  # fallback
-        return QObject.eventFilter(self, source, event)
+        elif event.type() == QEvent.DragEnter:
+            if event.mimeData().hasUrls():
+                event.acceptProposedAction()
+        elif event.type() == QEvent.Drop:
+            mime = event.mimeData()
+            if mime.hasUrls():
+                urls = mime.urls()
+                for url in urls:
+                    try:
+                        self.open_data(url.toLocalFile())
+                    except FileNotFoundError as e:
+                        QMessageBox.critical(self, "File not found", str(e))
+            event.acceptProposedAction()
+        return super().event(event)
