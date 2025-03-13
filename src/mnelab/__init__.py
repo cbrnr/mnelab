@@ -8,7 +8,7 @@ from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
 import matplotlib
-from PySide6.QtCore import QLoggingCategory, QSettings, Qt
+from PySide6.QtCore import QEvent, QLoggingCategory, QSettings, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
@@ -19,6 +19,20 @@ try:
     __version__ = version("mnelab")
 except PackageNotFoundError:
     __version__ = "unknown"
+
+
+class MNELAB(QApplication):
+    """MNELAB application."""
+
+    def __init__(self, argv):
+        super().__init__(argv)
+        self.mainwindow = None
+
+    def event(self, event):
+        if event.type() == QEvent.FileOpen:
+            self.mainwindow.open_data(event.file())
+            return True
+        return super().event(event)
 
 
 def main():
@@ -34,7 +48,7 @@ def main():
         info["CFBundleName"] = "MNELAB"
 
     matplotlib.use("QtAgg")
-    app = QApplication(sys.argv)
+    app = MNELAB(sys.argv)
     app.setApplicationName("mnelab")
     app.setApplicationDisplayName("MNELAB")
     app.setDesktopFileName("mnelab")
@@ -49,6 +63,7 @@ def main():
     QSettings.setDefaultFormat(QSettings.Format.IniFormat)
     model = Model()
     model.view = MainWindow(model)
+    app.mainwindow = model.view
     if len(sys.argv) > 1:  # open files from command line arguments
         for f in sys.argv[1:]:
             model.load(f)
