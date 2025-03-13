@@ -2,7 +2,7 @@
 import dmgbuild
 import PyInstaller.__main__
 
-PyInstaller.__main__.run(["mnelab-macos.spec"])
+PyInstaller.__main__.run(["mnelab-macos.spec", "--clean", "--noconfirm"])
 
 dmgbuild.build_dmg(
     filename="dist/MNELAB.dmg",

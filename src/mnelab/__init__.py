@@ -38,14 +38,6 @@ class MNELAB(QApplication):
 def main():
     QLoggingCategory.setFilterRules("*.debug=false\n*.warning=false")
     mp.set_start_method("spawn", force=True)  # required for Linux
-    if sys.platform.startswith("darwin"):
-        # set bundle name on macOS (app name shown in the menu bar)
-        # this must be done before the app is created
-        from Foundation import NSBundle
-
-        bundle = NSBundle.mainBundle()
-        info = bundle.localizedInfoDictionary() or bundle.infoDictionary()
-        info["CFBundleName"] = "MNELAB"
 
     matplotlib.use("QtAgg")
     app = MNELAB(sys.argv)
