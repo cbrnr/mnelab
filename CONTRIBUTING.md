@@ -24,10 +24,10 @@ Open a terminal and change into the folder where you would like your MNELAB fork
 In a terminal, change to the `mnelab` folder containing your MNELAB fork and run the following command:
 
 ```
-uv sync --python=3.9 --all-extras
+uv sync --python=3.10 --all-extras
 ```
 
-You can then run MNELAB with `uv run mnelab`, or run the tests with `uv run pytest`. We recommend to use the minimum required Python version (currently 3.9) to ensure compatibility with this release.
+You can then run MNELAB with `uv run mnelab`, or run the tests with `uv run pytest`. We recommend to use the minimum required Python version (currently 3.10) to ensure compatibility with this release.
 
 
 ### Creating a new branch
@@ -54,7 +54,7 @@ Once you have an open pull request, add an entry to the top of `CHANGELOG.md` in
 
 ### Coding style
 
-MNELAB uses [Ruff](https://docs.astral.sh/ruff/formatter/) for formatting. Because [PySide6](https://doc.qt.io/qtforpython-6/index.html) is based on the C++-based Qt library, most of its names use camel case instead of snake case. In your own code, please use snake case whereever possible.
+MNELAB uses [Ruff](https://docs.astral.sh/ruff/formatter/) for formatting. Because [PySide6](https://doc.qt.io/qtforpython-6/index.html) is based on the C++-based Qt library, most of its names use camel case instead of snake case. In your own code, please use snake case wherever possible.
 
 
 ## Making a PyPI release
