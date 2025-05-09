@@ -5,6 +5,9 @@
 ### 🌀 Changed
 - Streamline settings (by using INI format on all platforms) as well as the settings dialog ([#482](https://github.com/cbrnr/mnelab/pull/482) by [Clemens Brunner](https://github.com/cbrnr))
 
+### 🔧 Fixed
+- Fix a bug where converting events to annotations would not work ([#483](https://github.com/cbrnr/mnelab/pull/483) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [1.0.0] · 2025-02-04
 ### ✨ Added
 - Add close icon to sidebar on hover ([#454](https://github.com/cbrnr/mnelab/pull/454) by [Benedikt Klöckl](https://github.com/bkloeckl))
