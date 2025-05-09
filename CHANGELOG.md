@@ -1,3 +1,5 @@
+## [UNRELEASED] - YYYY-MM-DD
+
 ## [1.0.1] - 2025-05-09
 ### ✨ Added
 - Add counts dialog for events and annotations to show the number of unique event/annotation types ([#483](https://github.com/cbrnr/mnelab/pull/483) by [Clemens Brunner](https://github.com/cbrnr))
