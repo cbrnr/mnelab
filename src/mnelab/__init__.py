@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 
 import matplotlib
-from PySide6.QtCore import QLoggingCategory, QSettings, Qt
+from PySide6.QtCore import QEvent, QLoggingCategory, QSettings, Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
@@ -17,22 +17,30 @@ from mnelab.model import Model
 __version__ = "1.1.0.dev0"
 
 
+class MNELAB(QApplication):
+    """MNELAB application."""
+
+    def __init__(self, argv):
+        super().__init__(argv)
+        self.mainwindow = None
+
+    def event(self, event):
+        if event.type() == QEvent.FileOpen:
+            self.mainwindow.open_data(event.file())
+            return True
+        return super().event(event)
+
+
 def main():
     QLoggingCategory.setFilterRules("*.debug=false\n*.warning=false")
     mp.set_start_method("spawn", force=True)  # required for Linux
-    if sys.platform.startswith("darwin"):
-        # set bundle name on macOS (app name shown in the menu bar)
-        # this must be done before the app is created
-        from Foundation import NSBundle
-
-        bundle = NSBundle.mainBundle()
-        info = bundle.localizedInfoDictionary() or bundle.infoDictionary()
-        info["CFBundleName"] = "MNELAB"
 
     matplotlib.use("QtAgg")
-    app = QApplication(sys.argv)
+    app = MNELAB(sys.argv)
     app.setApplicationName("mnelab")
-    app.setOrganizationName("mnelab")
+    app.setApplicationDisplayName("MNELAB")
+    app.setDesktopFileName("mnelab")
+    app.setOrganizationName("cbrnr")
     if sys.platform.startswith("darwin"):
         app.setAttribute(Qt.ApplicationAttribute.AA_DontShowIconsInMenus, True)
         app.setWindowIcon(QIcon(f"{Path(__file__).parent}/icons/mnelab-logo-macos.svg"))
@@ -43,6 +51,7 @@ def main():
     QSettings.setDefaultFormat(QSettings.Format.IniFormat)
     model = Model()
     model.view = MainWindow(model)
+    app.mainwindow = model.view
     if len(sys.argv) > 1:  # open files from command line arguments
         for f in sys.argv[1:]:
             model.load(f)
