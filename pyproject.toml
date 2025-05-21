@@ -35,6 +35,9 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
+docs = [
+    "mkdocs-material >= 9.6.14",
+]
 full = [
     "mne-qt-browser >= 0.6.2",  # alternative browser backend
     "python-picard >= 0.8.0",  # picard

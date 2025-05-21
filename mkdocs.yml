@@ -1,0 +1,49 @@
+site_name: MNELAB
+site_url: https://mnelab.readthedocs.io/
+repo_name: cbrnr/mnelab
+repo_url: https://github.com/cbrnr/mnelab
+copyright: © MNELAB Developers
+nav:
+  - Home: index.md
+  - Tutorial: tutorial/index.md
+  - Examples:
+    - Overview: examples/index.md
+    - ERDS Maps: examples/erds_maps.md
+    - ERPs: examples/erp.md
+theme:
+  name: material
+  favicon: images/favicon.png
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Use system theme
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to light theme
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to dark theme
+  features:
+    - toc.integrate
+    - content.code.copy
+plugins:
+  - search
+markdown_extensions:
+  - admonition
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
