@@ -15,7 +15,7 @@ class RawXDF(BaseRaw):
     """Raw data from .xdf file."""
 
     def __init__(
-        self, fname, stream_ids, marker_ids=None, prefix_markers=False, fs_new=None
+        self, fname, stream_ids, marker_ids=None, prefix_markers=False, fs_new=None,        gap_threshold=0.1,interpolate_or_resample="interpolate"
     ):
         """Read raw data from .xdf file.
 
@@ -34,12 +34,18 @@ class RawXDF(BaseRaw):
         fs_new : float | None
             Resampling target frequency in Hz. If only one stream_id is given, this can
             be `None`, in which case no resampling is performed.
+        resample_or_interpolate : string | "resample"
+            Resample (default), or "interpolate" to use linear interpolation (recommended for data containing gaps)
+        gap_threshold : float | 0.0
+            Detect gaps in time-stamps of stream_id[0] large than "gap_size" (0. turns functionality off), put those values to np.nan after resample/interpolation.
+            Note that if gaps exist, interpolation should be used, especially if the gaps are large, because resampling is done under the assumption of regular sampling interval.
+
         """
         if len(stream_ids) > 1 and fs_new is None:
             raise ValueError(
                 "Argument `fs_new` is required when reading multiple streams."
             )
-
+        print("Welcome to Bene's hacked XDF.py - enjoy the ride! !!!!!!!!!!")
         streams, header = load_xdf(fname)
         streams = {stream["info"]["stream_id"]: stream for stream in streams}
 
@@ -75,21 +81,24 @@ class RawXDF(BaseRaw):
             labels_all.extend(labels)
             types_all.extend(types)
             units_all.extend(units)
-
+        print("starting resample_streams XXX")
         if fs_new is not None:
-            data, first_time = _resample_streams(streams, stream_ids, fs_new)
+            data, first_time = _resample_streams(streams, stream_ids, fs_new,interpolate_or_resample)
             fs = fs_new
         else:  # only possible if a single stream was selected
             data = streams[stream_ids[0]]["time_series"]
             first_time = streams[stream_ids[0]]["time_stamps"][0]
             fs = float(np.array(stream["info"]["effective_srate"]).item())
+        if gap_threshold>0:
+            gap_indices = _detect_gaps(streams[stream_id]["time_stamps"], gap_threshold)
+            data = _insert_nans(data, streams[stream_id]["time_stamps"], gap_indices, fs)
+
 
         info = mne.create_info(ch_names=labels_all, sfreq=fs, ch_types=types_all)
 
         microvolts = ("microvolt", "microvolts", "µV", "μV", "uV")
         scale = np.array([1e-6 if u in microvolts else 1 for u in units_all])
         data = (data * scale).T
-
         super().__init__(preload=data, info=info, filenames=[fname])
 
         # convert marker streams to annotations
@@ -112,7 +121,22 @@ class RawXDF(BaseRaw):
             self.set_meas_date(meas_date.astimezone(timezone.utc))
 
 
-def _resample_streams(streams, stream_ids, fs_new):
+def _detect_gaps(timestamps, gap_threshold):
+    gaps = np.diff(timestamps) > gap_threshold
+    return np.where(gaps)[0]
+
+
+def _insert_nans(data, timestamps, gap_indices, fs):
+    gap_size_sum = 0
+    for index in gap_indices:
+        gap_size = int((timestamps[index + 1] - timestamps[index]) * fs)
+        data[index+gap_size_sum:index+gap_size+gap_size_sum,:] = np.nan
+        gap_size_sum += gap_size
+    return data
+
+
+
+def _resample_streams(streams, stream_ids, fs_new,resample_or_interpolate="resample"):
     """
     Resample multiple XDF streams to a given frequency.
 
@@ -124,6 +148,8 @@ def _resample_streams(streams, stream_ids, fs_new):
         The IDs of the desired streams.
     fs_new : float
         Resampling target frequency in Hz.
+    resample_or_interpolate : string
+        Resample (default), or "interpolate" to use linear interpolation (recommended for data containing gaps)
 
     Returns
     -------
@@ -148,19 +174,50 @@ def _resample_streams(streams, stream_ids, fs_new):
 
     col_start = 0
     for stream_id in stream_ids:
-        start_time = streams[stream_id]["time_stamps"][0]
-        end_time = streams[stream_id]["time_stamps"][-1]
+        timestamps = streams[stream_id]["time_stamps"]
+        sort_indices = np.argsort(timestamps)
+        timestamps = timestamps[sort_indices]
+        timestamps,unique_idx = np.unique(timestamps,return_index=True)
+        
+        if sort_indices.shape is not unique_idx.shape:
+            print(f"warning, non-unique timestamps found")
+        start_time = timestamps[0]
+        end_time = timestamps[-1]
         len_new = int(np.ceil((end_time - start_time) * fs_new))
-
-        x_old = streams[stream_id]["time_series"]
-        x_new = scipy.signal.resample(x_old, len_new, axis=0)
+        x_old = streams[stream_id]["time_series"][sort_indices,:][unique_idx,:]
+        
 
         row_start = int(
-            np.floor((streams[stream_id]["time_stamps"][0] - first_time) * fs_new)
-        )
-        row_end = row_start + x_new.shape[0]
-        col_end = col_start + x_new.shape[1]
-        all_time_series[row_start:row_end, col_start:col_end] = x_new
+                np.floor((start_time - first_time) * fs_new)
+            )
+        if resample_or_interpolate == "interpolate":
+            time_new = np.arange(first_time,last_time, step=1/fs_new)
+            chunk_size = 200_000
+            row_chunk = 0
+            import bisect
+            for chunk in [time_new[i:i + chunk_size] for i in range(0, len(time_new), chunk_size)]:
+                fi = bisect.bisect_left(timestamps, chunk[0]) -5 # I think 3 should be enough for cubic, but better safe than sorry
+                la = bisect.bisect_right(timestamps, chunk[-1]) +5
+                if fi<0:
+                    fi = 0
+                if la > len(timestamps):
+                    la = len(timestamps)
+                
+                x_new = scipy.interpolate.Akima1DInterpolator(timestamps[fi:la],x_old[fi:la,:],axis=0,method="makima")(chunk)
+                
+                row_end = row_start + x_new.shape[0] + row_chunk
+                col_end = col_start + x_new.shape[1]
+                print(f"x_new {x_new.shape}, row_start {row_start},row_chunk {row_chunk}, row_end{row_end}")
+                all_time_series[row_start+row_chunk:row_end, col_start:col_end] = x_new
+                row_chunk += x_new.shape[0]
+
+
+        else:
+            x_new = scipy.signal.resample(x_old, len_new, axis=0)
+
+            row_end = row_start + x_new.shape[0]
+            col_end = col_start + x_new.shape[1]
+            all_time_series[row_start:row_end, col_start:col_end] = x_new
 
         col_start += x_new.shape[1]
 
