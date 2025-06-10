@@ -1,4 +1,6 @@
 ## [UNRELEASED] - YYYY-MM-DD
+### 🔧 Fixed
+- Fix cutoff frequency labels in filter dialog ([#491](https://github.com/cbrnr/mnelab/pull/491) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.0.1] - 2025-05-09
 ### ✨ Added
