@@ -1125,7 +1125,7 @@ class MainWindow(QMainWindow):
         dialog = FilterDialog(self)
         if dialog.exec():
             self.auto_duplicate()
-            self.model.filter(dialog.low, dialog.high, dialog.notch)
+            self.model.filter(dialog.lower, dialog.upper, dialog.notch)
 
     def find_events(self):
         info = self.model.current["data"].info
