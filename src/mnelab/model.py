@@ -597,12 +597,9 @@ class Model:
         self.current["name"] += " (ICA)"
 
     @data_changed
-    def interpolate_bads(self, reset_bads, mode, origin):
-        self.current["data"].interpolate_bads(reset_bads, mode, origin)
-        self.history.append(
-            f"data.interpolate_bads(reset_bads={reset_bads}, mode={mode}, "
-            f"origin={origin})"
-        )
+    def interpolate_bads(self):
+        self.current["data"].interpolate_bads()
+        self.history.append("data.interpolate_bads()")
         self.current["name"] += " (interpolated)"
 
     @data_changed
