@@ -297,7 +297,7 @@ class MainWindow(QMainWindow):
         self.actions["apply_ica"] = tools_menu.addAction("Apply &ICA", self.apply_ica)
         tools_menu.addSeparator()
         self.actions["interpolate_bads"] = tools_menu.addAction(
-            "Interpolate bad channels...", self.interpolate_bads
+            "Interpolate bad channels", self.interpolate_bads
         )
         tools_menu.addSeparator()
         self.actions["epoch_data"] = tools_menu.addAction(
@@ -1099,26 +1099,22 @@ class MainWindow(QMainWindow):
         self.model.apply_ica()
 
     def interpolate_bads(self):
-        """Interpolate bad channels"""
-        dialog = InterpolateBadsDialog(self)
-        if dialog.exec():
-            duplicated = self.auto_duplicate()
-            try:
-                self.model.interpolate_bads(
-                    dialog.reset_bads, dialog.mode, dialog.origin
-                )
-            except ValueError as e:
-                if duplicated:  # undo
-                    self.model.remove_data()
-                    self.model.index -= 1
-                    self.data_changed()
-                msgbox = ErrorMessageBox(
-                    self,
-                    "Could not interpolate bad channels",
-                    str(e),
-                    traceback.format_exc(),
-                )
-                msgbox.show()
+        """Interpolate bad channels."""
+        duplicated = self.auto_duplicate()
+        try:
+            self.model.interpolate_bads()
+        except ValueError as e:
+            if duplicated:  # undo
+                self.model.remove_data()
+                self.model.index -= 1
+                self.data_changed()
+            msgbox = ErrorMessageBox(
+                self,
+                "Could not interpolate bad channels",
+                str(e),
+                traceback.format_exc(),
+            )
+            msgbox.show()
 
     def filter_data(self):
         """Filter data."""

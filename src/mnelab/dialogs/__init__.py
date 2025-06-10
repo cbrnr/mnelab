@@ -16,7 +16,6 @@ from mnelab.dialogs.events import EventsDialog
 from mnelab.dialogs.filter import FilterDialog
 from mnelab.dialogs.find_events import FindEventsDialog
 from mnelab.dialogs.history import HistoryDialog
-from mnelab.dialogs.interpolate_bads import InterpolateBadsDialog
 from mnelab.dialogs.mat import MatDialog
 from mnelab.dialogs.montage import MontageDialog
 from mnelab.dialogs.npy import NpyDialog
