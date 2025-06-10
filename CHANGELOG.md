@@ -1,4 +1,7 @@
 ## [UNRELEASED] - YYYY-MM-DD
+### 🗑️ Removed
+- Remove `mode` and `origin` parameters from channel interpolation and use the defaults ([#492](https://github.com/cbrnr/mnelab/pull/492) by [Clemens Brunner](https://github.com/cbrnr))
+
 ### 🔧 Fixed
 - Fix cutoff frequency labels in filter dialog ([#491](https://github.com/cbrnr/mnelab/pull/491) by [Clemens Brunner](https://github.com/cbrnr))
 
