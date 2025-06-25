@@ -1,4 +1,7 @@
 ## [UNRELEASED] - YYYY-MM-DD
+### ✨ Added
+- Add PSD dialog with options to set frequency bounds, show bad channels (in red) or exclude them, and use spatial colors if a montage is set ([#493](https://github.com/cbrnr/mnelab/pull/493) by [Clemens Brunner](https://github.com/cbrnr))
+
 ### 🗑️ Removed
 - Remove `mode` and `origin` parameters from channel interpolation and use the defaults ([#492](https://github.com/cbrnr/mnelab/pull/492) by [Clemens Brunner](https://github.com/cbrnr))
 
