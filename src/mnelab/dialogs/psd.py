@@ -70,6 +70,8 @@ class PSDDialog(QDialog):
         self.fmin_input.valueChanged.connect(self.fmax_input.setMinimum)
         self.fmax_input.valueChanged.connect(self.fmin_input.setMaximum)
 
+        vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+
     @property
     def fmin(self):
         """Get the lower frequency limit."""
