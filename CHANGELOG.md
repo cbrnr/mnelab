@@ -1,3 +1,5 @@
+## [UNRELEASED] - YYYY-MM-DD
+
 ## [1.0.2] - 2025-06-25
 ### ✨ Added
 - Add PSD dialog with options to set frequency bounds, show bad channels (in red) or exclude them, and use spatial colors if a montage is set ([#493](https://github.com/cbrnr/mnelab/pull/493) by [Clemens Brunner](https://github.com/cbrnr))
