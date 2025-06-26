@@ -1,4 +1,6 @@
 ## [UNRELEASED] - YYYY-MM-DD
+### ✨ Added
+- Add infrastructure to create standalone releases ([#481](https://github.com/cbrnr/mnelab/pull/481) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.0.2] - 2025-06-25
 ### ✨ Added
@@ -13,7 +15,6 @@
 ## [1.0.1] - 2025-05-09
 ### ✨ Added
 - Add counts dialog for events and annotations to show the number of unique event/annotation types ([#483](https://github.com/cbrnr/mnelab/pull/483) by [Clemens Brunner](https://github.com/cbrnr))
-- Add infrastructure to create standalone releases ([#481](https://github.com/cbrnr/mnelab/pull/481) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🌀 Changed
 - Streamline settings (by using INI format on all platforms) as well as the settings dialog ([#482](https://github.com/cbrnr/mnelab/pull/482) by [Clemens Brunner](https://github.com/cbrnr))
