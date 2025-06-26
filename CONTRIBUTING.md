@@ -134,3 +134,13 @@ inkscape --export-filename=icon_256x256.png --export-width=256 --export-height=2
 magick icon_16x16.png icon_32x32.png icon_48x48.png icon_64x64.png icon_128x128.png icon_256x256.png mnelab-logo.ico
 rm icon_16x16.png icon_32x32.png icon_48x48.png icon_64x64.png icon_128x128.png icon_256x256.png
 ```
+
+After running `pyinstaller-windows.bat`, create the installer as follows:
+
+1. Download and install [Inno Setup](https://jrsoftware.org/isinfo.php).
+2. Open `standalone/windows/mnelab-installer.iss`.
+3. For the very first build, generate a new GUID for the `AppId` (*Tools* > *Generate GUID*). **For all subsequent releases, you must keep the existing `AppId`**.
+4. Update the `MyAppVersion` definition at the top of the script to match the current release version.
+5. Compile the installer script by clicking on the "Compile" button in the toolbar (or run `iscc mnelab-installer.iss` in a terminal).
+
+This will produce a single `mnelab-<VERSION>.exe` installer in the `standalone/windows` folder, which can be distributed to Windows users.
