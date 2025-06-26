@@ -73,3 +73,74 @@ This concludes the new release. Now prepare the source for the next planned rele
 - Start a new section at the top of `CHANGELOG.md` titled `## [UNRELEASED] - YYYY-MM-DD`
 
 Don't forget to push these changes!
+
+
+## Creating standalone packages
+
+To create standalone packages for Windows, macOS, and Linux, we use [PyInstaller](https://www.pyinstaller.org/). In general, you need to run the corresponding script on the respective platform. For example, to create a standalone package for macOS, you would run the following command in the project root:
+
+```
+./pyinstaller-macos.sh
+```
+
+This creates a standalone package in the `dist` folder, which must be packaged into a platform-specific installer. It is also important that all optional dependencies are available in the current environment by installing the project with `uv sync --all-extras`. The following sections describe this process along with other platform-specific notes.
+
+
+### macOS
+
+To create the app icon from `mnelab-logo-macos.svg`, change into the `src/mnelab/icons` folder and run the following commands (requires [Inkscape](https://inkscape.org/)):
+
+```
+inkscape --export-filename=icon_16x16.png --export-width=16 --export-height=16 mnelab-logo-macos.svg
+inkscape --export-filename=icon_32x32.png --export-width=32 --export-height=32 mnelab-logo-macos.svg
+inkscape --export-filename=icon_128x128.png --export-width=128 --export-height=128 mnelab-logo-macos.svg
+inkscape --export-filename=icon_256x256.png --export-width=256 --export-height=256 mnelab-logo-macos.svg
+inkscape --export-filename=icon_512x512.png --export-width=512 --export-height=512 mnelab-logo-macos.svg
+inkscape --export-filename=icon_512x512@2x.png --export-width=1024 --export-height=1024 mnelab-logo-macos.svg
+mkdir icon.iconset
+mv *.png icon.iconset
+iconutil -c mnelab-logo-macos icon.iconset
+rm -rf icon.iconset
+```
+
+Recreating the app icon is only necessary if the SVG logo has been modified.
+
+To create the app bundle, run the following script in the project root:
+
+```
+./pyinstaller-macos.sh
+```
+
+This creates a standalone package in the `dist` folder, which can be packaged into a DMG file using the following command:
+
+```
+./create-dmg.py
+```
+
+The DMG file is also created in the `dist` folder and can be distributed to macOS users.
+
+
+### Windows
+
+To create the app icon from `mnelab-logo.svg`, change into the `src/mnelab/icons` folder and run the following commands (requires [Inkscape](https://inkscape.org/) and [ImageMagick](https://imagemagick.org/index.php)):
+
+```
+inkscape --export-filename=icon_16x16.png --export-width=16 --export-height=16 mnelab-logo.svg
+inkscape --export-filename=icon_32x32.png --export-width=32 --export-height=32 mnelab-logo.svg
+inkscape --export-filename=icon_48x48.png --export-width=48 --export-height=48 mnelab-logo.svg
+inkscape --export-filename=icon_64x64.png --export-width=64 --export-height=64 mnelab-logo.svg
+inkscape --export-filename=icon_128x128.png --export-width=128 --export-height=128 mnelab-logo.svg
+inkscape --export-filename=icon_256x256.png --export-width=256 --export-height=256 mnelab-logo.svg
+magick icon_16x16.png icon_32x32.png icon_48x48.png icon_64x64.png icon_128x128.png icon_256x256.png mnelab-logo.ico
+rm icon_16x16.png icon_32x32.png icon_48x48.png icon_64x64.png icon_128x128.png icon_256x256.png
+```
+
+After running `pyinstaller-windows.bat`, create the installer as follows:
+
+1. Download and install [Inno Setup](https://jrsoftware.org/isinfo.php).
+2. Open `standalone/windows/mnelab-installer.iss`.
+3. For the very first build, generate a new GUID for the `AppId` (*Tools* > *Generate GUID*). **For all subsequent releases, you must keep the existing `AppId`**.
+4. Update the `MyAppVersion` definition at the top of the script to match the current release version.
+5. Compile the installer script by clicking on the "Compile" button in the toolbar (or run `iscc mnelab-installer.iss` in a terminal).
+
+This will produce a single `mnelab-<VERSION>.exe` installer in the `standalone/windows` folder, which can be distributed to Windows users.
