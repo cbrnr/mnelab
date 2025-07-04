@@ -61,7 +61,7 @@ MNELAB uses [Ruff](https://docs.astral.sh/ruff/formatter/) for formatting. Becau
 
 Follow these steps to make a new [PyPI](https://pypi.org/project/mnelab/) release (requires write permissions for GitHub and PyPI project sites):
 
-- Remove the `.dev0` suffix from the `__version__` string in `mnelab/__init__.py` (and adapt the version to be released if necessary)
+- Remove the `.dev0` suffix from the `version` field in `pyproject.toml` (and/or adapt the version to be released if necessary)
 - Update the section in `CHANGELOG.md` corresponding to the new release with the version and current date
 - Commit these changes and push
 - Create a new release on GitHub and use the version as the tag name (make sure to prepend the version with a `v`, e.g. `v0.7.0`)
@@ -69,7 +69,7 @@ Follow these steps to make a new [PyPI](https://pypi.org/project/mnelab/) releas
 
 This concludes the new release. Now prepare the source for the next planned release as follows:
 
-- Update the `__version__` string to the next planned release and append `.dev0`
+- Update the `version` field to the next planned release and append `.dev0`
 - Start a new section at the top of `CHANGELOG.md` titled `## [UNRELEASED] - YYYY-MM-DD`
 
 Don't forget to push these changes!

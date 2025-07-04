@@ -4,6 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mnelab"
+version = "1.1.0.dev0"
 description = "A graphical user interface for MNE"
 license = {text = "BSD 3-Clause"}
 authors = [
@@ -32,7 +33,6 @@ dependencies = [
     "pyside6 >= 6.7.1",
     "scipy >= 1.14.1",
 ]
-dynamic = ["version"]
 
 [project.optional-dependencies]
 docs = [
@@ -60,9 +60,6 @@ homepage = "https://github.com/cbrnr/mnelab"
 documentation = "https://mnelab.readthedocs.io/en/latest/"
 repository = "https://github.com/cbrnr/mnelab"
 changelog = "https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md"
-
-[tool.hatch.version]
-path = "src/mnelab/__init__.py"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W", "UP"]

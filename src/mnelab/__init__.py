@@ -4,6 +4,7 @@
 
 import multiprocessing as mp
 import sys
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
 import matplotlib
@@ -14,7 +15,10 @@ from PySide6.QtWidgets import QApplication
 from mnelab.mainwindow import MainWindow
 from mnelab.model import Model
 
-__version__ = "1.1.0.dev0"
+try:
+    __version__ = version("mnelab")
+except PackageNotFoundError:
+    __version__ = "unknown"
 
 
 def main():
