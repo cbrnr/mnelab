@@ -61,9 +61,6 @@ documentation = "https://mnelab.readthedocs.io/en/latest/"
 repository = "https://github.com/cbrnr/mnelab"
 changelog = "https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md"
 
-[tool.hatch.version]
-path = "src/mnelab/__init__.py"
-
 [tool.ruff.lint]
 select = ["E", "F", "I", "W", "UP"]
 
