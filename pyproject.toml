@@ -48,7 +48,7 @@ full = [
 dev = [
     "pytest",
     "pytest-qt",
-    "pytest-xvfb",
+    "pytest-xvfb; platform_system=='Linux'",
     "ruff",
 ]
 
