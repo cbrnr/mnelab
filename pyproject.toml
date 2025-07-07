@@ -61,6 +61,9 @@ documentation = "https://mnelab.readthedocs.io/en/latest/"
 repository = "https://github.com/cbrnr/mnelab"
 changelog = "https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md"
 
+[tool.pytest.ini_options]
+filterwarnings = ["error"]
+
 [tool.ruff.lint]
 select = ["E", "F", "I", "W", "UP"]
 
