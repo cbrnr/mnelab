@@ -2,7 +2,7 @@
 [![PyPI](https://img.shields.io/pypi/v/mnelab)](https://pypi.org/project/mnelab/)
 [![Docs](https://readthedocs.org/projects/mnelab/badge/?version=latest)](https://mnelab.readthedocs.io/)
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.04650/status.svg)](https://doi.org/10.21105/joss.04650)
-[![License](https://img.shields.io/github/license/cbrnr/mnelab)](LICENSE)
+[![License](https://img.shields.io/github/license/cbrnr/mnelab?color=68%2C192%2C58)](LICENSE)
 
 
 ## MNELAB
