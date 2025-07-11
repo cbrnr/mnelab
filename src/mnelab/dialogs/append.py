@@ -91,14 +91,13 @@ class DragDropTableWidget(QTableWidget):
         )
 
         if selected_rows:
-            row_data = []
-            for row in selected_rows:
-                row_data.append(
-                    [
-                        source_table.item(row, col).text()
-                        for col in range(source_table.columnCount())
-                    ]
-                )
+            row_data = [
+                [
+                    source_table.item(row, col).text()
+                    for col in range(source_table.columnCount())
+                ]
+                for row in selected_rows
+            ]
 
             if source_table == self:
                 for row in selected_rows:

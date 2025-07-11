@@ -605,19 +605,18 @@ class MainWindow(QMainWindow):
 
             ext = "".join(Path(fname).suffixes)
 
-            if any([ext.endswith(e) for e in (".xdf", ".xdfz", ".xdf.gz")]):  # XDF
-                rows = []
-                for s in resolve_streams(fname):
-                    rows.append(
-                        [
-                            s["stream_id"],
-                            s["name"],
-                            s["type"],
-                            s["channel_count"],
-                            s["channel_format"],
-                            s["nominal_srate"],
-                        ]
-                    )
+            if any(ext.endswith(e) for e in (".xdf", ".xdfz", ".xdf.gz")):  # XDF
+                rows = [
+                    [
+                        s["stream_id"],
+                        s["name"],
+                        s["type"],
+                        s["channel_count"],
+                        s["channel_format"],
+                        s["nominal_srate"],
+                    ]
+                    for s in resolve_streams(fname)
+                ]
                 dialog = XDFStreamsDialog(
                     self,
                     rows,
@@ -1456,10 +1455,10 @@ class MainWindow(QMainWindow):
             mime = event.mimeData()
             if mime.hasUrls():
                 urls = mime.urls()
-                for url in urls:
-                    try:
+                try:
+                    for url in urls:
                         self.open_data(url.toLocalFile())
-                    except FileNotFoundError as e:
-                        QMessageBox.critical(self, "File not found", str(e))
+                except FileNotFoundError as e:
+                    QMessageBox.critical(self, "File not found", str(e))
             event.acceptProposedAction()
         return super().event(event)

@@ -29,23 +29,23 @@ def write_set(fname, raw):
     )
     savemat(
         fname,
-        dict(
-            EEG=dict(
-                data=data,
-                setname=fname,
-                nbchan=data.shape[0],
-                pnts=data.shape[1],
-                trials=1,
-                srate=fs,
-                xmin=times[0],
-                xmax=times[-1],
-                chanlocs=chanlocs,
-                event=events,
-                icawinv=[],
-                icasphere=[],
-                icaweights=[],
-            )
-        ),
+        {
+            "EEG": {
+                "data": data,
+                "setname": fname,
+                "nbchan": data.shape[0],
+                "pnts": data.shape[1],
+                "trials": 1,
+                "srate": fs,
+                "xmin": times[0],
+                "xmax": times[-1],
+                "chanlocs": chanlocs,
+                "event": events,
+                "icawinv": [],
+                "icasphere": [],
+                "icaweights": [],
+            }
+        },
         appendmat=False,
     )
 
