@@ -11,7 +11,7 @@ datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
 
 a = Analysis(
-    ['../../src/mnelab/__main__.py'],
+    ['../src/mnelab/__main__.py'],
     pathex=[],
     binaries=binaries,
     datas=datas,
@@ -41,7 +41,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['../../src/mnelab/icons/mnelab-logo-macos.icns'],
+    icon=['../src/mnelab/icons/mnelab-logo-macos.icns'],
 )
 coll = COLLECT(
     exe,
@@ -55,7 +55,7 @@ coll = COLLECT(
 app = BUNDLE(
     coll,
     name='MNELAB.app',
-    icon='../../src/mnelab/icons/mnelab-logo-macos.icns',
+    icon='../src/mnelab/icons/mnelab-logo-macos.icns',
     bundle_identifier=None,
     info_plist={
         "CFBundleDocumentTypes": [

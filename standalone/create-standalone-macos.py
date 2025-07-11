@@ -1,11 +1,20 @@
 #!/usr/bin/env python3
+from importlib.metadata import PackageNotFoundError, version
+
 import dmgbuild
 import PyInstaller.__main__
+
+try:
+    mnelab_version = version("mnelab")
+except PackageNotFoundError:
+    raise RuntimeError(
+        "MNELAB version not found. Please install MNELAB in your environment."
+    )
 
 PyInstaller.__main__.run(["mnelab-macos.spec", "--clean", "--noconfirm"])
 
 dmgbuild.build_dmg(
-    filename="dist/MNELAB.dmg",
+    filename=f"dist/MNELAB-{mnelab_version}.dmg",
     volume_name="MNELAB",
     settings={
         "format": "UDBZ",
