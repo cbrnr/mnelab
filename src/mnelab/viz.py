@@ -102,13 +102,13 @@ def _calc_tfr(epochs, freqs, baseline, times, alpha=None):
     tfr.apply_baseline(baseline, mode="percent")
     tfr.crop(*times)
 
-    pcluster_kwargs = dict(
-        n_permutations=100,
-        step_down_p=0.05,
-        seed=1,
-        buffer_size=None,
-        out_type="mask",
-    )
+    pcluster_kwargs = {
+        "n_permutations": 100,
+        "step_down_p": 0.05,
+        "seed": 1,
+        "buffer_size": None,
+        "out_type": "mask",
+    }
 
     res = {}
 
