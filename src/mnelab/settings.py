@@ -2,8 +2,9 @@
 #
 # License: BSD (3-clause)
 
-from PySide6.QtCore import QPoint, QSettings, QSize, Slot
-from PySide6.QtGui import Qt
+from mne import get_config_path
+from PySide6.QtCore import QPoint, QSettings, QSize, QUrl, Slot
+from PySide6.QtGui import QDesktopServices, Qt
 from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
@@ -11,7 +12,6 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QHBoxLayout,
     QLabel,
-    QPushButton,
     QSpinBox,
 )
 
@@ -98,20 +98,33 @@ class SettingsDialog(QDialog):
         self.max_channels.setAlignment(Qt.AlignRight)
         grid.addWidget(self.max_channels, 2, 1)
 
-        self.reset_to_defaults = QPushButton("Reset to defaults")
-        self.reset_to_defaults.clicked.connect(self.reset_settings)
-        grid.addWidget(self.reset_to_defaults, 3, 0)
+        mnelab_config_path = QSettings().fileName()
+        mnelab_label = QLabel(
+            f'<i>Settings are stored in <a href="{mnelab_config_path}">'
+            f"{mnelab_config_path}</a>.</i>"
+        )
+        mnelab_label.linkActivated.connect(self.open_path)
+        grid.addWidget(mnelab_label, 3, 0, 1, 2)
 
-        label = QLabel(f"<i>Settings are stored in {QSettings().fileName()}.</i>")
-        grid.addWidget(label, 4, 0, 1, 2)
+        mne_config_path = get_config_path()
+        mne_label = QLabel(
+            f'<i>MNE-Python settings are stored in <a href="{mne_config_path}">'
+            f"{mne_config_path}</a>.</i>"
+        )
+        mne_label.linkActivated.connect(self.open_path)
+        grid.addWidget(mne_label, 4, 0, 1, 2)
 
         hbox = QHBoxLayout()
         self.buttonbox = QDialogButtonBox(
             QDialogButtonBox.Apply | QDialogButtonBox.Ok | QDialogButtonBox.Cancel
         )
+        self.reset_button = self.buttonbox.addButton(
+            "Reset to defaults", QDialogButtonBox.ResetRole
+        )
         hbox.addWidget(self.buttonbox)
         grid.addLayout(hbox, 5, 0, 1, 2)
 
+        self.reset_button.clicked.connect(self.reset_settings)
         self.buttonbox.button(QDialogButtonBox.Apply).clicked.connect(
             self.apply_settings
         )
@@ -119,6 +132,11 @@ class SettingsDialog(QDialog):
         self.buttonbox.rejected.connect(self.reject)
 
         grid.setSizeConstraint(QGridLayout.SetFixedSize)
+
+    @Slot(str)
+    def open_path(self, path):
+        """Open a path in the default application."""
+        QDesktopServices.openUrl(QUrl.fromLocalFile(path))
 
     @Slot()
     def apply_settings(self):
