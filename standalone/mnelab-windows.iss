@@ -29,7 +29,7 @@ Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
 ; The icon for the installer and the Add/Remove Programs entry.
-SetupIconFile=..\..\src\mnelab\icons\mnelab-logo.ico
+SetupIconFile=..\src\mnelab\icons\mnelab-logo.ico
 UninstallDisplayIcon={app}\MNELAB.exe
 
 [Languages]

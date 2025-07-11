@@ -77,13 +77,13 @@ Don't forget to push these changes!
 
 ## Creating standalone packages
 
-To create standalone packages for Windows, macOS, and Linux, we use [PyInstaller](https://www.pyinstaller.org/). In general, you need to run the corresponding script on the respective platform. For example, to create a standalone package for macOS, you would run the following command in the project root:
+To create standalone packages for Windows, macOS, and Linux, we use [PyInstaller](https://www.pyinstaller.org/). In general, you need to run the corresponding script on the respective platform. For example, to create a standalone package for macOS, you change into `standalone` and run the following command:
 
 ```
-./pyinstaller-macos.sh
+./create-standalone-macos.py
 ```
 
-This creates a standalone package in the `dist` folder, which must be packaged into a platform-specific installer. It is also important that all optional dependencies are available in the current environment by installing the project with `uv sync --all-extras`. The following sections describe this process along with other platform-specific notes.
+This creates a standalone package in the `dist` folder. It is also important that all optional dependencies are available in the current environment by installing the project with `uv sync --all-extras`. The following sections describe this process along with other platform-specific notes.
 
 
 ### macOS
@@ -105,19 +105,13 @@ rm -rf icon.iconset
 
 Recreating the app icon is only necessary if the SVG logo has been modified.
 
-To create the app bundle, run the following script in the project root:
+To create the DMG file containing the app bundle, run the following script in the `standalone` folder:
 
 ```
-./pyinstaller-macos.sh
+./create-standalone-macos.py
 ```
 
-This creates a standalone package in the `dist` folder, which can be packaged into a DMG file using the following command:
-
-```
-./create-dmg.py
-```
-
-The DMG file is also created in the `dist` folder and can be distributed to macOS users.
+This creates the standalone app bundle as well as the DMG file (which is named `MNELAB-<VERSION>.dmg`) in the `dist` folder. This DMG file can be distributed to macOS users. Signing and notarization of the app bundle requires a valid Apple Developer ID. Details on how to sign and notarize the app bundle will be provided later. For now, users can run the app by right-clicking on it and selecting "Open" to bypass Gatekeeper checks (this is only necessary for the first run).
 
 
 ### Windows
@@ -135,12 +129,12 @@ magick icon_16x16.png icon_32x32.png icon_48x48.png icon_64x64.png icon_128x128.
 rm icon_16x16.png icon_32x32.png icon_48x48.png icon_64x64.png icon_128x128.png icon_256x256.png
 ```
 
-After running `pyinstaller-windows.bat`, create the installer as follows:
+After running `create-standalone-windows.bat`, create the installer as follows:
 
 1. Download and install [Inno Setup](https://jrsoftware.org/isinfo.php).
-2. Open `standalone/windows/mnelab-installer.iss`.
-3. For the very first build, generate a new GUID for the `AppId` (*Tools* > *Generate GUID*). **For all subsequent releases, you must keep the existing `AppId`**.
+2. Open `standalone/mnelab-windows.iss`.
+3. For the very first build, generate a new GUID for the `AppId` (*Tools* > *Generate GUID*). **For all subsequent releases, you must keep the existing `AppId`!**
 4. Update the `MyAppVersion` definition at the top of the script to match the current release version.
-5. Compile the installer script by clicking on the "Compile" button in the toolbar (or run `iscc mnelab-installer.iss` in a terminal).
+5. Compile the installer script by clicking on the "Compile" button in the toolbar (or run `iscc mnelab-windows.iss` in a terminal).
 
-This will produce a single `mnelab-<VERSION>.exe` installer in the `standalone/windows` folder, which can be distributed to Windows users.
+This will produce a single `mnelab-<VERSION>.exe` installer in the `standalone` folder, which can be distributed to Windows users.

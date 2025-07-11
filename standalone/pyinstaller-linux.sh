@@ -6,5 +6,5 @@ pyinstaller \
     --noupx \
     --clean \
     --noconfirm \
-    --icon ../../src/mnelab/icons/mnelab-logo.svg \
-    ../../src/mnelab/__main__.py
+    --icon ../src/mnelab/icons/mnelab-logo.svg \
+    ../src/mnelab/__main__.py
