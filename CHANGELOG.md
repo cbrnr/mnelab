@@ -1,4 +1,6 @@
 ## [UNRELEASED] - YYYY-MM-DD
+### ✨ Added
+- Add clickable links to MNELAB and MNE-Python settings files in the Settings dialog ([#500](https://github.com/cbrnr/mnelab/pull/500) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.0.2] - 2025-06-25
 ### ✨ Added
