@@ -8,7 +8,24 @@ jobs:
   test:
     uses: ./.github/workflows/test.yml
 
+  upload_assets:
+    name: Upload release assets
+    needs: test
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Upload assets to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*/*
+
   publish:
+    name: Publish to PyPI
     needs: test
     runs-on: ubuntu-24.04
     permissions:
