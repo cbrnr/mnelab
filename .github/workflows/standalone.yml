@@ -39,7 +39,7 @@ jobs:
       - name: Build standalone installer
         working-directory: standalone
         shell: pwsh
-        run: uv run pwsh -File ./create-standalone-windows.ps1
+        run: ./create-standalone-windows.ps1
       - name: Upload Windows installer
         uses: actions/upload-artifact@v4
         with:
