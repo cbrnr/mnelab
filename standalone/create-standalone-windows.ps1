@@ -11,4 +11,4 @@ pyinstaller `
 
 $version = python get_version.py
 
-& "C:\Program Files (x86)\Inno Setup\ISCC.exe" /Dversion=$version mnelab-windows.iss
+& iscc.exe /Dversion=$version mnelab-windows.iss

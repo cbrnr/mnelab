@@ -111,7 +111,7 @@ rm -rf icon.iconset
 
 ### Windows
 
-On Windows, download and install [Inno Setup](https://jrsoftware.org/isinfo.php). Then run the following command in the `standalone` folder (make sure to run this in a PowerShell terminal):
+On Windows, download and install [Inno Setup](https://jrsoftware.org/isinfo.php). Add the installation directory to the path (by default `C:\Program Files (x86)\Inno Setup 6`). Then run the following command in the `standalone` folder (make sure to run this in a PowerShell terminal):
 
 ```
 .\create-standalone-windows.ps1
