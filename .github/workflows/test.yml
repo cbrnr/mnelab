@@ -55,7 +55,8 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras
       - name: Build standalone app and installer
-        run: uv run python standalone/create-standalone-macos.py
+        working-directory: standalone
+        run: uv run python create-standalone-macos.py
       - name: Upload macOS installer
         uses: actions/upload-artifact@v4
         with:
@@ -77,8 +78,9 @@ jobs:
           winget install --id JRSoftware.InnoSetup --silent --accept-source-agreements --accept-package-agreements
           echo "C:\Program Files (x86)\Inno Setup 6" >> $env:GITHUB_PATH
       - name: Build standalone app and installer
+        working-directory: standalone
         shell: pwsh
-        run: uv run ./standalone/create-standalone-windows.ps1
+        run: uv run ./create-standalone-windows.ps1
       - name: Upload Windows installer
         uses: actions/upload-artifact@v4
         with:
