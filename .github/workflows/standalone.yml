@@ -32,20 +32,11 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras
       - name: Install Inno Setup
-        id: inno_setup
         shell: pwsh
-        run: |
-          winget install --id JRSoftware.InnoSetup --silent --accept-source-agreements --accept-package-agreements
-          # Set an output variable with the path
-          echo "path=C:\Program Files (x86)\Inno Setup 6" >> $env:GITHUB_OUTPUT
-      - name: Debug Inno Setup Path
-        shell: pwsh
-        run: echo "The Inno Setup path is ${{ steps.inno_setup.outputs.path }}"
+        run: winget install --id JRSoftware.InnoSetup --silent --accept-source-agreements --accept-package-agreements
       - name: Build standalone installer
         working-directory: standalone
         shell: pwsh
-        env:
-          INNO_DIR: ${{ steps.inno_setup.outputs.path }}
         run: uv run pwsh -File ./create-standalone-windows.ps1
       - name: Upload Windows installer
         uses: actions/upload-artifact@v4
