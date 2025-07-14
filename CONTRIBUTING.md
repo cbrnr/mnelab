@@ -65,7 +65,7 @@ Follow these steps to make a new [PyPI](https://pypi.org/project/mnelab/) releas
 - Update the section in `CHANGELOG.md` corresponding to the new release with the version and current date
 - Commit these changes and push
 - Create a new release on GitHub and use the version as the tag name (make sure to prepend the version with a `v`, e.g. `v0.7.0`)
-- A GitHub Action takes care of building and uploading wheels to PyPI
+- A GitHub Action takes care of building and uploading wheels to PyPI as well as adding standalone installers to the release
 
 This concludes the new release. Now prepare the source for the next planned release as follows:
 
