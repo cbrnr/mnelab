@@ -19,9 +19,11 @@ MNELAB is a graphical user interface (GUI) for [MNE-Python](https://mne.tools/st
 Instructions for installing and using MNELAB as well as step-by-step examples for different use cases are available in the [documentation](https://mnelab.readthedocs.io/). Check out the [changelog](https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md) to learn what we added, changed, or fixed.
 
 
-### Running MNELAB
+### Quick start
 
-We recommend using [uv](https://docs.astral.sh/uv/) to install and run MNELAB. After installing uv, you can start MNELAB with the following command:
+We recommend our [standalone installers]() available for [Windows](), [macOS](), and [Linux]().
+
+Alternatively, you can use [uv](https://docs.astral.sh/uv/) to run MNELAB:
 
 ```
 uvx mnelab

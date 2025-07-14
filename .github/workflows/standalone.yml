@@ -1,0 +1,46 @@
+name: Standalone
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  standalone-macos:
+    name: Build macOS standalone
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Install the project
+        run: uv sync --all-extras
+      - name: Build standalone installer
+        working-directory: standalone
+        run: uv run python create-standalone-macos.py
+      - name: Upload macOS installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: mnelab-macos-installer
+          path: standalone/MNELAB-*.dmg
+
+  standalone-windows:
+    name: Build Windows standalone
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Install the project
+        run: uv sync --all-extras
+      - uses: crazy-max/ghaction-chocolatey@v3
+        with:
+          args: install innosetup
+      - name: Build standalone installer
+        working-directory: standalone
+        shell: pwsh
+        run: |
+          . ..\.venv\Scripts\Activate.ps1
+          .\create-standalone-windows.ps1
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: mnelab-windows-installer
+          path: standalone/MNELAB-*.exe

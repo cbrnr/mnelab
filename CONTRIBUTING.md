@@ -65,7 +65,7 @@ Follow these steps to make a new [PyPI](https://pypi.org/project/mnelab/) releas
 - Update the section in `CHANGELOG.md` corresponding to the new release with the version and current date
 - Commit these changes and push
 - Create a new release on GitHub and use the version as the tag name (make sure to prepend the version with a `v`, e.g. `v0.7.0`)
-- A GitHub Action takes care of building and uploading wheels to PyPI
+- A GitHub Action takes care of building and uploading wheels to PyPI as well as adding standalone installers to the release
 
 This concludes the new release. Now prepare the source for the next planned release as follows:
 
@@ -73,3 +73,64 @@ This concludes the new release. Now prepare the source for the next planned rele
 - Start a new section at the top of `CHANGELOG.md` titled `## [UNRELEASED] - YYYY-MM-DD`
 
 Don't forget to push these changes!
+
+
+## Creating standalone packages
+
+To create standalone packages for Windows, macOS, and Linux, we use [PyInstaller](https://www.pyinstaller.org/). It is important that all optional dependencies are available in the current environment by installing the project with `uv sync --all-extras`. Additionally, the environment must be *activated* (which is typically not necessary when working with uv, but is required in this case). You can activate the environment by running `./.venv/bin/activate` on macOS or Linux, or `.\.venv\Scripts\activate` on Windows (from the root of the source tree). Once the environment is active, run the corresponding script for your platform as described below.
+
+
+### macOS
+
+To create the DMG file containing the app bundle, run the following command in the `standalone` folder:
+
+```
+./create-standalone-macos.py
+```
+
+This creates the standalone app bundle in the `standalone/dist` folder as well as the DMG file (which is named `MNELAB-<VERSION>.dmg`) in the `standalone` folder. This DMG file can be distributed to macOS users. Signing and notarization of the app bundle requires a valid Apple Developer ID. Details on how to sign and notarize the app bundle will be provided later. For now, users can run the app by right-clicking on it and selecting "Open" to bypass Gatekeeper checks (this is only necessary for the first run).
+
+
+#### Creating the app icon
+
+Recreating the app icon is only necessary if the SVG logo has been modified. To generate the app icon from `mnelab-logo-macos.svg`, navigate to the `src/mnelab/icons` folder and run the following commands (this process requires [Inkscape](https://inkscape.org/)):
+
+```
+inkscape --export-filename=icon_16x16.png --export-width=16 --export-height=16 mnelab-logo-macos.svg
+inkscape --export-filename=icon_32x32.png --export-width=32 --export-height=32 mnelab-logo-macos.svg
+inkscape --export-filename=icon_128x128.png --export-width=128 --export-height=128 mnelab-logo-macos.svg
+inkscape --export-filename=icon_256x256.png --export-width=256 --export-height=256 mnelab-logo-macos.svg
+inkscape --export-filename=icon_512x512.png --export-width=512 --export-height=512 mnelab-logo-macos.svg
+inkscape --export-filename=icon_512x512@2x.png --export-width=1024 --export-height=1024 mnelab-logo-macos.svg
+mkdir icon.iconset
+mv *.png icon.iconset
+iconutil -c mnelab-logo-macos icon.iconset
+rm -rf icon.iconset
+```
+
+
+### Windows
+
+On Windows, download and install [Inno Setup](https://jrsoftware.org/isinfo.php). Add the installation directory to the path (by default `C:\Program Files (x86)\Inno Setup 6`). Then run the following command in the `standalone` folder (make sure to run this in a PowerShell terminal):
+
+```
+.\create-standalone-windows.ps1
+```
+
+This will produce a single `mnelab-<VERSION>.exe` installer in the `standalone` folder, which can be distributed to Windows users.
+
+
+#### Creating the app icon
+
+Recreating the app icon is only necessary if the SVG logo has been modified. To generate the app icon from `mnelab-logo-macos.svg`, navigate to the `src/mnelab/icons` folder and run the following commands (this process requires [Inkscape](https://inkscape.org/) and currently only works on Linux or macOS):
+
+```
+inkscape --export-filename=icon_16x16.png --export-width=16 --export-height=16 mnelab-logo.svg
+inkscape --export-filename=icon_32x32.png --export-width=32 --export-height=32 mnelab-logo.svg
+inkscape --export-filename=icon_48x48.png --export-width=48 --export-height=48 mnelab-logo.svg
+inkscape --export-filename=icon_64x64.png --export-width=64 --export-height=64 mnelab-logo.svg
+inkscape --export-filename=icon_128x128.png --export-width=128 --export-height=128 mnelab-logo.svg
+inkscape --export-filename=icon_256x256.png --export-width=256 --export-height=256 mnelab-logo.svg
+magick icon_16x16.png icon_32x32.png icon_48x48.png icon_64x64.png icon_128x128.png icon_256x256.png mnelab-logo.ico
+rm icon_16x16.png icon_32x32.png icon_48x48.png icon_64x64.png icon_128x128.png icon_256x256.png
+```
