@@ -41,7 +41,10 @@ jobs:
         shell: pwsh
         run: |
           . ..\.venv\Scripts\Activate.ps1
-          .\create-standalone-windows.ps1
+          echo "--- Checking for commands after activation ---"
+          Get-Command iscc.exe
+          Get-Command pyinstaller.exe
+          echo "--- Check complete, running build script ---"
       - name: Upload Windows installer
         uses: actions/upload-artifact@v4
         with:
