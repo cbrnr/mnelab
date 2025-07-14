@@ -31,8 +31,7 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - name: Install the project
         run: uv sync --all-extras
-      - name: Install Inno Setup
-        uses: crazy-max/ghaction-chocolatey@v3
+      - uses: crazy-max/ghaction-chocolatey@v3
         with:
           args: install innosetup
       - name: Build standalone installer
@@ -40,10 +39,6 @@ jobs:
         shell: pwsh
         run: |
           . ..\.venv\Scripts\Activate.ps1
-          echo "--- Checking for commands after activation ---"
-          Get-Command iscc.exe
-          Get-Command pyinstaller.exe
-          echo "--- Check complete, running build script ---"
           .\create-standalone-windows.ps1
       - name: Upload Windows installer
         uses: actions/upload-artifact@v4
