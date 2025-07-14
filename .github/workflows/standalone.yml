@@ -32,7 +32,7 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras
       - name: Install Inno Setup
-        id: inno_setup # Add an ID to this step
+        id: inno_setup
         shell: pwsh
         run: |
           winget install --id JRSoftware.InnoSetup --silent --accept-source-agreements --accept-package-agreements
@@ -44,7 +44,9 @@ jobs:
       - name: Build standalone installer
         working-directory: standalone
         shell: pwsh
-        run: ./create-standalone-windows.ps1
+        env:
+          INNO_DIR: ${{ steps.inno_setup.outputs.path }}
+        run: uv run pwsh -File ./create-standalone-windows.ps1
       - name: Upload Windows installer
         uses: actions/upload-artifact@v4
         with:

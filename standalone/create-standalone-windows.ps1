@@ -11,4 +11,5 @@ pyinstaller `
 
 $version = python get_version.py
 
-& iscc.exe /Dversion=$version mnelab-windows.iss
+$iscc = Join-Path $env:INNO_DIR "iscc.exe"
+& $iscc /Dversion=$version mnelab-windows.iss
