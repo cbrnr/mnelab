@@ -46,7 +46,7 @@ jobs:
         run: uv run pytest -W error tests
 
   standalone-macos:
-    name: Build macOS Standalone
+    name: Build macOS standalone
     needs: test
     runs-on: macos-15
     steps:
@@ -55,9 +55,7 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras
       - name: Build standalone app and installer
-        run: |
-          source $VENV/bin/activate
-          python standalone/create-standalone-macos.py
+        run: uv run python standalone/create-standalone-macos.py
       - name: Upload macOS installer
         uses: actions/upload-artifact@v4
         with:
@@ -65,7 +63,7 @@ jobs:
           path: standalone/MNELAB-*.dmg
 
   standalone-windows:
-    name: Build Windows Standalone
+    name: Build Windows standalone
     needs: test
     runs-on: windows-2025
     steps:
@@ -73,12 +71,14 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - name: Install the project
         run: uv sync --all-extras
-      - uses: Minionguyjpro/Inno-Setup-Action@v1.2.6
-      - name: Build standalone app and installer
+      - name: Install Inno Setup
         shell: pwsh
         run: |
-          . "$env:VENV\Scripts\Activate.ps1"
-          ./standalone/create-standalone-windows.ps1
+          winget install --id JRSoftware.InnoSetup --silent --accept-source-agreements --accept-package-agreements
+          echo "C:\Program Files (x86)\Inno Setup 6" >> $env:GITHUB_PATH
+      - name: Build standalone app and installer
+        shell: pwsh
+        run: uv run ./standalone/create-standalone-windows.ps1
       - name: Upload Windows installer
         uses: actions/upload-artifact@v4
         with:
