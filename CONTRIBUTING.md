@@ -77,18 +77,23 @@ Don't forget to push these changes!
 
 ## Creating standalone packages
 
-To create standalone packages for Windows, macOS, and Linux, we use [PyInstaller](https://www.pyinstaller.org/). In general, you need to run the corresponding script on the respective platform. For example, to create a standalone package for macOS, you change into `standalone` and run the following command:
+To create standalone packages for Windows, macOS, and Linux, we use [PyInstaller](https://www.pyinstaller.org/). It is important that all optional dependencies are available in the current environment by installing the project with `uv sync --all-extras`. Additionally, the environment must be *activated* (which is typically not necessary when working with uv, but is required in this case). You can activate the environment by running `./.venv/bin/activate` on macOS or Linux, or `.\.venv\Scripts\activate` on Windows (from the root of the source tree). Once the environment is active, run the corresponding script for your platform as described below.
+
+
+### macOS
+
+To create the DMG file containing the app bundle, run the following command in the `standalone` folder:
 
 ```
 ./create-standalone-macos.py
 ```
 
-This creates a standalone package in the `dist` folder. It is also important that all optional dependencies are available in the current environment by installing the project with `uv sync --all-extras`. The following sections describe this process along with other platform-specific notes.
+This creates the standalone app bundle as well as the DMG file (which is named `MNELAB-<VERSION>.dmg`) in the `dist` folder. This DMG file can be distributed to macOS users. Signing and notarization of the app bundle requires a valid Apple Developer ID. Details on how to sign and notarize the app bundle will be provided later. For now, users can run the app by right-clicking on it and selecting "Open" to bypass Gatekeeper checks (this is only necessary for the first run).
 
 
-### macOS
+#### Creating the app icon
 
-To create the app icon from `mnelab-logo-macos.svg`, change into the `src/mnelab/icons` folder and run the following commands (requires [Inkscape](https://inkscape.org/)):
+Recreating the app icon is only necessary if the SVG logo has been modified. To generate the app icon from `mnelab-logo-macos.svg`, navigate to the `src/mnelab/icons` folder and run the following commands (this process requires [Inkscape](https://inkscape.org/)):
 
 ```
 inkscape --export-filename=icon_16x16.png --export-width=16 --export-height=16 mnelab-logo-macos.svg
@@ -103,20 +108,21 @@ iconutil -c mnelab-logo-macos icon.iconset
 rm -rf icon.iconset
 ```
 
-Recreating the app icon is only necessary if the SVG logo has been modified.
-
-To create the DMG file containing the app bundle, run the following script in the `standalone` folder:
-
-```
-./create-standalone-macos.py
-```
-
-This creates the standalone app bundle as well as the DMG file (which is named `MNELAB-<VERSION>.dmg`) in the `dist` folder. This DMG file can be distributed to macOS users. Signing and notarization of the app bundle requires a valid Apple Developer ID. Details on how to sign and notarize the app bundle will be provided later. For now, users can run the app by right-clicking on it and selecting "Open" to bypass Gatekeeper checks (this is only necessary for the first run).
-
 
 ### Windows
 
-To create the app icon from `mnelab-logo.svg`, change into the `src/mnelab/icons` folder and run the following commands (requires [Inkscape](https://inkscape.org/) and [ImageMagick](https://imagemagick.org/index.php)):
+On Windows, download and install [Inno Setup](https://jrsoftware.org/isinfo.php). Then run the following command in the `standalone` folder (make sure to run this in a PowerShell terminal):
+
+```
+.\create-standalone-windows.ps1
+```
+
+This will produce a single `mnelab-<VERSION>.exe` installer in the `standalone` folder, which can be distributed to Windows users.
+
+
+#### Creating the app icon
+
+Recreating the app icon is only necessary if the SVG logo has been modified. To generate the app icon from `mnelab-logo-macos.svg`, navigate to the `src/mnelab/icons` folder and run the following commands (this process requires [Inkscape](https://inkscape.org/) and currently only works on Linux or macOS):
 
 ```
 inkscape --export-filename=icon_16x16.png --export-width=16 --export-height=16 mnelab-logo.svg
@@ -128,13 +134,3 @@ inkscape --export-filename=icon_256x256.png --export-width=256 --export-height=2
 magick icon_16x16.png icon_32x32.png icon_48x48.png icon_64x64.png icon_128x128.png icon_256x256.png mnelab-logo.ico
 rm icon_16x16.png icon_32x32.png icon_48x48.png icon_64x64.png icon_128x128.png icon_256x256.png
 ```
-
-After running `create-standalone-windows.bat`, create the installer as follows:
-
-1. Download and install [Inno Setup](https://jrsoftware.org/isinfo.php).
-2. Open `standalone/mnelab-windows.iss`.
-3. For the very first build, generate a new GUID for the `AppId` (*Tools* > *Generate GUID*). **For all subsequent releases, you must keep the existing `AppId`!**
-4. Update the `MyAppVersion` definition at the top of the script to match the current release version.
-5. Compile the installer script by clicking on the "Compile" button in the toolbar (or run `iscc mnelab-windows.iss` in a terminal).
-
-This will produce a single `mnelab-<VERSION>.exe` installer in the `standalone` folder, which can be distributed to Windows users.
