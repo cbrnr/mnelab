@@ -14,7 +14,7 @@ except PackageNotFoundError:
 PyInstaller.__main__.run(["mnelab-macos.spec", "--clean", "--noconfirm"])
 
 dmgbuild.build_dmg(
-    filename=f"dist/MNELAB-{mnelab_version}.dmg",
+    filename=f"MNELAB-{mnelab_version}.dmg",
     volume_name="MNELAB",
     settings={
         "format": "UDBZ",

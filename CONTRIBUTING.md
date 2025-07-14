@@ -88,7 +88,7 @@ To create the DMG file containing the app bundle, run the following command in t
 ./create-standalone-macos.py
 ```
 
-This creates the standalone app bundle as well as the DMG file (which is named `MNELAB-<VERSION>.dmg`) in the `dist` folder. This DMG file can be distributed to macOS users. Signing and notarization of the app bundle requires a valid Apple Developer ID. Details on how to sign and notarize the app bundle will be provided later. For now, users can run the app by right-clicking on it and selecting "Open" to bypass Gatekeeper checks (this is only necessary for the first run).
+This creates the standalone app bundle in the `standalone/dist` folder as well as the DMG file (which is named `MNELAB-<VERSION>.dmg`) in the `standalone` folder. This DMG file can be distributed to macOS users. Signing and notarization of the app bundle requires a valid Apple Developer ID. Details on how to sign and notarize the app bundle will be provided later. For now, users can run the app by right-clicking on it and selecting "Open" to bypass Gatekeeper checks (this is only necessary for the first run).
 
 
 #### Creating the app icon
