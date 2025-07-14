@@ -34,6 +34,12 @@ jobs:
       - name: Install Inno Setup
         shell: pwsh
         run: winget install --id JRSoftware.InnoSetup --silent --accept-source-agreements --accept-package-agreements
+      - name: Find Inno Setup Compiler
+        shell: pwsh
+        run: |
+          echo "--- Searching for iscc.exe in Program Files ---"
+          Get-ChildItem -Path "C:\Program Files", "C:\Program Files (x86)" -Recurse -Filter "iscc.exe" -ErrorAction SilentlyContinue | Select-Object FullName
+          echo "--- Search complete ---"
       - name: Build standalone installer
         working-directory: standalone
         shell: pwsh
