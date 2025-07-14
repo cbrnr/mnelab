@@ -35,7 +35,15 @@ jobs:
         shell: pwsh
         run: |
           winget install --id JRSoftware.InnoSetup --silent --accept-source-agreements --accept-package-agreements
-          echo "C:\Program Files (x86)\Inno Setup 6" >> $env:GITHUB_PATH
+          $isccPath = (Get-Command iscc.exe -ErrorAction SilentlyContinue).Source
+          if ($isccPath) {
+            $innoDir = Split-Path $isccPath -Parent
+            echo "Found Inno Setup at $innoDir"
+            echo $innoDir >> $env:GITHUB_PATH
+          } else {
+            echo "::error::Could not find iscc.exe after installation."
+            exit 1
+          }
       - name: Build standalone installer
         working-directory: standalone
         shell: pwsh
