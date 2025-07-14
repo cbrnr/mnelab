@@ -33,17 +33,15 @@ jobs:
         run: uv sync --all-extras
       - name: Install Inno Setup
         shell: pwsh
-        run: winget install --id JRSoftware.InnoSetup --silent --accept-source-agreements --accept-package-agreements
-      - name: Find Inno Setup Compiler
-        shell: pwsh
         run: |
-          echo "--- Searching for iscc.exe in Program Files ---"
-          Get-ChildItem -Path "C:\Program Files", "C:\Program Files (x86)" -Recurse -Filter "iscc.exe" -ErrorAction SilentlyContinue | Select-Object FullName
-          echo "--- Search complete ---"
+          winget install --id JRSoftware.InnoSetup --silent --accept-source-agreements --accept-package-agreements
+          echo "C:\Program Files (x86)\Inno Setup 6" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
       - name: Build standalone installer
         working-directory: standalone
         shell: pwsh
-        run: uv run pwsh -File ./create-standalone-windows.ps1
+        run: |
+          . "$env:VENV\Scripts\Activate.ps1"
+          ./create-standalone-windows.ps1
       - name: Upload Windows installer
         uses: actions/upload-artifact@v4
         with:
