@@ -8,9 +8,13 @@ jobs:
   test:
     uses: ./.github/workflows/test.yml
 
+  build_standalone:
+    needs: test
+    uses: ./.github/workflows/standalone.yml
+
   upload_assets:
     name: Upload release assets
-    needs: test
+    needs: build_standalone
     runs-on: ubuntu-24.04
     permissions:
       contents: write

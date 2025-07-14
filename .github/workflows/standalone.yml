@@ -1,0 +1,45 @@
+name: Standalone
+
+on:
+  workflow_call:
+
+jobs:
+  standalone-macos:
+    name: Build macOS standalone
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Install the project
+        run: uv sync --all-extras
+      - name: Build standalone installer
+        working-directory: standalone
+        run: uv run python create-standalone-macos.py
+      - name: Upload macOS installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: mnelab-macos-installer
+          path: standalone/MNELAB-*.dmg
+
+  standalone-windows:
+    name: Build Windows standalone
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Install the project
+        run: uv sync --all-extras
+      - name: Install Inno Setup
+        shell: pwsh
+        run: |
+          winget install --id JRSoftware.InnoSetup --silent --accept-source-agreements --accept-package-agreements
+          echo "C:\Program Files (x86)\Inno Setup 6" >> $env:GITHUB_PATH
+      - name: Build standalone installer
+        working-directory: standalone
+        shell: pwsh
+        run: uv run pwsh -File ./create-standalone-windows.ps1
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: mnelab-windows-installer
+          path: standalone/MNELAB-*.exe
