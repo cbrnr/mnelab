@@ -1,4 +1,4 @@
-## [UNRELEASED] - YYYY-MM-DD
+## [1.0.3] - 2025-07-15
 ### ✨ Added
 - Add infrastructure to create standalone releases ([#481](https://github.com/cbrnr/mnelab/pull/481) by [Clemens Brunner](https://github.com/cbrnr))
 - Add clickable links to MNELAB and MNE-Python settings files in the Settings dialog ([#500](https://github.com/cbrnr/mnelab/pull/500) by [Clemens Brunner](https://github.com/cbrnr))

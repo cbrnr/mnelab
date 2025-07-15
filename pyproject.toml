@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "mnelab"
-version = "1.1.0.dev0"
+version = "1.0.3"
 description = "A graphical user interface for MNE"
 license = {text = "BSD 3-Clause"}
 authors = [
