@@ -51,7 +51,7 @@ dev = [
     "pytest",
     "pytest-qt",
     "pytest-xvfb; platform_system=='Linux'",
-    "ruff",
+    "ruff >= 0.12.3",
 ]
 
 [project.gui-scripts]
