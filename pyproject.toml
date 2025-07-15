@@ -6,7 +6,8 @@ build-backend = "uv_build"
 name = "mnelab"
 version = "1.0.3"
 description = "A graphical user interface for MNE"
-license = {text = "BSD 3-Clause"}
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
 authors = [
     {name = "Clemens Brunner", email = "clemens.brunner@gmail.com"},
 ]
