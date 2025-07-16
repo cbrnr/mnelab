@@ -1,3 +1,5 @@
+## [UNRELEASED] - YYYY-MM-DD
+
 ## [1.0.3] - 2025-07-15
 ### ✨ Added
 - Add infrastructure to create standalone releases ([#481](https://github.com/cbrnr/mnelab/pull/481) by [Clemens Brunner](https://github.com/cbrnr))
