@@ -21,7 +21,7 @@ Instructions for installing and using MNELAB as well as step-by-step examples fo
 
 ### Quick start
 
-We recommend our [standalone installers]() available for [Windows](), [macOS](), and [Linux]().
+We recommend our standalone installers currently available for macOS and Windows. You can download them from the [releases page](https://github.com/cbrnr/mnelab/releases).
 
 Alternatively, you can use [uv](https://docs.astral.sh/uv/) to run MNELAB:
 
