@@ -1,8 +1,18 @@
 # Tutorial
 
+## Installing MNELAB
+
+We recommend our standalone installers currently available for macOS and Windows:
+
+- [MNELAB 1.0.3 (macOS)](https://github.com/cbrnr/mnelab/releases/download/v1.0.3/MNELAB-1.0.3.dmg)
+- [MNELAB 1.0.3 (Windows)](https://github.com/cbrnr/mnelab/releases/download/v1.0.3/MNELAB-1.0.3.exe)
+
+
 ## Running MNELAB
 
-We recommend using [uv](https://docs.astral.sh/uv/) to install and run MNELAB. After installing uv, you can start MNELAB with the following command:
+If you have installed MNELAB using the standalone installer, you can start it just like any other app from your applications menu or by double-clicking the application icon.
+
+Alternatively, you can use [uv](https://docs.astral.sh/uv/) to run MNELAB:
 
 ```
 uvx mnelab
