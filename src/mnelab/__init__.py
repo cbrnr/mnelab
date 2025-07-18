@@ -2,8 +2,16 @@
 #
 # License: BSD (3-clause)
 
-import multiprocessing as mp
+import io
 import sys
+
+if getattr(sys, "frozen", False):
+    if sys.stdout is None:
+        sys.stdout = io.StringIO()
+    if sys.stderr is None:
+        sys.stderr = io.StringIO()
+
+import multiprocessing as mp
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
