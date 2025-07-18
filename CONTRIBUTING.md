@@ -63,7 +63,7 @@ Follow these steps to make a new [PyPI](https://pypi.org/project/mnelab/) releas
 
 - Remove the `.dev0` suffix from the `version` field in `pyproject.toml` (and/or adapt the version to be released if necessary)
 - Update the section in `CHANGELOG.md` corresponding to the new release with the version and current date
-- Update the section on the standalone installers in the README (use the to-be-released version in the URLs, e.g., https://github.com/cbrnr/mnelab/releases/download/v1.0.3/MNELAB-1.0.3.exe)
+- Update the section on the standalone installers in `README.md` and `docs/index.md` (use the to-be-released version in the URLs, e.g., https://github.com/cbrnr/mnelab/releases/download/v1.0.3/MNELAB-1.0.3.exe)
 - Commit these changes and push
 - Create a new release on GitHub and use the version as the tag name (make sure to prepend the version with a `v`, e.g. `v0.7.0`)
 - A GitHub Action takes care of building and uploading wheels to PyPI as well as adding standalone installers to the release
