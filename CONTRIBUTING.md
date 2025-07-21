@@ -61,23 +61,24 @@ MNELAB uses [Ruff](https://docs.astral.sh/ruff/formatter/) for formatting. Becau
 
 Follow these steps to make a new [PyPI](https://pypi.org/project/mnelab/) release (requires write permissions for GitHub and PyPI project sites):
 
-- Remove the `.dev0` suffix from the `version` field in `pyproject.toml` (and/or adapt the version to be released if necessary)
-- Update the section in `CHANGELOG.md` corresponding to the new release with the version and current date
-- Commit these changes and push
-- Create a new release on GitHub and use the version as the tag name (make sure to prepend the version with a `v`, e.g. `v0.7.0`)
-- A GitHub Action takes care of building and uploading wheels to PyPI as well as adding standalone installers to the release
+1. Remove the `.dev0` suffix from the `version` field in `pyproject.toml` (and/or adapt the version to be released if necessary)
+2. Update the section in `CHANGELOG.md` corresponding to the new release with the version and current date
+3. Update the section on the standalone installers in `README.md` and `docs/index.md` (use the to-be-released version in the URLs, e.g., https://github.com/cbrnr/mnelab/releases/download/v1.0.3/MNELAB-1.0.3.exe)
+4. Commit these changes and push
+5. Create a new release on GitHub and use the version as the tag name (make sure to prepend the version with a `v`, e.g. `v0.7.0`)
+6. A GitHub Action takes care of building and uploading wheels to PyPI as well as adding standalone installers to the release
 
 This concludes the new release. Now prepare the source for the next planned release as follows:
 
-- Update the `version` field to the next planned release and append `.dev0`
-- Start a new section at the top of `CHANGELOG.md` titled `## [UNRELEASED] - YYYY-MM-DD`
+1. Update the `version` field to the next planned release and append `.dev0`
+2. Start a new section at the top of `CHANGELOG.md` titled `## [UNRELEASED] - YYYY-MM-DD`
 
 Don't forget to push these changes!
 
 
 ## Creating standalone packages
 
-To create standalone packages for Windows, macOS, and Linux, we use [PyInstaller](https://www.pyinstaller.org/). It is important that all optional dependencies are available in the current environment by installing the project with `uv sync --all-extras`. Additionally, the environment must be *activated* (which is typically not necessary when working with uv, but is required in this case). You can activate the environment by running `./.venv/bin/activate` on macOS or Linux, or `.\.venv\Scripts\activate` on Windows (from the root of the source tree). Once the environment is active, run the corresponding script for your platform as described below.
+To create standalone packages for Windows, macOS, and Linux, we use [PyInstaller](https://www.pyinstaller.org/). GitHub Actions take care of automatically building the standalone packages, but you can also build them manually. It is important that all optional dependencies are available in the current environment by installing the project with `uv sync --all-extras`. Additionally, the environment must be *activated* (which is typically not necessary when working with uv, but is required in this case). You can activate the environment by running `./.venv/bin/activate` on macOS or Linux, or `.\.venv\Scripts\activate` on Windows (from the root of the source tree). Once the environment is active, run the corresponding script for your platform as described below.
 
 
 ### macOS
