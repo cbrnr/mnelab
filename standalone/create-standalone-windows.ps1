@@ -1,6 +1,7 @@
 pyinstaller `
     --collect-all mne `
     --collect-all mnelab `
+    --collect-all sklearn `
     --name MNELAB `
     --windowed `
     --noupx `
