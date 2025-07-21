@@ -1,6 +1,6 @@
 ## [UNRELEASED] - YYYY-MM-DD
 ### 🔧 Fixed
-- Fix a bug with the Windows standalone version where filtering would not work ([#503](https://github.com/cbrnr/mnelab/pull/503) by [Clemens Brunner](https://github.com/cbrnr))
+- Fix issues with the standalone versions ([#503](https://github.com/cbrnr/mnelab/pull/503) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.0.3] - 2025-07-15
 ### ✨ Added
