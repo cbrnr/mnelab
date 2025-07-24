@@ -31,7 +31,7 @@ jobs:
           MACOS_CERT_P12_BASE64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
           MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
       - name: Code sign MNELAB.app
-        run: codesign --deep --force --options runtime --sign "Developer ID Application: CLEMENS BRUNNER (9UC2D22DW3)" standalone/dist/MNELAB.app
+        run: 'codesign --deep --force --options runtime --sign "Developer ID Application: CLEMENS BRUNNER (9UC2D22DW3)" standalone/dist/MNELAB.app'
       - name: Zip MNELAB.app for notarization
         run: ditto -c -k --sequesterRsrc --keepParent standalone/dist/MNELAB.app MNELAB.zip
       - name: Notarize app
