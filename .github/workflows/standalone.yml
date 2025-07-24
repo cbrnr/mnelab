@@ -13,9 +13,6 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - name: Install the project
         run: uv sync --all-extras
-      - name: Get project version
-        id: version
-        run: echo "VERSION=$(grep '^version = ' pyproject.toml | cut -d '"' -f 2)" >> $GITHUB_OUTPUT
       - name: Build app bundle
         working-directory: standalone
         run: uv run python create-standalone-macos.py build-app
