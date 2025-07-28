@@ -52,7 +52,7 @@ def main():
     app.setApplicationName("mnelab")
     app.setApplicationDisplayName("MNELAB")
     app.setDesktopFileName("mnelab")
-    app.setOrganizationName("cbrnr")
+    app.setOrganizationName("mnelab")
     if sys.platform.startswith("darwin"):
         app.setAttribute(Qt.ApplicationAttribute.AA_DontShowIconsInMenus, True)
         app.setWindowIcon(QIcon(f"{Path(__file__).parent}/icons/mnelab-logo-macos.svg"))
@@ -60,7 +60,6 @@ def main():
         app.setWindowIcon(QIcon(f"{Path(__file__).parent}/icons/mnelab-logo.svg"))
     if sys.platform.startswith("win"):
         app.setStyle("fusion")
-    QSettings.setDefaultFormat(QSettings.Format.IniFormat)
     model = Model()
     model.view = MainWindow(model)
     app.mainwindow = model.view
