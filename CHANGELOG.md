@@ -1,4 +1,4 @@
-## [UNRELEASED] - YYYY-MM-DD
+## [1.0.4] - 2025-07-28
 ### ✨ Added
 - Sign and notarize macOS app ([#505](https://github.com/cbrnr/mnelab/pull/505) by [Clemens Brunner](https://github.com/cbrnr))
 
