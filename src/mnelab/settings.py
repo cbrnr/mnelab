@@ -1,9 +1,10 @@
 # © MNELAB developers
 #
 # License: BSD (3-clause)
+from pathlib import Path
 
 from mne import get_config_path
-from PySide6.QtCore import QPoint, QSettings, QSize, QUrl, Slot
+from PySide6.QtCore import QPoint, QSettings, QSize, QStandardPaths, QUrl, Slot
 from PySide6.QtGui import QDesktopServices, Qt
 from PySide6.QtWidgets import (
     QComboBox,
@@ -14,6 +15,16 @@ from PySide6.QtWidgets import (
     QLabel,
     QSpinBox,
 )
+
+SETTINGS_PATH = str(
+    Path(
+        QStandardPaths.writableLocation(
+            QStandardPaths.StandardLocation.AppConfigLocation
+        )
+    )
+    / "mnelab.ini"
+)
+
 
 _DEFAULTS = {
     "max_recent": 6,
@@ -28,7 +39,7 @@ _DEFAULTS = {
 
 
 def _get_value(key):
-    return QSettings().value(
+    return QSettings(SETTINGS_PATH, QSettings.Format.IniFormat).value(
         key, defaultValue=_DEFAULTS[key], type=type(_DEFAULTS[key])
     )
 
@@ -57,15 +68,16 @@ def read_settings(key=None):
 
 def write_settings(**kwargs):
     """Write application settings."""
+    settings = QSettings(SETTINGS_PATH, QSettings.Format.IniFormat)
     for key, value in kwargs.items():
         if key not in _DEFAULTS:
             raise KeyError(f"Invalid setting key: {key}")
-        QSettings().setValue(key, value)
+        settings.setValue(key, value)
 
 
 def clear_settings():
     """Clear all settings."""
-    QSettings().clear()
+    QSettings(SETTINGS_PATH, QSettings.Format.IniFormat).clear()
 
 
 class SettingsDialog(QDialog):
@@ -98,10 +110,9 @@ class SettingsDialog(QDialog):
         self.max_channels.setAlignment(Qt.AlignRight)
         grid.addWidget(self.max_channels, 2, 1)
 
-        mnelab_config_path = QSettings().fileName()
         mnelab_label = QLabel(
-            f'<i>Settings are stored in <a href="{mnelab_config_path}">'
-            f"{mnelab_config_path}</a>.</i>"
+            f'<i>Settings are stored in <a href="{SETTINGS_PATH}">'
+            f"{SETTINGS_PATH}</a>.</i>"
         )
         mnelab_label.linkActivated.connect(self.open_path)
         grid.addWidget(mnelab_label, 3, 0, 1, 2)
