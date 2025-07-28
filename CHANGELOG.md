@@ -1,6 +1,7 @@
 ## [UNRELEASED] - YYYY-MM-DD
 ### 🔧 Fixed
 - Fix settings file locations that could have been inconsistent and incorrect when using MNE-Qt-Browser as a plotting backend ([#506](https://github.com/cbrnr/mnelab/pull/506) by [Clemens Brunner](https://github.com/cbrnr))
+- Fix MNE-Qt-Browser not working as a backend in standalone releases ([#507](https://github.com/cbrnr/mnelab/pull/507) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.0.4] - 2025-07-28
 ### ✨ Added
