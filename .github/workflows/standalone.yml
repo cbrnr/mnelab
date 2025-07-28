@@ -3,6 +3,15 @@ name: Standalone
 on:
   workflow_dispatch:
   workflow_call:
+    secrets:
+      MACOS_CERT_P12_BASE64:
+        required: true
+      MACOS_CERT_PASSWORD:
+        required: true
+      AC_USERNAME:
+        required: true
+      AC_PASSWORD:
+        required: true
 
 jobs:
   standalone-macos:
