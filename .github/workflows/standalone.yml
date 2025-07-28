@@ -1,8 +1,8 @@
 name: Standalone
 
 on:
-  workflow_call:
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   standalone-macos:
@@ -13,9 +13,39 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - name: Install the project
         run: uv sync --all-extras
-      - name: Build standalone installer
+      - name: Build app bundle
         working-directory: standalone
-        run: uv run python create-standalone-macos.py
+        run: uv run python create-standalone-macos.py build-app
+      - name: Import Developer ID certificate
+        run: |
+          echo "$MACOS_CERT_P12_BASE64" | base64 --decode > certificate.p12
+          security create-keychain -p "" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          security import certificate.p12 -k build.keychain -P "$MACOS_CERT_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
+        env:
+          MACOS_CERT_P12_BASE64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+      - name: Code sign MNELAB.app
+        run: 'codesign --deep --force --options runtime --sign "Developer ID Application: CLEMENS BRUNNER (9UC2D22DW3)" standalone/dist/MNELAB.app'
+      - name: Zip MNELAB.app for notarization
+        run: ditto -c -k --sequesterRsrc --keepParent standalone/dist/MNELAB.app MNELAB.zip
+      - name: Notarize app
+        run: |
+          xcrun notarytool submit MNELAB.zip \
+            --apple-id "$AC_USERNAME" \
+            --password "$AC_PASSWORD" \
+            --team-id 9UC2D22DW3 \
+            --wait
+        env:
+          AC_USERNAME: ${{ secrets.AC_USERNAME }}
+          AC_PASSWORD: ${{ secrets.AC_PASSWORD }}
+      - name: Staple notarization ticket
+        run: xcrun stapler staple standalone/dist/MNELAB.app
+      - name: Create DMG from signed and notarized app
+        working-directory: standalone
+        run: uv run python create-standalone-macos.py build-dmg
       - name: Upload macOS installer
         uses: actions/upload-artifact@v4
         with:
