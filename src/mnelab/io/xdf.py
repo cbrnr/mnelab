@@ -45,7 +45,6 @@ class RawXDF(BaseRaw):
             raise ValueError(
                 "Argument `fs_new` is required when reading multiple streams."
             )
-        print("Welcome to Bene's hacked XDF.py - enjoy the ride! !!!!!!!!!!")
         streams, header = load_xdf(fname)
         streams = {stream["info"]["stream_id"]: stream for stream in streams}
 
