@@ -15,7 +15,7 @@ class RawXDF(BaseRaw):
     """Raw data from .xdf file."""
 
     def __init__(
-        self, fname, stream_ids, marker_ids=None, prefix_markers=False, fs_new=None,        gap_threshold=0.1,interpolate_or_resample="interpolate"
+        self, fname, stream_ids, marker_ids=None, prefix_markers=False, fs_new=None, gap_threshold=0.1,interpolate_or_resample="resample"
     ):
         """Read raw data from .xdf file.
 
@@ -81,7 +81,7 @@ class RawXDF(BaseRaw):
             labels_all.extend(labels)
             types_all.extend(types)
             units_all.extend(units)
-        print("starting resample_streams XXX")
+
         if fs_new is not None:
             data, first_time = _resample_streams(streams, stream_ids, fs_new,interpolate_or_resample)
             fs = fs_new
@@ -179,8 +179,8 @@ def _resample_streams(streams, stream_ids, fs_new,resample_or_interpolate="resam
         timestamps = timestamps[sort_indices]
         timestamps,unique_idx = np.unique(timestamps,return_index=True)
         
-        if sort_indices.shape is not unique_idx.shape:
-            print(f"warning, non-unique timestamps found")
+        if not sort_indices.shape == unique_idx.shape:
+            print(f"warning, non-unique timestamps found {sort_indices.shape} vs. {unique_idx.shape} after unique")
         start_time = timestamps[0]
         end_time = timestamps[-1]
         len_new = int(np.ceil((end_time - start_time) * fs_new))
@@ -207,7 +207,7 @@ def _resample_streams(streams, stream_ids, fs_new,resample_or_interpolate="resam
                 
                 row_end = row_start + x_new.shape[0] + row_chunk
                 col_end = col_start + x_new.shape[1]
-                print(f"x_new {x_new.shape}, row_start {row_start},row_chunk {row_chunk}, row_end{row_end}")
+                #print(f"x_new {x_new.shape}, row_start {row_start},row_chunk {row_chunk}, row_end{row_end}")
                 all_time_series[row_start+row_chunk:row_end, col_start:col_end] = x_new
                 row_chunk += x_new.shape[0]
 
@@ -257,7 +257,7 @@ def read_raw_xdf(
         The raw data.
     """
 
-    return RawXDF(fname, stream_ids, marker_ids, prefix_markers, fs_new)
+    return RawXDF(fname, stream_ids, marker_ids, prefix_markers, fs_new,**kwargs)
 
 
 def _is_markerstream(stream):
