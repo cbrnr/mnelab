@@ -42,10 +42,14 @@ class RawXDF(BaseRaw):
             Resampling target frequency in Hz. If only one stream_id is given, this can
             be `None`, in which case no resampling is performed.
         resample_or_interpolate : string | "resample"
-            Resample (default), or "interpolate" to use linear interpolation (recommended for data containing gaps)
+            Resample (default), or "interpolate" to use linear interpolation
+            (recommended data containing gaps)
         gap_threshold : float | 0.0
-            Detect gaps in time-stamps of stream_id[0] large than "gap_size" (0. turns functionality off), put those values to np.nan after resample/interpolation.
-            Note that if gaps exist, interpolation should be used, especially if the gaps are large, because resampling is done under the assumption of regular sampling interval.
+            Detect gaps in time-stamps of stream_id[0] large than "gap_size" (0. turns
+            functionality off), those values to np.nan after resample/interpolation.
+            Note that if gaps exist, interpolation should be used, especially if the
+            gaps are large, because resampling is done under the assumption of regular
+            sampling interval.
 
         """
         if len(stream_ids) > 1 and fs_new is None:
@@ -157,7 +161,8 @@ def _resample_streams(streams, stream_ids, fs_new, resample_or_interpolate="resa
     fs_new : float
         Resampling target frequency in Hz.
     resample_or_interpolate : string
-        Resample (default), or "interpolate" to use linear interpolation (recommended for data containing gaps)
+        Resample (default), or "interpolate" to use linear interpolation (recommended
+        for data containing gaps)
 
     Returns
     -------
@@ -189,7 +194,8 @@ def _resample_streams(streams, stream_ids, fs_new, resample_or_interpolate="resa
 
         if not sort_indices.shape == unique_idx.shape:
             print(
-                f"warning, non-unique timestamps found {sort_indices.shape} vs. {unique_idx.shape} after unique"
+                f"warning, non-unique timestamps found {sort_indices.shape} vs. \
+                 {unique_idx.shape} after unique"
             )
         start_time = timestamps[0]
         end_time = timestamps[-1]
@@ -222,7 +228,6 @@ def _resample_streams(streams, stream_ids, fs_new, resample_or_interpolate="resa
 
                 row_end = row_start + x_new.shape[0] + row_chunk
                 col_end = col_start + x_new.shape[1]
-                # print(f"x_new {x_new.shape}, row_start {row_start},row_chunk {row_chunk}, row_end{row_end}")
                 all_time_series[row_start + row_chunk : row_end, col_start:col_end] = (
                     x_new
                 )
