@@ -24,9 +24,9 @@ classifiers = [
 ]
 keywords = ["EEG", "MEG", "MNE", "GUI", "electrophysiology"]
 dependencies = [
-    "edfio >= 0.4.2",
+    "edfio >= 0.4.10",
     "matplotlib >= 3.8.0",
-    "mne >= 1.7.0",
+    "mne >= 1.10.2",
     "numpy >= 2.0.0",
     "pybv >= 0.7.4",
     "pyxdf >= 1.16.4",
