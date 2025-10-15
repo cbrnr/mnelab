@@ -1,6 +1,6 @@
 ## [UNRELEASED] - YYYY-MM-DD
 ### ✨ Added
-- Support for writing Biosemi Data Format (BDF) files ([#511](https://github.com/cbrnr/mnelab/pull/511) by [Clemens Brunner](https://github.com/cbrnr))
+- Support for writing Biosemi Data Format (BDF) files ([#513](https://github.com/cbrnr/mnelab/pull/513) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.0.5] - 2025-07-29
 ### 🔧 Fixed
