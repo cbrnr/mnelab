@@ -50,7 +50,7 @@ def write_set(fname, raw):
     )
 
 
-def write_edf(fname, raw):
+def write_bdf_edf(fname, raw):
     """Export raw to EDF file."""
     raw.export(fname)
 
@@ -64,11 +64,12 @@ def write_bv(fname, raw):
 # a list with three elements: (1) the writer function, (2) the full file format name,
 # and (3) a (comma-separated) string indicating the supported objects
 writers = {
-    ".edf": [write_edf, "European Data Format", "raw"],
+    ".bdf": [write_bdf_edf, "Biosemi Data Format", "raw"],
+    ".edf": [write_bdf_edf, "European Data Format", "raw"],
+    ".eeg": [write_bv, "BrainVision", "raw"],
     ".fif": [write_fif, "Elekta Neuromag", "raw,epoch"],
     ".fif.gz": [write_fif, "Elekta Neuromag", "raw,epoch"],
     ".set": [write_set, "EEGLAB", "raw"],
-    ".eeg": [write_bv, "BrainVision", "raw"],
 }
 
 
