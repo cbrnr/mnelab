@@ -297,7 +297,7 @@ class Model:
             events = np.column_stack((pos, desc))
             events = np.insert(events, 1, 0, axis=1)  # insert zero column
             if self.current["events"] is not None:
-                events = np.row_stack((self.current["events"], events))
+                events = np.vstack((self.current["events"], events))
                 events = np.unique(events, axis=0)
             self.current["events"] = events
         elif fname.lower().endswith(".fif"):

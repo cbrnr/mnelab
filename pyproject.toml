@@ -65,7 +65,7 @@ repository = "https://github.com/cbrnr/mnelab"
 changelog = "https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md"
 
 [tool.ruff.lint]
-select = ["C4", "E", "F", "I", "PERF", "W", "UP"]
+select = ["C4", "E", "F", "I", "PERF", "UP", "W"]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
