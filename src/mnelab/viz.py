@@ -128,7 +128,7 @@ def _calc_tfr(epochs, freqs, baseline, times, alpha=None):
                 )
 
                 c = np.stack(c1 + c2, axis=2)  # combined clusters
-                p = np.concatenate((p1, p2))  # combined p-values
+                p = np.concat((p1, p2))  # combined p-values
                 mask = c[..., p <= alpha].any(axis=-1)
             masks[epochs.ch_names[ch]] = mask
         res[event] = (tfr_ev, masks)
