@@ -21,8 +21,9 @@ class RawXDF(BaseRaw):
         marker_ids=None,
         prefix_markers=False,
         fs_new=None,
-        gap_threshold=0.1,
-        interpolate_or_resample="resample",
+        gap_threshold=0.0,
+        *args,
+        **kwargs,
     ):
         """Read raw data from .xdf file.
 
@@ -39,23 +40,42 @@ class RawXDF(BaseRaw):
         prefix_markers : bool
             Whether to prefix marker streams with their corresponding stream ID.
         fs_new : float | None
-            Resampling target frequency in Hz. If only one stream_id is given, this can
-            be `None`, in which case no resampling is performed.
-        resample_or_interpolate : string | "resample"
-            Resample (default), or "interpolate" to use linear interpolation
-            (recommended data containing gaps)
-        gap_threshold : float | 0.0
-            Detect gaps in time-stamps of stream_id[0] large than "gap_size" (0. turns
-            functionality off), those values to np.nan after resample/interpolation.
-            Note that if gaps exist, interpolation should be used, especially if the
-            gaps are large, because resampling is done under the assumption of regular
-            sampling interval.
+            Target sampling frequency in Hz (required when reading multiple streams). If
+            only one stream is provided, this can be `None`, in which case the stream's
+            original sampling rate is used.
+        gap_threshold : float
+            Detect gaps in timestamps larger than this value (in seconds) and mark those
+            samples as NaN. Set to 0.0 to disable gap detection. If `gap_threshold > 0`,
+            linear interpolation is used instead of resampling, and `fs_new` must be
+            specified.
 
+        Notes
+        -----
+        Resampling depends on whether gap detection is requested or not:
+        - If `gap_threshold > 0`, uses linear interpolation to resample to the new
+          sampling frequency `fs_new`. This method will detect gaps in the original
+          timestamps and mark those samples as NaN.
+        - If `gap_threshold == 0`, uses Fourier-based resampling if `fs_new` is provided
+          or does not resample at all if `fs_new` is `None`. This method assumes that
+          the original timestamps are regular and does not account for any gaps.
+        By default, gap detection is disabled.
         """
         if len(stream_ids) > 1 and fs_new is None:
             raise ValueError(
                 "Argument `fs_new` is required when reading multiple streams."
             )
+
+        if gap_threshold < 0:
+            raise ValueError(
+                f"Argument `gap_threshold` must be non-negative, got {gap_threshold}."
+            )
+
+        if gap_threshold > 0 and fs_new is None:
+            raise ValueError(
+                "Argument `fs_new` is required when `gap_threshold > 0`. "
+                "Gap detection requires resampling to a regular time grid."
+            )
+
         streams, header = load_xdf(fname)
         streams = {stream["info"]["stream_id"]: stream for stream in streams}
 
@@ -92,19 +112,29 @@ class RawXDF(BaseRaw):
             types_all.extend(types)
             units_all.extend(units)
 
+        # interpolate if gap detection is requested, otherwise resample
+        use_interpolation = gap_threshold > 0
+
         if fs_new is not None:
             data, first_time = _resample_streams(
-                streams, stream_ids, fs_new, interpolate_or_resample
+                streams, stream_ids, fs_new, use_interpolation
             )
             fs = fs_new
+
+            if gap_threshold > 0:  # mark gaps if requested
+                timestamps = first_time + np.arange(len(data)) / fs
+                for stream_id in stream_ids:
+                    data = _mark_gaps(
+                        data,
+                        timestamps,
+                        streams[stream_id]["time_stamps"],
+                        gap_threshold,
+                    )
         else:  # only possible if a single stream was selected
             data = streams[stream_ids[0]]["time_series"]
             first_time = streams[stream_ids[0]]["time_stamps"][0]
-            fs = float(np.array(stream["info"]["effective_srate"]).item())
-        if gap_threshold > 0:
-            gap_indices = _detect_gaps(streams[stream_id]["time_stamps"], gap_threshold)
-            data = _insert_nans(
-                data, streams[stream_id]["time_stamps"], gap_indices, fs
+            fs = float(
+                np.array(streams[stream_ids[0]]["info"]["effective_srate"]).item()
             )
 
         info = mne.create_info(ch_names=labels_all, sfreq=fs, ch_types=types_all)
@@ -112,7 +142,7 @@ class RawXDF(BaseRaw):
         microvolts = ("microvolt", "microvolts", "µV", "μV", "uV")
         scale = np.array([1e-6 if u in microvolts else 1 for u in units_all])
         data = (data * scale).T
-        super().__init__(preload=data, info=info, filenames=[fname])
+        super().__init__(preload=data, info=info, filenames=[fname], *args, **kwargs)
 
         # convert marker streams to annotations
         for stream_id, stream in streams.items():
@@ -134,23 +164,52 @@ class RawXDF(BaseRaw):
             self.set_meas_date(meas_date.astimezone(timezone.utc))
 
 
-def _detect_gaps(timestamps, gap_threshold):
-    gaps = np.diff(timestamps) > gap_threshold
-    return np.where(gaps)[0]
+def _mark_gaps(data, timestamps, original_timestamps, gap_threshold):
+    """Mark gaps in data with NaN based on gaps in original timestamps.
 
+    Parameters
+    ----------
+    data : np.ndarray
+        Data array of shape (n_samples, n_channels).
+    timestamps : np.ndarray
+        Timestamps corresponding to data (interpolated/resampled uniform grid).
+    original_timestamps : np.ndarray
+        Original timestamps from the stream.
+    gap_threshold : float
+        Gap threshold in seconds.
 
-def _insert_nans(data, timestamps, gap_indices, fs):
-    gap_size_sum = 0
-    for index in gap_indices:
-        gap_size = int((timestamps[index + 1] - timestamps[index]) * fs)
-        data[index + gap_size_sum : index + gap_size + gap_size_sum, :] = np.nan
-        gap_size_sum += gap_size
+    Returns
+    -------
+    np.ndarray
+        Data with gaps marked as NaN.
+    """
+    # find gaps in original timestamps
+    gaps = np.diff(original_timestamps) > gap_threshold
+    gap_indices = np.where(gaps)[0]
+
+    if len(gap_indices) == 0:
+        return data
+
+    data = data.copy()
+
+    # for each gap, find the time range and mark it in the data
+    for idx in gap_indices:
+        gap_start_time = original_timestamps[idx]
+        gap_end_time = original_timestamps[idx + 1]
+
+        # find corresponding indices in the uniform time grid
+        start_idx = np.searchsorted(timestamps, gap_start_time, side="right")
+        end_idx = np.searchsorted(timestamps, gap_end_time, side="left")
+
+        # mark the gap region as NaN
+        if start_idx < len(data) and end_idx <= len(data):
+            data[start_idx:end_idx, :] = np.nan
+
     return data
 
 
-def _resample_streams(streams, stream_ids, fs_new, resample_or_interpolate="resample"):
-    """
-    Resample multiple XDF streams to a given frequency.
+def _resample_streams(streams, stream_ids, fs_new, use_interpolation=False):
+    """Resample XDF stream(s) to a common sampling rate.
 
     Parameters
     ----------
@@ -159,10 +218,9 @@ def _resample_streams(streams, stream_ids, fs_new, resample_or_interpolate="resa
     stream_ids : list[int]
         The IDs of the desired streams.
     fs_new : float
-        Resampling target frequency in Hz.
-    resample_or_interpolate : string
-        Resample (default), or "interpolate" to use linear interpolation (recommended
-        for data containing gaps)
+        Target sampling frequency in Hz.
+    use_interpolation : bool
+        If True, use linear interpolation. If False, use Fourier-based resampling.
 
     Returns
     -------
@@ -172,6 +230,9 @@ def _resample_streams(streams, stream_ids, fs_new, resample_or_interpolate="resa
     first_time : float
         Time of the very first sample in seconds.
     """
+    from scipy.interpolate import interp1d
+    from scipy.signal import butter, sosfiltfilt
+
     start_times = []
     end_times = []
     n_total_chans = 0
@@ -184,6 +245,7 @@ def _resample_streams(streams, stream_ids, fs_new, resample_or_interpolate="resa
 
     n_samples = int(np.ceil((last_time - first_time) * fs_new))
     all_time_series = np.full((n_samples, n_total_chans), np.nan)
+    time_grid = first_time + np.arange(n_samples) / fs_new
 
     col_start = 0
     for stream_id in stream_ids:
@@ -193,52 +255,48 @@ def _resample_streams(streams, stream_ids, fs_new, resample_or_interpolate="resa
         timestamps, unique_idx = np.unique(timestamps, return_index=True)
 
         if not sort_indices.shape == unique_idx.shape:
-            print(
-                f"warning, non-unique timestamps found {sort_indices.shape} vs. \
-                 {unique_idx.shape} after unique"
+            from warnings import warn
+
+            warn(
+                f"Non-unique timestamps found in stream {stream_id}: "
+                f"{sort_indices.shape[0]} timestamps, {unique_idx.shape[0]} unique.",
+                RuntimeWarning,
             )
+
         start_time = timestamps[0]
         end_time = timestamps[-1]
-        len_new = int(np.ceil((end_time - start_time) * fs_new))
         x_old = streams[stream_id]["time_series"][sort_indices, :][unique_idx, :]
 
+        # apply anti-aliasing filter if downsampling
+        fs_original = float(
+            np.array(streams[stream_id]["info"]["effective_srate"]).item()
+        )
+        if fs_new < fs_original:
+            nyquist = fs_new / 2
+            sos = butter(8, 0.95 * nyquist, btype="low", fs=fs_original, output="sos")
+            x_old = sosfiltfilt(sos, x_old, axis=0)
+
+        # find valid time range in output grid
         row_start = int(np.floor((start_time - first_time) * fs_new))
-        if resample_or_interpolate == "interpolate":
-            time_new = np.arange(first_time, last_time, step=1 / fs_new)
-            chunk_size = 200_000
-            row_chunk = 0
-            import bisect
+        row_end = int(np.ceil((end_time - first_time) * fs_new))
+        time_new = time_grid[row_start:row_end]
 
-            for chunk in [
-                time_new[i : i + chunk_size]
-                for i in range(0, len(time_new), chunk_size)
-            ]:
-                fi = (
-                    bisect.bisect_left(timestamps, chunk[0]) - 5
-                )  # I think 3 should be enough for cubic, but better safe than sorry
-                la = bisect.bisect_right(timestamps, chunk[-1]) + 5
-                if fi < 0:
-                    fi = 0
-                if la > len(timestamps):
-                    la = len(timestamps)
-
-                x_new = scipy.interpolate.Akima1DInterpolator(
-                    timestamps[fi:la], x_old[fi:la, :], axis=0, method="makima"
-                )(chunk)
-
-                row_end = row_start + x_new.shape[0] + row_chunk
-                col_end = col_start + x_new.shape[1]
-                all_time_series[row_start + row_chunk : row_end, col_start:col_end] = (
-                    x_new
-                )
-                row_chunk += x_new.shape[0]
-
-        else:
+        if use_interpolation:  # linear interpolation
+            interpolator = interp1d(
+                timestamps,
+                x_old,
+                axis=0,
+                kind="linear",
+                bounds_error=False,
+                fill_value=np.nan,
+            )
+            x_new = interpolator(time_new)
+        else:  # Fourier-based resampling
+            len_new = len(time_new)
             x_new = scipy.signal.resample(x_old, len_new, axis=0)
 
-            row_end = row_start + x_new.shape[0]
-            col_end = col_start + x_new.shape[1]
-            all_time_series[row_start:row_end, col_start:col_end] = x_new
+        col_end = col_start + x_new.shape[1]
+        all_time_series[row_start:row_end, col_start:col_end] = x_new
 
         col_start += x_new.shape[1]
 
@@ -251,7 +309,7 @@ def read_raw_xdf(
     marker_ids=None,
     prefix_markers=False,
     fs_new=None,
-    *args,
+    gap_threshold=0.0,
     **kwargs,
 ):
     """Read XDF file.
@@ -269,16 +327,28 @@ def read_raw_xdf(
     prefix_markers : bool
         Whether to prefix marker streams with their corresponding stream ID.
     fs_new : float | None
-        Resampling target frequency in Hz. If only one stream_id is given, this can be
-        `None`, in which case no resampling is performed.
+        Target sampling frequency in Hz (required when reading multiple streams). If
+        only one stream is provided, this can be `None`, in which case the stream's
+        original sampling rate is used.
+    gap_threshold : float
+        Detect gaps in timestamps larger than this value (in seconds) and mark those
+        samples as NaN. Set to 0.0 to disable gap detection. If `gap_threshold > 0`,
+        linear interpolation is used instead of resampling, and `fs_new` must be
+        specified.
 
     Returns
     -------
     RawXDF
         The raw data.
     """
-
-    return RawXDF(fname, stream_ids, marker_ids, prefix_markers, fs_new, **kwargs)
+    return RawXDF(
+        fname,
+        stream_ids,
+        marker_ids,
+        prefix_markers,
+        fs_new,
+        gap_threshold,
+    )
 
 
 def _is_markerstream(stream):
