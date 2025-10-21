@@ -124,7 +124,7 @@ class RawXDF(BaseRaw):
             if gap_threshold > 0:  # mark gaps if requested
                 timestamps = first_time + np.arange(len(data)) / fs
                 for stream_id in stream_ids:
-                    data = _mark_gaps(
+                    _mark_gaps(
                         data,
                         timestamps,
                         streams[stream_id]["time_stamps"],
@@ -167,30 +167,25 @@ class RawXDF(BaseRaw):
 def _mark_gaps(data, timestamps, original_timestamps, gap_threshold):
     """Mark gaps in data with NaN based on gaps in original timestamps.
 
+    This function modifies the data array in-place.
+
     Parameters
     ----------
     data : np.ndarray
-        Data array of shape (n_samples, n_channels).
+        Data array of shape (n_samples, n_channels). Modified in-place.
     timestamps : np.ndarray
         Timestamps corresponding to data (interpolated/resampled uniform grid).
     original_timestamps : np.ndarray
         Original timestamps from the stream.
     gap_threshold : float
         Gap threshold in seconds.
-
-    Returns
-    -------
-    np.ndarray
-        Data with gaps marked as NaN.
     """
     # find gaps in original timestamps
     gaps = np.diff(original_timestamps) > gap_threshold
     gap_indices = np.where(gaps)[0]
 
     if len(gap_indices) == 0:
-        return data
-
-    data = data.copy()
+        return
 
     # for each gap, find the time range and mark it in the data
     for idx in gap_indices:
@@ -204,8 +199,6 @@ def _mark_gaps(data, timestamps, original_timestamps, gap_threshold):
         # mark the gap region as NaN
         if start_idx < len(data) and end_idx <= len(data):
             data[start_idx:end_idx, :] = np.nan
-
-    return data
 
 
 def _resample_streams(streams, stream_ids, fs_new, use_interpolation=False):
