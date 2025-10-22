@@ -70,7 +70,9 @@ class XDFStreamsDialog(QDialog):
 
         self.gap_threshold_label = QLabel("Detect gaps longer than")
         self.gap_threshold_checkbox = QCheckBox()
-        self.gap_threshold_checkbox.stateChanged.connect(self._toggle_gap_threshold_spinbox)
+        self.gap_threshold_checkbox.stateChanged.connect(
+            self._toggle_gap_threshold_spinbox
+        )
         self.gap_threshold = QDoubleSpinBox()
         self.gap_threshold.setRange(0.1, 10)
         self.gap_threshold.setValue(0.1)
@@ -129,7 +131,7 @@ class XDFStreamsDialog(QDialog):
         self.gap_threshold_label.setEnabled(enabled)
         if not enabled:
             self.gap_threshold_checkbox.setChecked(False)
-    
+
     @Slot()
     def _toggle_gap_threshold_spinbox(self):
         """Enable/disable gap threshold spinbox based on gap threshold checkbox."""
