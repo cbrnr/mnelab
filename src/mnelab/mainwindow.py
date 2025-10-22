@@ -625,14 +625,18 @@ class MainWindow(QMainWindow):
                 )
                 if dialog.exec():
                     fs_new = None
+                    gap_threshold = 0.0
                     if dialog.resample.isChecked():
                         fs_new = float(dialog.fs_new.value())
+                        if dialog.gap_threshold_checkbox.isChecked():
+                            gap_threshold = float(dialog.gap_threshold.value())
                     self.model.load(
                         fname,
                         stream_ids=dialog.selected_streams,
                         marker_ids=dialog.selected_markers,
                         prefix_markers=dialog.prefix_markers,
                         fs_new=fs_new,
+                        gap_threshold=gap_threshold,
                     )
             elif ext.lower() == ".mat":
                 dialog = MatDialog(self, Path(fname).name, parse_mat(fname))
