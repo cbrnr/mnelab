@@ -1,6 +1,7 @@
 ## [UNRELEASED] - YYYY-MM-DD
 ### ✨ Added
 - Support for writing Biosemi Data Format (BDF) files ([#513](https://github.com/cbrnr/mnelab/pull/513) by [Clemens Brunner](https://github.com/cbrnr))
+- Support for reading XDF files with gaps/interruptions in the data ([#510](https://github.com/cbrnr/mnelab/pull/510) by [Clemens Brunner](https://github.com/cbrnr), [Benedikt Ehinger](https://github.com/behinger), and [Benedikt Klöckl](https://github.com/bkloeckl))
 
 ## [1.0.5] - 2025-07-29
 ### 🔧 Fixed
