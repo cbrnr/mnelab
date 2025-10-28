@@ -1,5 +1,5 @@
 [build-system]
-requires = ["uv_build >= 0.9.0, < 0.10.0"]
+requires = ["uv_build >= 0.9.5, < 0.10.0"]
 build-backend = "uv_build"
 
 [project]
@@ -21,6 +21,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 keywords = ["EEG", "MEG", "MNE", "GUI", "electrophysiology"]
 dependencies = [
