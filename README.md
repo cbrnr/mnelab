@@ -23,8 +23,8 @@ Instructions for installing and using MNELAB as well as step-by-step examples fo
 
 We recommend our standalone installers currently available for macOS and Windows:
 
-- [MNELAB 1.0.5 (macOS)](https://github.com/cbrnr/mnelab/releases/download/v1.0.5/MNELAB-1.0.5.dmg)
-- [MNELAB 1.0.5 (Windows)](https://github.com/cbrnr/mnelab/releases/download/v1.0.5/MNELAB-1.0.5.exe)
+- [MNELAB 1.0.6 (macOS)](https://github.com/cbrnr/mnelab/releases/download/v1.0.6/MNELAB-1.0.6.dmg)
+- [MNELAB 1.0.6 (Windows)](https://github.com/cbrnr/mnelab/releases/download/v1.0.6/MNELAB-1.0.6.exe)
 
 Alternatively, you can use [uv](https://docs.astral.sh/uv/) to run MNELAB:
 
