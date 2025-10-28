@@ -1,4 +1,6 @@
 ## [UNRELEASED] - YYYY-MM-DD
+### ✨ Added
+- Add Python 3.14 support ([#517](https://github.com/cbrnr/mnelab/pull/517) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.0.6] - 2025-10-28
 ### ✨ Added
