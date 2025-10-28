@@ -60,12 +60,26 @@ class XDFStreamsDialog(QDialog):
         self.view.itemSelectionChanged.connect(self.toggle_buttons)
 
         self.resample = QCheckBox()
-        self.resample_label = QLabel("Resample to:")
+        self.resample.stateChanged.connect(self._toggle_gap_threshold)
+        self.resample_label = QLabel("Resample to")
         self.fs_new = QDoubleSpinBox()
         self.fs_new.setRange(1, max(r[5] for r in rows))
         self.fs_new.setValue(1)
         self.fs_new.setDecimals(1)
         self.fs_new.setSuffix(" Hz")
+
+        self.gap_threshold_label = QLabel("Detect gaps longer than")
+        self.gap_threshold_checkbox = QCheckBox()
+        self.gap_threshold_checkbox.stateChanged.connect(
+            self._toggle_gap_threshold_spinbox
+        )
+        self.gap_threshold = QDoubleSpinBox()
+        self.gap_threshold.setRange(0.1, 10)
+        self.gap_threshold.setValue(0.1)
+        self.gap_threshold.setDecimals(1)
+        self.gap_threshold.setSingleStep(0.1)
+        self.gap_threshold.setSuffix(" s")
+        self.gap_threshold.setEnabled(False)
 
         self._prefix_markers = QCheckBox("Prefix markers with stream ID")
         self._prefix_markers.setChecked(False)
@@ -74,9 +88,12 @@ class XDFStreamsDialog(QDialog):
         hbox1.addWidget(self.resample)
         hbox1.addWidget(self.resample_label)
         hbox1.addWidget(self.fs_new)
+        hbox1.addSpacing(20)
+        hbox1.addWidget(self.gap_threshold_checkbox)
+        hbox1.addWidget(self.gap_threshold_label)
+        hbox1.addWidget(self.gap_threshold)
         hbox1.addStretch()
         hbox1.addWidget(self._prefix_markers)
-        hbox1.addStretch()
 
         vbox = QVBoxLayout(self)
         vbox.addWidget(self.view)
@@ -107,6 +124,20 @@ class XDFStreamsDialog(QDialog):
         self.parent().xdf_metadata(self.fname)
 
     @Slot()
+    def _toggle_gap_threshold(self):
+        """Enable/disable gap threshold controls based on resample checkbox."""
+        enabled = self.resample.isChecked()
+        self.gap_threshold_checkbox.setEnabled(enabled)
+        self.gap_threshold_label.setEnabled(enabled)
+        if not enabled:
+            self.gap_threshold_checkbox.setChecked(False)
+
+    @Slot()
+    def _toggle_gap_threshold_spinbox(self):
+        """Enable/disable gap threshold spinbox based on gap threshold checkbox."""
+        self.gap_threshold.setEnabled(self.gap_threshold_checkbox.isChecked())
+
+    @Slot()
     def toggle_buttons(self):
         # toggle the resample selection
         if len(self.selected_streams) > 1:
@@ -118,6 +149,9 @@ class XDFStreamsDialog(QDialog):
         else:
             self.resample.setEnabled(False)
             self.resample.setChecked(False)
+
+        # update gap threshold enable state
+        self._toggle_gap_threshold()
 
         if len(self.selected_markers) > 1:
             self._prefix_markers.setEnabled(True)
