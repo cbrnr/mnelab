@@ -4,6 +4,7 @@
 
 ### 🔧 Fixed
 - Fix issue where NaNs were inserted into all streams instead of only those with missing data ([#518](https://github.com/cbrnr/mnelab/pull/518) by [Clemens Brunner](https://github.com/cbrnr))
+- Fix performance issue when using the Qt plotting backend on macOS ([#519](https://github.com/cbrnr/mnelab/pull/519) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.0.6] - 2025-10-28
 ### ✨ Added
