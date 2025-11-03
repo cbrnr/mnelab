@@ -31,7 +31,7 @@ dependencies = [
     "numpy >= 2.0.0",
     "pybv >= 0.7.4",
     "pyxdf >= 1.16.4",
-    "pyside6 >= 6.7.1, != 6.9.1",
+    "pyside6 >= 6.9.3, < 6.10.0",  # >= 6.10.0 causes performance issues with pyqtgraph <= 0.13.7 on macOS (can be removed with a new pyqtgraph release)
     "scipy >= 1.14.1",
 ]
 
