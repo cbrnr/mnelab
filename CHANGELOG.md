@@ -2,6 +2,9 @@
 ### ✨ Added
 - Add Python 3.14 support ([#517](https://github.com/cbrnr/mnelab/pull/517) by [Clemens Brunner](https://github.com/cbrnr))
 
+### 🔧 Fixed
+- Fix issue where NaNs were inserted into all streams instead of only those with missing data ([#518](https://github.com/cbrnr/mnelab/pull/518) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [1.0.6] - 2025-10-28
 ### ✨ Added
 - Support for writing Biosemi Data Format (BDF) files ([#513](https://github.com/cbrnr/mnelab/pull/513) by [Clemens Brunner](https://github.com/cbrnr))
