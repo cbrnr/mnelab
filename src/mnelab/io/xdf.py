@@ -123,13 +123,17 @@ class RawXDF(BaseRaw):
 
             if gap_threshold > 0:  # mark gaps if requested
                 timestamps = first_time + np.arange(len(data)) / fs
+                col_start = 0
                 for stream_id in stream_ids:
+                    n_chans = int(streams[stream_id]["info"]["channel_count"][0])
                     _mark_gaps(
                         data,
                         timestamps,
                         streams[stream_id]["time_stamps"],
                         gap_threshold,
+                        slice(col_start, col_start + n_chans),
                     )
+                    col_start += n_chans
         else:  # only possible if a single stream was selected
             data = streams[stream_ids[0]]["time_series"]
             first_time = streams[stream_ids[0]]["time_stamps"][0]
@@ -164,7 +168,7 @@ class RawXDF(BaseRaw):
             self.set_meas_date(meas_date.astimezone(timezone.utc))
 
 
-def _mark_gaps(data, timestamps, original_timestamps, gap_threshold):
+def _mark_gaps(data, timestamps, original_timestamps, gap_threshold, cols):
     """Mark gaps in data with NaN based on gaps in original timestamps.
 
     This function modifies the data array in-place.
@@ -179,6 +183,8 @@ def _mark_gaps(data, timestamps, original_timestamps, gap_threshold):
         Original timestamps from the stream.
     gap_threshold : float
         Gap threshold in seconds.
+    cols : slice
+        Column slice indicating which columns belong to this stream.
     """
     # find gaps in original timestamps
     gaps = np.diff(original_timestamps) > gap_threshold
@@ -196,9 +202,9 @@ def _mark_gaps(data, timestamps, original_timestamps, gap_threshold):
         start_idx = np.searchsorted(timestamps, gap_start_time, side="right")
         end_idx = np.searchsorted(timestamps, gap_end_time, side="left")
 
-        # mark the gap region as NaN
+        # mark the gap region as NaN (only for this stream's columns)
         if start_idx < len(data) and end_idx <= len(data):
-            data[start_idx:end_idx, :] = np.nan
+            data[start_idx:end_idx, cols] = np.nan
 
 
 def _resample_streams(streams, stream_ids, fs_new, use_interpolation=False):
