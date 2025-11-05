@@ -1,6 +1,17 @@
 ## [UNRELEASED] - YYYY-MM-DD
+
+## [1.0.7] - 2025-11-03
+### ✨ Added
+- Add Python 3.14 support ([#517](https://github.com/cbrnr/mnelab/pull/517) by [Clemens Brunner](https://github.com/cbrnr))
+
+### 🔧 Fixed
+- Fix issue where NaNs were inserted into all streams instead of only those with missing data ([#518](https://github.com/cbrnr/mnelab/pull/518) by [Clemens Brunner](https://github.com/cbrnr))
+- Fix performance issue when using the Qt plotting backend on macOS ([#519](https://github.com/cbrnr/mnelab/pull/519) by [Clemens Brunner](https://github.com/cbrnr))
+
+## [1.0.6] - 2025-10-28
 ### ✨ Added
 - Support for writing Biosemi Data Format (BDF) files ([#513](https://github.com/cbrnr/mnelab/pull/513) by [Clemens Brunner](https://github.com/cbrnr))
+- Support for reading XDF files with gaps/interruptions in the data ([#510](https://github.com/cbrnr/mnelab/pull/510) by [Clemens Brunner](https://github.com/cbrnr), [Benedikt Ehinger](https://github.com/behinger), and [Benedikt Klöckl](https://github.com/bkloeckl))
 
 ## [1.0.5] - 2025-07-29
 ### 🔧 Fixed

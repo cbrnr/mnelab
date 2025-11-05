@@ -24,7 +24,7 @@ Open a terminal and change into the folder where you would like your MNELAB fork
 In a terminal, change to the `mnelab` folder containing your MNELAB fork and run the following command:
 
 ```
-uv sync --python=3.10 --all-extras
+uv sync --python 3.10 --all-extras
 ```
 
 You can then run MNELAB with `uv run mnelab`, or run the tests with `uv run pytest`. We recommend to use the minimum required Python version (currently 3.10) to ensure compatibility with this release.
