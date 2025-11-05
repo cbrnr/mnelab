@@ -1,23 +1,25 @@
 import sys
 from unittest.mock import patch
 
+import pytest
+from PySide6.QtWidgets import QApplication
+
 from mnelab import main
-from mnelab.mainwindow import MainWindow
 
 
-def test_main_app_startup(qapp):
+def test_main_app_startup(no_qapp, monkeypatch):
     """Test that the main() function starts the application correctly."""
+    monkeypatch.setattr(sys, "argv", ["mnelab"])
+
     with (
-        patch.object(sys, "exit") as mock_exit,
-        patch.object(sys, "argv", ["mnelab"]),
-        patch("mnelab.MNELAB", return_value=qapp),
-        patch.object(qapp, "exec", return_value=0) as mock_exec,
+        patch("PySide6.QtWidgets.QApplication.exec", return_value=0) as mock_exec,
+        pytest.raises(SystemExit) as exc_info,
     ):
         main()
 
-    assert qapp.mainwindow is not None
-    assert isinstance(qapp.mainwindow, MainWindow)
-    assert qapp.mainwindow.windowTitle() == "MNELAB"
-
+    assert exc_info.value.code == 0
     mock_exec.assert_called_once()
-    mock_exit.assert_called_once_with(0)
+
+    app = QApplication.instance()
+    assert app.mainwindow.windowTitle() == "MNELAB"
+
