@@ -22,4 +22,3 @@ def test_main_app_startup(no_qapp, monkeypatch):
 
     app = QApplication.instance()
     assert app.mainwindow.windowTitle() == "MNELAB"
-
