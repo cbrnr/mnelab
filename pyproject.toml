@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "mnelab"
-version = "1.0.8"
+version = "1.1.0.dev0"
 description = "A graphical user interface for MNE"
 license = "BSD-3-Clause"
 license-files = ["LICENSE"]
