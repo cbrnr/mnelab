@@ -13,15 +13,6 @@ if getattr(sys, "frozen", False):
 
 import multiprocessing as mp
 from importlib.metadata import PackageNotFoundError, version
-from pathlib import Path
-
-import matplotlib
-from PySide6.QtCore import QEvent, QLoggingCategory, QSettings, Qt
-from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QApplication
-
-from mnelab.mainwindow import MainWindow
-from mnelab.model import Model
 
 try:
     __version__ = version("mnelab")
@@ -29,25 +20,37 @@ except PackageNotFoundError:
     __version__ = "unknown"
 
 
-class MNELAB(QApplication):
-    """MNELAB application."""
-
-    def __init__(self, argv):
-        super().__init__(argv)
-        self.mainwindow = None
-
-    def event(self, event):
-        if event.type() == QEvent.FileOpen:
-            self.mainwindow.open_data(event.file())
-            return True
-        return super().event(event)
-
-
 def main():
+    mp.freeze_support()
+    mp.set_start_method("spawn", force=True)
+
+    from pathlib import Path
+
+    import matplotlib
+    from PySide6.QtCore import QEvent, QLoggingCategory, Qt
+    from PySide6.QtGui import QIcon
+    from PySide6.QtWidgets import QApplication
+
+    from mnelab.mainwindow import MainWindow
+    from mnelab.model import Model
+
     QLoggingCategory.setFilterRules("*.debug=false\n*.warning=false")
-    mp.set_start_method("spawn", force=True)  # required for Linux
 
     matplotlib.use("QtAgg")
+
+    class MNELAB(QApplication):
+        """MNELAB application."""
+
+        def __init__(self, argv):
+            super().__init__(argv)
+            self.mainwindow = None
+
+        def event(self, event):
+            if event.type() == QEvent.FileOpen:
+                self.mainwindow.open_data(event.file())
+                return True
+            return super().event(event)
+
     app = MNELAB(sys.argv)
     app.setApplicationName("mnelab")
     app.setApplicationDisplayName("MNELAB")

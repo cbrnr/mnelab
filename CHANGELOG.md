@@ -1,4 +1,6 @@
 ## [UNRELEASED] - YYYY-MM-DD
+### 🔧 Fixed
+- Fix ICA calculation in standalone releases ([#525](https://github.com/cbrnr/mnelab/pull/525) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.0.7] - 2025-11-03
 ### ✨ Added

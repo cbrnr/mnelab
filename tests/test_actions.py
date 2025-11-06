@@ -2,7 +2,8 @@
 #
 # License: BSD (3-clause)
 
-from mnelab import MainWindow, Model
+from mnelab.mainwindow import MainWindow
+from mnelab.model import Model
 
 
 def test_initial_actions(qtbot):

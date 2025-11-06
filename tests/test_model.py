@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 from edfio import Edf, EdfSignal
 
-from mnelab import Model
+from mnelab.model import Model
 
 
 @pytest.fixture(scope="module")
