@@ -68,6 +68,6 @@ def main():
     app.mainwindow = model.view
     if len(sys.argv) > 1:  # open files from command line arguments
         for f in sys.argv[1:]:
-            model.load(f)
+            model.view.open_data(f)
     model.view.show()
     sys.exit(app.exec())
