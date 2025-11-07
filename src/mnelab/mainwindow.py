@@ -315,7 +315,7 @@ class MainWindow(QMainWindow):
             QKeySequence(Qt.CTRL | Qt.Key_Y),
         )
         self.actions["channel_stats"] = view_menu.addAction(
-            "&Channel Stats",
+            "&Channel stats",
             self.show_channel_stats,
         )
         self.actions["toolbar"] = view_menu.addAction("&Toolbar", self._toggle_toolbar)
