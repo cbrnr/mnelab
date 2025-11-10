@@ -3,3 +3,5 @@
 __pycache__/
 dist/
 build/
+.venv/
+uv.lock
