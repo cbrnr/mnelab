@@ -94,6 +94,7 @@ class EventsDialog(QDialog):
             self.add_button.setEnabled(True)
             self.remove_button.setEnabled(False)
             self.mapping_button.setEnabled(False)
+            self.counts_button.setEnabled(False)
         elif n_items == 2:  # one row (2 items) selected
             self.add_button.setEnabled(True)
             self.remove_button.setEnabled(True)
