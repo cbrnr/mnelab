@@ -166,8 +166,7 @@ def plot_erds(tfr_and_masks):
         for (ch_name, mask), ax in zip(masks.items(), axes[..., :-1].flat):
             tfr_ev.average().plot(
                 [ch_name],
-                vmin=vmin,
-                vmax=vmax,
+                vlim=(vmin, vmax),
                 cmap=(cmap, False),
                 axes=ax,
                 colorbar=False,
