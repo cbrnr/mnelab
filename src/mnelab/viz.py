@@ -365,7 +365,9 @@ def plot_evoked_topomaps(epochs, events, average_method, times):
     figs = []
     for event in events:
         evoked = epochs[event].average(method=average_method)
-        figs.append(evoked.plot_topomap(times, title=f"Event: {event}"))
+        fig = evoked.plot_topomap(times)
+        fig.suptitle(f"Event: {event}")
+        figs.append(fig)
         if times == "interactive":
             figs[-1].set_size_inches(6, 4)
     return figs
