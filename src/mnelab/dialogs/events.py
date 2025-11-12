@@ -107,6 +107,7 @@ class EventsDialog(QDialog):
             self.add_button.setEnabled(False)
             self.remove_button.setEnabled(False)
             self.mapping_button.setEnabled(True)
+            self.counts_button.setEnabled(True)
 
     def add_event(self):
         if self.event_table.selectedIndexes():
