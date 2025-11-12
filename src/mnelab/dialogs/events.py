@@ -90,21 +90,18 @@ class EventsDialog(QDialog):
     def toggle_buttons(self):
         """Toggle + and - buttons."""
         n_items = len(self.event_table.selectedItems())
+        self.add_button.setEnabled(True)
         if self.event_table.rowCount() == 0:  # no events available
-            self.add_button.setEnabled(True)
             self.remove_button.setEnabled(False)
             self.mapping_button.setEnabled(False)
             self.counts_button.setEnabled(False)
         elif n_items == 2:  # one row (2 items) selected
-            self.add_button.setEnabled(True)
             self.remove_button.setEnabled(True)
             self.mapping_button.setEnabled(True)
         elif n_items > 2:  # more than one row selected
-            self.add_button.setEnabled(False)
             self.remove_button.setEnabled(True)
             self.mapping_button.setEnabled(True)
         else:  # no rows selected
-            self.add_button.setEnabled(False)
             self.remove_button.setEnabled(False)
             self.mapping_button.setEnabled(True)
             self.counts_button.setEnabled(True)
