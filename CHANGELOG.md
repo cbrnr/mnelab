@@ -1,4 +1,6 @@
 ## [UNRELEASED] - YYYY-MM-DD
+### 🔧 Fixed
+- Fix ERDS maps and evoked topomaps plotting ([#530](https://github.com/cbrnr/mnelab/pull/530) by [Fabian Schellander](https://github.com/SchellanderF))
 
 ## [1.0.8] - 2025-11-06
 ### 🔧 Fixed
