@@ -75,7 +75,6 @@ class AnnotationsDialog(QDialog):
     def toggle_buttons(self):
         """Toggle + and - buttons."""
         n_items = len(self.table.selectedItems())
-        self.add_button.setEnabled(True)
         if self.table.rowCount() == 0:  # no annotations available
             self.remove_button.setEnabled(False)
             self.counts_button.setEnabled(False)
