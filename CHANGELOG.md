@@ -1,5 +1,6 @@
 ## [UNRELEASED] - YYYY-MM-DD
 ### 🔧 Fixed
+- Fixed a bug in the 'Drop bad epochs' dialog that did not accept commas as decimal separators ([531](https://github.com/cbrnr/mnelab/pull/531) by [Fabian Schellander](https://github.com/SchellanderF))
 - Fix ERDS maps and evoked topomaps plotting ([#530](https://github.com/cbrnr/mnelab/pull/530) by [Fabian Schellander](https://github.com/SchellanderF))
 - Disable "Counts" button in Events dialog when no events are present ([#529](https://github.com/cbrnr/mnelab/pull/529) by [Fabian Schellander](https://github.com/SchellanderF))
 
