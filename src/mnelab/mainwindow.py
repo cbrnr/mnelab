@@ -1207,8 +1207,7 @@ class MainWindow(QMainWindow):
         def fields_to_dict(fields):
             res = {}
             for type, value in fields.items():
-                if value.text():
-                    res[type] = float(value.text())
+                res[type] = value.value()
             return res
 
         types = sorted(set(self.model.current["data"].get_channel_types()))

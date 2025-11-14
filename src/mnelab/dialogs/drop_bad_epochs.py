@@ -8,10 +8,10 @@ from PySide6.QtCore import Slot
 from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
+    QDoubleSpinBox,
     QGridLayout,
     QGroupBox,
     QLabel,
-    QLineEdit,
     QVBoxLayout,
 )
 
@@ -40,7 +40,11 @@ class DropBadEpochsDialog(QDialog):
         reject_grid = QGridLayout()
         for row, type in enumerate(types):
             reject_grid.addWidget(QLabel(_label(type)), row, 0)
-            self.reject_fields[type] = QLineEdit()
+            self.reject_fields[type] = AdaptiveDoubleSpinBox()
+            self.reject_fields[type].setDecimals(15)
+            self.reject_fields[type].setMinimum(0.0)
+            self.reject_fields[type].setValue(0.0)
+            self.reject_fields[type].setSingleStep(0.0001)
             reject_grid.addWidget(self.reject_fields[type], row, 1)
         self.reject_box.setLayout(reject_grid)
         vbox.addWidget(self.reject_box)
@@ -52,7 +56,11 @@ class DropBadEpochsDialog(QDialog):
         flat_grid = QGridLayout()
         for row, type in enumerate(types):
             flat_grid.addWidget(QLabel(_label(type)), row, 0)
-            self.flat_fields[type] = QLineEdit()
+            self.flat_fields[type] = AdaptiveDoubleSpinBox()
+            self.flat_fields[type].setDecimals(15)
+            self.flat_fields[type].setMinimum(0.0)
+            self.flat_fields[type].setValue(0.0)
+            self.flat_fields[type].setSingleStep(0.0001)
             flat_grid.addWidget(self.flat_fields[type], row, 1)
         self.flat_box.setLayout(flat_grid)
         vbox.addWidget(self.flat_box)
@@ -70,3 +78,12 @@ class DropBadEpochsDialog(QDialog):
         self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(False)
         if self.reject_box.isChecked() or self.flat_box.isChecked():
             self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(True)
+
+
+class AdaptiveDoubleSpinBox(QDoubleSpinBox):
+    def textFromValue(self, value):
+        return self.locale().toString(value, "g", self.decimals())
+
+    def stepBy(self, steps):
+        super().stepBy(steps)
+        self.lineEdit().setText(self.textFromValue(self.value()))
