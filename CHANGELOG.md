@@ -2,6 +2,7 @@
 ### 🔧 Fixed
 - Fix ERDS maps and evoked topomaps plotting ([#530](https://github.com/cbrnr/mnelab/pull/530) by [Fabian Schellander](https://github.com/SchellanderF))
 - Disable "Counts" button in Events dialog when no events are present ([#529](https://github.com/cbrnr/mnelab/pull/529) by [Fabian Schellander](https://github.com/SchellanderF))
+- Validate inputs in the "Drop bad epochs" dialog ([#532](https://github.com/cbrnr/mnelab/pull/532) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.0.8] - 2025-11-06
 ### 🔧 Fixed
