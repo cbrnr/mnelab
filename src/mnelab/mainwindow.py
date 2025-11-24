@@ -1172,7 +1172,28 @@ class MainWindow(QMainWindow):
         self.model.events_from_annotations()
 
     def annotations_from_events(self):
-        self.model.annotations_from_events()
+        unique_events, counts = np.unique(
+            self.model.current["events"][:, 2], return_counts=True
+        )
+        event_counts = dict(zip(unique_events.astype(str), counts))
+        annotations = sorted(set(self.model.current["data"].annotations.description))
+
+        dialog = AnnotationsIntervalDialog(self, event_counts, annotations)
+        if dialog.exec():
+            if dialog.annotations_from_events():
+                self.model.annotations_from_events()
+            else:
+                interval_data = dialog.event_to_event_data()
+                try:
+                    self.model.annotations_from_event_intervals(interval_data)
+                except Exception as e:
+                    msgbox = ErrorMessageBox(
+                        self,
+                        "Could not create annotations from events",
+                        str(e),
+                        traceback.format_exc(),
+                    )
+                    msgbox.show()
 
     def epoch_data(self):
         """Epoch raw data."""
