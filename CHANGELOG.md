@@ -1,4 +1,7 @@
 ## [UNRELEASED] - YYYY-MM-DD
+### ✨ Added
+- Add dialog to create annotations from events or event intervals ([#534](https://github.com/cbrnr/mnelab/pull/534) by [Fabian Schellander](https://github.com/SchellanderF))
+
 ### 🔧 Fixed
 - Fix ERDS maps and evoked topomaps plotting ([#530](https://github.com/cbrnr/mnelab/pull/530) by [Fabian Schellander](https://github.com/SchellanderF))
 - Disable "Counts" button in Events dialog when no events are present ([#529](https://github.com/cbrnr/mnelab/pull/529) by [Fabian Schellander](https://github.com/SchellanderF))
