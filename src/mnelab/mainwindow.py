@@ -36,7 +36,13 @@ from mnelab.io.npy import parse_npy
 from mnelab.io.xdf import get_xml, list_chunks
 from mnelab.model import InvalidAnnotationsError, LabelsNotFoundError, Model
 from mnelab.settings import SettingsDialog, read_settings, write_settings
-from mnelab.utils import count_locations, have, image_path, natural_sort
+from mnelab.utils import (
+    annotations_between_events,
+    count_locations,
+    have,
+    image_path,
+    natural_sort,
+)
 from mnelab.viz import (
     _calc_tfr,
     plot_erds,
@@ -275,10 +281,10 @@ class MainWindow(QMainWindow):
             QIcon.fromTheme("find-events"), "Find &events...", self.find_events
         )
         self.actions["events_from_annotations"] = tools_menu.addAction(
-            "Create events from annotations", self.events_from_annotations
+            "Events from annotations", self.events_from_annotations
         )
         self.actions["annotations_from_events"] = tools_menu.addAction(
-            "Create annotations from events", self.annotations_from_events
+            "Annotations from events...", self.annotations_from_events
         )
         tools_menu.addSeparator()
         self.actions["convert_od"] = tools_menu.addAction(
@@ -1172,10 +1178,7 @@ class MainWindow(QMainWindow):
         self.model.events_from_annotations()
 
     def annotations_from_events(self):
-        unique_events, counts = np.unique(
-            self.model.current["events"][:, 2], return_counts=True
-        )
-        event_counts = dict(zip(unique_events.astype(str), counts))
+        event_counts = mne.count_events(self.model.current["events"])
         annotations = sorted(set(self.model.current["data"].annotations.description))
 
         dialog = AnnotationsIntervalDialog(self, event_counts, annotations)
@@ -1185,7 +1188,14 @@ class MainWindow(QMainWindow):
             else:
                 interval_data = dialog.event_to_event_data()
                 try:
-                    self.model.annotations_from_event_intervals(interval_data)
+                    annotations_between_events(
+                        self.model.current["data"],
+                        self.model.current["events"],
+                        interval_data,
+                    )
+                    self.model.history.append(
+                        f"annotations_between_events(raw, events, {interval_data})"
+                    )
                 except Exception as e:
                     msgbox = ErrorMessageBox(
                         self,
