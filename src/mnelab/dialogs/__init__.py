@@ -3,11 +3,11 @@
 # License: BSD (3-clause)
 
 from mnelab.dialogs.annotations import AnnotationsDialog
+from mnelab.dialogs.annotations_from_events import AnnotationsIntervalDialog
 from mnelab.dialogs.append import AppendDialog
 from mnelab.dialogs.brainvision import BrainVisionDialog
 from mnelab.dialogs.calc import CalcDialog
 from mnelab.dialogs.channel_properties import ChannelPropertiesDialog
-from mnelab.dialogs.annotations_from_events import AnnotationsIntervalDialog
 from mnelab.dialogs.crop import CropDialog
 from mnelab.dialogs.drop_bad_epochs import DropBadEpochsDialog
 from mnelab.dialogs.epoch import EpochDialog
