@@ -159,7 +159,7 @@ class AnnotationsIntervalDialog(QDialog):
             common_events = set(start_events).intersection(set(end_events))
             if common_events:
                 is_common = True
-                warning_msg = "Error: Start and end events cannot be the same."
+                warning_msg = "Start and end events cannot be the same."
             else:
                 total_start_count = sum(
                     self.event_counts.get(e, 0) for e in start_events
