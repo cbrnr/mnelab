@@ -115,12 +115,12 @@ class AnnotationsIntervalDialog(QDialog):
         self.buttonbox.rejected.connect(self.reject)
         vbox.addWidget(self.buttonbox)
 
-        # Connections/logic
+        # Connections
         self.ok_button = self.buttonbox.button(QDialogButtonBox.Ok)
         self.annotation_type_group.buttonToggled.connect(self._on_interval_type_changed)
         self.annotation_type_group.buttonToggled.connect(self._check_validity)
 
-        # Trigger check when list selection changes
+        # Trigger checks
         self.start_event_list.itemSelectionChanged.connect(self._check_validity)
         self.end_event_list.itemSelectionChanged.connect(self._check_validity)
 
@@ -162,11 +162,11 @@ class AnnotationsIntervalDialog(QDialog):
                 warning_msg = "Start and end events cannot be the same."
             else:
                 total_start_count = sum(
-                    self.event_counts.get(e, 0) for e in start_events
+                    self.event_counts.get(int(e), 0) for e in start_events
                 )
-                total_end_count = sum(self.event_counts.get(e, 0) for e in end_events)
-
-                # FIX: Only warn if they are actually different
+                total_end_count = sum(
+                    self.event_counts.get(int(e), 0) for e in end_events
+                )
                 if total_start_count != total_end_count:
                     warning_msg = (
                         f"Unequal number of events. Selected start events have"
@@ -198,11 +198,11 @@ class AnnotationsIntervalDialog(QDialog):
 
     def event_to_event_data(self):
         return {
-            "start_event": [
+            "start_events": [
                 int(i.text()) for i in self.start_event_list.selectedItems()
             ],
             "start_offset": self.start_offset_spin.value(),
-            "end_event": [int(i.text()) for i in self.end_event_list.selectedItems()],
+            "end_events": [int(i.text()) for i in self.end_event_list.selectedItems()],
             "end_offset": self.end_offset_spin.value(),
             "annotation": self.annotation_combo.currentText(),
             "extend_start": self.to_start_check.isChecked(),

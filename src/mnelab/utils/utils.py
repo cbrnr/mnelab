@@ -7,6 +7,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 
+import mne
 import numpy as np
 from mne import channel_type
 from mne.channels import DigMontage
@@ -65,18 +66,29 @@ def calculate_channel_stats(raw):
     return cols, nchan
 
 
-def annotations_between_events(raw, events, interval_data):
+def annotations_between_events(
+    events,
+    sfreq,
+    start_events,
+    end_events,
+    max_time=None,
+    start_offset=0,
+    end_offset=0,
+    annotation="BAD_INTERTRIAL",
+    extend_start=True,
+    extend_end=True,
+):
     """Create annotations between events."""
-    fs = raw.info["sfreq"]
+    onsets = []
+    durations = []
+    descriptions = []
 
-    start_event_id = interval_data["start_event"]
-    end_event_id = interval_data["end_event"]
+    # 2. Logic to find events
+    mask_start = np.isin(events[:, 2], start_events)
+    mask_end = np.isin(events[:, 2], end_events)
 
-    mask_start = np.isin(events[:, 2], start_event_id)
-    mask_end = np.isin(events[:, 2], end_event_id)
-
-    starts_raw = events[mask_start, 0] / fs
-    ends_raw = events[mask_end, 0] / fs
+    starts_raw = events[mask_start, 0] / sfreq
+    ends_raw = events[mask_end, 0] / sfreq
 
     valid_onsets = []
     valid_durations = []
@@ -93,45 +105,50 @@ def annotations_between_events(raw, events, interval_data):
 
         t_end = future_ends[0]
 
-        duration = (t_end + interval_data["end_offset"]) - (
-            t_start + interval_data["start_offset"]
-        )
+        duration = (t_end + end_offset) - (t_start + start_offset)
 
         if duration > 0:
-            valid_onsets.append(t_start + interval_data["start_offset"])
+            valid_onsets.append(t_start + start_offset)
             valid_durations.append(duration)
-            last_valid_end_time = t_end + interval_data["end_offset"]
+            last_valid_end_time = t_end + end_offset
 
     if valid_onsets:
-        raw.annotations.append(
-            valid_onsets,
-            valid_durations,
-            [interval_data["annotation"]] * len(valid_onsets),
-        )
+        onsets.extend(valid_onsets)
+        durations.extend(valid_durations)
+        descriptions.extend([annotation] * len(valid_onsets))
 
-    if interval_data["extend_start"]:
+    if extend_start:
         boundaries = []
         if len(starts_raw) > 0:
-            boundaries.append(starts_raw[0] + interval_data["start_offset"])
+            boundaries.append(starts_raw[0] + start_offset)
         if len(ends_raw) > 0:
-            boundaries.append(ends_raw[0] + interval_data["end_offset"])
-        first_boundary = min(boundaries)
+            boundaries.append(ends_raw[0] + end_offset)
+        if boundaries:
+            first_boundary = min(boundaries)
+            if first_boundary > 0:
+                onsets.append(0.0)
+                durations.append(first_boundary)
+                descriptions.append(annotation)
 
-        if first_boundary > 0:
-            raw.annotations.append(0.0, first_boundary, interval_data["annotation"])
+    if extend_end:
+        if max_time is None:
+            pass
+        else:
+            boundaries = []
+            if len(starts_raw) > 0:
+                boundaries.append(starts_raw[-1] + start_offset)
+            if len(ends_raw) > 0:
+                boundaries.append(ends_raw[-1] + end_offset)
+            if boundaries:
+                last_boundary = max(boundaries)
+                duration = max_time - last_boundary
 
-    if interval_data["extend_end"]:
-        last_samp_time = raw.last_samp / fs
-        boundaries = []
-        if len(starts_raw) > 0:
-            boundaries.append(starts_raw[-1] + interval_data["start_offset"])
-        if len(ends_raw) > 0:
-            boundaries.append(ends_raw[-1] + interval_data["end_offset"])
-        last_boundary = max(boundaries)
-        duration = last_samp_time - last_boundary
+                if duration > 0:
+                    onsets.append(last_boundary)
+                    durations.append(duration)
+                    descriptions.append(annotation)
 
-        if duration > 0:
-            raw.annotations.append(last_boundary, duration, interval_data["annotation"])
+    return mne.Annotations(onset=onsets, duration=durations, description=descriptions)
 
 
 @dataclass

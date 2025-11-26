@@ -1188,13 +1188,22 @@ class MainWindow(QMainWindow):
             else:
                 interval_data = dialog.event_to_event_data()
                 try:
-                    annotations_between_events(
-                        self.model.current["data"],
-                        self.model.current["events"],
-                        interval_data,
+                    new_annotations = annotations_between_events(
+                        events=self.model.current["events"],
+                        sfreq=self.model.current["data"].info["sfreq"],
+                        max_time=self.model.current["data"].times[-1],
+                        **interval_data,
+                    )
+                    self.model.current["data"].set_annotations(
+                        self.model.current["data"].annotations + new_annotations
+                    )
+                    params_str = ", ".join(
+                        f"{k}={v!r}" for k, v in interval_data.items()
                     )
                     self.model.history.append(
-                        f"annotations_between_events(raw, events, {interval_data})"
+                        f"new_annots = annotations_between_events(events, "
+                        f"data.info['sfreq'], max_time=data.times[-1], {params_str})\n"
+                        f"data.set_annotations(data.annotations + new_annots)"
                     )
                 except Exception as e:
                     msgbox = ErrorMessageBox(
