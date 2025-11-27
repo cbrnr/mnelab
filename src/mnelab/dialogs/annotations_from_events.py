@@ -100,7 +100,7 @@ class AnnotationsIntervalDialog(QDialog):
         self.to_end_check.setChecked(True)
         self.grid.addWidget(self.to_end_check, 6, 0, 1, 2)
 
-        # warning Label
+        # warning label
         self.warning_label = QLabel("")
         self.warning_label.setStyleSheet("color: #d32f2f;")
         self.warning_label.setWordWrap(True)
