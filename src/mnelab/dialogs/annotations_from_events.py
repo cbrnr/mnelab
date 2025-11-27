@@ -169,8 +169,8 @@ class AnnotationsIntervalDialog(QDialog):
                 )
                 if total_start_count != total_end_count:
                     warning_msg = (
-                        f"Unequal number of events. Selected start events have"
-                        f" {total_start_count} occurrences, while end events have "
+                        f"Unequal number of events. Selected start events have "
+                        f"{total_start_count} occurrences, while end events have "
                         f"{total_end_count}. Unpaired events will be ignored."
                     )
 
