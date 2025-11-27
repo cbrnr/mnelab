@@ -1201,9 +1201,9 @@ class MainWindow(QMainWindow):
                         f"{k}={v!r}" for k, v in interval_data.items()
                     )
                     self.model.history.append(
-                        f"new_annots = annotations_between_events(events, "
+                        f"annotations = annotations_between_events(events, "
                         f"data.info['sfreq'], max_time=data.times[-1], {params_str})\n"
-                        f"data.set_annotations(data.annotations + new_annots)"
+                        f"data.set_annotations(data.annotations + annotations)"
                     )
                 except Exception as e:
                     msgbox = ErrorMessageBox(
