@@ -71,19 +71,54 @@ def annotations_between_events(
     sfreq,
     start_events,
     end_events,
+    annotation,
     max_time=None,
-    start_offset=0,
-    end_offset=0,
-    annotation="BAD_INTERTRIAL",
+    start_offset=0.0,
+    end_offset=0.0,
     extend_start=True,
     extend_end=True,
 ):
-    """Create annotations between events."""
+    """Create annotations between events.
+
+    This function identifies intervals starting with one of the ``start_events``
+    and ending with the next occurrence of one of the ``end_events``. Additionally, it
+    can also automatically create annotations to cover the beginning and end of the
+    recording.
+
+    Parameters
+    ----------
+    events : ndarray, shape (n_events, 3)
+        The events array.
+    sfreq : float
+        The sampling frequency.
+    start_events : list of int
+        The event ID(s) that mark the beginning of an interval to annotate.
+    end_events : list of int
+        The event ID(s) that mark the end of an interval to annotate.
+    annotation : str
+        The description (label) to assign to the created annotations.
+    max_time : float | None
+        The total duration of the data in seconds. Required if ``extend_end``
+        is True to define the end of the recording. Defaults to None.
+    start_offset : float
+        The offset in seconds to apply to the start events. Defaults to 0.
+    end_offset : float
+        The offset in seconds to apply to the end events. Defaults to 0.
+    extend_start : bool
+        Whether to extend the first annotation to the start of the recording.
+        Defaults to True.
+    extend_end : bool
+        Whether to extend the last annotation to the end of the recording.
+        Defaults to True.
+    Returns
+    -------
+    annotations : mne.Annotations
+        The generated annotations object containing the annotated intervals.
+    """
     onsets = []
     durations = []
     descriptions = []
 
-    # 2. Logic to find events
     mask_start = np.isin(events[:, 2], start_events)
     mask_end = np.isin(events[:, 2], end_events)
 
@@ -93,7 +128,7 @@ def annotations_between_events(
     valid_onsets = []
     valid_durations = []
 
-    # Find pairs
+    # find pairs
     last_valid_end_time = -1.0
     for t_start in starts_raw:
         if t_start < last_valid_end_time:

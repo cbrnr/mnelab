@@ -39,13 +39,13 @@ class AnnotationsIntervalDialog(QDialog):
         self.annotation_type_group.addButton(self.annotations_events_button)
         self.annotation_type_group.addButton(self.event_event_button)
 
-        # Settings widget
+        # settings widget
         self.interval_settings_widget = QWidget()
         self.grid = QGridLayout(self.interval_settings_widget)
         self.grid.setContentsMargins(20, 0, 0, 20)
         self.grid.setColumnStretch(1, 1)
 
-        # Start Event
+        # start event
         self.grid.addWidget(QLabel("Start event(s):"), 0, 0, Qt.AlignTop)
         self.start_event_list = QListWidget()
         self.start_event_list.setSelectionMode(QListWidget.ExtendedSelection)
@@ -53,7 +53,7 @@ class AnnotationsIntervalDialog(QDialog):
         self.start_event_list.setMaximumHeight(100)
         self.grid.addWidget(self.start_event_list, 0, 1)
 
-        # Start Offset
+        # start offset
         self.grid.addWidget(QLabel("Start offset:"), 1, 0)
         self.start_offset_spin = QDoubleSpinBox()
         self.start_offset_spin.setAlignment(Qt.AlignRight)
@@ -63,7 +63,7 @@ class AnnotationsIntervalDialog(QDialog):
         self.start_offset_spin.setSuffix(" s")
         self.grid.addWidget(self.start_offset_spin, 1, 1)
 
-        # End Event
+        # end event
         self.grid.addWidget(QLabel("End event(s):"), 2, 0, Qt.AlignTop)
         self.end_event_list = QListWidget()
         self.end_event_list.setSelectionMode(QListWidget.ExtendedSelection)
@@ -71,7 +71,7 @@ class AnnotationsIntervalDialog(QDialog):
         self.end_event_list.setMaximumHeight(100)
         self.grid.addWidget(self.end_event_list, 2, 1)
 
-        # End Offset
+        # end offset
         self.grid.addWidget(QLabel("End offset:"), 3, 0)
         self.end_offset_spin = QDoubleSpinBox()
         self.end_offset_spin.setAlignment(Qt.AlignRight)
@@ -81,7 +81,7 @@ class AnnotationsIntervalDialog(QDialog):
         self.end_offset_spin.setSuffix(" s")
         self.grid.addWidget(self.end_offset_spin, 3, 1)
 
-        # Annotation Name
+        # annotation name
         self.grid.addWidget(QLabel("Annotation:"), 4, 0)
         self.annotation_combo = QComboBox()
         self.annotation_combo.setEditable(True)
@@ -91,7 +91,7 @@ class AnnotationsIntervalDialog(QDialog):
         self.annotation_combo.setMinimumWidth(130)
         self.grid.addWidget(self.annotation_combo, 4, 1)
 
-        # Checkboxes
+        # checkboxes
         self.to_start_check = QCheckBox("Extend to start")
         self.to_start_check.setChecked(True)
         self.grid.addWidget(self.to_start_check, 5, 0, 1, 2)
@@ -100,7 +100,7 @@ class AnnotationsIntervalDialog(QDialog):
         self.to_end_check.setChecked(True)
         self.grid.addWidget(self.to_end_check, 6, 0, 1, 2)
 
-        # Warning Label
+        # warning Label
         self.warning_label = QLabel("")
         self.warning_label.setStyleSheet("color: #d32f2f;")
         self.warning_label.setWordWrap(True)
@@ -109,18 +109,18 @@ class AnnotationsIntervalDialog(QDialog):
 
         vbox.addWidget(self.interval_settings_widget)
 
-        # Buttons
+        # buttons
         self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
         vbox.addWidget(self.buttonbox)
 
-        # Connections
+        # connections
         self.ok_button = self.buttonbox.button(QDialogButtonBox.Ok)
         self.annotation_type_group.buttonToggled.connect(self._on_interval_type_changed)
         self.annotation_type_group.buttonToggled.connect(self._check_validity)
 
-        # Trigger checks
+        # trigger checks
         self.start_event_list.itemSelectionChanged.connect(self._check_validity)
         self.end_event_list.itemSelectionChanged.connect(self._check_validity)
 
@@ -154,7 +154,7 @@ class AnnotationsIntervalDialog(QDialog):
         is_common = False
         warning_msg = ""
 
-        # Check events
+        # check events
         if has_start and has_end:
             common_events = set(start_events).intersection(set(end_events))
             if common_events:
