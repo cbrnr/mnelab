@@ -80,8 +80,8 @@ def annotations_between_events(
 ):
     """Create annotations between events.
 
-    This function identifies intervals starting with one of the ``start_events``
-    and ending with the next occurrence of one of the ``end_events``. Additionally, it
+    This function identifies intervals starting with one of the `start_events`
+    and ending with the next occurrence of one of the `end_events`. Additionally, it
     can also automatically create annotations to cover the beginning and end of the
     recording.
 
