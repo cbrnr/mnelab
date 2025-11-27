@@ -1197,13 +1197,20 @@ class MainWindow(QMainWindow):
                     self.model.current["data"].set_annotations(
                         self.model.current["data"].annotations + new_annotations
                     )
-                    params_str = ", ".join(
-                        f"{k}={v!r}" for k, v in interval_data.items()
-                    )
+
                     self.model.history.append(
-                        f"annotations = annotations_between_events(events, "
-                        f"data.info['sfreq'], max_time=data.times[-1], {params_str})\n"
-                        f"data.set_annotations(data.annotations + annotations)"
+                        f"annotations = annotations_between_events(\n"
+                        f"    events=events,\n"
+                        f'    sfreq=data.info["sfreq"],\n'
+                        f"    start_events={interval_data['start_events']},\n"
+                        f"    end_events={interval_data['end_events']},\n"
+                        f'    annotation="{interval_data["annotation"]}",\n'
+                        f"    max_time=data.times[-1],\n"
+                        f"    start_offset={interval_data['start_offset']},\n"
+                        f"    end_offset={interval_data['end_offset']},\n"
+                        f"    extend_start={interval_data['extend_start']},\n"
+                        f"    extend_end={interval_data['extend_end']}\n"
+                        f")"
                     )
                 except Exception as e:
                     msgbox = ErrorMessageBox(
