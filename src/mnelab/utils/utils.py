@@ -90,7 +90,7 @@ def annotations_between_events(
     events : ndarray, shape (n_events, 3)
         The events array.
     sfreq : float
-        The sampling frequency.
+        The sampling frequency (in Hz).
     start_events : list of int
         The event ID(s) that mark the beginning of an interval to annotate.
     end_events : list of int
