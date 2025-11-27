@@ -98,7 +98,7 @@ def annotations_between_events(
     annotation : str
         The description (label) to assign to the created annotations.
     max_time : float | None
-        The total duration of the data in seconds. Required if ``extend_end``
+        The total duration of the data in seconds. Required if `extend_end`
         is True to define the end of the recording. Defaults to None.
     start_offset : float
         The offset in seconds to apply to the start events. Defaults to 0.
