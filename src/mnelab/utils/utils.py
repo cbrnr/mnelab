@@ -80,9 +80,9 @@ def annotations_between_events(
 ):
     """Create annotations between events.
 
-    This function identifies intervals starting with one of the `start_events`
-    and ending with the next occurrence of one of the `end_events`. Additionally, it
-    can also automatically create annotations to cover the beginning and end of the
+    This function identifies intervals starting with one of the `start_events` and
+    ending with the next occurrence of one of the `end_events`. Additionally, it can
+    also automatically create annotations to cover the beginning and end of the
     recording.
 
     Parameters
@@ -98,21 +98,21 @@ def annotations_between_events(
     annotation : str
         The description (label) to assign to the created annotations.
     max_time : float | None
-        The total duration of the data in seconds. Required if `extend_end`
-        is True to define the end of the recording. Defaults to None.
+        The total duration of the data in seconds. Required if `extend_end` is True to
+        define the end of the recording. Defaults to None.
     start_offset : float
         The offset in seconds to apply to the start events. Defaults to 0.
     end_offset : float
         The offset in seconds to apply to the end events. Defaults to 0.
     extend_start : bool
-        Whether to extend the first annotation to the start of the recording.
-        Defaults to True.
+        Whether to extend the first annotation to the start of the recording. Defaults
+        to True.
     extend_end : bool
-        Whether to extend the last annotation to the end of the recording.
-        Defaults to True.
+        Whether to extend the last annotation to the end of the recording. Defaults to
+        True.
     Returns
     -------
-    annotations : mne.Annotations
+    mne.Annotations
         The generated annotations object containing the annotated intervals.
     """
     onsets = []

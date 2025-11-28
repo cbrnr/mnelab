@@ -1209,7 +1209,7 @@ class MainWindow(QMainWindow):
                         f"    start_offset={interval_data['start_offset']},\n"
                         f"    end_offset={interval_data['end_offset']},\n"
                         f"    extend_start={interval_data['extend_start']},\n"
-                        f"    extend_end={interval_data['extend_end']}\n"
+                        f"    extend_end={interval_data['extend_end']},\n"
                         f")"
                     )
                 except Exception as e:
