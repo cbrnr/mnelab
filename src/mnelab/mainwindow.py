@@ -36,7 +36,13 @@ from mnelab.io.npy import parse_npy
 from mnelab.io.xdf import get_xml, list_chunks
 from mnelab.model import InvalidAnnotationsError, LabelsNotFoundError, Model
 from mnelab.settings import SettingsDialog, read_settings, write_settings
-from mnelab.utils import count_locations, have, image_path, natural_sort
+from mnelab.utils import (
+    annotations_between_events,
+    count_locations,
+    have,
+    image_path,
+    natural_sort,
+)
 from mnelab.viz import (
     _calc_tfr,
     plot_erds,
@@ -275,10 +281,10 @@ class MainWindow(QMainWindow):
             QIcon.fromTheme("find-events"), "Find &events...", self.find_events
         )
         self.actions["events_from_annotations"] = tools_menu.addAction(
-            "Create events from annotations", self.events_from_annotations
+            "Events from annotations", self.events_from_annotations
         )
         self.actions["annotations_from_events"] = tools_menu.addAction(
-            "Create annotations from events", self.annotations_from_events
+            "Annotations from events...", self.annotations_from_events
         )
         tools_menu.addSeparator()
         self.actions["convert_od"] = tools_menu.addAction(
@@ -1172,7 +1178,48 @@ class MainWindow(QMainWindow):
         self.model.events_from_annotations()
 
     def annotations_from_events(self):
-        self.model.annotations_from_events()
+        event_counts = mne.count_events(self.model.current["events"])
+        annotations = sorted(set(self.model.current["data"].annotations.description))
+
+        dialog = AnnotationsIntervalDialog(self, event_counts, annotations)
+        if dialog.exec():
+            if dialog.annotations_from_events():
+                self.model.annotations_from_events()
+            else:
+                interval_data = dialog.event_to_event_data()
+                try:
+                    new_annotations = annotations_between_events(
+                        events=self.model.current["events"],
+                        sfreq=self.model.current["data"].info["sfreq"],
+                        max_time=self.model.current["data"].times[-1],
+                        **interval_data,
+                    )
+                    self.model.current["data"].set_annotations(
+                        self.model.current["data"].annotations + new_annotations
+                    )
+
+                    self.model.history.append(
+                        f"annotations = annotations_between_events(\n"
+                        f"    events=events,\n"
+                        f'    sfreq=data.info["sfreq"],\n'
+                        f"    start_events={interval_data['start_events']},\n"
+                        f"    end_events={interval_data['end_events']},\n"
+                        f'    annotation="{interval_data["annotation"]}",\n'
+                        f"    max_time=data.times[-1],\n"
+                        f"    start_offset={interval_data['start_offset']},\n"
+                        f"    end_offset={interval_data['end_offset']},\n"
+                        f"    extend_start={interval_data['extend_start']},\n"
+                        f"    extend_end={interval_data['extend_end']},\n"
+                        f")"
+                    )
+                except Exception as e:
+                    msgbox = ErrorMessageBox(
+                        self,
+                        "Could not create annotations from events",
+                        str(e),
+                        traceback.format_exc(),
+                    )
+                    msgbox.show()
 
     def epoch_data(self):
         """Epoch raw data."""

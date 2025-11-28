@@ -55,6 +55,7 @@ class Model:
             "from copy import deepcopy",
             "import mne",
             "from mnelab.io import read_raw",
+            "from mnelab.utils import annotations_between_events",
             "",
             "datasets = []",
         ]

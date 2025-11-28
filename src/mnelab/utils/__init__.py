@@ -6,6 +6,7 @@ from mnelab.utils.dependencies import have
 from mnelab.utils.syntax import PythonHighlighter
 from mnelab.utils.utils import (
     Montage,
+    annotations_between_events,
     calculate_channel_stats,
     count_locations,
     image_path,

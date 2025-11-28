@@ -3,6 +3,7 @@
 # License: BSD (3-clause)
 
 from mnelab.dialogs.annotations import AnnotationsDialog
+from mnelab.dialogs.annotations_from_events import AnnotationsIntervalDialog
 from mnelab.dialogs.append import AppendDialog
 from mnelab.dialogs.brainvision import BrainVisionDialog
 from mnelab.dialogs.calc import CalcDialog
