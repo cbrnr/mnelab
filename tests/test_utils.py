@@ -56,8 +56,10 @@ def test_offsets(sample_events, start_off, end_off, expected_onset, expected_dur
         extend_end=False,
     )
 
-    assert annots.onset[0] == pytest.approx(expected_onset)
-    assert annots.duration[0] == pytest.approx(expected_dur)
+    np.testing.assert_allclose(
+        [annots.onset[0], annots.duration[0]], 
+        [expected_onset, expected_dur]
+    )
 
 
 def test_extend_flags(sample_events):
