@@ -12,7 +12,7 @@ def sample_events():
 
 
 def test_simple_pairing(sample_events):
-    """Tests interval annotation creation with simple start/end event pairing."""
+    """Test interval annotation creation with simple start/end event pairing."""
     annots = annotations_between_events(
         events=sample_events,
         sfreq=100.0,
