@@ -6,7 +6,7 @@ from mnelab.utils import annotations_between_events
 
 @pytest.fixture
 def sample_events():
-    """creates a sample events array for testing"""
+    """Create an events array for testing."""
     # Format: [sample, 0, event_id]
     return np.array([[100, 0, 1], [200, 0, 2], [500, 0, 1], [600, 0, 2]])
 
