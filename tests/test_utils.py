@@ -24,14 +24,10 @@ def test_simple_pairing(sample_events):
     )
 
     assert len(annots) == 2
-    assert annots.description[0] == "Bad Segment"
-    assert annots.description[1] == "Bad Segment"
+    assert all(d == "Bad Segment" for d in annots.description)
 
-    assert annots.onset[0] == pytest.approx(1.0)
-    assert annots.duration[0] == pytest.approx(1.0)
-
-    assert annots.onset[1] == pytest.approx(5.0)
-    assert annots.duration[1] == pytest.approx(1.0)
+    np.testing.assert_allclose(annots.onset, [1.0, 5.0])
+    np.testing.assert_allclose(annots.duration, [1.0, 1.0])
 
 
 @pytest.mark.parametrize(
