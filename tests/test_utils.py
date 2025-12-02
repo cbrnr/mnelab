@@ -42,7 +42,7 @@ def test_simple_pairing(sample_events):
     ],
 )
 def test_offsets(sample_events, start_off, end_off, expected_onset, expected_dur):
-    """Tests interval annotation creation with start/end offsets."""
+    """Test interval annotation creation with start/end offsets."""
     events = sample_events[:2]
     annots = annotations_between_events(
         events=events,
