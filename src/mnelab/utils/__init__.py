@@ -10,5 +10,6 @@ from mnelab.utils.utils import (
     calculate_channel_stats,
     count_locations,
     image_path,
+    merge_annotations,
     natural_sort,
 )

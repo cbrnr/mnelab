@@ -1,8 +1,9 @@
 import numpy as np
 import pytest
 
-from mnelab.utils import annotations_between_events
+from mnelab.utils import annotations_between_events, merge_annotations
 
+## test annotations_between_events function
 SFREQ = 100.0
 
 
@@ -291,3 +292,66 @@ def test_clamp_to_min_max_time(events):
     assert len(annots) == 1
     np.testing.assert_allclose(annots.onset, [0.0])
     np.testing.assert_allclose(annots.duration, [4.0])
+
+
+## test merge_annotations function
+
+
+def test_merge_annotations_basic():
+    """Test basic merging of adjacent and overlapping intervals."""
+    onsets = [1.0, 2.0, 4.0, 5.0, 8.0]
+    durations = [1.0, 1.0, 2.0, 2.0, 1.0]
+    descriptions = ["A", "A", "B", "B", "A"]
+
+    m_onsets, m_durations, m_descriptions = merge_annotations(
+        onsets, durations, descriptions
+    )
+
+    np.testing.assert_allclose(m_onsets, [1.0, 4.0, 8.0])
+    np.testing.assert_allclose(m_durations, [2.0, 3.0, 1.0])
+    assert m_descriptions == ["A", "B", "A"]
+
+
+def test_merge_annotations_no_merge():
+    """Test that non-overlapping and non-adjacent intervals are not merged."""
+    onsets = [1.0, 3.0, 6.0]
+    durations = [1.0, 1.0, 1.0]
+    descriptions = ["A", "B", "A"]
+
+    m_onsets, m_durations, m_descriptions = merge_annotations(
+        onsets, durations, descriptions
+    )
+
+    np.testing.assert_allclose(m_onsets, onsets)
+    np.testing.assert_allclose(m_durations, durations)
+    assert m_descriptions == descriptions
+
+
+def test_merge_annotations_different_descriptions():
+    """Test that overlapping intervals with different descriptions are NOT merged."""
+    onsets = [1.0, 2.0]
+    durations = [2.0, 2.0]
+    descriptions = ["A", "B"]
+
+    m_onsets, m_durations, m_descriptions = merge_annotations(
+        onsets, durations, descriptions
+    )
+
+    np.testing.assert_allclose(m_onsets, [1.0, 2.0])
+    np.testing.assert_allclose(m_durations, [2.0, 2.0])
+    assert m_descriptions == ["A", "B"]
+
+
+def test_merge_annotations_contained_interval():
+    """Test that an interval completely contained within another is merged."""
+    onsets = [1.0, 1.5]
+    durations = [3.0, 1.0]
+    descriptions = ["A", "A"]
+
+    m_onsets, m_durations, m_descriptions = merge_annotations(
+        onsets, durations, descriptions
+    )
+
+    np.testing.assert_allclose(m_onsets, [1.0])
+    np.testing.assert_allclose(m_durations, [3.0])
+    assert m_descriptions == ["A"]
