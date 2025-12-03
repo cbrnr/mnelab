@@ -3,19 +3,23 @@ import pytest
 
 from mnelab.utils import annotations_between_events
 
+SFREQ = 100.0
+
 
 @pytest.fixture
-def sample_events():
+def sample():
     """Create an events array for testing."""
     # Format: [sample, 0, event_id]
-    return np.array([[100, 0, 1], [200, 0, 2], [500, 0, 1], [600, 0, 2]])
+    return np.array(
+        [[1 * SFREQ, 0, 1], [2 * SFREQ, 0, 2], [5 * SFREQ, 0, 1], [6 * SFREQ, 0, 2]]
+    )
 
 
-def test_simple_pairing(sample_events):
+def test_simple_pairing(sample):
     """Test interval annotation creation with simple start/end event pairing."""
     annots = annotations_between_events(
-        events=sample_events,
-        sfreq=100.0,
+        events=sample,
+        sfreq=SFREQ,
         start_events=[1],
         end_events=[2],
         annotation="Bad Segment",
@@ -31,7 +35,7 @@ def test_simple_pairing(sample_events):
 
 
 @pytest.mark.parametrize(
-    "start_off, end_off, expected_onset, expected_dur",
+    "start_offset, end_offset, expected_onset, expected_duration",
     [
         (0.0, 0.0, 1.0, 1.0),
         (0.1, 0.0, 1.1, 0.9),
@@ -41,33 +45,31 @@ def test_simple_pairing(sample_events):
         (-0.1, -0.1, 0.9, 1.0),
     ],
 )
-def test_offsets(sample_events, start_off, end_off, expected_onset, expected_dur):
+def test_offsets(sample, start_offset, end_offset, expected_onset, expected_duration):
     """Test interval annotation creation with start/end offsets."""
-    events = sample_events[:2]
+    events = sample[:2]
     annots = annotations_between_events(
         events=events,
-        sfreq=100.0,
+        sfreq=SFREQ,
         start_events=[1],
         end_events=[2],
-        annotation="Test",
-        start_offset=start_off,
-        end_offset=end_off,
+        annotation="Bad Segment",
+        start_offset=start_offset,
+        end_offset=end_offset,
         extend_start=False,
         extend_end=False,
     )
 
     np.testing.assert_allclose(
-        [annots.onset[0], annots.duration[0]], 
-        [expected_onset, expected_dur]
+        [annots.onset[0], annots.duration[0]], [expected_onset, expected_duration]
     )
 
 
-def test_extend_flags(sample_events):
-    """Tests interval annotation creation with extend_start and extend_end flags."""
-    events = sample_events[:2]
+def test_extend_flags(sample):
+    """Test interval annotation creation with extend_start and extend_end flags."""
     annots = annotations_between_events(
-        events=events,
-        sfreq=100.0,
+        events=sample,
+        sfreq=SFREQ,
         start_events=[1],
         end_events=[2],
         annotation="Bad Segment",
@@ -75,21 +77,14 @@ def test_extend_flags(sample_events):
         extend_start=True,
         extend_end=True,
     )
+    assert len(annots) == 2
 
-    assert len(annots) == 3
-
-    assert annots.onset[0] == 0.0
-    assert annots.duration[0] == 1.0
-
-    assert annots.onset[1] == 1.0
-    assert annots.duration[1] == 1.0
-
-    assert annots.onset[2] == 2.0
-    assert annots.duration[2] == 8.0
+    np.testing.assert_allclose(annots.onset, [0.0, 5.0])
+    np.testing.assert_allclose(annots.duration, [2.0, 5.0])
 
 
 def test_interleaved_event():
-    """Tests interval annotation creation with interleaved start events."""
+    """Test interval annotation creation with interleaved start events."""
     events = np.array(
         [
             [100, 0, 1],
@@ -101,7 +96,7 @@ def test_interleaved_event():
 
     annots = annotations_between_events(
         events=events,
-        sfreq=100.0,
+        sfreq=SFREQ,
         start_events=[1],
         end_events=[2],
         annotation="Bad Segment",
@@ -111,17 +106,15 @@ def test_interleaved_event():
 
     assert len(annots) == 1
 
-    assert annots.onset[0] == pytest.approx(1.0)
-    assert annots.duration[0] == pytest.approx(2.0)
+    np.testing.assert_allclose([annots.onset[0], annots.duration[0]], [1.0, 2.0])
 
 
-def test_no_matching_events(sample_events):
-    """Tests behavior when no matching start or end events are found."""
-
-    events = sample_events[:1]
+def test_no_matching_events(sample):
+    """Test behavior when no matching start or end events are found."""
+    events = sample[:1]
     annots = annotations_between_events(
         events=events,
-        sfreq=100.0,
+        sfreq=SFREQ,
         start_events=[1],
         end_events=[2],
         annotation="Bad Segment",
@@ -132,13 +125,13 @@ def test_no_matching_events(sample_events):
     assert len(annots) == 0
 
 
-def test_negative_duration(sample_events):
-    """Tests that negative duration intervals are not created."""
-    events = sample_events[:2]
+def test_negative_duration(sample):
+    """Test that negative duration intervals are not created."""
+    events = sample[:2]
 
     annots = annotations_between_events(
         events=events,
-        sfreq=100.0,
+        sfreq=SFREQ,
         start_events=[1],
         end_events=[2],
         annotation="Bad Segment",
@@ -151,24 +144,24 @@ def test_negative_duration(sample_events):
 
 
 def test_multiple_events():
-    """Tests interval annotation creation with multiple events."""
+    """Test interval annotation creation with multiple events."""
     events = np.array(
         [
-            [100, 0, 4],
-            [200, 0, 2],
-            [300, 0, 3],
-            [400, 0, 1],
-            [500, 0, 3],
-            [600, 0, 4],
-            [700, 0, 1],
-            [800, 0, 1],
-            [900, 0, 2],
-            [1000, 0, 1],
+            [1 * SFREQ, 0, 4],
+            [2 * SFREQ, 0, 2],
+            [3 * SFREQ, 0, 3],
+            [4 * SFREQ, 0, 1],
+            [5 * SFREQ, 0, 3],
+            [6 * SFREQ, 0, 4],
+            [7 * SFREQ, 0, 1],
+            [8 * SFREQ, 0, 1],
+            [9 * SFREQ, 0, 2],
+            [10 * SFREQ, 0, 1],
         ]
     )
     annots = annotations_between_events(
         events=events,
-        sfreq=100.0,
+        sfreq=SFREQ,
         start_events=[2, 3, 4],
         end_events=[1],
         annotation="Bad Segment",
@@ -178,11 +171,129 @@ def test_multiple_events():
 
     assert len(annots) == 3
 
-    assert annots.onset[0] == pytest.approx(1.0)
-    assert annots.duration[0] == pytest.approx(3.0)
+    np.testing.assert_allclose(annots.onset, [1.0, 5.0, 9.0])
+    np.testing.assert_allclose(annots.duration, [3.0, 2.0, 1.0])
 
-    assert annots.onset[1] == pytest.approx(5.0)
-    assert annots.duration[1] == pytest.approx(2.0)
 
-    assert annots.onset[2] == pytest.approx(9.0)
-    assert annots.duration[2] == pytest.approx(1.0)
+@pytest.mark.parametrize(
+    "sfreq",
+    [0.0, -100.0, None, "invalid"],
+)
+def test_invalid_sfreq(sample, sfreq):
+    """Test that invalid sampling frequency raises an error."""
+    with pytest.raises((ValueError, TypeError)):
+        annotations_between_events(
+            events=sample,
+            sfreq=sfreq,
+            start_events=[1],
+            end_events=[2],
+            annotation="Bad Segment",
+        )
+
+
+def test_empty_events():
+    """Test behavior with empty events array."""
+    events = np.array([]).reshape(0, 3)
+
+    annots = annotations_between_events(
+        events=events,
+        sfreq=SFREQ,
+        start_events=[1],
+        end_events=[2],
+        annotation="Bad Segment",
+        extend_start=True,
+        extend_end=True,
+    )
+
+    assert len(annots) == 0
+
+
+def test_missing_event_ids(sample):
+    """Test behavior when start/end events are not in the events array."""
+    annots = annotations_between_events(
+        events=sample,
+        sfreq=SFREQ,
+        start_events=[99],
+        end_events=[999],
+        annotation="Bad Segment",
+        extend_start=False,
+        extend_end=False,
+    )
+
+    assert len(annots) == 0
+
+
+def test_adjacent_events_are_merged():
+    """Test that annotations sharing a sample point are merged."""
+    events = np.array(
+        [
+            [1 * SFREQ, 0, 1],
+            [2 * SFREQ, 0, 2],
+            [2 * SFREQ, 0, 1],
+            [3 * SFREQ, 0, 2],
+        ]
+    )
+
+    annots = annotations_between_events(
+        events=events,
+        sfreq=SFREQ,
+        start_events=[1],
+        end_events=[2],
+        annotation="Bad Segment",
+        extend_start=False,
+        extend_end=False,
+    )
+
+    assert len(annots) == 1
+
+    np.testing.assert_allclose(annots.onset, [1.0])
+    np.testing.assert_allclose(annots.duration, [2.0])
+
+
+def test_overlapping_events_are_merged():
+    """Test that overlapping annotations are merged into a single annotation."""
+    events = np.array(
+        [
+            [2 * SFREQ, 0, 1],
+            [3 * SFREQ, 0, 2],
+            [4 * SFREQ, 0, 1],
+            [5 * SFREQ, 0, 2],
+        ]
+    )
+
+    annots = annotations_between_events(
+        events=events,
+        sfreq=SFREQ,
+        start_events=[1],
+        end_events=[2],
+        annotation="Bad Segment",
+        start_offset=-1.5,
+        extend_start=False,
+        extend_end=False,
+    )
+
+    assert len(annots) == 1
+    np.testing.assert_allclose(annots.onset, [0.5])
+    np.testing.assert_allclose(annots.duration, [4.5])
+
+
+def test_clamp_to_min_max_time(sample):
+    """Test that annotations are clamped to max_time and not starting before 0."""
+    events = sample[:2]
+
+    annots = annotations_between_events(
+        events=events,
+        sfreq=SFREQ,
+        start_events=[1],
+        end_events=[2],
+        annotation="Bad Segment",
+        start_offset=-2.0,
+        end_offset=2.0,
+        max_time=4.0,
+        extend_start=False,
+        extend_end=False,
+    )
+
+    assert len(annots) == 1
+    np.testing.assert_allclose(annots.onset, [0.0])
+    np.testing.assert_allclose(annots.duration, [4.0])
