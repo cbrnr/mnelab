@@ -7,7 +7,7 @@ SFREQ = 100.0
 
 
 @pytest.fixture
-def sample():
+def events():
     """Create an events array for testing."""
     # Format: [sample, 0, event_id]
     return np.array(
@@ -15,10 +15,10 @@ def sample():
     )
 
 
-def test_simple_pairing(sample):
+def test_simple_pairing(events):
     """Test interval annotation creation with simple start/end event pairing."""
     annots = annotations_between_events(
-        events=sample,
+        events=events,
         sfreq=SFREQ,
         start_events=[1],
         end_events=[2],
@@ -45,11 +45,10 @@ def test_simple_pairing(sample):
         (-0.1, -0.1, 0.9, 1.0),
     ],
 )
-def test_offsets(sample, start_offset, end_offset, expected_onset, expected_duration):
+def test_offsets(events, start_offset, end_offset, expected_onset, expected_duration):
     """Test interval annotation creation with start/end offsets."""
-    events = sample[:2]
     annots = annotations_between_events(
-        events=events,
+        events=events[:2],
         sfreq=SFREQ,
         start_events=[1],
         end_events=[2],
@@ -60,15 +59,14 @@ def test_offsets(sample, start_offset, end_offset, expected_onset, expected_dura
         extend_end=False,
     )
 
-    np.testing.assert_allclose(
-        [annots.onset[0], annots.duration[0]], [expected_onset, expected_duration]
-    )
+    np.testing.assert_allclose(annots.onset[0], expected_onset)
+    np.testing.assert_allclose(annots.duration[0], expected_duration)
 
 
-def test_extend_flags(sample):
+def test_extend_flags(events):
     """Test interval annotation creation with extend_start and extend_end flags."""
     annots = annotations_between_events(
-        events=sample,
+        events=events,
         sfreq=SFREQ,
         start_events=[1],
         end_events=[2],
@@ -106,14 +104,14 @@ def test_interleaved_event():
 
     assert len(annots) == 1
 
-    np.testing.assert_allclose([annots.onset[0], annots.duration[0]], [1.0, 2.0])
+    np.testing.assert_allclose(annots.onset[0], 1.0)
+    np.testing.assert_allclose(annots.duration[0], 2.0)
 
 
-def test_no_matching_events(sample):
+def test_no_matching_events(events):
     """Test behavior when no matching start or end events are found."""
-    events = sample[:1]
     annots = annotations_between_events(
-        events=events,
+        events=events[:1],
         sfreq=SFREQ,
         start_events=[1],
         end_events=[2],
@@ -125,12 +123,10 @@ def test_no_matching_events(sample):
     assert len(annots) == 0
 
 
-def test_negative_duration(sample):
+def test_negative_duration(events):
     """Test that negative duration intervals are not created."""
-    events = sample[:2]
-
     annots = annotations_between_events(
-        events=events,
+        events=events[:2],
         sfreq=SFREQ,
         start_events=[1],
         end_events=[2],
@@ -179,11 +175,11 @@ def test_multiple_events():
     "sfreq",
     [0.0, -100.0, None, "invalid"],
 )
-def test_invalid_sfreq(sample, sfreq):
+def test_invalid_sfreq(events, sfreq):
     """Test that invalid sampling frequency raises an error."""
     with pytest.raises((ValueError, TypeError)):
         annotations_between_events(
-            events=sample,
+            events=events,
             sfreq=sfreq,
             start_events=[1],
             end_events=[2],
@@ -208,10 +204,10 @@ def test_empty_events():
     assert len(annots) == 0
 
 
-def test_missing_event_ids(sample):
+def test_missing_event_ids(events):
     """Test behavior when start/end events are not in the events array."""
     annots = annotations_between_events(
-        events=sample,
+        events=events,
         sfreq=SFREQ,
         start_events=[99],
         end_events=[999],
@@ -223,7 +219,7 @@ def test_missing_event_ids(sample):
     assert len(annots) == 0
 
 
-def test_adjacent_events_are_merged():
+def test_merge_adjacent_events():
     """Test that annotations sharing a sample point are merged."""
     events = np.array(
         [
@@ -250,7 +246,7 @@ def test_adjacent_events_are_merged():
     np.testing.assert_allclose(annots.duration, [2.0])
 
 
-def test_overlapping_events_are_merged():
+def test_merge_overlapping_events():
     """Test that overlapping annotations are merged into a single annotation."""
     events = np.array(
         [
@@ -277,12 +273,10 @@ def test_overlapping_events_are_merged():
     np.testing.assert_allclose(annots.duration, [4.5])
 
 
-def test_clamp_to_min_max_time(sample):
+def test_clamp_to_min_max_time(events):
     """Test that annotations are clamped to max_time and not starting before 0."""
-    events = sample[:2]
-
     annots = annotations_between_events(
-        events=events,
+        events=events[:2],
         sfreq=SFREQ,
         start_events=[1],
         end_events=[2],
