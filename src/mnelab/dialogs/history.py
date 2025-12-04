@@ -2,7 +2,6 @@
 #
 # License: BSD (3-clause)
 
-import subprocess
 import sys
 
 from PySide6.QtGui import QFont, QGuiApplication
@@ -14,7 +13,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from mnelab.utils import PythonHighlighter
+from mnelab.utils import PythonHighlighter, format_with_ruff
 
 
 class HistoryDialog(QDialog):
@@ -36,7 +35,7 @@ class HistoryDialog(QDialog):
         highlighter = PythonHighlighter(text.document())  # noqa: F841
         text.setReadOnly(True)
 
-        formatted_history = self._format_with_ruff(history)
+        formatted_history = format_with_ruff(history)
         text.setPlainText(formatted_history)
 
         layout.addWidget(text)
@@ -49,34 +48,3 @@ class HistoryDialog(QDialog):
         self.setLayout(layout)
         buttonbox.accepted.connect(self.accept)
         self.resize(700, 500)
-
-    def _format_with_ruff(self, code):
-        """Format and lint history using Ruff (fall back to original if unavailable)."""
-        try:
-            # run the linter to fix import sorting and remove unused imports
-            lint_result = subprocess.run(
-                ["ruff", "check", "--select", "I,F401", "--fix", "-"],
-                input=code,
-                text=True,
-                capture_output=True,
-                timeout=5,
-            )
-
-            code_to_format = lint_result.stdout if lint_result.returncode == 0 else code
-
-            # format the code
-            result = subprocess.run(
-                ["ruff", "format", "-"],
-                input=code_to_format,
-                text=True,
-                capture_output=True,
-                check=True,
-                timeout=5,
-            )
-            return result.stdout
-        except (
-            subprocess.CalledProcessError,
-            subprocess.TimeoutExpired,
-            FileNotFoundError,
-        ):
-            return code
