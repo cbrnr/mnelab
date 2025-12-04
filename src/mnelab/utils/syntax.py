@@ -5,6 +5,7 @@
 import keyword
 import subprocess
 import sys
+from pathlib import Path
 
 from PySide6.QtCore import QRegularExpression, Qt
 from PySide6.QtGui import QFont, QSyntaxHighlighter, QTextCharFormat
@@ -44,14 +45,23 @@ class PythonHighlighter(QSyntaxHighlighter):
 
 
 def format_with_ruff(code):
-    """Format and lint Python code using Ruff (fall back to original if unavailable)."""
+    """Format Python code using Ruff (if unavailable)."""
+    if getattr(sys, "frozen", False):  # running in PyInstaller bundle
+        bundle_dir = Path(sys._MEIPASS)
+        if sys.platform == "win32":
+            ruff_cmd = str(bundle_dir / "ruff.exe")
+        else:
+            ruff_cmd = str(bundle_dir / "ruff")
+    else:
+        ruff_cmd = "ruff"
+
     # prevent console window on Windows
     creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
 
     try:
         # run the linter to fix import sorting and remove unused imports
         lint_result = subprocess.run(
-            ["ruff", "check", "--select", "I,F401", "--fix", "-"],
+            [ruff_cmd, "check", "--select", "I,F401", "--fix", "-"],
             input=code,
             text=True,
             capture_output=True,
@@ -63,7 +73,7 @@ def format_with_ruff(code):
 
         # format the code
         result = subprocess.run(
-            ["ruff", "format", "-"],
+            [ruff_cmd, "format", "-"],
             input=code_to_format,
             text=True,
             capture_output=True,
