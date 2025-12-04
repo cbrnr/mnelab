@@ -1,6 +1,6 @@
 ## [UNRELEASED] - YYYY-MM-DD
 ### ✨ Added
-- Add dialog to create annotations from events or between specific events ([#534](https://github.com/cbrnr/mnelab/pull/534) by [Fabian Schellander](https://github.com/SchellanderF))
+- Add dialog to create annotations from events or between specific events ([#534](https://github.com/cbrnr/mnelab/pull/534) and [#539](https://github.com/cbrnr/mnelab/pull/539) by [Fabian Schellander](https://github.com/SchellanderF))
 
 ### 🌀 Changed
 - PySide6 >= 6.10.0 can now also be used on macOS since the performance regression has been fixed with a new PyQtGraph 0.14.0 release ([#533](https://github.com/cbrnr/mnelab/pull/533) by [Clemens Brunner](https://github.com/cbrnr))
@@ -201,7 +201,7 @@
 ### ✨ Added
 - Switch to [PySide6](https://www.qt.io/qt-for-python) ([#237](https://github.com/cbrnr/mnelab/pull/237) by [Clemens Brunner](https://github.com/cbrnr))
 - Add button in Append dialog that simplifies moving data between source and destination lists ([#242](https://github.com/cbrnr/mnelab/pull/242) by [Clemens Brunner](https://github.com/cbrnr))
-- Add dialog (File – Show XDF chunks...) which diplays chunk information for (possibly corrupted) XDF files ([#245](https://github.com/cbrnr/mnelab/pull/245) by [Clemens Brunner](https://github.com/cbrnr))
+- Add dialog (File – Show XDF chunks...) which displays chunk information for (possibly corrupted) XDF files ([#245](https://github.com/cbrnr/mnelab/pull/245) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🔧 Fixed
 - Fix loading of XDF files that contained additional dots in their file names ([#244](https://github.com/cbrnr/mnelab/pull/244) and [#246](https://github.com/cbrnr/mnelab/pull/246) by [Clemens Brunner](https://github.com/cbrnr))

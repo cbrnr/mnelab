@@ -115,6 +115,8 @@ def annotations_between_events(
     mne.Annotations
         The generated annotations object containing the annotated intervals.
     """
+    if sfreq <= 0.0:
+        raise ValueError("Sampling frequency must be a positive number.")
     onsets = []
     durations = []
     descriptions = []
@@ -140,12 +142,22 @@ def annotations_between_events(
 
         t_end = future_ends[0]
 
-        duration = (t_end + end_offset) - (t_start + start_offset)
+        raw_start = t_start + start_offset
+        raw_end = t_end + end_offset
+        duration = raw_end - raw_start
 
         if duration > 0:
-            valid_onsets.append(t_start + start_offset)
-            valid_durations.append(duration)
-            last_valid_end_time = t_end + end_offset
+            if raw_start < 0:
+                valid_onsets.append(0.0)
+                valid_durations.append(duration + raw_start)
+            elif max_time is not None and (raw_end) > max_time:
+                valid_onsets.append(raw_start)
+                valid_durations.append(max_time - raw_start)
+                last_valid_end_time = max_time
+            else:
+                valid_onsets.append(raw_start)
+                valid_durations.append(duration)
+                last_valid_end_time = raw_end
 
     if valid_onsets:
         onsets.extend(valid_onsets)
@@ -172,6 +184,7 @@ def annotations_between_events(
             boundaries = []
             if len(starts_raw) > 0:
                 boundaries.append(starts_raw[-1] + start_offset)
+                last_valid_end_time = raw_end
             if len(ends_raw) > 0:
                 boundaries.append(ends_raw[-1] + end_offset)
             if boundaries:
@@ -183,7 +196,64 @@ def annotations_between_events(
                     durations.append(duration)
                     descriptions.append(annotation)
 
+    onsets, durations, descriptions = merge_annotations(onsets, durations, descriptions)
     return mne.Annotations(onset=onsets, duration=durations, description=descriptions)
+
+
+def merge_annotations(onsets, durations, descriptions):
+    """Merge overlapping or adjacent annotations with the same description.
+
+    Parameters
+    ----------
+    onsets : list of float
+        The start times (in seconds).
+    durations : list of float
+        The durations (in seconds).
+    descriptions : list of str
+        The descriptions.
+
+    Returns
+    -------
+    onsets : list of float
+        The merged start times.
+    durations : list of float
+        The merged durations.
+    descriptions : list of str
+        The merged descriptions.
+    """
+    if not onsets:
+        return [], [], []
+
+    combined = sorted(zip(onsets, durations, descriptions), key=lambda x: x[0])
+
+    merged_onsets = []
+    merged_durations = []
+    merged_descriptions = []
+
+    current_onset, current_duration, current_description = combined[0]
+    current_end = current_onset + current_duration
+
+    for next_onset, next_duration, next_description in combined[1:]:
+        next_end = next_onset + next_duration
+
+        if current_end >= next_onset and current_description == next_description:
+            current_end = max(current_end, next_end)
+            current_duration = current_end - current_onset
+        else:
+            merged_onsets.append(current_onset)
+            merged_durations.append(current_duration)
+            merged_descriptions.append(current_description)
+
+            current_onset = next_onset
+            current_duration = next_duration
+            current_description = next_description
+            current_end = next_end
+
+    merged_onsets.append(current_onset)
+    merged_durations.append(current_duration)
+    merged_descriptions.append(current_description)
+
+    return merged_onsets, merged_durations, merged_descriptions
 
 
 @dataclass
