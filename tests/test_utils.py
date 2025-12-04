@@ -3,7 +3,6 @@ import pytest
 
 from mnelab.utils import annotations_between_events, merge_annotations
 
-## test annotations_between_events function
 SFREQ = 100.0
 
 
@@ -294,9 +293,6 @@ def test_clamp_to_min_max_time(events):
     np.testing.assert_allclose(annots.duration, [4.0])
 
 
-## test merge_annotations function
-
-
 def test_merge_annotations_basic():
     """Test basic merging of adjacent and overlapping intervals."""
     onsets = [1.0, 2.0, 4.0, 5.0, 8.0]
@@ -328,7 +324,7 @@ def test_merge_annotations_no_merge():
 
 
 def test_merge_annotations_different_descriptions():
-    """Test that overlapping intervals with different descriptions are NOT merged."""
+    """Test that overlapping intervals with different descriptions are not merged."""
     onsets = [1.0, 2.0]
     durations = [2.0, 2.0]
     descriptions = ["A", "B"]
