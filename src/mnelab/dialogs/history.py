@@ -2,6 +2,7 @@
 #
 # License: BSD (3-clause)
 
+import subprocess
 import sys
 
 from PySide6.QtGui import QFont, QGuiApplication
@@ -34,14 +35,31 @@ class HistoryDialog(QDialog):
         text.setFont(font)
         highlighter = PythonHighlighter(text.document())  # noqa: F841
         text.setReadOnly(True)
-        text.setPlainText(history)
+
+        formatted_history = self._format_with_ruff(history)
+        text.setPlainText(formatted_history)
+
         layout.addWidget(text)
         buttonbox = QDialogButtonBox(QDialogButtonBox.Ok)
         clipboardbutton = QPushButton("Copy to clipboard")
         buttonbox.addButton(clipboardbutton, QDialogButtonBox.ActionRole)
         clipboard = QGuiApplication.clipboard()
-        clipboardbutton.clicked.connect(lambda: clipboard.setText(history + "\n"))
+        clipboardbutton.clicked.connect(lambda: clipboard.setText(formatted_history))
         layout.addWidget(buttonbox)
         self.setLayout(layout)
         buttonbox.accepted.connect(self.accept)
         self.resize(700, 500)
+
+    def _format_with_ruff(self, code):
+        """Format Python code using ruff (fall back to original if unavailable)."""
+        try:
+            result = subprocess.run(
+                ["ruff", "format", "-"],
+                input=code,
+                text=True,
+                capture_output=True,
+                check=True,
+            )
+            return result.stdout
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            return code
