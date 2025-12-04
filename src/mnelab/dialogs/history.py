@@ -51,15 +51,32 @@ class HistoryDialog(QDialog):
         self.resize(700, 500)
 
     def _format_with_ruff(self, code):
-        """Format Python code using ruff (fall back to original if unavailable)."""
+        """Format and lint history using Ruff (fall back to original if unavailable)."""
         try:
-            result = subprocess.run(
-                ["ruff", "format", "-"],
+            # run the linter to fix import sorting and remove unused imports
+            lint_result = subprocess.run(
+                ["ruff", "check", "--select", "I,F401", "--fix", "-"],
                 input=code,
                 text=True,
                 capture_output=True,
+                timeout=5,
+            )
+
+            code_to_format = lint_result.stdout if lint_result.returncode == 0 else code
+
+            # format the code
+            result = subprocess.run(
+                ["ruff", "format", "-"],
+                input=code_to_format,
+                text=True,
+                capture_output=True,
                 check=True,
+                timeout=5,
             )
             return result.stdout
-        except (subprocess.CalledProcessError, FileNotFoundError):
+        except (
+            subprocess.CalledProcessError,
+            subprocess.TimeoutExpired,
+            FileNotFoundError,
+        ):
             return code
