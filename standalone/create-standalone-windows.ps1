@@ -1,9 +1,9 @@
 $ruffPath = (Get-Command ruff -ErrorAction SilentlyContinue).Source
 if ($ruffPath) {
-    Write-Host "Found ruff at: $ruffPath"
+    Write-Host "Found Ruff at: $ruffPath"
     $ruffBinary = @("--add-binary", "$ruffPath;.")
 } else {
-    Write-Host "Warning: ruff not found, formatting will not work in standalone build"
+    Write-Host "Warning: Ruff not found, formatting will not work in standalone build."
     $ruffBinary = @()
 }
 

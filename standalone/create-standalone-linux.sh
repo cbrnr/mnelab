@@ -2,7 +2,7 @@
 
 RUFF_PATH=$(which ruff)
 if [ -n "$RUFF_PATH" ]; then
-    echo "Found ruff at: $RUFF_PATH"
+    echo "Found Ruff at: $RUFF_PATH"
     RUFF_BINARY="--add-binary=$RUFF_PATH:."
 else
     echo "Warning: Ruff not found, formatting will not work in standalone build."
