@@ -45,7 +45,23 @@ class PythonHighlighter(QSyntaxHighlighter):
 
 
 def format_code(code):
-    """Format Python code using Black."""
+    """Format Python code.
+
+    Parameters
+    ----------
+    code : str
+        Python code.
+
+    Returns
+    -------
+    str
+        Formatted code.
+
+    Notes
+    -----
+    If the code cannot be formatted (e.g., due to syntax errors), the function returns
+    the original code.
+    """
     try:
         return black.format_str(
             isort.code(_remove_unused_imports(code)), mode=black.Mode()
