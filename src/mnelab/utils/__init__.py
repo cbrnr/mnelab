@@ -3,7 +3,11 @@
 # License: BSD (3-clause)
 
 from mnelab.utils.dependencies import have
-from mnelab.utils.syntax import PythonHighlighter, format_with_ruff
+from mnelab.utils.syntax import (
+    PythonHighlighter,
+    format_with_black,
+    format_with_ruff,
+)
 from mnelab.utils.utils import (
     Montage,
     annotations_between_events,
