@@ -44,7 +44,7 @@ class PythonHighlighter(QSyntaxHighlighter):
                 self.setFormat(start, length, rule[1])
 
 
-def format_with_black(code):
+def format_code(code):
     """Format Python code using Black."""
     try:
         return black.format_str(

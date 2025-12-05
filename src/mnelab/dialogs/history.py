@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from mnelab.utils import PythonHighlighter, format_with_black
+from mnelab.utils import PythonHighlighter, format_code
 
 
 class HistoryDialog(QDialog):
@@ -34,9 +34,8 @@ class HistoryDialog(QDialog):
         text.setFont(font)
         highlighter = PythonHighlighter(text.document())  # noqa: F841
         text.setReadOnly(True)
-        history = format_with_black(history)
+        history = format_code(history)
         text.setPlainText(history)
-
         layout.addWidget(text)
         buttonbox = QDialogButtonBox(QDialogButtonBox.Ok)
         clipboardbutton = QPushButton("Copy to clipboard")

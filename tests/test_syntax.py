@@ -1,4 +1,4 @@
-from mnelab.utils import format_with_black
+from mnelab.utils import format_code
 
 expected_formatted_code = """import mne
 
@@ -53,10 +53,10 @@ annotations = annotations_between_events(events=events,
 """  # noqa: E501
 
 
-def test_format_with_black():
-    formatted_code = format_with_black(unformatted_code)
+def test_format_code():
+    formatted_code = format_code(unformatted_code)
     assert formatted_code == expected_formatted_code
 
     invalid_code = "x = print(Hello'J)"
-    formatted_code = format_with_black(invalid_code)
+    formatted_code = format_code(invalid_code)
     assert formatted_code == invalid_code  # invalid code should be returned unmodified
