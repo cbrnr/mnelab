@@ -25,13 +25,15 @@ classifiers = [
 ]
 keywords = ["EEG", "MEG", "MNE", "GUI", "electrophysiology"]
 dependencies = [
+    "black>=25.11.0",
     "edfio >= 0.4.10",
+    "isort>=7.0.0",
     "matplotlib >= 3.8.0",
     "mne >= 1.10.2",
     "numpy >= 2.0.0",
     "pybv >= 0.7.4",
-    "pyxdf >= 1.16.4",
     "pyside6 >= 6.9.3",
+    "pyxdf >= 1.16.4",
     "scipy >= 1.14.1",
 ]
 
@@ -53,7 +55,7 @@ dev = [
     "pytest >= 8.4.1",
     "pytest-qt >= 4.5.0",
     "pytest-xvfb >= 3.1.1; platform_system=='Linux'",
-    "ruff >= 0.12.3",
+    "ruff>=0.14.7",
 ]
 
 [project.gui-scripts]

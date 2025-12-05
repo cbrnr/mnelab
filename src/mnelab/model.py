@@ -121,7 +121,7 @@ class Model:
     @data_changed
     def load(self, fname, *args, **kwargs):
         """Load data set from file."""
-        fname = str(Path(fname).resolve())
+        fname = str(Path(fname).resolve().as_posix())
         data = read_raw(fname, *args, **kwargs, preload=True)
         argstr = ", " + f"{', '.join(f'{v}' for v in args)}" if args else ""
         if kwargs:

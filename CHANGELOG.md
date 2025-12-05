@@ -1,6 +1,7 @@
 ## [UNRELEASED] - YYYY-MM-DD
 ### ✨ Added
 - Add dialog to create annotations from events or between specific events ([#534](https://github.com/cbrnr/mnelab/pull/534) and [#539](https://github.com/cbrnr/mnelab/pull/539) by [Fabian Schellander](https://github.com/SchellanderF))
+- Format history (using black/isort) ([#540](https://github.com/cbrnr/mnelab/pull/540) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🌀 Changed
 - PySide6 >= 6.10.0 can now also be used on macOS since the performance regression has been fixed with a new PyQtGraph 0.14.0 release ([#533](https://github.com/cbrnr/mnelab/pull/533) by [Clemens Brunner](https://github.com/cbrnr))
