@@ -34,7 +34,6 @@ class HistoryDialog(QDialog):
         text.setFont(font)
         highlighter = PythonHighlighter(text.document())  # noqa: F841
         text.setReadOnly(True)
-
         history = format_with_black(history)
         text.setPlainText(history)
 

@@ -34,7 +34,6 @@ dependencies = [
     "pybv >= 0.7.4",
     "pyside6 >= 6.9.3",
     "pyxdf >= 1.16.4",
-    "ruff>=0.14.7",
     "scipy >= 1.14.1",
 ]
 
@@ -56,6 +55,7 @@ dev = [
     "pytest >= 8.4.1",
     "pytest-qt >= 4.5.0",
     "pytest-xvfb >= 3.1.1; platform_system=='Linux'",
+    "ruff>=0.14.7",
 ]
 
 [project.gui-scripts]

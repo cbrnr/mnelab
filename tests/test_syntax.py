@@ -1,4 +1,4 @@
-from mnelab.utils import format_with_black, format_with_ruff
+from mnelab.utils import format_with_black
 
 expected_formatted_code = """import mne
 
@@ -51,11 +51,6 @@ annotations = annotations_between_events(events=events,
                                          extend_start=True,
                                          extend_end=True)
 """  # noqa: E501
-
-
-def test_format_with_ruff():
-    formatted_code = format_with_ruff(unformatted_code)
-    assert formatted_code == expected_formatted_code
 
 
 def test_format_with_black():

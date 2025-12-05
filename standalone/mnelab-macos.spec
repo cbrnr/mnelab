@@ -1,6 +1,4 @@
 # -*- mode: python ; coding: utf-8 -*-
-import shutil
-
 from PyInstaller.utils.hooks import collect_all
 
 datas = []
@@ -14,12 +12,6 @@ tmp_ret = collect_all('sklearn')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 tmp_ret = collect_all('mne_qt_browser')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
-
-ruff_path = shutil.which('ruff')
-if ruff_path:
-    binaries.append((ruff_path, '.'))
-else:
-    print("Warning: Ruff not found, formatting will not work in standalone build.")
 
 
 a = Analysis(
