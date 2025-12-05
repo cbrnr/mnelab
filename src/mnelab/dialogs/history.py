@@ -45,4 +45,4 @@ class HistoryDialog(QDialog):
         layout.addWidget(buttonbox)
         self.setLayout(layout)
         buttonbox.accepted.connect(self.accept)
-        self.resize(700, 500)
+        self.resize(750, 500)
