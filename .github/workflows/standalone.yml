@@ -56,7 +56,7 @@ jobs:
         working-directory: standalone
         run: uv run python create-standalone-macos.py build-dmg
       - name: Upload macOS installer
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: mnelab-macos-installer
           path: standalone/MNELAB-*.dmg
@@ -79,7 +79,7 @@ jobs:
           . ..\.venv\Scripts\Activate.ps1
           .\create-standalone-windows.ps1
       - name: Upload Windows installer
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: mnelab-windows-installer
           path: standalone/MNELAB-*.exe
