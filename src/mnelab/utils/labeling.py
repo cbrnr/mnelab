@@ -8,7 +8,6 @@ Source Repository: https://github.com/mne-tools/mne-icalabel
 from pathlib import Path
 
 import numpy as np
-import onnxruntime as ort
 from mne import BaseEpochs
 from scipy.signal import resample_poly
 
@@ -530,6 +529,10 @@ def run_iclabel(inst, ica):
         Shape: (n_components, 7)
         Columns: [Brain, Muscle, Eye, Heart, Line Noise, Channel Noise, Other].
     """
+    try:
+        import onnxruntime as ort
+    except ImportError:
+        raise ImportError("onnxruntime is not installed")
 
     onnx_path = Path(__file__).parent / "ICLabelNet.onnx"
     if not onnx_path.exists():

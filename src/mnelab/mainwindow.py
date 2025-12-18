@@ -1129,7 +1129,15 @@ class MainWindow(QMainWindow):
     def label_ica(self):
         """Label ICA components."""
         ica = self.model.current["ica"]
-        probs = self.model.get_icalabels()
+        try:
+            probs = self.model.get_icalabels()
+        except ImportError:
+            QMessageBox.warning(
+                self,
+                "Feature not available",
+                "ICLabel requires the optional dependency 'onnxruntime'.",
+            )
+            return
 
         dialog = ICLabelDialog(self, probs, exclude=ica.exclude)
         if dialog.exec():
