@@ -13,3 +13,4 @@ from mnelab.utils.utils import (
     merge_annotations,
     natural_sort,
 )
+from mnelab.utils.labeling import run_iclabel
