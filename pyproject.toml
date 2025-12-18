@@ -30,7 +30,6 @@ dependencies = [
     "isort >= 7.0.0",
     "matplotlib >= 3.8.0",
     "mne >= 1.10.2",
-    "onnxruntime >= 1.23.2",
     "numpy >= 2.0.0",
     "pybv >= 0.7.4",
     "pyside6 >= 6.9.3",
@@ -42,7 +41,11 @@ dependencies = [
 docs = [
     "mkdocs-material >= 9.6.14",
 ]
+iclabel = [
+    "onnxruntime >= 1.23.2"
+]
 full = [
+    "mnelab[iclabel]", # include iclabel
     "mne-qt-browser >= 0.6.2",  # alternative browser backend
     "python-picard >= 0.8.0",  # picard
     "scikit-learn >= 1.3.0",  # fastica
