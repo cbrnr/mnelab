@@ -3,6 +3,7 @@
 # License: BSD (3-clause)
 
 from mnelab.utils.dependencies import have
+from mnelab.utils.labeling import run_iclabel
 from mnelab.utils.syntax import PythonHighlighter, format_code
 from mnelab.utils.utils import (
     Montage,
@@ -13,4 +14,3 @@ from mnelab.utils.utils import (
     merge_annotations,
     natural_sort,
 )
-from mnelab.utils.labeling import run_iclabel
