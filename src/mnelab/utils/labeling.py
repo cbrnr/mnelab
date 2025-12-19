@@ -8,6 +8,7 @@ Source Repository: https://github.com/mne-tools/mne-icalabel
 from pathlib import Path
 
 import numpy as np
+import onnx
 from mne import BaseEpochs
 from scipy.signal import resample_poly
 
@@ -454,8 +455,7 @@ def _get_ica_data(inst, ica):
 
 
 def _get_features(inst, ica):
-    """
-    Extracts and formats topographic, PSD and autocorrelation features.
+    """Extract and format topographic, PSD, and autocorrelation features.
 
     Parameters
     ----------
@@ -507,13 +507,290 @@ def _get_features(inst, ica):
     return topo_features_formatted, psd_formatted, autocorr_formatted
 
 
+def _load_onnx_weights(onnx_path):
+    """Load weights and biases from ONNX model.
+
+    Parameters
+    ----------
+    onnx_path : Path
+        Path to the ONNX model file.
+
+    Returns
+    -------
+    dict
+        Dictionary containing all weights and biases from the model.
+    """
+    model = onnx.load(str(onnx_path))
+
+    # extract initializers (weights and biases)
+    weights = {}
+    for initializer in model.graph.initializer:
+        name = initializer.name
+        # convert ONNX tensor to NumPy array
+        if initializer.data_type == 1:  # float
+            weights[name] = np.frombuffer(
+                initializer.raw_data, dtype=np.float32
+            ).reshape(initializer.dims)
+
+    return weights
+
+
+def _im2col(x, kernel_h, kernel_w, stride=1, padding=0):
+    """Convert image batch to column matrix for vectorized convolution.
+
+    This implements the "im2col" trick used in deep learning frameworks to convert
+    convolution into matrix multiplication.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Input tensor, shape (batch, channels, height, width)
+    kernel_h : int
+        Kernel height
+    kernel_w : int
+        Kernel width
+    stride : int
+        Stride of the convolution
+    padding : int or tuple
+        Padding added to sides. Can be int (same for H and W) or tuple (pad_h, pad_w)
+
+    Returns
+    -------
+    cols : np.ndarray
+        Column matrix, shape (batch, channels*kernel_h*kernel_w, h_out*w_out)
+    h_out : int
+        Output height
+    w_out : int
+        Output width
+    """
+    batch, channels, h, w = x.shape
+
+    # handle padding
+    if isinstance(padding, tuple):
+        pad_h, pad_w = padding
+    else:
+        pad_h = pad_w = padding
+
+    # add padding
+    if pad_h > 0 or pad_w > 0:
+        x = np.pad(x, ((0, 0), (0, 0), (pad_h, pad_h), (pad_w, pad_w)))
+        h, w = x.shape[2], x.shape[3]
+
+    # calculate output dimensions
+    h_out = (h - kernel_h) // stride + 1
+    w_out = (w - kernel_w) // stride + 1
+
+    # initialize output column matrix
+    cols = np.zeros((batch, channels, kernel_h, kernel_w, h_out, w_out), dtype=x.dtype)
+
+    # extract patches
+    for i in range(kernel_h):
+        i_max = i + stride * h_out
+        for j in range(kernel_w):
+            j_max = j + stride * w_out
+            cols[:, :, i, j, :, :] = x[:, :, i:i_max:stride, j:j_max:stride]
+
+    # reshape to (batch, channels*kernel_h*kernel_w, h_out*w_out)
+    cols = cols.reshape(batch, channels * kernel_h * kernel_w, h_out * w_out)
+
+    return cols, h_out, w_out
+
+
+def _conv2d_numpy(x, weight, bias, stride=1, padding=0):
+    """Perform 2D convolution using vectorized im2col approach.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Input tensor, shape (batch, in_channels, height, width)
+    weight : np.ndarray
+        Convolution kernel, shape (out_channels, in_channels, kh, kw)
+    bias : np.ndarray
+        Bias term, shape (out_channels,)
+    stride : int
+        Stride of the convolution
+    padding : int or tuple
+        Padding added to both sides. Can be int (same for all) or
+        tuple (pad_h, pad_w) for different padding on height/width
+
+    Returns
+    -------
+    out : np.ndarray
+        Output tensor after convolution
+    """
+    batch, in_channels, h, w = x.shape
+    out_channels, _, kh, kw = weight.shape
+
+    # convert input to column matrix using vectorized im2col
+    x_col, h_out, w_out = _im2col(x, kh, kw, stride, padding)
+
+    # reshape weights: (out_channels, in_channels*kh*kw)
+    weight_col = weight.reshape(out_channels, -1)
+
+    # perform batched matrix multiplication
+    # weight_col: (out_channels, in_channels*kh*kw)
+    # x_col: (batch, in_channels*kh*kw, h_out*w_out)
+    # result for each batch: (out_channels, h_out*w_out)
+    out = np.zeros((batch, out_channels, h_out * w_out), dtype=np.float32)
+    for b in range(batch):
+        out[b] = weight_col @ x_col[b]
+
+    # add bias
+    out += bias[None, :, None]
+
+    # reshape to proper output format
+    out = out.reshape(batch, out_channels, h_out, w_out)
+
+    return out
+
+
+def _leaky_relu(x, alpha=0.2):
+    """Apply Leaky ReLU activation."""
+    return np.where(x > 0, x, alpha * x)
+
+
+def _softmax(x, axis=-1):
+    """Apply softmax activation."""
+    exp_x = np.exp(x - np.max(x, axis=axis, keepdims=True))
+    return exp_x / np.sum(exp_x, axis=axis, keepdims=True)
+
+
+def _iclabel_forward_numpy(images, psd, autocorr, weights):
+    """Forward pass through ICLabel network.
+
+    Parameters
+    ----------
+    images : np.ndarray
+        Topographic maps, shape (batch, 1, 32, 32)
+    psd : np.ndarray
+        Power spectral density, shape (batch, 1, 1, 100)
+    autocorr : np.ndarray
+        Autocorrelation, shape (batch, 1, 1, 100)
+    weights : dict
+        Dictionary containing model weights and biases
+
+    Returns
+    -------
+    probs : np.ndarray
+        Class probabilities, shape (batch, 7)
+    """
+    # image convolution branch
+    x_img = images
+    x_img = _conv2d_numpy(
+        x_img,
+        weights["img_conv.conv1.weight"],
+        weights["img_conv.conv1.bias"],
+        stride=2,
+        padding=1,
+    )
+    x_img = _leaky_relu(x_img)
+    x_img = _conv2d_numpy(
+        x_img,
+        weights["img_conv.conv2.weight"],
+        weights["img_conv.conv2.bias"],
+        stride=2,
+        padding=1,
+    )
+    x_img = _leaky_relu(x_img)
+    x_img = _conv2d_numpy(
+        x_img,
+        weights["img_conv.conv3.weight"],
+        weights["img_conv.conv3.bias"],
+        stride=2,
+        padding=1,
+    )
+    x_img = _leaky_relu(x_img)
+
+    # PSD convolution branch
+    x_psd = psd
+    x_psd = _conv2d_numpy(
+        x_psd,
+        weights["psds_conv.conv1.weight"],
+        weights["psds_conv.conv1.bias"],
+        padding=(0, 1),
+    )
+    x_psd = _leaky_relu(x_psd)
+    x_psd = _conv2d_numpy(
+        x_psd,
+        weights["psds_conv.conv2.weight"],
+        weights["psds_conv.conv2.bias"],
+        padding=(0, 1),
+    )
+    x_psd = _leaky_relu(x_psd)
+    x_psd = _conv2d_numpy(
+        x_psd,
+        weights["psds_conv.conv3.weight"],
+        weights["psds_conv.conv3.bias"],
+        padding=(0, 1),
+    )
+    x_psd = _leaky_relu(x_psd)
+
+    # autocorrelation convolution branch
+    x_autocorr = autocorr
+    x_autocorr = _conv2d_numpy(
+        x_autocorr,
+        weights["autocorr_conv.conv1.weight"],
+        weights["autocorr_conv.conv1.bias"],
+        padding=(0, 1),
+    )
+    x_autocorr = _leaky_relu(x_autocorr)
+    x_autocorr = _conv2d_numpy(
+        x_autocorr,
+        weights["autocorr_conv.conv2.weight"],
+        weights["autocorr_conv.conv2.bias"],
+        padding=(0, 1),
+    )
+    x_autocorr = _leaky_relu(x_autocorr)
+    x_autocorr = _conv2d_numpy(
+        x_autocorr,
+        weights["autocorr_conv.conv3.weight"],
+        weights["autocorr_conv.conv3.bias"],
+        padding=(0, 1),
+    )
+    x_autocorr = _leaky_relu(x_autocorr)
+
+    # Flatten spatial dimensions of PSD and autocorr into channels
+    # The PSD and autocorr branches produce 1D features that need to be
+    # reshaped to match the 2D spatial structure of the image branch
+    batch, img_channels, img_h, img_w = x_img.shape
+
+    # Flatten PSD and autocorr: (batch, C, H, W) -> (batch, C*H*W, 1, 1)
+    x_psd_flat = x_psd.reshape(batch, -1, 1, 1)
+    x_autocorr_flat = x_autocorr.reshape(batch, -1, 1, 1)
+
+    # Tile to match image spatial dimensions
+    x_psd_tiled = np.tile(x_psd_flat, (1, 1, img_h, img_w))
+    x_autocorr_tiled = np.tile(x_autocorr_flat, (1, 1, img_h, img_w))
+
+    # Concatenate all branches along channel dimension
+    x = np.concatenate([x_img, x_psd_tiled, x_autocorr_tiled], axis=1)
+
+    # Final convolution
+    x = _conv2d_numpy(x, weights["conv.weight"], weights["conv.bias"])
+
+    # Softmax and average over spatial dimensions
+    x = _softmax(x, axis=1)
+    x = np.mean(x, axis=(2, 3))
+
+    # Average over the 4 versions of each component
+    # Input has 4 augmented versions per component in interleaved order:
+    # [comp0_v0, comp1_v0, ..., compN_v0, comp0_v1, comp1_v1, ..., compN_v1, ...]
+    # Need to reshape to (n_components, 4, 7) and average over versions
+    n_components = batch // 4
+    # Reshape from (batch, 7) to (4, n_components, 7)
+    # then transpose to (n_components, 4, 7)
+    x = x.reshape(4, n_components, -1).transpose(1, 0, 2).mean(axis=1)
+
+    return x
+
+
 def run_iclabel(inst, ica):
     """
-    Executes ICLabel classification on ICA components using an ONNX model.
+    Executes ICLabel classification on ICA components using NumPy.
 
-    This function loads the ICLabel ONNX network, extracts the necessary features
-    (topomaps, PSD, autocorrelation) from the raw and ICA data to obtain class
-    probabilities for each component.
+    This function extracts the necessary features (topomaps, PSD, autocorrelation)
+    from the raw and ICA data to obtain class probabilities for each component
+    using a pure NumPy implementation of the ICLabel neural network.
 
     Parameters
     ----------
@@ -529,25 +806,13 @@ def run_iclabel(inst, ica):
         Shape: (n_components, 7)
         Columns: [Brain, Muscle, Eye, Heart, Line Noise, Channel Noise, Other].
     """
-    try:
-        import onnxruntime as ort
-    except ImportError:
-        raise ImportError("onnxruntime is not installed")
-
     onnx_path = Path(__file__).parent / "ICLabelNet.onnx"
     if not onnx_path.exists():
         raise FileNotFoundError(f"ICLabel ONNX model not found at {onnx_path}")
 
     images, psd, autocorrelation = _get_features(inst, ica)
 
-    sess = ort.InferenceSession(onnx_path)
-    input_names = [node.name for node in sess.get_inputs()]
-
-    inputs = {
-        input_names[0]: images,
-        input_names[1]: psd,
-        input_names[2]: autocorrelation,
-    }
-    probs = sess.run(None, inputs)[0]
+    weights = _load_onnx_weights(onnx_path)
+    probs = _iclabel_forward_numpy(images, psd, autocorrelation, weights)
 
     return probs
