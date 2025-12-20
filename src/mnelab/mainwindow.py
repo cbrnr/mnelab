@@ -301,7 +301,7 @@ class MainWindow(QMainWindow):
             QIcon.fromTheme("run-ica"), "Run &ICA...", self.run_ica
         )
         self.actions["label_ica"] = tools_menu.addAction(
-            "Label &ICA...", self.label_ica
+            "Label &ICs...", self.label_ica
         )
         self.actions["apply_ica"] = tools_menu.addAction("Apply &ICA", self.apply_ica)
         tools_menu.addSeparator()
@@ -933,7 +933,13 @@ class MainWindow(QMainWindow):
         fig.show()
 
     def plot_ica_components(self):
-        self.model.current["ica"].plot_components(inst=self.model.current["data"])
+        figs = self.model.current["ica"].plot_components(
+            inst=self.model.current["data"]
+        )
+        # refresh the UI after closing the plot to reflect manual changes in ICA
+        # exclusions
+        for fig in figs:
+            fig.canvas.mpl_connect("close_event", lambda _: self.data_changed())
 
     def plot_ica_sources(self):
         self.model.current["ica"].plot_sources(inst=self.model.current["data"])
