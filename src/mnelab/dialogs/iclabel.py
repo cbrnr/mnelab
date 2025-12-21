@@ -67,7 +67,7 @@ class AutoSelectDialog(QDialog):
         self.buttonbox.rejected.connect(self.reject)
         layout.addWidget(self.buttonbox)
 
-        self.setFixedSize(220, self.sizeHint().height())
+        self.setFixedSize(300, self.sizeHint().height())
 
     def get_selection_rules(self):
         rules = {}
@@ -186,7 +186,7 @@ class ICLabelDialog(QDialog):
         else:
             exclude_set = {int(x) for x in exclude}
 
-        headers = ["Component"] + self.labels + ["Exclude"]
+        headers = ["IC"] + self.labels + ["Exclude"]
         self.check_col = len(headers) - 1
 
         self.model = QStandardItemModel(len(components_probs), len(headers))
