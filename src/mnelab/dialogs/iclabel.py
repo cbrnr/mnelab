@@ -45,8 +45,6 @@ class AutoSelectDialog(QDialog):
             if label in ["Eye", "Muscle"]:
                 checkbox.setChecked(True)
 
-            larger_than = QLabel(">")
-
             spinbox = QDoubleSpinBox()
             spinbox.setRange(0.0, 1.0)
             spinbox.setSingleStep(0.05)
@@ -57,10 +55,10 @@ class AutoSelectDialog(QDialog):
             checkbox.toggled.connect(spinbox.setEnabled)
 
             grid.addWidget(checkbox, row, 0, Qt.AlignLeft)
-            grid.addWidget(larger_than, row, 1, Qt.AlignRight)
+            grid.addWidget(QLabel(">"), row, 1, Qt.AlignRight)
             grid.addWidget(spinbox, row, 2)
 
-            self.criteria[label] = (checkbox, spinbox)
+            self.criteria[label] = checkbox, spinbox
 
         self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         self.buttonbox.accepted.connect(self.accept)
@@ -78,7 +76,7 @@ class AutoSelectDialog(QDialog):
 
 
 class NumberSortProxyModel(QSortFilterProxyModel):
-    """Helperclass to sort columns with numerical data."""
+    """Helper class to sort columns with numerical data."""
 
     def lessThan(self, left, right):
         left_data = self.sourceModel().data(left, Qt.UserRole)
@@ -96,12 +94,12 @@ class NumberSortProxyModel(QSortFilterProxyModel):
 
 
 class CheckBoxDelegate(QStyledItemDelegate):
-    """Helperclass to center checkboxes in a QTableView."""
+    """Helper class to center checkboxes in a QTableView."""
 
     def paint(self, painter, option, index):
         self.initStyleOption(option, index)
 
-        # removing the checkbox from the item view drawing
+        # remove the checkbox from the item view drawing
         option.features &= ~QStyleOptionViewItem.HasCheckIndicator
         option.widget.style().drawControl(
             QStyle.CE_ItemViewItem, option, painter, option.widget
@@ -122,7 +120,7 @@ class CheckBoxDelegate(QStyledItemDelegate):
         else:
             opts.state |= QStyle.State_Off
 
-        # size of the checkbox
+        # checkbox size
         s_size = (
             option.widget.style()
             .subElementRect(QStyle.SE_CheckBoxIndicator, opts, option.widget)
