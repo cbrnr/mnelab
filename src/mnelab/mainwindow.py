@@ -936,8 +936,7 @@ class MainWindow(QMainWindow):
         figs = self.model.current["ica"].plot_components(
             inst=self.model.current["data"]
         )
-        # refresh the UI after closing the plot to reflect manual changes in ICA
-        # exclusions
+        # refresh UI after closing the plots to reflect changes in ICA exclusions
         for fig in figs:
             fig.canvas.mpl_connect("close_event", lambda _: self.data_changed())
 
@@ -1135,7 +1134,7 @@ class MainWindow(QMainWindow):
     def label_ica(self):
         """Label ICA components."""
         ica = self.model.current["ica"]
-        probs = self.model.get_icalabels()
+        probs = self.model.get_iclabels()
 
         dialog = ICLabelDialog(self, probs, exclude=ica.exclude)
         if dialog.exec():

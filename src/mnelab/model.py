@@ -417,7 +417,6 @@ class Model:
             if method == "Fastica":
                 method = "FastICA"
             n_active = ica.n_components - len(ica.exclude)
-
             ica = f"{method} ({n_active}/{ica.n_components} components)"
         else:
             ica = "-"
@@ -602,18 +601,14 @@ class Model:
         self.current["name"] += " (ICA)"
 
     @data_changed
-    def get_icalabels(self):
+    def get_iclabels(self):
         """Get ICLabel classifications for current ICA solution."""
-
         if self.current["iclabel"] is None:
-            raw = self.current["data"]
-            ica = self.current["ica"]
-
-            if raw.get_montage() is None:
+            if self.current["data"].get_montage() is None:
                 raise ValueError("Montage must be set before ICLabel classification.")
-            if ica is None:
+            if self.current["ica"] is None:
                 raise ValueError("No ICA solution found in current data set.")
-            probs = run_iclabel(raw, ica)
+            probs = run_iclabel(self.current["data"], self.current["ica"])
             self.current["iclabel"] = probs
             self.history.append("probs = run_iclabel(data, ica)")
         return self.current["iclabel"]
