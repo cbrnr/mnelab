@@ -15,8 +15,7 @@ from scipy.signal import resample_poly
 
 # topomaps (32x32 images)
 def _get_topomaps(inst, icawinv, picks):
-    """
-    Generate topographic maps for ICA components.
+    """Generate topographic maps for ICA components.
 
     This function computes the topographic maps by interpolating the ICA mixing matrix
     (inverse weights) onto a 32x32 grid.
@@ -32,9 +31,9 @@ def _get_topomaps(inst, icawinv, picks):
 
     Returns
     -------
-    topo : np.ndarray
+    np.ndarray, shape (n_components, 1, 32, 32)
         The interpolated topographic maps.
-        Shape: (n_components, 1, 32, 32)
+
 
     Notes
     -----
@@ -127,12 +126,10 @@ def _get_eeglab_coords(inst, picks):
 
     Returns
     -------
-    rd : np.ndarray
+    rd : np.ndarray, shape (1, n_channels)
         Normalized radial distances.
-        Shape: (1, n_channels)
-    th : np.ndarray
+    th : np.ndarray, shape (1, n_channels)
         Azimuth angles in degrees.
-        Shape: (1, n_channels)
 
     Notes
     -----
@@ -184,9 +181,8 @@ def _get_autocorrelation(ica_act, sfreq):
 
     Returns
     -------
-    autocorrelation : np.ndarray
+    np.ndarray, shape (n_components, 1, 1, 100)
         The autocorrelation features reshaped for classification.
-        Shape: (n_components, 1, 1, 100)
 
     Notes
     -----
@@ -296,8 +292,7 @@ def _get_autocorrelation(ica_act, sfreq):
 
 # PSD
 def _get_psd(ica_act, sfreq):
-    """
-    Compute the Power Spectral Density (PSD) of ICA components.
+    """Compute the Power Spectral Density (PSD) of ICA components.
 
     This function calculates the PSD using a windowed FFT approach, specifically
     tailored for ICA components. It handles both continuous and epoched data,
@@ -313,9 +308,8 @@ def _get_psd(ica_act, sfreq):
 
     Returns
     -------
-    psd : np.ndarray
+    np.ndarray, shape (n_components, 1, 1, 100)
         The computed PSD values in dB.
-        Shape: (n_components, 1, 1, 100)
 
     Notes
     -----
@@ -412,8 +406,7 @@ def _get_psd(ica_act, sfreq):
 
 
 def _get_ica_data(inst, ica):
-    """
-    Compute ICA inverse weights and activations.
+    """Compute ICA inverse weights and activations.
 
     Parameters
     ----------
@@ -424,13 +417,11 @@ def _get_ica_data(inst, ica):
 
     Returns
     -------
-    icawinv : np.ndarray
+    icawinv : np.ndarray, shape (n_channels, n_components)
         The inverse ICA weights matrix (mixing matrix).
-        Shape: (n_channels, n_components)
-    icaact : np.ndarray
+    icaact : np.ndarray, shape (n_components, n_times) for raw data or
+            (n_components, n_times, n_epochs) for epoched data
         The ICA component activations.
-        Shape: (n_components, n_times) for Raw data
-        (n_components, n_times, n_epochs) for Epoched data.
 
     Notes
     -----
@@ -466,15 +457,12 @@ def _get_features(inst, ica):
 
     Returns
     -------
-    topo_features_formatted : np.ndarray
+    topo_features_formatted : np.ndarray, shape (4 * n_components, 1, 32, 32)
         The formatted topographic map features.
-        Shape: (4 * n_components, 1, 32, 32)
-    psd_formatted : np.ndarray
+    psd_formatted : np.ndarray, shape (4 * n_components, 1, 1, 100)
         The formatted PSD features.
-        Shape: (4 * n_components, 1, 1, 100)
-    autocorr_formatted : np.ndarray
+    autocorr_formatted : np.ndarray, shape (4 * n_components, 1, 1, 100)
         The formatted autocorrelation features.
-        Shape: (4 * n_components, 1, 1, 100)
 
     Notes
     -----
@@ -785,8 +773,7 @@ def _iclabel_forward_numpy(images, psd, autocorr, weights):
 
 
 def run_iclabel(inst, ica):
-    """
-    Executes ICLabel classification on ICA components using NumPy.
+    """Executes ICLabel classification on ICA components using NumPy.
 
     This function extracts the necessary features (topomaps, PSD, autocorrelation)
     from the raw and ICA data to obtain class probabilities for each component
@@ -801,9 +788,8 @@ def run_iclabel(inst, ica):
 
     Returns
     -------
-    probs : np.ndarray
+    np.ndarray, shape (n_components, 7)
         The estimated probabilities for each component class.
-        Shape: (n_components, 7)
         Columns: [Brain, Muscle, Eye, Heart, Line Noise, Channel Noise, Other].
     """
     onnx_path = Path(__file__).parent / "ICLabelNet.onnx"
