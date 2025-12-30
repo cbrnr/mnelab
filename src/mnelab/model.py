@@ -13,7 +13,7 @@ import numpy as np
 
 from mnelab.io import read_raw, write_raw
 from mnelab.io.readers import split_name_ext
-from mnelab.utils import count_locations
+from mnelab.utils import count_locations, run_iclabel
 
 
 class LabelsNotFoundError(Exception):
@@ -55,7 +55,7 @@ class Model:
             "from copy import deepcopy",
             "import mne",
             "from mnelab.io import read_raw",
-            "from mnelab.utils import annotations_between_events",
+            "from mnelab.utils import annotations_between_events, run_iclabel",
             "",
             "datasets = []",
         ]
@@ -333,6 +333,7 @@ class Model:
     def import_ica(self, fname):
         """Import ICA solution from file."""
         self.current["ica"] = mne.preprocessing.read_ica(fname)
+        self.current["iclabel"] = None
 
     def get_info(self):
         """Get basic information on current data set.
@@ -415,7 +416,8 @@ class Model:
             method = ica.method.title()
             if method == "Fastica":
                 method = "FastICA"
-            ica = f"{method} ({ica.n_components_} components)"
+            n_active = ica.n_components - len(ica.exclude)
+            ica = f"{method} ({n_active}/{ica.n_components} components)"
         else:
             ica = "-"
 
@@ -501,6 +503,7 @@ class Model:
                 f"data.set_montage(montage, match_case={match_case}, "
                 f"match_alias={match_alias}, on_missing={on_missing!r})"
             )
+            self.current["iclabel"] = None
 
     @data_changed
     def filter(self, lower=None, upper=None, notch=None):
@@ -596,6 +599,19 @@ class Model:
             f"ica.apply(inst=data, exclude={self.current['ica'].exclude})"
         )
         self.current["name"] += " (ICA)"
+
+    @data_changed
+    def get_iclabels(self):
+        """Get ICLabel classifications for current ICA solution."""
+        if self.current["iclabel"] is None:
+            if self.current["data"].get_montage() is None:
+                raise ValueError("Montage must be set before ICLabel classification.")
+            if self.current["ica"] is None:
+                raise ValueError("No ICA solution found in current data set.")
+            probs = run_iclabel(self.current["data"], self.current["ica"])
+            self.current["iclabel"] = probs
+            self.history.append("probs = run_iclabel(data, ica)")
+        return self.current["iclabel"]
 
     @data_changed
     def interpolate_bads(self):
