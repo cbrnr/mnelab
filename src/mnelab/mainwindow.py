@@ -1140,18 +1140,9 @@ class MainWindow(QMainWindow):
         if dialog.exec():
             exclude_indices = dialog.get_excluded_indices()
 
-            try:
-                ica.exclude = sorted([int(x) for x in exclude_indices])
-                self.model.history.append(f"ica.exclude = {ica.exclude}")
-                self.data_changed()
-            except ValueError as e:
-                msgbox = ErrorMessageBox(
-                    self,
-                    "Could not label ICA components",
-                    str(e),
-                    traceback.format_exc(),
-                )
-                msgbox.show()
+            ica.exclude = sorted([int(x) for x in exclude_indices])
+            self.model.history.append(f"ica.exclude = {ica.exclude}")
+            self.data_changed()
 
     def interpolate_bads(self):
         """Interpolate bad channels."""
