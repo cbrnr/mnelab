@@ -222,13 +222,14 @@ def _get_autocorrelation(ica_act, sfreq):
         # compute autocorrelation for long signals
         if n_points > 5 * sfreq:
             n_seg = int(min(n_points, 3 * sfreq))
-            n_overlap = int(n_seg / 2)
+            n_overlap = n_seg // 2
 
             nfft = 2 ** int(np.ceil(np.log2(2 * n_seg - 1)))
 
             # segments
             step = n_seg - n_overlap
-            starts = np.arange(0, n_points - n_seg, step)
+            cutoff = (n_points // n_seg) * n_seg
+            starts = np.arange(0, cutoff - n_seg + step, step)
             if len(starts) == 0:
                 starts = [0]
 
