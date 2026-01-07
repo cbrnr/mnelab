@@ -18,6 +18,10 @@ jobs:
       - uses: astral-sh/ruff-action@v3
         with:
           args: "format --diff"
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
       - name: Check license headers
         run: python .github/check_license_headers.py
 
