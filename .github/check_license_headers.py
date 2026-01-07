@@ -27,9 +27,7 @@ def main():
     files = list(root.glob("src/**/*.py")) + list(root.glob("tests/**/*.py"))
 
     missing_header = [
-        file_path.relative_to(root)
-        for file_path in files
-        if not check_file(file_path)
+        file_path.relative_to(root) for file_path in files if not check_file(file_path)
     ]
 
     if missing_header:
