@@ -1,3 +1,7 @@
+# © MNELAB developers
+#
+# License: BSD (3-clause)
+
 import pytest
 
 from mnelab.io.readers import split_name_ext, supported

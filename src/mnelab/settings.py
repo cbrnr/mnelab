@@ -1,6 +1,7 @@
 # © MNELAB developers
 #
 # License: BSD (3-clause)
+
 from pathlib import Path
 
 from mne import get_config_path

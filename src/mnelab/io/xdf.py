@@ -1,3 +1,7 @@
+# © MNELAB developers
+#
+# License: BSD (3-clause)
+
 import struct
 import xml.etree.ElementTree as ETree
 from collections import defaultdict

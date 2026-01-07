@@ -1,3 +1,7 @@
+# © MNELAB developers
+#
+# License: BSD (3-clause)
+
 import mne
 import numpy as np
 from mne.io import BaseRaw

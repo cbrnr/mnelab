@@ -1,6 +1,7 @@
 # © MNELAB developers
 #
 # License: BSD (3-clause)
+
 from pathlib import Path
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas

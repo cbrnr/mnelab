@@ -1,6 +1,7 @@
 # © MNELAB developers
 #
 # License: BSD (3-clause)
+
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import (
     QCheckBox,

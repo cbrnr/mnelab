@@ -1,3 +1,7 @@
+# © MNELAB developers
+#
+# License: BSD (3-clause)
+
 from mnelab.utils import format_code
 
 expected_formatted_code = """import mne
