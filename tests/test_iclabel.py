@@ -8,7 +8,7 @@ import mne
 import numpy as np
 import pytest
 
-from mnelab.utils.labeling import _get_features, run_iclabel
+from mnelab.utils.iclabel import _get_features, run_iclabel
 
 
 @pytest.fixture
