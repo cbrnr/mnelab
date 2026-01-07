@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from .utils import CheckBoxDelegate, NumberSortProxyModel
+from mnelab.dialogs.utils import CheckBoxDelegate, NumberSortProxyModel
 
 
 class AutoSelectDialog(QDialog):
