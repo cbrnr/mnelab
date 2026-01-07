@@ -300,6 +300,9 @@ class MainWindow(QMainWindow):
         self.actions["run_ica"] = tools_menu.addAction(
             QIcon.fromTheme("run-ica"), "Run &ICA...", self.run_ica
         )
+        self.actions["label_ica"] = tools_menu.addAction(
+            "Label &ICs...", self.label_ica
+        )
         self.actions["apply_ica"] = tools_menu.addAction("Apply &ICA", self.apply_ica)
         tools_menu.addSeparator()
         self.actions["interpolate_bads"] = tools_menu.addAction(
@@ -520,6 +523,9 @@ class MainWindow(QMainWindow):
             locations = count_locations(self.model.current["data"].info)
             self.actions["plot_locations"].setEnabled(enabled and locations)
             ica = bool(self.model.current["ica"])
+            self.actions["label_ica"].setEnabled(
+                enabled and ica and self.model.current["montage"] is not None
+            )
             self.actions["apply_ica"].setEnabled(enabled and ica)
             self.actions["export_ica"].setEnabled(enabled and ica)
             self.actions["plot_erds"].setEnabled(
@@ -927,7 +933,12 @@ class MainWindow(QMainWindow):
         fig.show()
 
     def plot_ica_components(self):
-        self.model.current["ica"].plot_components(inst=self.model.current["data"])
+        figs = self.model.current["ica"].plot_components(
+            inst=self.model.current["data"]
+        )
+        # refresh UI after closing the plots to reflect changes in ICA exclusions
+        for fig in figs:
+            fig.canvas.mpl_connect("close_event", lambda _: self.data_changed())
 
     def plot_ica_sources(self):
         self.model.current["ica"].plot_sources(inst=self.model.current["data"])
@@ -1109,6 +1120,7 @@ class MainWindow(QMainWindow):
                 print("ICA calculation aborted...")
             else:
                 self.model.current["ica"] = res.get(timeout=1)
+                self.model.current["iclabel"] = None
                 self.model.history.append(
                     f"ica.fit(inst=raw, reject_by_annotation={exclude_bad_segments})"
                 )
@@ -1118,6 +1130,19 @@ class MainWindow(QMainWindow):
         """Apply current fitted ICA."""
         self.auto_duplicate()
         self.model.apply_ica()
+
+    def label_ica(self):
+        """Label ICA components."""
+        ica = self.model.current["ica"]
+        probs = self.model.get_iclabels()
+
+        dialog = ICLabelDialog(self, probs, exclude=ica.exclude)
+        if dialog.exec():
+            exclude_indices = dialog.get_excluded_indices()
+
+            ica.exclude = sorted([int(x) for x in exclude_indices])
+            self.model.history.append(f"ica.exclude = {ica.exclude}")
+            self.data_changed()
 
     def interpolate_bads(self):
         """Interpolate bad channels."""
