@@ -1,7 +1,9 @@
-"""
-This script generates the data used for testing ICLabel integration.
+# © MNELAB developers
+#
+# License: BSD (3-clause)
 
-REQUIREMENTS:
+"""This script generates the data used for testing ICLabel integration.
+
 To run this script, you must have the following packages installed:
 - mne-icalabel
 - onnxruntime
@@ -12,12 +14,10 @@ from pathlib import Path
 import mne
 import numpy as np
 from mne.preprocessing import ICA
-from mne_icalabel.iclabel.features import get_iclabel_features  # type: ignore
-from mne_icalabel.iclabel.label_components import (  # type: ignore
-    iclabel_label_components,
-)
-from mne_icalabel.iclabel.network.onnx import _format_input_for_onnx  # type: ignore
-from mne_icalabel.iclabel.network.utils import _format_input  # type: ignore
+from mne_icalabel.iclabel.features import get_iclabel_features
+from mne_icalabel.iclabel.label_components import iclabel_label_components
+from mne_icalabel.iclabel.network.onnx import _format_input_for_onnx
+from mne_icalabel.iclabel.network.utils import _format_input
 
 ch_names = ["Fp1", "Fp2", "Fz", "Cz", "Pz", "Oz", "F7", "F8"]
 sfreq = 250

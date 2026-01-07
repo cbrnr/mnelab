@@ -1,3 +1,7 @@
+# © MNELAB developers
+#
+# License: BSD (3-clause)
+
 from pathlib import Path
 
 import mne

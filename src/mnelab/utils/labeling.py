@@ -1,8 +1,11 @@
-"""
-The ONNX model (`ICLabelNet.onnx`) and parts of the feature extraction logic
-are adapted from the `mne-icalabel` library.
+# © MNELAB developers
+#
+# License: BSD (3-clause)
 
-Source Repository: https://github.com/mne-tools/mne-icalabel
+"""Automatic ICA component labeling using ICLabel.
+
+The ONNX model (`ICLabelNet.onnx`) and parts of the feature extraction logic are based
+on the `mne-icalabel` package (https://github.com/mne-tools/mne-icalabel).
 """
 
 from pathlib import Path
@@ -34,11 +37,10 @@ def _get_topomaps(inst, icawinv, picks):
     np.ndarray, shape (n_components, 1, 32, 32)
         The interpolated topographic maps.
 
-
     Notes
     -----
-    This function is adapted from `mne-icalabel` (specifically `_eeg_topoplot`
-    and `_topoplotFast`).
+    This function is adapted from `mne-icalabel` (specifically `_eeg_topoplot` and
+    `_topoplotFast`).
     """
 
     rd, th = _get_eeglab_coords(inst, picks)
@@ -78,8 +80,7 @@ def _get_topomaps(inst, icawinv, picks):
     xy_sensors = (x + 1j * y).flatten()
     d = np.abs(xy_grid[:, None] - xy_sensors[None, :])
 
-    # Green's function
-    # Describes the influence of sensors on grid points based on distance
+    # Green's function (describes influence of sensors on grid points based on distance)
     with np.errstate(divide="ignore", invalid="ignore"):
         g = (d**2) * (np.log(d) - 1)
     g[np.isnan(g)] = 0
@@ -142,7 +143,7 @@ def _get_eeglab_coords(inst, picks):
 
     positions = montage.get_positions()
     ch_pos = positions["ch_pos"]
-    # check that we do have a coordinate for every points
+    # check that we do have a coordinate for each point
     empty = [key for key in ch_pos if np.all(np.isnan(ch_pos[key]))]
     if len(empty) != 0:
         raise ValueError("Channel positions are missing.")
@@ -150,9 +151,9 @@ def _get_eeglab_coords(inst, picks):
     # get locations as a 2D array
     locs = np.vstack(list(ch_pos.values()))
 
-    # Obtain cartesian coordinates
+    # obtain cartesian coordinates
     x = locs[:, 1]
-    y = -1 * locs[:, 0]  # nose orientation in eeglab and mne
+    y = -1 * locs[:, 0]  # nose orientation
     z = locs[:, 2]
 
     azimuth = np.arctan2(y, x)
@@ -168,9 +169,9 @@ def _get_eeglab_coords(inst, picks):
 def _get_autocorrelation(ica_act, sfreq):
     """Compute autocorrelation features for ICA components.
 
-    This function calculates the autocorrelation of the ICA activations. For
-    continuous data longer than 5 seconds, the Welch method is used. For shorter
-    segments or epochs, standard FFT-based autocorrelation is applied.
+    This function calculates the autocorrelation of the ICA activations. For continuous
+    data longer than 5 seconds, the Welch method is used. For shorter segments or
+    epochs, standard FFT-based autocorrelation is applied.
 
     Parameters
     ----------
@@ -186,12 +187,11 @@ def _get_autocorrelation(ica_act, sfreq):
 
     Notes
     -----
-    This function is adapted from `mne-icalabel` (specifically `_eeg_autocorr_welch`,
-    `_eeg_autocorr` and `_eeg_autocorr_fftw`).
+    This function is adapted from `mne-icalabel` (specifically, `_eeg_autocorr_welch`,
+    `_eeg_autocorr`, and `_eeg_autocorr_fftw`).
     """
     n_lags = int(sfreq) + 1
-    # compute autocorrelation for epoched data
-    if ica_act.ndim == 3:
+    if ica_act.ndim == 3:  # compute autocorrelation for epoched data
         # (n_comp, n_times, n_epochs)
         n_comp, n_times, _ = ica_act.shape
 
@@ -204,7 +204,7 @@ def _get_autocorrelation(ica_act, sfreq):
 
         ac = np.fft.irfft(psd_mean, n=nfft, axis=1)
 
-        # trimming to one second
+        # trimming to 1 second
         if ac.shape[1] > n_lags:
             ac = ac[:, :n_lags]
         else:
@@ -215,8 +215,7 @@ def _get_autocorrelation(ica_act, sfreq):
         var = ac[:, 0:1]
         var[var == 0] = 1.0
         ac = ac / var
-    # compute autocorrelation for continuous data
-    else:
+    else:  # compute autocorrelation for continuous data
         n_comp, n_points = ica_act.shape
 
         # compute autocorrelation for long signals
@@ -262,7 +261,7 @@ def _get_autocorrelation(ica_act, sfreq):
             psd = np.abs(fft_data) ** 2
             ac = np.fft.irfft(psd, n=nfft, axis=1)
 
-            # trimming to one second
+            # trimming to 1 second
             if ac.shape[1] > n_lags:
                 ac = ac[:, :n_lags]
             else:
@@ -274,7 +273,7 @@ def _get_autocorrelation(ica_act, sfreq):
             var[var == 0] = 1.0
             ac = ac / var
 
-    # resample to 1 second at 100 samples/sec
+    # resample to 1 second at 100 samples/s
     down = int(sfreq)
     target_fs = 100
 
@@ -296,9 +295,9 @@ def _get_psd(ica_act, sfreq):
     """Compute the Power Spectral Density (PSD) of ICA components.
 
     This function calculates the PSD using a windowed FFT approach, specifically
-    tailored for ICA components. It handles both continuous and epoched data,
-    normalizes the spectrum, interpolates line noise artifacts (if a notch filter
-    was applied previously) and returns the PSD in dB.
+    tailored for ICA components. It handles both continuous and epoched data, normalizes
+    the spectrum, interpolates line noise artifacts (if a notch filter was applied
+    previously) and returns the PSD in dB.
 
     Parameters
     ----------
@@ -314,8 +313,8 @@ def _get_psd(ica_act, sfreq):
 
     Notes
     -----
-    This function is adapted from `mne-icalabel` (specifically `_eeg_rpsd_constants`,
-    `_eeg_rpsd_compute_psdmed` and `_eeg_rpsd_format`).
+    This function is adapted from `mne-icalabel` (specifically, `_eeg_rpsd_constants`,
+    `_eeg_rpsd_compute_psdmed`, and `_eeg_rpsd_format`).
     """
 
     # check if epoched or continuous
@@ -345,18 +344,16 @@ def _get_psd(ica_act, sfreq):
     psd_list = []
 
     for comp_idx in range(n_comp):
-        # select current component data
-        comp_data = ica_act[comp_idx]
+        comp_data = ica_act[comp_idx]  # select current component data
 
-        # select all time windows
-        windowed_data = comp_data[index, :]
+        windowed_data = comp_data[index, :]  # select all time windows
 
-        # reshape for FFt: (n_points, n_segments_per_epoch * n_epochs)
+        # reshape for FFT (n_points, n_segments_per_epoch * n_epochs)
         time_segments = windowed_data.reshape(
             n_points, n_segments_per_epoch * n_epochs, order="F"
         )
 
-        # Apply window
+        # apply window
         time_segments *= window
 
         fft = np.fft.fft(time_segments, n=n_points, axis=0)
@@ -380,11 +377,10 @@ def _get_psd(ica_act, sfreq):
 
     psd = np.array(psd_list)
 
-    if n_freqs < 100:
-        # pads the last frequency value
+    if n_freqs < 100:  # pad the last frequency value
         psd = np.pad(psd, ((0, 0), (0, 100 - n_freqs)), mode="edge")
 
-    # eliminate line noise artifacts - interpolate 50Hz and 60Hz bins if needed
+    # eliminate line noise artifacts (interpolate 50Hz and 60Hz bins if needed)
     for linenoise_ind in [49, 59]:
         neighbors_idx = [linenoise_ind - 1, linenoise_ind + 1]
         difference = psd[:, neighbors_idx] - psd[:, linenoise_ind, np.newaxis]
@@ -420,19 +416,18 @@ def _get_ica_data(inst, ica):
     -------
     icawinv : np.ndarray, shape (n_channels, n_components)
         The inverse ICA weights matrix (mixing matrix).
-    icaact : np.ndarray, shape (n_components, n_times) for raw data or
-            (n_components, n_times, n_epochs) for epoched data
+    icaact : np.ndarray, shape (n_components, n_times[, n_epochs])
         The ICA component activations.
 
     Notes
     -----
-    This function is adapted from `mne-icalabel` (specifically
+    This function is adapted from `mne-icalabel` (specifically,
     `_retrieve_eeglab_icawinv` and `_compute_ica_activations`).
     """
     weights = ica.unmixing_matrix_ @ ica.pca_components_[: ica.n_components_]
     icawinv = np.linalg.pinv(weights)
 
-    # data shape: (n_chan, n_times) or (n_epochs, n_chan, n_times)
+    # data shape (n_chan, n_times) or (n_epochs, n_chan, n_times)
     data = inst.get_data(picks=ica.ch_names) * 1e6
 
     # (n_comp, n_chan) @ (..., n_chan, n_times)
@@ -467,8 +462,8 @@ def _get_features(inst, ica):
 
     Notes
     -----
-    This function is adapted from `mne-icalabel` (specifically
-    `get_iclabel_features` and `_format_input`).
+    This function is adapted from `mne-icalabel` (specifically, `get_iclabel_features`
+    and `_format_input`).
     """
     icawinv, ica_act = _get_ica_data(inst, ica)
 
@@ -480,7 +475,7 @@ def _get_features(inst, ica):
     psd_features *= 0.99
     autocorr_features *= 0.99
 
-    # ONNX expects 4 versions of each topomap
+    # the model expects 4 versions of each topomap
     topo_features_formatted = np.concatenate(
         [
             topo_features,
@@ -532,25 +527,25 @@ def _im2col(x, kernel_h, kernel_w, stride=1, padding=0):
 
     Parameters
     ----------
-    x : np.ndarray
-        Input tensor, shape (batch, channels, height, width)
+    x : np.ndarray, shape (batch, channels, height, width)
+        Input tensor.
     kernel_h : int
-        Kernel height
+        Kernel height.
     kernel_w : int
-        Kernel width
+        Kernel width.
     stride : int
-        Stride of the convolution
+        Stride of the convolution.
     padding : int or tuple
-        Padding added to sides. Can be int (same for H and W) or tuple (pad_h, pad_w)
+        Padding added to sides, can be int (same for H and W) or tuple (pad_h, pad_w).
 
     Returns
     -------
-    cols : np.ndarray
-        Column matrix, shape (batch, channels*kernel_h*kernel_w, h_out*w_out)
+    cols : np.ndarray, shape (batch, channels*kernel_h*kernel_w, h_out*w_out)
+        Column matrix.
     h_out : int
-        Output height
+        Output height.
     w_out : int
-        Output width
+        Output width.
     """
     batch, channels, h, w = x.shape
 
@@ -590,22 +585,22 @@ def _conv2d_numpy(x, weight, bias, stride=1, padding=0):
 
     Parameters
     ----------
-    x : np.ndarray
-        Input tensor, shape (batch, in_channels, height, width)
-    weight : np.ndarray
-        Convolution kernel, shape (out_channels, in_channels, kh, kw)
-    bias : np.ndarray
-        Bias term, shape (out_channels,)
+    x : np.ndarray, shape (batch, in_channels, height, width)
+        Input tensor.
+    weight : np.ndarray, shape (out_channels, in_channels, kh, kw)
+        Convolution kernel.
+    bias : np.ndarray, shape (out_channels,)
+        Bias term.
     stride : int
-        Stride of the convolution
+        Stride of the convolution.
     padding : int or tuple
-        Padding added to both sides. Can be int (same for all) or
-        tuple (pad_h, pad_w) for different padding on height/width
+        Padding added to both sides. Can be int (same for all) or tuple (pad_h, pad_w)
+        for different padding on height/width.
 
     Returns
     -------
     out : np.ndarray
-        Output tensor after convolution
+        Output tensor after convolution.
     """
     batch, in_channels, h, w = x.shape
     out_channels, _, kh, kw = weight.shape
@@ -649,19 +644,19 @@ def _iclabel_forward_numpy(images, psd, autocorr, weights):
 
     Parameters
     ----------
-    images : np.ndarray
-        Topographic maps, shape (batch, 1, 32, 32)
-    psd : np.ndarray
-        Power spectral density, shape (batch, 1, 1, 100)
-    autocorr : np.ndarray
-        Autocorrelation, shape (batch, 1, 1, 100)
+    images : np.ndarray, shape (batch, 1, 32, 32)
+        Topographic maps.
+    psd : np.ndarray, shape (batch, 1, 1, 100)
+        Power spectral density.
+    autocorr : np.ndarray, shape (batch, 1, 1, 100)
+        Autocorrelation.
     weights : dict
-        Dictionary containing model weights and biases
+        Dictionary containing model weights and biases.
 
     Returns
     -------
-    probs : np.ndarray
-        Class probabilities, shape (batch, 7)
+    probs : np.ndarray, shape (batch, 7)
+        Class probabilities.
     """
     # image convolution branch
     x_img = images
@@ -738,47 +733,39 @@ def _iclabel_forward_numpy(images, psd, autocorr, weights):
     )
     x_autocorr = _leaky_relu(x_autocorr)
 
-    # Flatten spatial dimensions of PSD and autocorr into channels
-    # The PSD and autocorr branches produce 1D features that need to be
-    # reshaped to match the 2D spatial structure of the image branch
+    # flatten spatial dimensions of PSD and autocorr into channels
     batch, img_channels, img_h, img_w = x_img.shape
 
-    # Flatten PSD and autocorr: (batch, C, H, W) -> (batch, C*H*W, 1, 1)
+    # flatten PSD and autocorr (batch, C, H, W) -> (batch, C*H*W, 1, 1)
     x_psd_flat = x_psd.reshape(batch, -1, 1, 1)
     x_autocorr_flat = x_autocorr.reshape(batch, -1, 1, 1)
 
-    # Tile to match image spatial dimensions
+    # tile to match image spatial dimensions
     x_psd_tiled = np.tile(x_psd_flat, (1, 1, img_h, img_w))
     x_autocorr_tiled = np.tile(x_autocorr_flat, (1, 1, img_h, img_w))
 
-    # Concatenate all branches along channel dimension
+    # concatenate all branches along channel dimension
     x = np.concatenate([x_img, x_psd_tiled, x_autocorr_tiled], axis=1)
 
-    # Final convolution
+    # final convolution
     x = _conv2d_numpy(x, weights["conv.weight"], weights["conv.bias"])
 
-    # Softmax and average over spatial dimensions
+    # softmax and average over spatial dimensions
     x = _softmax(x, axis=1)
     x = np.mean(x, axis=(2, 3))
 
-    # Average over the 4 versions of each component
-    # Input has 4 augmented versions per component in interleaved order:
+    # average over the 4 versions of each component and reshape (the original order is
     # [comp0_v0, comp1_v0, ..., compN_v0, comp0_v1, comp1_v1, ..., compN_v1, ...]
-    # Need to reshape to (n_components, 4, 7) and average over versions
-    n_components = batch // 4
-    # Reshape from (batch, 7) to (4, n_components, 7)
-    # then transpose to (n_components, 4, 7)
-    x = x.reshape(4, n_components, -1).transpose(1, 0, 2).mean(axis=1)
+    x = x.reshape(4, batch // 4, -1).transpose(1, 0, 2).mean(axis=1)
 
     return x
 
 
 def run_iclabel(inst, ica):
-    """Executes ICLabel classification on ICA components using NumPy.
+    """Run ICLabel classification on ICA components.
 
-    This function extracts the necessary features (topomaps, PSD, autocorrelation)
-    from the raw and ICA data to obtain class probabilities for each component
-    using a pure NumPy implementation of the ICLabel neural network.
+    This function extracts the necessary features (topomaps, PSD, autocorrelation) from
+    the raw and ICA data to obtain class probabilities for each component.
 
     Parameters
     ----------
@@ -790,8 +777,8 @@ def run_iclabel(inst, ica):
     Returns
     -------
     np.ndarray, shape (n_components, 7)
-        The estimated probabilities for each component class.
-        Columns: [Brain, Muscle, Eye, Heart, Line Noise, Channel Noise, Other].
+        The estimated probabilities for each component class (columns: brain, muscle,
+        eye, heart, line noise, channel noise, other).
     """
     onnx_path = Path(__file__).parent / "ICLabelNet.onnx"
     if not onnx_path.exists():
