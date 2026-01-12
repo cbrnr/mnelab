@@ -2,9 +2,12 @@
 #
 # License: BSD (3-clause)
 
+from matplotlib.backends.backend_qtagg import FigureCanvas
+from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QColor, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import (
+    QAbstractItemView,
     QCheckBox,
     QDialog,
     QDialogButtonBox,
@@ -18,7 +21,27 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from mnelab.dialogs.utils import CheckBoxDelegate, NumberSortProxyModel
+from mnelab.dialogs.utils import (
+    CheckBoxDelegate,
+    NumberSortProxyModel,
+    get_detailed_ica_properties,
+)
+
+
+class PlotDetailDialog(QDialog):
+    def __init__(self, parent, fig):
+        super().__init__(parent)
+        self.resize(950, 700)
+
+        layout = QVBoxLayout(self)
+
+        self.canvas = FigureCanvas(fig)
+        self.toolbar = NavigationToolbar(self.canvas, self)
+
+        layout.addWidget(self.toolbar)
+        layout.addWidget(self.canvas)
+
+        self.setModal(False)
 
 
 class AutoSelectDialog(QDialog):
@@ -78,10 +101,13 @@ class AutoSelectDialog(QDialog):
 
 
 class ICLabelDialog(QDialog):
-    def __init__(self, parent, components_probs, exclude=None, labels=None):
+    def __init__(self, parent, raw, ica, components_probs, exclude=None, labels=None):
         super().__init__(parent)
         self.setWindowTitle("Label ICs")
         self.setMinimumSize(800, 500)
+        self.raw = raw
+        self.ica = ica
+        self.probs = components_probs
         if labels is None:
             self.labels = [
                 "Brain",
@@ -103,13 +129,13 @@ class ICLabelDialog(QDialog):
         headers = ["IC"] + self.labels + ["Exclude"]
         self.check_col = len(headers) - 1
 
-        self.model = QStandardItemModel(len(components_probs), len(headers))
+        self.model = QStandardItemModel(len(self.probs), len(headers))
         self.model.setHorizontalHeaderLabels(headers)
 
-        row_labels = [str(i + 1) for i in range(len(components_probs))]
+        row_labels = [str(i + 1) for i in range(len(self.probs))]
         self.model.setVerticalHeaderLabels(row_labels)
 
-        n_components = len(components_probs)
+        n_components = len(self.probs)
         for row_id in range(n_components):
             item = QStandardItem()
             item.setData(row_id, Qt.UserRole)
@@ -118,7 +144,7 @@ class ICLabelDialog(QDialog):
             item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
             self.model.setItem(row_id, 0, item)
 
-            for col_id, prob in enumerate(components_probs[row_id]):
+            for col_id, prob in enumerate(self.probs[row_id]):
                 prob_item = QStandardItem()
                 prob_item.setData(f"{prob:.2f}", Qt.DisplayRole)
                 prob_item.setData(prob, Qt.UserRole)
@@ -147,9 +173,10 @@ class ICLabelDialog(QDialog):
         self.view.setModel(self.proxy_model)
         self.view.setItemDelegateForColumn(self.check_col, CheckBoxDelegate(self))
 
-        self.view.setSelectionMode(QTableView.NoSelection)
+        self.view.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.view.setSelectionMode(QAbstractItemView.SingleSelection)
         self.view.setEditTriggers(QTableView.NoEditTriggers)
-        self.view.setFocusPolicy(Qt.NoFocus)
+        self.view.selectionModel().selectionChanged.connect(self.selection_state)
         self.view.setSortingEnabled(True)
         self.view.setShowGrid(True)
 
@@ -165,10 +192,14 @@ class ICLabelDialog(QDialog):
         button_layout = QHBoxLayout()
         self.autoselect_button = QPushButton("Auto-Select...")
         self.reset_button = QPushButton("Reset All")
+        self.visualize_button = QPushButton("Visualize IC properties")
+        self.visualize_button.setEnabled(False)
         self.reset_button.clicked.connect(self.reset_exclusions)
         self.autoselect_button.clicked.connect(self.open_auto_select)
+        self.visualize_button.clicked.connect(self.plot_ic_properties)
         button_layout.addWidget(self.autoselect_button)
         button_layout.addWidget(self.reset_button)
+        button_layout.addWidget(self.visualize_button)
         button_layout.addStretch()
 
         self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
@@ -225,3 +256,24 @@ class ICLabelDialog(QDialog):
         for row in range(self.model.rowCount()):
             item = self.model.item(row, exclude_col)
             item.setData(Qt.CheckState.Unchecked, Qt.CheckStateRole)
+
+    def selection_state(self):
+        has_selection = self.view.selectionModel().hasSelection()
+        self.visualize_button.setEnabled(has_selection)
+
+    def plot_ic_properties(self):
+        selected_rows = self.view.selectionModel().selectedRows()
+
+        proxy_index = selected_rows[0]
+        source_index = self.proxy_model.mapToSource(proxy_index)
+        comp_id = self.model.item(source_index.row(), 0).data(Qt.UserRole)
+
+        fig = get_detailed_ica_properties(
+            ica=self.ica,
+            raw=self.raw,
+            comp_id=comp_id,
+            ic_probs=self.probs[comp_id],
+            labels=self.labels,
+        )
+        self.detail_plot = PlotDetailDialog(self, fig)
+        self.detail_plot.show()

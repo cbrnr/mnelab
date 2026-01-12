@@ -2,6 +2,8 @@
 #
 # License: BSD (3-clause)
 
+import matplotlib.gridspec as gridspec
+import numpy as np
 from PySide6.QtCore import QEvent, QRect, QSortFilterProxyModel, Qt
 from PySide6.QtWidgets import (
     QStyle,
@@ -16,6 +18,61 @@ def select_all(list_widget):
     """Select all items in a QListWidget."""
     for i in range(list_widget.count()):
         list_widget.item(i).setSelected(True)
+
+
+def get_detailed_ica_properties(ica, raw, comp_id, ic_probs, labels):
+    # initialize mne properties plot
+    figs = ica.plot_properties(raw, picks=comp_id, show=False)
+    fig = figs[0]
+
+    # adjust overall figure dimensions
+    w, h = fig.get_size_inches()
+    fig.set_size_inches(w, h + 0.5)
+
+    # define main grid structure
+    gs = gridspec.GridSpec(3, 2, figure=fig, height_ratios=[1, 0.3, 1])
+
+    # create nested grids for column-specific spacing
+    gs_left_group = gridspec.GridSpecFromSubplotSpec(
+        2, 1, subplot_spec=gs[:2, 0], hspace=0.2, height_ratios=[3.75, 1]
+    )
+    gs_right_group = gridspec.GridSpecFromSubplotSpec(
+        2, 1, subplot_spec=gs[:2, 1], hspace=0, height_ratios=[3.5, 1]
+    )
+
+    # map existing mne axes to new grid locations
+    fig.axes[0].set_subplotspec(gs_left_group[0])
+    fig.axes[1].set_subplotspec(gs_right_group[0])
+    fig.axes[2].set_subplotspec(gs_right_group[1])
+    fig.axes[3].set_subplotspec(gs[2, 0])
+    fig.axes[4].set_subplotspec(gs[2, 1])
+
+    # custom probability bar plot
+    labels = [label.replace(" ", "\n") for label in labels]
+    ax_hist = fig.add_subplot(gs_left_group[1])
+
+    colors = ["#4c72b0"] * len(labels)
+    colors[np.argmax(ic_probs)] = "#228B22"
+
+    x_pos = range(len(labels))
+    ax_hist.bar(x_pos, ic_probs, color=colors)
+    ax_hist.set_xticks(x_pos)
+    ax_hist.set_xticklabels(labels, ha="center", fontsize=7)
+    ax_hist.set_ylim(0, 1.1)
+    ax_hist.set_yticks([])
+    ax_hist.set_facecolor("none")
+
+    # remove spines
+    for spine in ax_hist.spines.values():
+        spine.set_visible(False)
+
+    # annotate bars with probability values
+    for i, v in enumerate(ic_probs):
+        ax_hist.text(i, v + 0.02, f"{v:.2f}", ha="center", fontsize=8)
+
+    fig.align_ylabels([ax_hist, fig.axes[3]])
+    fig.tight_layout()
+    return fig
 
 
 class IntTableWidgetItem(QTableWidgetItem):
