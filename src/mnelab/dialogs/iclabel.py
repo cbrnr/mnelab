@@ -3,7 +3,6 @@
 # License: BSD (3-clause)
 
 from matplotlib.backends.backend_qtagg import FigureCanvas
-from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QColor, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import (
@@ -34,11 +33,9 @@ class PlotDetailDialog(QDialog):
         self.resize(950, 700)
 
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
 
         self.canvas = FigureCanvas(fig)
-        self.toolbar = NavigationToolbar(self.canvas, self)
-
-        layout.addWidget(self.toolbar)
         layout.addWidget(self.canvas)
 
         self.setModal(False)
