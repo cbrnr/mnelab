@@ -58,17 +58,19 @@ def get_detailed_ica_properties(ica, raw, comp_id, ic_probs, labels):
     ax_hist.bar(x_pos, ic_probs, color=colors)
     ax_hist.set_xticks(x_pos)
     ax_hist.set_xticklabels(labels, ha="center", fontsize=7)
+    ax_hist.tick_params(axis="x", which="both", length=0)
     ax_hist.set_ylim(0, 1.1)
     ax_hist.set_yticks([])
     ax_hist.set_facecolor("none")
 
-    # remove spines
-    for spine in ax_hist.spines.values():
-        spine.set_visible(False)
+    # keep only the bottom spine
+    for name, spine in ax_hist.spines.items():
+        if name != "bottom":
+            spine.set_visible(False)
 
     # annotate bars with probability values
     for i, v in enumerate(ic_probs):
-        ax_hist.text(i, v + 0.02, f"{v:.2f}", ha="center", fontsize=8)
+        ax_hist.text(i, v + 0.03, f"{v:.2f}", ha="center", fontsize=8)
 
     fig.align_ylabels([ax_hist, fig.axes[3]])
     fig.tight_layout()
