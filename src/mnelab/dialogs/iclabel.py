@@ -2,6 +2,7 @@
 #
 # License: BSD (3-clause)
 
+import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvas
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QColor, QStandardItem, QStandardItemModel
@@ -30,15 +31,21 @@ from mnelab.dialogs.utils import (
 class PlotDetailDialog(QDialog):
     def __init__(self, parent, fig):
         super().__init__(parent)
+        self.setAttribute(Qt.WA_DeleteOnClose)
         self.resize(950, 700)
+        self.fig = fig
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        self.canvas = FigureCanvas(fig)
+        self.canvas = FigureCanvas(self.fig)
         layout.addWidget(self.canvas)
 
         self.setModal(False)
+
+    def closeEvent(self, event):
+        plt.close(self.fig)
+        super().closeEvent(event)
 
 
 class AutoSelectDialog(QDialog):
@@ -272,5 +279,21 @@ class ICLabelDialog(QDialog):
             ic_probs=self.probs[comp_id],
             labels=self.labels,
         )
-        self.detail_plot = PlotDetailDialog(self, fig)
-        self.detail_plot.show()
+        detail_plot = PlotDetailDialog(self, fig)
+        detail_plot.show()
+
+    def closeEvent(self, event):
+        self._close_property_dialogs()
+        super().closeEvent(event)
+
+    def accept(self):
+        self._close_property_dialogs()
+        super().accept()
+
+    def reject(self):
+        self._close_property_dialogs()
+        super().reject()
+
+    def _close_property_dialogs(self):
+        for dlg in self.findChildren(PlotDetailDialog):
+            dlg.close()
