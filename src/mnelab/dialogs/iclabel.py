@@ -105,11 +105,11 @@ class AutoSelectDialog(QDialog):
 
 
 class ICLabelDialog(QDialog):
-    def __init__(self, parent, raw, ica, components_probs, exclude=None, labels=None):
+    def __init__(self, parent, data, ica, components_probs, exclude=None, labels=None):
         super().__init__(parent)
         self.setWindowTitle("Label ICs")
         self.setMinimumSize(800, 500)
-        self.raw = raw
+        self.data = data
         self.ica = ica
         self.probs = components_probs
         if labels is None:
@@ -274,7 +274,7 @@ class ICLabelDialog(QDialog):
 
         fig = get_detailed_ica_properties(
             ica=self.ica,
-            raw=self.raw,
+            data=self.data,
             comp_id=comp_id,
             ic_probs=self.probs[comp_id],
             labels=self.labels,

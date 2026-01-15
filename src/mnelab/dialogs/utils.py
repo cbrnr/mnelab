@@ -20,9 +20,9 @@ def select_all(list_widget):
         list_widget.item(i).setSelected(True)
 
 
-def get_detailed_ica_properties(ica, raw, comp_id, ic_probs, labels):
-    # initialize mne properties plot
-    figs = ica.plot_properties(raw, picks=comp_id, show=False)
+def get_detailed_ica_properties(ica, data, comp_id, ic_probs, labels):
+    # initialize MNE properties plot
+    figs = ica.plot_properties(data, picks=comp_id, show=False)
     fig = figs[0]
 
     # adjust overall figure dimensions
