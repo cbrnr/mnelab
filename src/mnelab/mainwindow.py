@@ -1133,10 +1133,11 @@ class MainWindow(QMainWindow):
 
     def label_ica(self):
         """Label ICA components."""
+        data = self.model.current["data"]
         ica = self.model.current["ica"]
         probs = self.model.get_iclabels()
 
-        dialog = ICLabelDialog(self, probs, exclude=ica.exclude)
+        dialog = ICLabelDialog(self, data, ica, probs, exclude=ica.exclude)
         if dialog.exec():
             exclude_indices = dialog.get_excluded_indices()
 
