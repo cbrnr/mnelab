@@ -196,7 +196,7 @@ class ICLabelDialog(QDialog):
         button_layout = QHBoxLayout()
         self.autoselect_button = QPushButton("Auto-Select...")
         self.reset_button = QPushButton("Reset All")
-        self.visualize_button = QPushButton("Visualize IC properties...")
+        self.visualize_button = QPushButton("Plot IC properties...")
         self.visualize_button.setEnabled(False)
         self.reset_button.clicked.connect(self.reset_exclusions)
         self.autoselect_button.clicked.connect(self.open_auto_select)
