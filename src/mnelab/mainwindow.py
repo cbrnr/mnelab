@@ -39,6 +39,7 @@ from mnelab.settings import SettingsDialog, read_settings, write_settings
 from mnelab.utils import (
     annotations_between_events,
     count_locations,
+    format_code,
     have,
     image_path,
     natural_sort,
@@ -1516,7 +1517,7 @@ class MainWindow(QMainWindow):
             write_settings(size=self.size(), pos=self.pos())
             if self.model.history:
                 print("\n# Command History\n")
-                print("\n".join(self.model.history))
+                print(format_code("\n".join(self.model.history)))
             event.accept()
         elif event.type() == QEvent.PaletteChange:
             if (
