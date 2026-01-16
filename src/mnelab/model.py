@@ -417,8 +417,8 @@ class Model:
             method = ica.method.title()
             if method == "Fastica":
                 method = "FastICA"
-            n_active = ica.n_components - len(ica.exclude)
-            ica = f"{method} ({n_active}/{ica.n_components} components)"
+            n_active = ica.n_components_ - len(ica.exclude)
+            ica = f"{method} ({n_active}/{ica.n_components_} components)"
         else:
             ica = "-"
 
