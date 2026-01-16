@@ -2,7 +2,10 @@
 #
 # License: BSD (3-clause)
 
+from textwrap import dedent
+
 from mnelab.utils import format_code
+from mnelab.utils.syntax import _remove_unused_imports
 
 expected_formatted_code = """import mne
 
@@ -64,3 +67,56 @@ def test_format_code():
     invalid_code = "x = print(Hello'J)"
     formatted_code = format_code(invalid_code)
     assert formatted_code == invalid_code  # invalid code should be returned unmodified
+
+
+def test_remove_unused_imports_keeps_called_functions():
+    """Test that function calls are recognized as used imports."""
+    code = dedent(
+        """
+        import mne
+        from mnelab.utils.iclabel import run_iclabel
+
+        data = mne.io.read_raw_fif("test.fif")
+        probs = run_iclabel(data, None)
+        """
+    )
+    result = _remove_unused_imports(code)
+    assert "run_iclabel" in result
+    assert "import mne" in result
+
+
+def test_remove_unused_imports_removes_unused():
+    """Test that genuinely unused imports are removed."""
+    code = dedent(
+        """
+        import mne
+        import numpy as np
+        from mnelab.utils.iclabel import run_iclabel
+
+        data = mne.io.read_raw_fif("test.fif")
+        probs = run_iclabel(data, None)
+        """
+    )
+    result = _remove_unused_imports(code)
+    assert "numpy" not in result
+    assert "run_iclabel" in result
+    assert "import mne" in result
+
+
+def test_remove_unused_imports_mixed_line():
+    """Test that lines with mixed used/unused imports are kept."""
+    code = dedent(
+        """
+        import mne
+        from mnelab.utils import annotations_between_events, run_iclabel
+
+        data = mne.io.read_raw_fif("test.fif")
+        probs = run_iclabel(data, None)
+        """
+    )
+    result = _remove_unused_imports(code)
+
+    assert "annotations_between_events" not in result
+    assert "run_iclabel" in result
+    assert "from mnelab.utils import run_iclabel" in result
+    assert "import mne" in result
