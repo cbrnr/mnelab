@@ -4,6 +4,7 @@
 - Format history (using black/isort) ([#540](https://github.com/cbrnr/mnelab/pull/540) by [Clemens Brunner](https://github.com/cbrnr))
 - Add ICLabel integration for automatic ICA component classification ([#543](https://github.com/cbrnr/mnelab/pull/543) by [Fabian Schellander](https://github.com/SchellanderF) and [Clemens Brunner](https://github.com/cbrnr))
 - Add ICA property plots with probability histograms in the 'Label ICs' dialog ([#545](https://github.com/cbrnr/mnelab/pull/545) by [Fabian Schellander](https://github.com/SchellanderF))
+- Add option to save history to a Python file ([#550](https://github.com/cbrnr/mnelab/pull/550) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🌀 Changed
 - PySide6 >= 6.10.0 can now also be used on macOS since the performance regression has been fixed with a new PyQtGraph 0.14.0 release ([#533](https://github.com/cbrnr/mnelab/pull/533) by [Clemens Brunner](https://github.com/cbrnr))
