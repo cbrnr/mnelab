@@ -334,6 +334,7 @@ class Model:
         """Import ICA solution from file."""
         self.current["ica"] = mne.preprocessing.read_ica(fname)
         self.current["iclabel"] = None
+        self.history.append(f"ica = mne.preprocessing.read_ica({fname!r})")
 
     def get_info(self):
         """Get basic information on current data set.
