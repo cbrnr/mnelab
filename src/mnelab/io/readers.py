@@ -10,6 +10,7 @@ import mne
 from mnelab.io.mat import read_raw_mat
 from mnelab.io.npy import read_raw_npy
 from mnelab.io.xdf import read_raw_xdf
+from pybvrf import read_raw_bvrf
 
 
 def _read_unsupported(fname, **kwargs):
@@ -40,6 +41,10 @@ supported = {
     ".xdf.gz": read_raw_xdf,
     ".mat": read_raw_mat,
     ".npy": read_raw_npy,
+    ".bvrh": read_raw_bvrf,
+    ".bvrd": read_raw_bvrf,
+    ".bvrm": read_raw_bvrf,
+    ".bvri": read_raw_bvrf,
 }
 
 # known but unsupported file formats

@@ -28,6 +28,7 @@ dependencies = [
     "black >= 25.11.0",
     "edfio >= 0.4.10",
     "isort >= 7.0.0",
+    "jsonschema>=4.26.0",
     "matplotlib >= 3.8.0",
     "mne >= 1.10.2",
     "numpy >= 2.0.0",

@@ -53,6 +53,7 @@ from mnelab.viz import (
     plot_evoked_topomaps,
 )
 from mnelab.widgets import EmptyWidget, InfoWidget, SidebarTableWidget
+from pybvrf import read_bvrf_header
 
 
 class MainWindow(QMainWindow):
@@ -670,6 +671,29 @@ class MainWindow(QMainWindow):
                     self.model.load(
                         fname, ignore_marker_types=dialog.ignore_marker_types
                     )
+            elif ext in (".bvrh", ".bvrd", ".bvrm", ".bvri"):
+                try:
+                    header = read_bvrf_header(Path(fname).with_suffix(".bvrh"))
+                    if header["n_participants"] > 1:
+                        # get participant IDs
+                        participants = [
+                            p["Id"] for p in header["yaml_header"]["Participants"]
+                        ]
+                        dialog = BVRFDialog(self, participants)
+                        if dialog.exec():
+                            selected = dialog.selected_participants
+                            if dialog.create_separate:
+                                # load each participant as a separate dataset
+                                for participant_id in selected:
+                                    self.model.load(fname, participants=participant_id)
+                            else:
+                                # load selected participants together
+                                self.model.load(fname, participants=selected)
+                    else:
+                        # single participant, load directly
+                        self.model.load(fname)
+                except Exception as e:
+                    QMessageBox.critical(self, "Error loading BVRF file", str(e))
             else:  # all other file formats
                 try:
                     self.model.load(fname)
