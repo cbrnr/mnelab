@@ -1,3 +1,5 @@
+## [UNRELEASED] - YYYY-MM-DD
+
 ## [1.1.0] - 2026-01-23
 ### ✨ Added
 - Add dialog to create annotations from events or between specific events ([#534](https://github.com/cbrnr/mnelab/pull/534) and [#539](https://github.com/cbrnr/mnelab/pull/539) by [Fabian Schellander](https://github.com/SchellanderF))
