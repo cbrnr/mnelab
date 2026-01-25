@@ -33,6 +33,7 @@ from mnelab.dialogs.channel_stats import ChannelStats
 from mnelab.io import writers
 from mnelab.io.mat import parse_mat
 from mnelab.io.npy import parse_npy
+from mnelab.io.readers import read_raw, split_name_ext
 from mnelab.io.xdf import get_xml, list_chunks
 from mnelab.model import InvalidAnnotationsError, LabelsNotFoundError, Model
 from mnelab.settings import SettingsDialog, read_settings, write_settings
@@ -683,12 +684,18 @@ class MainWindow(QMainWindow):
                         if dialog.exec():
                             selected = dialog.selected_participants
                             if dialog.create_separate:
-                                # load each participant as a separate dataset
-                                for participant_id in selected:
-                                    self.model.load(fname, participants=participant_id)
+                                data_dict = read_raw(
+                                    fname, participants=selected, split=True
+                                )
+                                for pid, raw in data_dict.items():
+                                    name, _ = split_name_ext(fname)
+                                    self.model.load_raw(
+                                        raw, fname, name=f"{name} ({pid})"
+                                    )
                             else:
-                                # load selected participants together
-                                self.model.load(fname, participants=selected)
+                                self.model.load(
+                                    fname, participants=selected, split=False
+                                )
                     else:
                         # single participant, load directly
                         self.model.load(fname)

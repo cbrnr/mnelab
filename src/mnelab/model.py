@@ -120,6 +120,40 @@ class Model:
         return len(self.data)
 
     @data_changed
+    def load_raw(self, raw, fname, name=None):
+        """Load a Raw object as a new dataset.
+
+        Parameters
+        ----------
+        raw : mne.io.Raw
+            The raw data object to load.
+        fname : str
+            The file path.
+        name : str, optional
+            Custom name for the dataset. If None, uses the filename.
+        """
+        fname = str(Path(fname).resolve().as_posix())
+        fsize = getsize(raw.filenames[0]) / 1024**2  # convert to MB
+        if name is None:
+            name, ext = split_name_ext(fname)
+        else:
+            _, ext = split_name_ext(fname)
+        self.insert_data(
+            defaultdict(
+                lambda: None,
+                name=name,
+                fname=fname,
+                ftype=ext.upper()[1:],
+                fsize=fsize,
+                data=raw,
+                dtype="raw",
+                montage=None,
+                events=np.empty((0, 3), dtype=int),
+                event_mapping=defaultdict(str),
+            )
+        )
+
+    @data_changed
     def load(self, fname, *args, **kwargs):
         """Load data set from file."""
         fname = str(Path(fname).resolve().as_posix())
@@ -136,22 +170,8 @@ class Model:
                 "'", '"'
             )
         )
-        fsize = getsize(data.filenames[0]) / 1024**2  # convert to MB
-        name, ext = split_name_ext(fname)
-        self.insert_data(
-            defaultdict(
-                lambda: None,
-                name=name,
-                fname=fname,
-                ftype=ext.upper()[1:],
-                fsize=fsize,
-                data=data,
-                dtype="raw",
-                montage=None,
-                events=np.empty((0, 3), dtype=int),
-                event_mapping=defaultdict(str),
-            )
-        )
+        name, _ = split_name_ext(fname)
+        self.load_raw(data, fname, name=name)
 
     @data_changed
     def find_events(
