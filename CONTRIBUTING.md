@@ -83,13 +83,19 @@ To create standalone packages for Windows, macOS, and Linux, we use [PyInstaller
 
 ### macOS
 
-To create the DMG file containing the app bundle, run the following command in the `standalone` folder:
+To create the app bundle, run the following command in the `standalone` folder:
 
 ```
-./create-standalone-macos.py
+./create-standalone-macos.py build-app
 ```
 
-This creates the standalone app bundle in the `standalone/dist` folder as well as the DMG file (which is named `MNELAB-<VERSION>.dmg`) in the `standalone` folder. This DMG file can be distributed to macOS users. Signing and notarization of the app bundle requires a valid Apple Developer ID. Details on how to sign and notarize the app bundle will be provided later. For now, users can run the app by right-clicking on it and selecting "Open" to bypass Gatekeeper checks (this is only necessary for the first run).
+This creates the app bundle in the `standalone/dist` folder, which can then be signed and notarized. Once the notarization ticket is stapled to the app bundle, you can create a DMG file (which is named `MNELAB-<VERSION>.dmg`) as follows:
+
+```
+./create-standalone-macos.py build-dmg
+```
+
+For more details on this process, please refer to the `standalone-macos` job defined in the `.github/workflows/standalone.yml` workflow.
 
 
 #### Creating the app icon
