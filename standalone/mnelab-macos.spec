@@ -45,7 +45,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['../src/mnelab/icons/mnelab-logo-macos.icns'],
+    icon=['../src/mnelab/icons/mnelab-logo.icns'],
 )
 coll = COLLECT(
     exe,
@@ -59,7 +59,7 @@ coll = COLLECT(
 app = BUNDLE(
     coll,
     name='MNELAB.app',
-    icon='../src/mnelab/icons/mnelab-logo-macos.icns',
+    icon='../src/mnelab/icons/mnelab-logo.icns',
     bundle_identifier=None,
     info_plist={
         "CFBundleDocumentTypes": [
