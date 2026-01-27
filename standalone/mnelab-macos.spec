@@ -62,6 +62,7 @@ app = BUNDLE(
     icon='../src/mnelab/icons/mnelab-macos.icns',
     bundle_identifier=None,
     info_plist={
+        "CFBundleIconName": "mnelab",
         "CFBundleDocumentTypes": [
             {
                 "CFBundleTypeName": "EDF File",

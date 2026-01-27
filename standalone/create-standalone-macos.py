@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
+import shutil
 import sys
 from importlib.metadata import PackageNotFoundError, version
+from pathlib import Path
 
 import dmgbuild
 import PyInstaller.__main__
@@ -10,6 +12,22 @@ def build_app():
     """Run PyInstaller to create the .app bundle."""
     print("Building MNELAB.app...")
     PyInstaller.__main__.run(["mnelab-macos.spec", "--clean", "--noconfirm"])
+
+    # Inject the adaptive .icon file into the app bundle
+    print("Injecting adaptive icon...")
+    app_bundle = Path("dist/MNELAB.app")
+    resources_dir = app_bundle / "Contents" / "Resources"
+    icon_source = Path("../src/mnelab/icons/mnelab.icon")
+    icon_dest = resources_dir / "mnelab.icon"
+
+    if icon_source.exists():
+        # Copy the entire .icon folder structure
+        if icon_dest.exists():
+            shutil.rmtree(icon_dest)
+        shutil.copytree(icon_source, icon_dest)
+        print(f"✓ Copied {icon_source} to app bundle")
+    else:
+        print(f"⚠ Warning: {icon_source} not found, skipping adaptive icon injection")
 
 
 def build_dmg():
