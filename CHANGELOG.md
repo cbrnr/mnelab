@@ -1,6 +1,7 @@
 ## [UNRELEASED] - YYYY-MM-DD
 ### 🔧 Fixed
 - Fix macOS app icon to support light and dark mode ([#553](https://github.com/cbrnr/mnelab/pull/553) by [Clemens Brunner](https://github.com/cbrnr))
+- Prevent MNE-Qt-Browser from changing the app icon on macOS ([#554](https://github.com/cbrnr/mnelab/pull/554) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.1.0] - 2026-01-23
 ### ✨ Added
