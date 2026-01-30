@@ -58,7 +58,8 @@ def main():
     app.setOrganizationName("mnelab")
     if sys.platform.startswith("darwin"):
         app.setAttribute(Qt.ApplicationAttribute.AA_DontShowIconsInMenus, True)
-        app.setWindowIcon(QIcon(f"{Path(__file__).parent}/icons/mnelab-logo-macos.svg"))
+        # prevent any code from changing the dock icon (the app bundle handles it)
+        app.setWindowIcon = lambda icon: None
     else:
         app.setWindowIcon(QIcon(f"{Path(__file__).parent}/icons/mnelab-logo.svg"))
     if sys.platform.startswith("win"):
