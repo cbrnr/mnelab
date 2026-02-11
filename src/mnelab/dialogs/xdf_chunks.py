@@ -61,10 +61,8 @@ class XDFChunksDialog(QDialog):
         self.view.sortByColumn(0, Qt.AscendingOrder)
         self.view.setEditTriggers(QTableView.NoEditTriggers)
         self.view.selectRow(0)
-        self.view.setFixedWidth(450)
 
         self.details = QPlainTextEdit("")
-        self.details.setFixedWidth(450)
         self.details.setReadOnly(True)
         self.details.setTabStopDistance(30)
         font = QFont()
@@ -86,7 +84,7 @@ class XDFChunksDialog(QDialog):
         self.view.clicked.connect(self._update_details)
         self._update_details()
 
-        self.setFixedSize(980, 650)
+        self.setMinimumSize(980, 650)
         self.view.setColumnWidth(0, 70)
         self.view.setColumnWidth(1, 80)
         self.view.setColumnWidth(2, 150)
@@ -98,8 +96,7 @@ class XDFChunksDialog(QDialog):
         if selection.hasSelection():
             n = int(selection.selectedIndexes()[0].data())
             content = self.chunks[n - 1].get("content", "")
-            # prettify XML chunks
-            try:
+            try:  # prettify XML chunks
                 prettified = minidom.parseString(content).toprettyxml(indent="  ")
                 lines = [line for line in prettified.split("\n") if line.strip()]
                 content = "\n".join(lines)
