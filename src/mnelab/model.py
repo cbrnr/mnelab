@@ -56,6 +56,7 @@ class Model:
             "import mne",
             "from mnelab.io import read_raw",
             "from mnelab.utils import annotations_between_events, run_iclabel",
+            "import numpy as np",
             "",
             "datasets = []",
         ]
@@ -624,15 +625,14 @@ class Model:
     def epoch_data(self, event_id, tmin, tmax, baseline):
         epochs = mne.Epochs(
             self.current["data"],
-            self.current["events"],
-            event_id=event_id,
+            self.current["events"][np.isin(self.current["events"][:, 2], event_id)],
             tmin=tmin,
             tmax=tmax,
             baseline=baseline,
             preload=True,
         )
         self.history.append(
-            f"data = mne.Epochs(data, events, event_id={event_id}, "
+            f"data = mne.Epochs(data, events[np.isin(events[:, 2], {event_id})], "
             f"tmin={tmin}, tmax={tmax}, baseline={baseline}, preload=True)"
         )
         self.current["data"] = epochs

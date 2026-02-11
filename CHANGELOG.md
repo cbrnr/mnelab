@@ -3,6 +3,9 @@
 - Fix macOS app icon to support light and dark mode ([#553](https://github.com/cbrnr/mnelab/pull/553) by [Clemens Brunner](https://github.com/cbrnr))
 - Prevent MNE-Qt-Browser from changing the app icon on macOS ([#554](https://github.com/cbrnr/mnelab/pull/554) by [Clemens Brunner](https://github.com/cbrnr))
 
+### 🌀 Changed
+- Force epoch indexes to start at 0 and be consecutive instead of using the original event indexes ([#555](https://github.com/cbrnr/mnelab/pull/555) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [1.1.0] - 2026-01-23
 ### ✨ Added
 - Add dialog to create annotations from events or between specific events ([#534](https://github.com/cbrnr/mnelab/pull/534) and [#539](https://github.com/cbrnr/mnelab/pull/539) by [Fabian Schellander](https://github.com/SchellanderF))
