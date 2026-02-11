@@ -13,7 +13,7 @@ MNELAB provides a graphical user interface for [MNE-Python](https://mne.tools/st
 
 ![](https://raw.githubusercontent.com/cbrnr/mnelab/main/mnelab.png)
 
-Some of the features include:
+Key features include:
 
 - Cross-platform support (Linux, macOS, Windows).
 - A command history that records the underlying MNE-Python commands for each action, allowing users to learn how to use MNE-Python and to reproduce their analyses in code.
