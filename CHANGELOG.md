@@ -5,6 +5,7 @@
 
 ### 🌀 Changed
 - Force epoch indexes to start at 0 and be consecutive instead of using the original event indexes ([#555](https://github.com/cbrnr/mnelab/pull/555) by [Clemens Brunner](https://github.com/cbrnr))
+- Make XDF chunk dialog resizable and show prettified XML for XML chunk contents ([#557](https://github.com/cbrnr/mnelab/pull/557) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.1.0] - 2026-01-23
 ### ✨ Added
