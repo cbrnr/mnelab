@@ -2,6 +2,8 @@
 #
 # License: BSD (3-clause)
 
+from xml.dom import minidom
+
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QFont, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import (
@@ -95,4 +97,13 @@ class XDFChunksDialog(QDialog):
         selection = self.view.selectionModel()
         if selection.hasSelection():
             n = int(selection.selectedIndexes()[0].data())
-            self.details.setPlainText(self.chunks[n - 1].get("content", ""))
+            content = self.chunks[n - 1].get("content", "")
+            # prettify XML chunks
+            try:
+                prettified = minidom.parseString(content).toprettyxml(indent="  ")
+                lines = [line for line in prettified.split("\n") if line.strip()]
+                content = "\n".join(lines)
+            except Exception:
+                pass  # Not XML or invalid XML, use original content
+
+            self.details.setPlainText(content)
