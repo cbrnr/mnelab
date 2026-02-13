@@ -647,6 +647,12 @@ class Model:
         self.history.append(f"data.drop_bad({reject}, {flat})")
 
     @data_changed
+    def drop_detected_artifacts(self, indices):
+        self.current["data"].drop(indices, reason="ARTIFACT_DETECTION")
+        self.current["name"] += " (dropped detected epochs)"
+        # self.history.append(f"data.drop({indices}, reason='ARTIFACT_DETECTION')")
+
+    @data_changed
     def convert_od(self):
         self.current["data"] = mne.preprocessing.nirs.optical_density(
             self.current["data"]

@@ -125,6 +125,11 @@ class NumberSortProxyModel(QSortFilterProxyModel):
         right_data = self.sourceModel().data(right, Qt.UserRole)
 
         if left_data is None:
+            left_data = self.sourceModel().data(left, Qt.CheckStateRole)
+        if right_data is None:
+            right_data = self.sourceModel().data(right, Qt.CheckStateRole)
+
+        if left_data is None:
             return True
         if right_data is None:
             return False

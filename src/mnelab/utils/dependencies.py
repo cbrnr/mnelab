@@ -6,7 +6,7 @@ import importlib.util
 from importlib import import_module
 
 required = ["mne", "PySide6", "edfio", "matplotlib", "numpy", "pyxdf", "scipy", "pybv"]
-optional = ["mne-qt-browser", "picard", "sklearn"]
+optional = ["mne-qt-browser", "picard", "sklearn", "autoreject"]
 
 
 have = {}
