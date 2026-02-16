@@ -69,7 +69,7 @@ jobs:
       - uses: astral-sh/setup-uv@v7
       - name: Install the project
         run: uv sync --all-extras
-      - uses: crazy-max/ghaction-chocolatey@v3
+      - uses: crazy-max/ghaction-chocolatey@v4
         with:
           args: install innosetup
       - name: Build standalone installer
