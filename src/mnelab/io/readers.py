@@ -6,11 +6,11 @@ from functools import partial
 from pathlib import Path
 
 import mne
+from pybvrf import read_raw_bvrf
 
 from mnelab.io.mat import read_raw_mat
 from mnelab.io.npy import read_raw_npy
 from mnelab.io.xdf import read_raw_xdf
-from pybvrf import read_raw_bvrf
 
 
 def _read_unsupported(fname, **kwargs):
