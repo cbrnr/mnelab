@@ -1,4 +1,7 @@
 ## [UNRELEASED] · YYYY-MM-DD
+### ✨ Added
+- Add support for BVRF import via PyBVRF ([#560](https://github.com/cbrnr/mnelab/pull/560) by [Clemens Brunner](https://github.com/cbrnr))
+
 ### 🔧 Fixed
 - Fix macOS app icon to support light and dark mode ([#553](https://github.com/cbrnr/mnelab/pull/553) by [Clemens Brunner](https://github.com/cbrnr))
 - Prevent MNE-Qt-Browser from changing the app icon on macOS ([#554](https://github.com/cbrnr/mnelab/pull/554) by [Clemens Brunner](https://github.com/cbrnr))
