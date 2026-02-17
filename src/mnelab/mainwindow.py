@@ -14,6 +14,7 @@ from sys import version_info
 import mne
 import numpy as np
 from mne import channel_type
+from pybvrf import read_bvrf_header
 from PySide6.QtCore import QEvent, QMetaObject, QModelIndex, Qt, QUrl, Slot
 from PySide6.QtGui import QAction, QDesktopServices, QIcon, QKeySequence
 from PySide6.QtWidgets import (
@@ -54,7 +55,6 @@ from mnelab.viz import (
     plot_evoked_topomaps,
 )
 from mnelab.widgets import EmptyWidget, InfoWidget, SidebarTableWidget
-from pybvrf import read_bvrf_header
 
 
 class MainWindow(QMainWindow):
