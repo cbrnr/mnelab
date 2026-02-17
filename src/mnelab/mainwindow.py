@@ -1107,9 +1107,9 @@ class MainWindow(QMainWindow):
         """Run ICA calculation."""
 
         methods = ["Infomax"]
-        if have["picard"]:
+        if have["python-picard"]:
             methods.insert(0, "Picard")
-        if have["sklearn"]:
+        if have["scikit-learn"]:
             methods.append("FastICA")
 
         dialog = RunICADialog(self, self.model.current["data"].info["nchan"], methods)

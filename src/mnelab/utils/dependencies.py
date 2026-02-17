@@ -2,23 +2,33 @@
 #
 # License: BSD (3-clause)
 
-import importlib.util
-from importlib import import_module
+from importlib import metadata
 
-required = ["mne", "PySide6", "edfio", "matplotlib", "numpy", "pyxdf", "scipy", "pybv"]
+required = [
+    "mne",
+    "pyside6",
+    "matplotlib",
+    "numpy",
+    "scipy",
+    "edfio",
+    "pyxdf",
+    "pybv",
+    "pybvrf",
+    "black",
+    "isort",
+    "onnx",
+]
 optional = ["mne-qt-browser", "picard", "sklearn"]
 
-
+_distribution_names = {
+    "python-picard": "picard",
+    "scikit-learn": "sklearn",
+}
 have = {}
-for package in required + optional:
-    module_name = package.replace("-", "_")
-    spec = importlib.util.find_spec(module_name)
-    if spec is None:
-        have[package] = False
-    else:
-        mod = import_module(module_name)
-        try:
-            version = getattr(mod, "__version__", "unknown")
-        except Exception:
-            version = "unknown"
-        have[package] = version
+for dep in required + optional:
+    distribution_name = {v: k for k, v in _distribution_names.items()}.get(dep, dep)
+    try:
+        version = metadata.version(distribution_name)
+    except metadata.PackageNotFoundError:
+        version = False
+    have[distribution_name] = version
