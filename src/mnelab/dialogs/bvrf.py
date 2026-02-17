@@ -22,9 +22,7 @@ class BVRFDialog(QDialog):
         vbox = QVBoxLayout(self)
 
         n_participants = len(participants)
-        label = QLabel(f"This dataset contains {n_participants} participants.")
-        vbox.addWidget(label)
-        label = QLabel("Select participants to import:")
+        label = QLabel(f"This dataset contains {n_participants} participants:")
         vbox.addWidget(label)
 
         # list widget for participant selection
