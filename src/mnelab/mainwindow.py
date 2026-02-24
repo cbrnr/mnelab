@@ -351,10 +351,6 @@ class MainWindow(QMainWindow):
             self.show_history,
             QKeySequence(Qt.CTRL | Qt.Key_Y),
         )
-        self.actions["log"] = view_menu.addAction(
-            "&Log",
-            self.show_log,
-        )
         self.actions["channel_stats"] = view_menu.addAction(
             "&Channel stats",
             self.show_channel_stats,
@@ -386,7 +382,6 @@ class MainWindow(QMainWindow):
             "settings",
             "documentation",
             "history",
-            "log",
         ]
 
         # set up toolbar
@@ -1421,12 +1416,7 @@ class MainWindow(QMainWindow):
 
     def show_history(self):
         """Show history."""
-        dialog = HistoryDialog(self, "\n".join(self.model.history))
-        dialog.exec()
-
-    def show_log(self):
-        """Show MNE logging output."""
-        dialog = LoggingDialog(self, self.model.log)
+        dialog = HistoryDialog(self, self.model.history, self.model.log)
         dialog.exec()
 
     def show_channel_stats(self):
