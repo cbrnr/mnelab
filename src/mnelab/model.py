@@ -51,6 +51,7 @@ class Model:
         self.view = None  # current view
         self.data = []  # list of data sets
         self.index = -1  # index of currently active data set
+        self.log = []  # captured MNE log messages
         self.history = [
             "from copy import deepcopy",
             "import mne",

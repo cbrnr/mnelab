@@ -2,6 +2,7 @@
 #
 # License: BSD (3-clause)
 
+import logging
 import multiprocessing as mp
 import sys
 import traceback
@@ -57,6 +58,17 @@ from mnelab.viz import (
 from mnelab.widgets import EmptyWidget, InfoWidget, SidebarTableWidget
 
 
+class _MNELogHandler(logging.Handler):
+    """Logging handler that silently captures MNE messages into a list."""
+
+    def __init__(self, log_list):
+        super().__init__()
+        self._log = log_list
+
+    def emit(self, record):
+        self._log.append(self.format(record))
+
+
 class MainWindow(QMainWindow):
     """MNELAB main window."""
 
@@ -74,8 +86,14 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("MNELAB")
         sys.excepthook = self._excepthook
 
-        # supress MNE logging output
-        mne.set_log_level("ERROR")
+        # capture MNE logging output
+        _mne_logger = logging.getLogger("mne")
+        for _h in list(_mne_logger.handlers):
+            _mne_logger.removeHandler(_h)
+        _mne_logger.propagate = False
+        _mne_handler = _MNELogHandler(model.log)
+        _mne_handler.setFormatter(logging.Formatter("%(message)s"))
+        _mne_logger.addHandler(_mne_handler)
 
         # restore settings
         settings = read_settings()
@@ -333,6 +351,10 @@ class MainWindow(QMainWindow):
             self.show_history,
             QKeySequence(Qt.CTRL | Qt.Key_Y),
         )
+        self.actions["log"] = view_menu.addAction(
+            "&Log",
+            self.show_log,
+        )
         self.actions["channel_stats"] = view_menu.addAction(
             "&Channel stats",
             self.show_channel_stats,
@@ -364,6 +386,7 @@ class MainWindow(QMainWindow):
             "settings",
             "documentation",
             "history",
+            "log",
         ]
 
         # set up toolbar
@@ -1399,6 +1422,11 @@ class MainWindow(QMainWindow):
     def show_history(self):
         """Show history."""
         dialog = HistoryDialog(self, "\n".join(self.model.history))
+        dialog.exec()
+
+    def show_log(self):
+        """Show MNE logging output."""
+        dialog = LoggingDialog(self, self.model.log)
         dialog.exec()
 
     def show_channel_stats(self):
