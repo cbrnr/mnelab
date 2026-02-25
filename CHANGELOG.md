@@ -3,6 +3,9 @@
 - Add dialog for automatic epoch artifact detection with configurable methods ([#558](https://github.com/cbrnr/mnelab/pull/558) by [Fabian Schellander](https://github.com/SchellanderF))
 - Add MNE log messages viewer to history dialog ([#561](https://github.com/cbrnr/mnelab/pull/561) by [Clemens Brunner](https://github.com/cbrnr))
 
+### 🔧 Fixed
+- Fix dependency detection in standalone versions that could have caused some features to not work ([#562](https://github.com/cbrnr/mnelab/pull/562)) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [1.2.0] · 2026-02-17
 ### ✨ Added
 - Add support for BVRF import via PyBVRF ([#560](https://github.com/cbrnr/mnelab/pull/560) by [Clemens Brunner](https://github.com/cbrnr))
