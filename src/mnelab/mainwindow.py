@@ -403,6 +403,16 @@ class MainWindow(QMainWindow):
         self.toolbar.addAction(self.actions["settings"])
         self.toolbar.setMovable(False)
         self.setUnifiedTitleAndToolBarOnMac(True)
+        self.toolbar.setStyleSheet("""
+            QToolButton:hover {
+                background: rgba(128, 128, 128, 0.2);
+                border-radius: 4px;
+            }
+            QToolButton:pressed {
+                background: rgba(128, 128, 128, 0.35);
+                border-radius: 4px;
+            }
+        """)
         if settings["toolbar"]:
             self.toolbar.show()
             self.actions["toolbar"].setChecked(True)
