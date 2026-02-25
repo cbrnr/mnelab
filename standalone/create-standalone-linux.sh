@@ -3,6 +3,7 @@ pyinstaller \
     --collect-all mnelab \
     --collect-all sklearn \
     --collect-all mne_qt_browser \
+    --collect-all pybvrf \
     --name MNELAB \
     --windowed \
     --noupx \
