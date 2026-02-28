@@ -1,0 +1,14 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=MNELAB
+GenericName=EEG/MEG GUI
+Comment=A graphical user interface for MNE-Python
+Exec=mnelab %F
+Icon=io.github.cbrnr.mnelab
+Terminal=false
+StartupNotify=true
+StartupWMClass=MNELAB
+Categories=Science;Education;MedicalSoftware;
+Keywords=EEG;MEG;MNE;electrophysiology;neuroscience;brain;signal;
+MimeType=application/x-edf;application/x-bdf;
