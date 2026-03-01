@@ -8,6 +8,7 @@ from PySide6.QtCore import QEvent, QTimer
 from PySide6.QtGui import QGuiApplication, QIcon, QKeySequence
 from PySide6.QtWidgets import (
     QGridLayout,
+    QHBoxLayout,
     QLabel,
     QSizePolicy,
     QToolButton,
@@ -104,9 +105,11 @@ class InfoWidget(QWidget):
                 right = QLabel(str(value))
                 right.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
                 self.grid.addWidget(left, row, 0)
-                self.grid.addWidget(right, row, 1)
                 if key == "File name" and value != "-":
-                    right.setText(Path(str(value)).name)
+                    right.setText(Path(str(value)).name)  # filename only, no path
+                    # ensure the label is only as wide as its content, so the button
+                    # sits close
+                    right.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
                     btn = QToolButton()
                     btn.setMaximumHeight(left.sizeHint().height())
                     btn.setIcon(QIcon())  # empty until hovered
@@ -132,7 +135,18 @@ class InfoWidget(QWidget):
                     right.installEventFilter(self)
                     btn.installEventFilter(self)
                     self._copy_btn = btn
-                    self.grid.addWidget(btn, row, 2)
+                    # wrap label and button in a container so the button sits
+                    # immediately right of the filename
+                    container = QWidget()
+                    hbox = QHBoxLayout(container)
+                    hbox.setContentsMargins(0, 0, 0, 0)
+                    hbox.setSpacing(0)
+                    hbox.addWidget(right)
+                    hbox.addWidget(btn)
+                    hbox.addStretch()  # absorb remaining space after the button
+                    self.grid.addWidget(container, row, 1)
+                else:
+                    self.grid.addWidget(right, row, 1)
 
     def _on_copy(self, path):
         QGuiApplication.clipboard().setText(path)
