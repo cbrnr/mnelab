@@ -140,7 +140,7 @@ class InfoWidget(QWidget):
                     container = QWidget()
                     hbox = QHBoxLayout(container)
                     hbox.setContentsMargins(0, 0, 0, 0)
-                    hbox.setSpacing(0)
+                    hbox.setSpacing(4)  # small gap between filename and copy button
                     hbox.addWidget(right)
                     hbox.addWidget(btn)
                     hbox.addStretch()  # absorb remaining space after the button
