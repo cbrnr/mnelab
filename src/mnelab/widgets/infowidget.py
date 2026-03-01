@@ -2,6 +2,8 @@
 #
 # License: BSD (3-clause)
 
+from pathlib import Path
+
 from PySide6.QtCore import QEvent, QTimer
 from PySide6.QtGui import QGuiApplication, QIcon, QKeySequence
 from PySide6.QtWidgets import (
@@ -104,6 +106,7 @@ class InfoWidget(QWidget):
                 self.grid.addWidget(left, row, 0)
                 self.grid.addWidget(right, row, 1)
                 if key == "File name" and value != "-":
+                    right.setText(Path(str(value)).name)
                     btn = QToolButton()
                     btn.setMaximumHeight(left.sizeHint().height())
                     btn.setIcon(QIcon())  # empty until hovered
