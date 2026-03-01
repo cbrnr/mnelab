@@ -106,7 +106,7 @@ class InfoWidget(QWidget):
                 right.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
                 self.grid.addWidget(left, row, 0)
                 if key == "File name" and value != "-":
-                    right.setText(Path(str(value)).name)  # filename only, no path
+                    right.setText(Path(str(value)).name)  # filename only, not full path
                     # ensure the label is only as wide as its content, so the button
                     # sits close
                     right.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
