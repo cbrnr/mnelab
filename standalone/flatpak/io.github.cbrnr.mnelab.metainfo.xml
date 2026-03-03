@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.cbrnr.mnelab</id>
+
+  <name>MNELAB</name>
+  <summary>A graphical user interface for MNE-Python</summary>
+
+  <metadata_license>MIT</metadata_license>
+  <project_license>BSD-3-Clause</project_license>
+
+  <developer id="io.github.cbrnr">
+    <name>Clemens Brunner</name>
+  </developer>
+
+  <description>
+    <p>
+      MNELAB is a graphical user interface (GUI) for MNE-Python, a comprehensive
+      open-source Python package for processing and visualising EEG, MEG, and
+      other electrophysiological data.
+    </p>
+    <p>Features include:</p>
+    <ul>
+      <li>Open and save EEG/MEG recordings in many formats (EDF, BDF, BrainVision,
+          FIF, XDF, MATLAB, NumPy, …)</li>
+      <li>Interactive channel and annotation editing</li>
+      <li>Filtering, re-referencing, epoch extraction, and artifact rejection</li>
+      <li>Independent Component Analysis (ICA) with ICLabel automatic classification</li>
+      <li>Event-related desynchronisation/synchronisation (ERDS) maps</li>
+      <li>Power spectral density (PSD) plots and evoked response visualisation</li>
+      <li>Reproducible workflow via a Python history log</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">io.github.cbrnr.mnelab.desktop</launchable>
+
+  <url type="homepage">https://github.com/cbrnr/mnelab</url>
+  <url type="bugtracker">https://github.com/cbrnr/mnelab/issues</url>
+  <url type="help">https://mnelab.readthedocs.io/en/latest/</url>
+  <url type="vcs-browser">https://github.com/cbrnr/mnelab</url>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>MNELAB main window with an EEG recording loaded</caption>
+      <image>https://raw.githubusercontent.com/cbrnr/mnelab/main/mnelab.png</image>
+    </screenshot>
+  </screenshots>
+
+  <categories>
+    <category>Science</category>
+    <category>Education</category>
+    <category>MedicalSoftware</category>
+  </categories>
+
+  <keywords>
+    <keyword>EEG</keyword>
+    <keyword>MEG</keyword>
+    <keyword>MNE</keyword>
+    <keyword>electrophysiology</keyword>
+    <keyword>neuroscience</keyword>
+    <keyword>brain</keyword>
+    <keyword>signal processing</keyword>
+  </keywords>
+
+  <!-- OARS rating: no objectionable content -->
+  <content_rating type="oars-1.1"/>
+
+  <releases>
+    <!-- Add a new <release> element for every version before submitting -->
+    <release version="1.3.1" date="2026-02-25">
+      <url type="details">https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md</url>
+      <description>
+        <p>Fix PyBVRF import in standalone releases.</p>
+      </description>
+    </release>
+    <release version="1.3.0" date="2026-02-25">
+      <url type="details">https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md</url>
+      <description>
+        <p>Added automatic epoch artifact detection dialog and MNE log viewer in
+           the history dialog. Fixed dependency detection in standalone versions.</p>
+      </description>
+    </release>
+    <release version="1.2.0" date="2026-02-17">
+      <url type="details">https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md</url>
+      <description>
+        <p>Added support for BVRF import via PyBVRF. Fixed macOS app icon for
+           light/dark mode.</p>
+      </description>
+    </release>
+    <release version="1.1.0" date="2026-01-23">
+      <url type="details">https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md</url>
+      <description>
+        <p>Added annotations-from-events dialog, ICLabel ICA classification,
+           history export to Python file, and channel stats CSV export.</p>
+      </description>
+    </release>
+    <release version="1.0.8" date="2025-11-06">
+      <url type="details">https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md</url>
+      <description>
+        <p>Fixed ICA calculation and command-line file opening in standalone releases.</p>
+      </description>
+    </release>
+  </releases>
+</component>
