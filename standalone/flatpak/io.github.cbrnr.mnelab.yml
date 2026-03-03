@@ -15,6 +15,8 @@ finish-args:
   - --device=dri
   # Read/write access to the user's home directory for opening/saving files
   - --filesystem=home
+  # Allow Qt to read the desktop color scheme via xdg-desktop-portal
+  - --env=QT_QPA_PLATFORMTHEME=xdgdesktopportal
 
 modules:
 
