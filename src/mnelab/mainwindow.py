@@ -455,6 +455,11 @@ class MainWindow(QMainWindow):
         self.data_changed()
 
     def _excepthook(self, type, value, traceback_):
+        from mnelab import IS_DEV_VERSION
+
+        if type is KeyboardInterrupt and IS_DEV_VERSION:
+            self.close()
+            return
         exception_text = str(value)
         traceback_text = "".join(traceback.format_exception(type, value, traceback_))
         print(traceback_text, file=sys.stderr)
