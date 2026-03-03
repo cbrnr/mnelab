@@ -62,7 +62,7 @@ class InfoWidget(QWidget):
     """
 
     def __init__(self, values=None):
-        from .. import IS_DEV_VERSION
+        from mnelab import IS_DEV_VERSION
 
         super().__init__()
         self._copy_btn = None
@@ -169,7 +169,7 @@ class InfoWidget(QWidget):
 
 class EmptyWidget(QWidget):
     def __init__(self, actions):
-        from .. import IS_DEV_VERSION
+        from mnelab import IS_DEV_VERSION
 
         super().__init__()
         text = QLabel(_make_shortcuts_table(actions))

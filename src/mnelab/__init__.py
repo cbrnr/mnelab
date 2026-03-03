@@ -75,10 +75,7 @@ def main():
             model.view.open_data(f)
     model.view.show()
 
-    # Allow Ctrl-C in the terminal to shut the app down gracefully. Qt's C++
-    # event loop doesn't yield to Python's signal machinery on its own, so a
-    # short-interval no-op timer is used to wake the loop periodically and let
-    # Python check for pending signals. Only enabled for development versions.
+    # allow Ctrl-C in the terminal to shut down gracefully (only for dev versions)
     if IS_DEV_VERSION:
         signal.signal(signal.SIGINT, lambda *_: app.quit())
         sigint_timer = QTimer()
