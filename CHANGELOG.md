@@ -8,6 +8,9 @@
 - Fix toolbar button hover effects on macOS ([#565](https://github.com/cbrnr/mnelab/pull/565) by [Clemens Brunner](https://github.com/cbrnr))
 - Improve dark mode theme for the Artifact Detection preview dialog ([#585](https://github.com/cbrnr/mnelab/pull/585) by [Fabian Schellander](https://github.com/SchellanderF))
 
+### 🌀 Changed
+- Consistently focus the OK button in all dialogs ([#586](https://github.com/cbrnr/mnelab/pull/586) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [1.3.1] · 2026-02-25
 ### 🔧 Fixed
 - Fix PyBVRF import in standalone releases ([#564](https://github.com/cbrnr/mnelab/pull/564)) by [Clemens Brunner](https://github.com/cbrnr))
