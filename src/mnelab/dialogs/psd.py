@@ -71,6 +71,7 @@ class PSDDialog(QDialog):
         self.fmax_input.valueChanged.connect(self.fmin_input.setMaximum)
 
         vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+        self.setFocus()
 
     @property
     def fmin(self):

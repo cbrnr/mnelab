@@ -45,6 +45,7 @@ class BVRFDialog(QDialog):
         buttonbox.rejected.connect(self.reject)
 
         vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+        self.setFocus()
 
     @property
     def selected_participants(self):

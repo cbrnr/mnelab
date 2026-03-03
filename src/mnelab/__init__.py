@@ -19,15 +19,18 @@ try:
 except PackageNotFoundError:
     __version__ = "unknown"
 
+IS_DEV_VERSION = __version__.split(".")[-1].startswith("dev")
+
 
 def main():
     mp.freeze_support()
     mp.set_start_method("spawn", force=True)
 
+    import signal
     from pathlib import Path
 
     import matplotlib
-    from PySide6.QtCore import QEvent, QLoggingCategory, Qt
+    from PySide6.QtCore import QEvent, QLoggingCategory, Qt, QTimer
     from PySide6.QtGui import QIcon
     from PySide6.QtWidgets import QApplication
 
@@ -71,4 +74,12 @@ def main():
         for f in sys.argv[1:]:
             model.view.open_data(f)
     model.view.show()
+
+    # allow Ctrl-C in the terminal to shut down gracefully (only for dev versions)
+    if IS_DEV_VERSION:
+        signal.signal(signal.SIGINT, lambda *_: app.quit())
+        sigint_timer = QTimer()
+        sigint_timer.start(200)
+        sigint_timer.timeout.connect(lambda: None)
+
     sys.exit(app.exec())

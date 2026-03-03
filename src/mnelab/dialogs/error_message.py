@@ -12,3 +12,4 @@ class ErrorMessageBox(QMessageBox):
         self.setInformativeText(informative)
         self.setDetailedText(detailed)
         self.setIcon(QMessageBox.Critical)
+        self.setFocus()

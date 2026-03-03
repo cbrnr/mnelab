@@ -132,6 +132,7 @@ class AnnotationsIntervalDialog(QDialog):
         self._check_validity()
 
         vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+        self.setFocus()
 
     def _check_validity(self):
         if self.annotations_events_button.isChecked():

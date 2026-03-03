@@ -66,6 +66,7 @@ class EpochDialog(QDialog):
         self.events.itemSelectionChanged.connect(self.toggle_ok)
         self.toggle_ok()
         grid.setSizeConstraint(QGridLayout.SetFixedSize)
+        self.setFocus()
 
     @Slot()
     def toggle_ok(self):

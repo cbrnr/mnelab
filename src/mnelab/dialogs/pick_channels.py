@@ -51,6 +51,7 @@ class PickChannelsDialog(QDialog):
         self.by_name.toggled.connect(self.toggle_lists)
         self.by_type.toggled.connect(self.toggle_lists)
         self.toggle_lists()
+        self.setFocus()
 
     @Slot()
     def toggle_buttons(self):
