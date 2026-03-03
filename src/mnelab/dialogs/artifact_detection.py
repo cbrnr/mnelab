@@ -5,7 +5,7 @@
 from matplotlib.backends.backend_qtagg import FigureCanvas
 from matplotlib.colors import to_rgba_array
 from PySide6.QtCore import QEvent, Qt, QTimer
-from PySide6.QtGui import QColor, QStandardItem, QStandardItemModel
+from PySide6.QtGui import QBrush, QColor, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QCheckBox,
@@ -412,10 +412,9 @@ class ArtifactPreviewTable(QDialog):
                 item = QStandardItem(label)
                 item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
                 if bad_epochs:
-                    item.setBackground(QColor("#FFF0F0"))
-                    item.setForeground(QColor("#800000"))
-                else:
-                    item.setBackground(QColor("#FFFFFF"))
+                    color = QColor(255, 0, 0, 20)
+                    item.setBackground(QBrush(color))
+                    item.setForeground(QColor(220, 45, 45))
 
                 item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
                 item.setData(int(bad_epochs), Qt.UserRole)
