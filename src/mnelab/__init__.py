@@ -60,6 +60,7 @@ def main():
         app.setAttribute(Qt.ApplicationAttribute.AA_DontShowIconsInMenus, True)
         # prevent any code from changing the dock icon (the app bundle handles it)
         app.setWindowIcon = lambda icon: None
+        app.setStyleSheet("QDoubleSpinBox, QSpinBox { padding-right: 4px; }")
     else:
         app.setWindowIcon(QIcon(f"{Path(__file__).parent}/icons/mnelab-logo.svg"))
     if sys.platform.startswith("win"):

@@ -5,6 +5,7 @@
 
 ### 🔧 Fixed
 - Fix toolbar button hover effects on macOS ([#565](https://github.com/cbrnr/mnelab/pull/565) by [Clemens Brunner](https://github.com/cbrnr))
+- For all number inputs on macOS, add a little space between the input field and the spinbox buttons ([#570](https://github.com/cbrnr/mnelab/pull/570) by [Richard Höchenberger](https://github.com/hoechenberger))
 
 ## [1.3.1] · 2026-02-25
 ### 🔧 Fixed
