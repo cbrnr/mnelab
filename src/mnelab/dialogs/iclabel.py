@@ -42,6 +42,7 @@ class PlotDetailDialog(QDialog):
         layout.addWidget(self.canvas)
 
         self.setModal(False)
+        self.setFocus()
 
     def closeEvent(self, event):
         plt.close(self.fig)
@@ -95,6 +96,7 @@ class AutoSelectDialog(QDialog):
         layout.addWidget(self.buttonbox)
 
         self.setFixedSize(300, self.sizeHint().height())
+        self.setFocus()
 
     def get_selection_rules(self):
         rules = {}
@@ -214,6 +216,7 @@ class ICLabelDialog(QDialog):
         vbox.addLayout(button_layout)
         self.resize(900, 600)
         self.view.sortByColumn(0, Qt.SortOrder.AscendingOrder)
+        self.setFocus()
 
     def open_auto_select(self):
         dialog = AutoSelectDialog(self, self.labels)

@@ -155,6 +155,7 @@ class ArtifactDetectionDialog(QDialog):
         layout.addLayout(button_layout)
 
         self.setFixedSize(self.sizeHint())
+        self.setFocus()
 
     def get_selected_methods(self):
         """Return dict of selected methods and their parameters."""

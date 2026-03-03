@@ -96,6 +96,7 @@ class PlotEvokedDialog(QDialog):
         self.events.itemSelectionChanged.connect(self.toggle_ok)
         self.toggle_ok()
         grid.setSizeConstraint(QGridLayout.SetFixedSize)
+        self.setFocus()
 
     @Slot()
     def toggle_ok(self):
@@ -162,6 +163,7 @@ class PlotEvokedComparisonDialog(QDialog):
         self.events.itemSelectionChanged.connect(self.toggle_ok)
         self.toggle_ok()
         grid.setSizeConstraint(QGridLayout.SetFixedSize)
+        self.setFocus()
 
     @Slot()
     def toggle_ok(self):
@@ -223,6 +225,7 @@ class PlotEvokedTopomaps(QDialog):
         self.events.itemSelectionChanged.connect(self.toggle_ok)
         self.toggle_ok()
         grid.setSizeConstraint(QGridLayout.SetFixedSize)
+        self.setFocus()
 
     @Slot()
     def toggle_ok(self):

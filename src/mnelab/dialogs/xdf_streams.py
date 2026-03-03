@@ -115,6 +115,7 @@ class XDFStreamsDialog(QDialog):
         self.view.setColumnWidth(0, 90)
         self.view.setColumnWidth(1, 200)
         self.view.setColumnWidth(2, 140)
+        self.setFocus()
 
     @property
     def prefix_markers(self):

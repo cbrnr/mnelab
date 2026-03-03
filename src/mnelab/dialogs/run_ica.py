@@ -65,6 +65,7 @@ class RunICADialog(QDialog):
         vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
 
         self.toggle_options()
+        self.setFocus()
 
     @Slot()
     def toggle_options(self):

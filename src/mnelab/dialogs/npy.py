@@ -44,6 +44,7 @@ class NpyDialog(QDialog):
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)
         vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+        self.setFocus()
 
     @property
     def fs(self):
