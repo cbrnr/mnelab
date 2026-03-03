@@ -92,6 +92,7 @@ class MatDialog(QDialog):
         self.tree.itemSelectionChanged.connect(self.toggle)
         self.toggle()
         self.resize(650, 550)
+        self.setFocus()
 
     @property
     def name(self):

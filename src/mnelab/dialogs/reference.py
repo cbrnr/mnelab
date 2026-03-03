@@ -69,6 +69,7 @@ class ReferenceDialog(QDialog):
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
         vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+        self.setFocus()
 
     def toggle_reref_channellist(self):
         self.reref_channellist.setEnabled(self.reref_channels.isChecked())

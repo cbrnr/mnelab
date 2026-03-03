@@ -68,6 +68,7 @@ class HistoryDialog(QDialog):
         self.setLayout(layout)
         buttonbox.accepted.connect(self.accept)
         self.resize(750, 500)
+        self.setFocus()
 
     def _copy_to_clipboard(self):
         clipboard = QGuiApplication.clipboard()

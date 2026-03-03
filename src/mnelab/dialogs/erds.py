@@ -100,6 +100,7 @@ class ERDSDialog(QDialog):
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)
         vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+        self.setFocus()
 
     @property
     def f1(self):
@@ -216,6 +217,7 @@ class ERDSTopomapsDialog(QDialog):
         self.buttonbox.rejected.connect(self.reject)
         self.events.itemSelectionChanged.connect(self.toggle_ok)
         vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+        self.setFocus()
 
     @Slot()
     def toggle_ok(self):

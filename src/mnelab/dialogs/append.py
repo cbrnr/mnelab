@@ -153,6 +153,7 @@ class AppendDialog(QDialog):
         self.toggle_ok_button()
         self.toggle_move_source()
         self.toggle_move_destination()
+        self.setFocus()
 
     @property
     def selected_idx(self):

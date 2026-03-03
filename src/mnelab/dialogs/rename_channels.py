@@ -76,6 +76,7 @@ class RenameChannelsDialog(QDialog):
         self.toggle_input()
         self.update_preview()
         self.setFixedSize(450, 450)
+        self.setFocus()
 
     @Slot()
     def toggle_input(self):
