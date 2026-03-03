@@ -1253,7 +1253,10 @@ class MainWindow(QMainWindow):
             if channel_type(info, i) == "stim":
                 default_stim = i
                 break
-        dialog = FindEventsDialog(self, info["ch_names"], default_stim)
+        ftype = self.model.current["ftype"]
+        dialog = FindEventsDialog(
+            self, info["ch_names"], default_stim, mask_enabled=ftype == "BDF"
+        )
         if dialog.exec():
             stim_channel = dialog.stimchan.currentText()
             consecutive = dialog.consecutive.currentText().lower()
@@ -1262,14 +1265,16 @@ class MainWindow(QMainWindow):
             elif consecutive == "false":
                 consecutive = False
             initial_event = dialog.initial_event.isChecked()
-            uint_cast = dialog.uint_cast.isChecked()
+            mask = (
+                dialog.mask_value.value() if dialog.mask_enabled.isChecked() else None
+            )
             min_dur = dialog.minduredit.value()
             shortest_event = dialog.shortesteventedit.value()
             self.model.find_events(
                 stim_channel=stim_channel,
                 consecutive=consecutive,
                 initial_event=initial_event,
-                uint_cast=uint_cast,
+                mask=mask,
                 min_duration=min_dur,
                 shortest_event=shortest_event,
             )
