@@ -49,4 +49,4 @@ jobs:
       - name: Install the project
         run: uv sync --all-extras
       - name: Run tests
-        run: ${{ startsWith(matrix.os, 'ubuntu') && 'xvfb-run -a uv run pytest -W error tests' || 'uv run pytest -W error tests' }}
+        run: uv run pytest -W error tests
