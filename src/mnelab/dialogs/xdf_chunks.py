@@ -89,6 +89,7 @@ class XDFChunksDialog(QDialog):
         self.view.setColumnWidth(1, 80)
         self.view.setColumnWidth(2, 150)
         self.view.setColumnWidth(3, 70)
+        self.setFocus()
 
     @Slot()
     def _update_details(self):

@@ -455,6 +455,11 @@ class MainWindow(QMainWindow):
         self.data_changed()
 
     def _excepthook(self, type, value, traceback_):
+        from mnelab import IS_DEV_VERSION
+
+        if type is KeyboardInterrupt and IS_DEV_VERSION:
+            self.close()
+            return
         exception_text = str(value)
         traceback_text = "".join(traceback.format_exception(type, value, traceback_))
         print(traceback_text, file=sys.stderr)
@@ -1253,7 +1258,10 @@ class MainWindow(QMainWindow):
             if channel_type(info, i) == "stim":
                 default_stim = i
                 break
-        dialog = FindEventsDialog(self, info["ch_names"], default_stim)
+        ftype = self.model.current["ftype"]
+        dialog = FindEventsDialog(
+            self, info["ch_names"], default_stim, mask_enabled=ftype == "BDF"
+        )
         if dialog.exec():
             stim_channel = dialog.stimchan.currentText()
             consecutive = dialog.consecutive.currentText().lower()
@@ -1262,14 +1270,16 @@ class MainWindow(QMainWindow):
             elif consecutive == "false":
                 consecutive = False
             initial_event = dialog.initial_event.isChecked()
-            uint_cast = dialog.uint_cast.isChecked()
+            mask = (
+                dialog.mask_value.value() if dialog.mask_enabled.isChecked() else None
+            )
             min_dur = dialog.minduredit.value()
             shortest_event = dialog.shortesteventedit.value()
             self.model.find_events(
                 stim_channel=stim_channel,
                 consecutive=consecutive,
                 initial_event=initial_event,
-                uint_cast=uint_cast,
+                mask=mask,
                 min_duration=min_dur,
                 shortest_event=shortest_event,
             )

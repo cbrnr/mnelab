@@ -72,6 +72,7 @@ class ChannelStats(QDialog):
         # set initial sort and size
         self.view.sortByColumn(0, Qt.SortOrder.AscendingOrder)
         self.resize(800, 550)
+        self.setFocus()
 
     def populate_model(self, raw):
         cols, nchan = calculate_channel_stats(raw)

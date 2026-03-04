@@ -185,8 +185,8 @@ class Model:
         self,
         stim_channel,
         consecutive=True,
-        initial_event=True,
-        uint_cast=True,
+        initial_event=False,
+        mask=None,
         min_duration=0,
         shortest_event=0,
     ):
@@ -196,7 +196,7 @@ class Model:
             stim_channel=stim_channel,
             consecutive=consecutive,
             initial_event=initial_event,
-            uint_cast=uint_cast,
+            mask=mask,
             min_duration=min_duration,
             shortest_event=shortest_event,
         )
@@ -208,8 +208,8 @@ class Model:
                 hist += f", consecutive={consecutive!r}"
             if initial_event:
                 hist += f", initial_event={initial_event!r}"
-            if uint_cast:
-                hist += f", uint_cast={uint_cast!r}"
+            if mask is not None:
+                hist += f", mask={mask!r}"
             if min_duration > 0:
                 hist += f", min_duration={min_duration!r}"
             if shortest_event != 2:

@@ -69,6 +69,7 @@ class ChannelPropertiesDialog(QDialog):
         self.view.setColumnWidth(0, 70)
         self.view.setColumnWidth(1, 155)
         self.view.setColumnWidth(2, 90)
+        self.setFocus()
 
 
 class MySortFilterProxyModel(QSortFilterProxyModel):

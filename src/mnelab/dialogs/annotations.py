@@ -62,6 +62,7 @@ class AnnotationsDialog(QDialog):
         self.counts_button.clicked.connect(self.open_counts_dialog)
         self.toggle_buttons()
         self.setMinimumSize(600, 500)
+        self.setFocus()
 
     @property
     def unique_annotations(self):
@@ -132,6 +133,7 @@ class EventCountsDialog(QDialog):
         buttonbox.accepted.connect(self.accept)
 
         self.counts_table.setMinimumHeight(225)
+        self.setFocus()
 
     def fill_counts_table(self):
         self.counts_table.setRowCount(0)

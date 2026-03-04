@@ -22,6 +22,7 @@ class BrainVisionDialog(QDialog):
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)
         vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+        self.setFocus()
 
     @property
     def ignore_marker_types(self):

@@ -104,6 +104,7 @@ class MontageDialog(QDialog):
         if self.montages.count() > 0:
             self.montages.setCurrentRow(0)
             self.view_montage()
+        self.setFocus()
 
     def accept(self):
         item = self.montages.selectedItems()[0]

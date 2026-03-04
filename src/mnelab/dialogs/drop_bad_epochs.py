@@ -74,6 +74,7 @@ class DropBadEpochsDialog(QDialog):
         self.reject_box.toggled.connect(self.toggle_ok)
         self.toggle_ok()
         vbox.setSizeConstraint(QGridLayout.SetFixedSize)
+        self.setFocus()
 
     @Slot()
     def toggle_ok(self):

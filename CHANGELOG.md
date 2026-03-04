@@ -1,10 +1,15 @@
 ## [UNRELEASED] · YYYY-MM-DD
 ### ✨ Added
 - The dataset pane now contains badges that help you easily recognize the data type of each entry ([#576](https://github.com/cbrnr/mnelab/pull/576) by [Richard Höchenberger](https://github.com/hoechenberger))
-- The info pane now displays a copy button when hovering over the file name ([#578](https://github.com/cbrnr/mnelab/pull/578) by [Richard Höchenberger](https://github.com/hoechenberger))
+- Add mask argument to Find Events dialog, which is useful for parsing events in BDF files ([#584](https://github.com/cbrnr/mnelab/pull/584) by [Clemens Brunner](https://github.com/cbrnr))
+- The info pane now displays a copy button when hovering over the file name ([#578](https://github.com/cbrnr/mnelab/pull/578) and [#581](https://github.com/cbrnr/mnelab/pull/581) by [Richard Höchenberger](https://github.com/hoechenberger))
 
 ### 🔧 Fixed
 - Fix toolbar button hover effects on macOS ([#565](https://github.com/cbrnr/mnelab/pull/565) by [Clemens Brunner](https://github.com/cbrnr))
+- Improve dark mode theme for the Artifact Detection preview dialog ([#585](https://github.com/cbrnr/mnelab/pull/585) by [Fabian Schellander](https://github.com/SchellanderF))
+
+### 🌀 Changed
+- Consistently focus the OK button in all dialogs ([#586](https://github.com/cbrnr/mnelab/pull/586) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.3.1] · 2026-02-25
 ### 🔧 Fixed

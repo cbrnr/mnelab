@@ -2,6 +2,8 @@
 #
 # License: BSD (3-clause)
 
+from pathlib import Path
+
 from PySide6.QtCore import QEvent, QTimer
 from PySide6.QtGui import QGuiApplication, QIcon, QKeySequence
 from PySide6.QtWidgets import (
@@ -62,7 +64,7 @@ class InfoWidget(QWidget):
     """
 
     def __init__(self, values=None):
-        from .. import __version__
+        from mnelab import IS_DEV_VERSION
 
         super().__init__()
         self._copy_btn = None
@@ -83,7 +85,7 @@ class InfoWidget(QWidget):
         vbox.addLayout(self.grid)
         vbox.addStretch(1)
         self.set_values(values)
-        if __version__.split(".")[-1].startswith("dev"):
+        if IS_DEV_VERSION:
             vbox.addStretch()
             vbox.addWidget(QLabel(dev_label))
 
@@ -104,6 +106,7 @@ class InfoWidget(QWidget):
                 self.grid.addWidget(left, row, 0)
                 self.grid.addWidget(right, row, 1)
                 if key == "File name" and value != "-":
+                    right.setText(Path(str(value)).name)  # filename only, not full path
                     btn = QToolButton()
                     btn.setMaximumHeight(left.sizeHint().height())
                     btn.setIcon(QIcon())  # empty until hovered
@@ -169,7 +172,7 @@ class InfoWidget(QWidget):
 
 class EmptyWidget(QWidget):
     def __init__(self, actions):
-        from .. import __version__
+        from mnelab import IS_DEV_VERSION
 
         super().__init__()
         text = QLabel(_make_shortcuts_table(actions))
@@ -177,5 +180,5 @@ class EmptyWidget(QWidget):
         vbox.addStretch()
         vbox.addWidget(text)
         vbox.addStretch()
-        if __version__.split(".")[-1].startswith("dev"):
+        if IS_DEV_VERSION:
             vbox.addWidget(QLabel(dev_label))

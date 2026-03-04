@@ -109,6 +109,7 @@ class FilterDialog(QDialog):
 
         self._on_filter_type_changed(self.filter_group.checkedButton(), True)
         vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+        self.setFocus()
 
     def _on_filter_type_changed(self, button, checked):
         if not checked:

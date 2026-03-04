@@ -52,3 +52,4 @@ class XDFMetadataDialog(QDialog):
         buttonbox.accepted.connect(self.accept)
 
         self.resize(650, 550)
+        self.setFocus()
