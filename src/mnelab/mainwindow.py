@@ -458,8 +458,8 @@ class MainWindow(QMainWindow):
                 0,
                 lambda: self.splitter.setSizes(
                     [
-                        int(self.splitter.size().width() * 0.50),
-                        int(self.splitter.size().width() * 0.50),
+                        int(self.splitter.size().width() * 0.4),
+                        int(self.splitter.size().width() * 0.6),
                     ]
                 ),
             )
