@@ -24,11 +24,6 @@ DTYPE_COLORS = {
     "epochs": ("#92400E", "#FFFFFF"),  # amber-800 bg, white text
 }
 
-DTYPE_LABELS = {
-    "raw": "raw",
-    "epochs": "epo",
-}
-
 
 class TypeBadgeDelegate(QStyledItemDelegate):
     """Renders a rounded-rectangle badge for the data type column."""
@@ -38,22 +33,21 @@ class TypeBadgeDelegate(QStyledItemDelegate):
         if not dtype:
             return
         bg_hex, fg_hex = DTYPE_COLORS.get(dtype.lower(), ("#6B7280", "#FFFFFF"))
-        label = DTYPE_LABELS.get(dtype.lower(), dtype.lower())
+        label = dtype.capitalize()
 
         painter.save()
         painter.setRenderHint(QPainter.Antialiasing)
 
         rect = option.rect
-        pad_y = 7
+        pad_y = 5
         badge_h = rect.height() - 2 * pad_y
-        badge_rect = QRectF(rect.x() + 1, rect.y() + pad_y, rect.width() - 2, badge_h)
+        badge_rect = QRectF(rect.x() + 2, rect.y() + pad_y, rect.width() - 4, badge_h)
 
         painter.setPen(Qt.NoPen)
         painter.setBrush(QColor(bg_hex))
         painter.drawRoundedRect(badge_rect, badge_h / 2, badge_h / 2)
 
-        # add a subtle border to make the badge stand out against similar background
-        # colors
+        # add a subtle border
         painter.setPen(QColor(0, 0, 0, 40))
         painter.setBrush(Qt.NoBrush)
         painter.drawRoundedRect(badge_rect, badge_h / 2, badge_h / 2)
@@ -68,7 +62,7 @@ class TypeBadgeDelegate(QStyledItemDelegate):
 
     def sizeHint(self, option, index):
         hint = super().sizeHint(option, index)
-        hint.setWidth(42)
+        hint.setWidth(56)
         return hint
 
 
@@ -130,12 +124,13 @@ class SidebarTableWidget(QTableWidget):
         self.horizontalHeaderItem(1).setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         self.verticalHeader().hide()
         self.horizontalHeader().setStretchLastSection(False)
+        self.horizontalHeader().setMinimumSectionSize(0)
         self.horizontalHeader().setSectionResizeMode(0, QHeaderView.Fixed)
         self.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
         self.horizontalHeader().setSectionResizeMode(2, QHeaderView.Fixed)
         self.horizontalHeader().setSectionResizeMode(3, QHeaderView.Fixed)
-        self.setColumnWidth(2, 42)
-        self.setColumnWidth(3, 24)
+        self.setColumnWidth(2, 56)
+        self.setColumnWidth(3, 28)
         self.resizeColumnToContents(0)
         self.setItemDelegateForColumn(2, TypeBadgeDelegate(self))
         self.horizontalHeader().hide()
