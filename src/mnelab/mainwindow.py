@@ -16,7 +16,16 @@ import mne
 import numpy as np
 from mne import channel_type
 from pybvrf import read_bvrf_header
-from PySide6.QtCore import QEvent, QMetaObject, QModelIndex, Qt, QUrl, Slot
+from PySide6.QtCore import (
+    QByteArray,
+    QEvent,
+    QMetaObject,
+    QModelIndex,
+    Qt,
+    QTimer,
+    QUrl,
+    Slot,
+)
 from PySide6.QtGui import QAction, QDesktopServices, QIcon, QKeySequence
 from PySide6.QtWidgets import (
     QApplication,
@@ -426,10 +435,13 @@ class MainWindow(QMainWindow):
         self.sidebar.hide()
         self.sidebar.rowsMoved.connect(self._sidebar_move_event)
         self.sidebar.itemDelegate().commitData.connect(self._sidebar_edit_event)
-        self.sidebar.cellClicked.connect(self._update_data)
+        self.sidebar.currentCellChanged.connect(
+            lambda row, col, *_: self._update_data(row, col)
+        )
 
-        splitter = QSplitter()
-        splitter.addWidget(self.sidebar)
+        self.splitter = QSplitter()
+        self.splitter.setObjectName("main_splitter")
+        self.splitter.addWidget(self.sidebar)
 
         self.infowidget = QStackedWidget()
         self.infowidget.addWidget(InfoWidget())
@@ -437,10 +449,21 @@ class MainWindow(QMainWindow):
             itemgetter("open_file", "history", "settings")(self.actions)
         )
         self.infowidget.addWidget(emptywidget)
-        splitter.addWidget(self.infowidget)
-        width = splitter.size().width()
-        splitter.setSizes((int(width * 0.3), int(width * 0.7)))
-        self.setCentralWidget(splitter)
+        self.splitter.addWidget(self.infowidget)
+        saved_splitter = settings["splitter"]
+        if saved_splitter:
+            self.splitter.restoreState(saved_splitter)
+        else:
+            QTimer.singleShot(
+                0,
+                lambda: self.splitter.setSizes(
+                    [
+                        int(self.splitter.size().width() * 0.4),
+                        int(self.splitter.size().width() * 0.6),
+                    ]
+                ),
+            )
+        self.setCentralWidget(self.splitter)
 
         self.status_label = QLabel()
         self.statusBar().addPermanentWidget(self.status_label)
@@ -512,12 +535,15 @@ class MainWindow(QMainWindow):
         # update sidebar
         if len(self.model.data) > 0:
             self.sidebar.show()
+            # block signals during rebuild: setRowCount(0) would otherwise
+            # emit currentCellChanged with row=-1, corrupting model.index
+            self.sidebar.blockSignals(True)
             self.sidebar.setRowCount(0)
             self.sidebar.setRowCount(len(self.model.names))
             self.sidebar.setColumnCount(4)
 
             for row_index, name in enumerate(self.model.names):
-                item_index = QTableWidgetItem(str(row_index))
+                item_index = QTableWidgetItem(str(row_index + 1))
                 self.sidebar.setItem(row_index, 0, item_index)
 
                 item_name = QTableWidgetItem(name)
@@ -529,6 +555,8 @@ class MainWindow(QMainWindow):
 
             self.sidebar.style_rows()
             self.sidebar.selectRow(self.model.index)
+            self.sidebar.blockSignals(False)
+            self.sidebar.setFocus()
         else:
             self.sidebar.hide()
 
@@ -1575,7 +1603,6 @@ class MainWindow(QMainWindow):
         if row != self.model.index:
             self.model.index = row
             self.data_changed()
-            self.sidebar.showCloseButton(row)
             self.model.history.append(f"data = datasets[{self.model.index}]")
 
     @Slot()
@@ -1612,7 +1639,11 @@ class MainWindow(QMainWindow):
 
     def event(self, event):
         if event.type() == QEvent.Close:
-            write_settings(size=self.size(), pos=self.pos())
+            write_settings(
+                size=self.size(),
+                pos=self.pos(),
+                splitter=QByteArray(self.splitter.saveState()),
+            )
             if self.model.history:
                 print("\n# Command History\n")
                 print(format_code("\n".join(self.model.history)))

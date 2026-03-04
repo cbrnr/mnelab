@@ -2,20 +2,23 @@
 #
 # License: BSD (3-clause)
 
-from PySide6.QtCore import QEvent, QRectF, Qt, Signal
-from PySide6.QtGui import QColor, QIcon, QPainter
+import sys
+
+from PySide6.QtCore import QEvent, QRect, QRectF, Qt, Signal
+from PySide6.QtGui import QColor, QCursor, QIcon, QPainter
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QFrame,
     QHeaderView,
-    QPushButton,
     QStyledItemDelegate,
     QTableWidget,
     QTableWidgetItem,
+    QToolButton,
 )
 
 ROW_HEIGHT = 30
 
+# settings for the data type badges in the sidebar
 DTYPE_COLORS = {
     "raw": ("#2563EB", "#FFFFFF"),  # blue-600 bg, white text
     "epochs": ("#92400E", "#FFFFFF"),  # amber-800 bg, white text
@@ -44,6 +47,11 @@ class TypeBadgeDelegate(QStyledItemDelegate):
         painter.setBrush(QColor(bg_hex))
         painter.drawRoundedRect(badge_rect, badge_h / 2, badge_h / 2)
 
+        # add a subtle border
+        painter.setPen(QColor(0, 0, 0, 40))
+        painter.setBrush(Qt.NoBrush)
+        painter.drawRoundedRect(badge_rect, badge_h / 2, badge_h / 2)
+
         font = painter.font()
         font.setPointSizeF(max(6.0, font.pointSizeF() - 1))
         painter.setFont(font)
@@ -56,6 +64,26 @@ class TypeBadgeDelegate(QStyledItemDelegate):
         hint = super().sizeHint(option, index)
         hint.setWidth(56)
         return hint
+
+
+class SpanningHeaderView(QHeaderView):
+    """Horizontal header where a contiguous range of sections is painted as one."""
+
+    def __init__(self, orientation, span_start=0, span_count=1, parent=None):
+        super().__init__(orientation, parent)
+        self._span_start = span_start
+        self._span_count = span_count
+
+    def paintSection(self, painter, rect, logical_index):
+        span_cols = range(self._span_start, self._span_start + self._span_count)
+        if logical_index in span_cols and logical_index != self._span_start:
+            return
+        if logical_index == self._span_start:
+            total_width = sum(
+                self.sectionSize(self._span_start + i) for i in range(self._span_count)
+            )
+            rect = QRect(rect.x(), rect.y(), total_width, rect.height())
+        super().paintSection(painter, rect, logical_index)
 
 
 class SidebarTableWidget(QTableWidget):
@@ -73,25 +101,42 @@ class SidebarTableWidget(QTableWidget):
         self.setDropIndicatorShown(False)
         self.setDragDropOverwriteMode(False)
         self.setFrameStyle(QFrame.NoFrame)
-        self.setFocusPolicy(Qt.NoFocus)
         self.setEditTriggers(QAbstractItemView.DoubleClicked)
         self.setColumnCount(4)
         self.setShowGrid(False)
+        if sys.platform != "darwin":
+            # disable cell style changes upon focusing (clicking); not needed on macOS
+            self.setStyleSheet("""
+                QTableWidget { outline: 0; }
+                QTableWidget::item:focus {
+                    background: palette(highlight);
+                    color: palette(highlighted-text);
+                }
+            """)
         self.drop_row = -1
 
-        self.horizontalHeader().hide()
+        header = SpanningHeaderView(
+            Qt.Horizontal, span_start=1, span_count=3, parent=self
+        )
+        self.setHorizontalHeader(header)
+        self.setHorizontalHeaderLabels(["#", "Dataset", "", ""])
+        self.horizontalHeaderItem(0).setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        self.horizontalHeaderItem(1).setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         self.verticalHeader().hide()
         self.horizontalHeader().setStretchLastSection(False)
+        self.horizontalHeader().setMinimumSectionSize(0)
         self.horizontalHeader().setSectionResizeMode(0, QHeaderView.Fixed)
         self.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
         self.horizontalHeader().setSectionResizeMode(2, QHeaderView.Fixed)
         self.horizontalHeader().setSectionResizeMode(3, QHeaderView.Fixed)
         self.setColumnWidth(2, 56)
-        self.setColumnWidth(3, 20)
+        self.setColumnWidth(3, 28)
         self.resizeColumnToContents(0)
         self.setItemDelegateForColumn(2, TypeBadgeDelegate(self))
-
+        self.horizontalHeader().hide()
+        self.setAccessibleName("Opened datasets")
         self.setMouseTracking(True)
+        self.setTabKeyNavigation(False)
         self.viewport().installEventFilter(self)
 
     def mousePressEvent(self, event):
@@ -180,6 +225,11 @@ class SidebarTableWidget(QTableWidget):
             self.item(i, 1).setFlags(self.item(i, 1).flags() | Qt.ItemIsEditable)
             if self.item(i, 2) is not None:
                 self.item(i, 2).setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
+        # after a rebuild (e.g. row removed), the cursor may already be hovering
+        # over a row without a MouseMove firing — update the close button immediately
+        pos = self.viewport().mapFromGlobal(QCursor.pos())
+        index = self.indexAt(pos)
+        self.showCloseButton(index.row() if index.isValid() else -1)
 
     def update_vertical_header(self):
         row_count = self.rowCount()
@@ -200,10 +250,14 @@ class SidebarTableWidget(QTableWidget):
     def showCloseButton(self, row_index):
         for i in range(self.rowCount()):
             if i == row_index:
-                delete_button = QPushButton(self)
+                delete_button = QToolButton(self)
+                delete_button.setFocusPolicy(Qt.NoFocus)
+                delete_button.setFixedSize(24, ROW_HEIGHT)
                 delete_button.setIcon(QIcon.fromTheme("close-data"))
+                delete_button.setToolTip("Close dataset")
+                delete_button.setAutoRaise(True)
                 delete_button.setStyleSheet(
-                    "background: transparent; border: none; margin: auto;"
+                    "QToolButton { background: transparent; border: none; }"
                 )
                 delete_button.clicked.connect(
                     lambda _, index=row_index: self.parent.model.remove_data(index)

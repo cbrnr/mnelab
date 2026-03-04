@@ -5,7 +5,15 @@
 from pathlib import Path
 
 from mne import get_config_path
-from PySide6.QtCore import QPoint, QSettings, QSize, QStandardPaths, QUrl, Slot
+from PySide6.QtCore import (
+    QByteArray,
+    QPoint,
+    QSettings,
+    QSize,
+    QStandardPaths,
+    QUrl,
+    Slot,
+)
 from PySide6.QtGui import QDesktopServices, Qt
 from PySide6.QtWidgets import (
     QComboBox,
@@ -36,6 +44,7 @@ _DEFAULTS = {
     "size": QSize(700, 500),
     "pos": QPoint(100, 100),
     "plot_backend": "Matplotlib",
+    "splitter": QByteArray(),
 }
 
 
