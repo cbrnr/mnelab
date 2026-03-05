@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: astral-sh/setup-uv@v7
       - name: Install the project
-        run: uv sync --all-extras
+        run: uv sync --locked --all-extras --python 3.14
       - name: Build app bundle
         working-directory: standalone
         run: uv run python create-standalone-macos.py build-app
@@ -68,7 +68,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: astral-sh/setup-uv@v7
       - name: Install the project
-        run: uv sync --all-extras
+        run: uv sync --locked --all-extras --python 3.14
       - uses: crazy-max/ghaction-chocolatey@v4
         with:
           args: install innosetup
