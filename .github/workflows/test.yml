@@ -36,6 +36,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: ${{ matrix.python-version }}
       - name: Install Linux packages
         if: startsWith(matrix.os, 'ubuntu')
         run: |
@@ -45,6 +47,6 @@ jobs:
                            libxcb-render-util0 libxcb-xinerama0 libegl1 \
                            libxcb-shape0 libxcb-cursor0
       - name: Install the project
-        run: uv sync --locked --all-extras --python ${{ matrix.python-version }}
+        run: uv sync --locked --all-extras
       - name: Run tests
         run: uv run pytest -W error tests
