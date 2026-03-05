@@ -21,7 +21,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
+          python-version: "3.14"
       - name: Check license headers
         run: python .github/check_license_headers.py
 
@@ -36,8 +36,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: astral-sh/setup-uv@v7
-      - name: Set up Python ${{ matrix.python-version }}
-        run: uv python install ${{ matrix.python-version }}
+        with:
+          python-version: ${{ matrix.python-version }}
       - name: Install Linux packages
         if: startsWith(matrix.os, 'ubuntu')
         run: |
@@ -47,6 +47,6 @@ jobs:
                            libxcb-render-util0 libxcb-xinerama0 libegl1 \
                            libxcb-shape0 libxcb-cursor0
       - name: Install the project
-        run: uv sync --all-extras
+        run: uv sync --locked --all-extras
       - name: Run tests
         run: uv run pytest -W error tests
