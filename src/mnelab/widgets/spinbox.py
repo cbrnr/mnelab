@@ -20,24 +20,26 @@ class _StepButton(QWidget):
         self.setFocusPolicy(Qt.NoFocus)
 
     def enterEvent(self, event):
-        self._hovered = True
-        self.update()
+        if self.parent().isEnabled():
+            self._hovered = True
+            self.update()
         super().enterEvent(event)
 
     def leaveEvent(self, event):
-        self._hovered = False
-        self.update()
+        if self._hovered:
+            self._hovered = False
+            self.update()
         super().leaveEvent(event)
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.LeftButton and self.parent().isEnabled():
             self.clicked.emit()
         super().mousePressEvent(event)
 
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
-        if self._hovered:
+        if self._hovered and self.parent().isEnabled():
             color = self.palette().color(QPalette.Highlight)
             color.setAlpha(60)
             painter.setPen(Qt.NoPen)
