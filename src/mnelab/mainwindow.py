@@ -680,7 +680,9 @@ class MainWindow(QMainWindow):
         """Open raw file."""
         if fname is None:
             # getOpenFileNames returns a tuple (filenames, selected_filter)
-            fnames, _ = QFileDialog.getOpenFileNames(self, "Open raw")
+            fnames, _ = QFileDialog.getOpenFileNames(
+                self, "Open raw", self._get_last_dir()
+            )
         else:
             fnames = [fname]
         for fname in fnames:
@@ -691,6 +693,7 @@ class MainWindow(QMainWindow):
                 )
                 return
 
+            self._set_last_dir(fname)
             ext = "".join(Path(fname).suffixes)
 
             if any(ext.endswith(e) for e in (".xdf", ".xdfz", ".xdf.gz")):  # XDF
@@ -784,24 +787,29 @@ class MainWindow(QMainWindow):
 
     def open_file(self, f, text, ffilter="*"):
         """Open file."""
-        fname = QFileDialog.getOpenFileName(self, text, filter=ffilter)[0]
+        fname = QFileDialog.getOpenFileName(self, text, self._get_last_dir(), ffilter)[
+            0
+        ]
         if fname:
+            self._set_last_dir(fname)
             f(fname)
 
     def xdf_chunks(self):
         """Inspect XDF chunks."""
         fname = QFileDialog.getOpenFileName(
-            self, "Select XDF file", filter="*.xdf *.xdfz *.xdf.gz"
+            self, "Select XDF file", self._get_last_dir(), "*.xdf *.xdfz *.xdf.gz"
         )[0]
         if fname:
+            self._set_last_dir(fname)
             chunks = list_chunks(fname)
             dialog = XDFChunksDialog(self, chunks, fname)
             dialog.exec()
 
     def export_file(self, f, text, ffilter="*"):
         """Export to file."""
-        fname = QFileDialog.getSaveFileName(self, text)[0]
+        fname = QFileDialog.getSaveFileName(self, text, self._get_last_dir())[0]
         if fname:
+            self._set_last_dir(fname)
             exts = [ext.replace("*", "") for ext in ffilter.split()]
             for ext in exts:
                 if fname.endswith(ext):
@@ -810,8 +818,11 @@ class MainWindow(QMainWindow):
 
     def import_file(self, f, text, ffilter="*"):
         """Import file."""
-        fname = QFileDialog.getOpenFileName(self, text, filter=ffilter)[0]
+        fname = QFileDialog.getOpenFileName(self, text, self._get_last_dir(), ffilter)[
+            0
+        ]
         if fname:
+            self._set_last_dir(fname)
             try:
                 f(fname)
             except LabelsNotFoundError as e:
@@ -823,6 +834,13 @@ class MainWindow(QMainWindow):
         total = sum(self.splitter.sizes())
         left = round(total * ratio)
         self.splitter.setSizes([left, total - left])
+
+    def _get_last_dir(self):
+        last_dir = read_settings("last_dir")
+        return last_dir if Path(last_dir).is_dir() else str(Path.home())
+
+    def _set_last_dir(self, fname):
+        write_settings(last_dir=str(Path(fname).parent))
 
     def close_all(self):
         """Close all currently open data sets."""
