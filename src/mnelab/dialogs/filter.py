@@ -7,7 +7,6 @@ from PySide6.QtWidgets import (
     QButtonGroup,
     QDialog,
     QDialogButtonBox,
-    QDoubleSpinBox,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
@@ -15,6 +14,8 @@ from PySide6.QtWidgets import (
     QRadioButton,
     QVBoxLayout,
 )
+
+from mnelab.widgets import FlatDoubleSpinBox
 
 
 class FilterDialog(QDialog):
@@ -54,19 +55,19 @@ class FilterDialog(QDialog):
         filter_settings_groupbox = QGroupBox("Filter settings")
         self.grid = QGridLayout()
         self.lower_label = QLabel("Lower cutoff frequency (Hz):")
-        self.lower_edit = QDoubleSpinBox()
+        self.lower_edit = FlatDoubleSpinBox()
         self.lower_edit.setMinimum(0)
         self.lower_edit.setDecimals(2)
         self.lower_edit.setValue(1)
         self.lower_edit.setAlignment(Qt.AlignRight)
         self.upper_label = QLabel("Upper cutoff frequency (Hz):")
-        self.upper_edit = QDoubleSpinBox()
+        self.upper_edit = FlatDoubleSpinBox()
         self.upper_edit.setMinimum(0)
         self.upper_edit.setDecimals(2)
         self.upper_edit.setValue(30)
         self.upper_edit.setAlignment(Qt.AlignRight)
         self.notch_label = QLabel("Notch frequency (Hz):")
-        self.notch_edit = QDoubleSpinBox()
+        self.notch_edit = FlatDoubleSpinBox()
         self.notch_edit.setMinimum(0)
         self.notch_edit.setDecimals(2)
         self.notch_edit.setValue(50)

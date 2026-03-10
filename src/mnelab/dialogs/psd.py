@@ -7,11 +7,12 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QDialog,
     QDialogButtonBox,
-    QDoubleSpinBox,
     QGridLayout,
     QLabel,
     QVBoxLayout,
 )
+
+from mnelab.widgets import FlatDoubleSpinBox
 
 
 class PSDDialog(QDialog):
@@ -23,7 +24,7 @@ class PSDDialog(QDialog):
         grid = QGridLayout()
 
         fmin_label = QLabel("Lower frequency (Hz):")
-        self.fmin_input = QDoubleSpinBox()
+        self.fmin_input = FlatDoubleSpinBox()
         self.fmin_input.setMinimum(0)
         self.fmin_input.setDecimals(1)
         self.fmin_input.setValue(fmin)
@@ -34,7 +35,7 @@ class PSDDialog(QDialog):
         grid.addWidget(self.fmin_input, 0, 1)
 
         fmax_label = QLabel("Upper frequency (Hz):")
-        self.fmax_input = QDoubleSpinBox()
+        self.fmax_input = FlatDoubleSpinBox()
         self.fmax_input.setMinimum(0)
         self.fmax_input.setDecimals(1)
         self.fmax_input.setValue(60)

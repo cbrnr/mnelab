@@ -12,6 +12,7 @@
 
 ### 🌀 Changed
 - Consistently focus the OK button in all dialogs ([#586](https://github.com/cbrnr/mnelab/pull/586) by [Clemens Brunner](https://github.com/cbrnr))
+- Use custom spinbox widgets with inline step buttons (− / +) for a more consistent look ([#589](https://github.com/cbrnr/mnelab/pull/589) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.3.1] · 2026-02-25
 ### 🔧 Fixed

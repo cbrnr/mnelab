@@ -9,7 +9,6 @@ from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
     QDialogButtonBox,
-    QDoubleSpinBox,
     QGridLayout,
     QLabel,
     QListWidget,
@@ -17,6 +16,8 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
+from mnelab.widgets import FlatDoubleSpinBox
 
 
 class AnnotationsIntervalDialog(QDialog):
@@ -55,7 +56,7 @@ class AnnotationsIntervalDialog(QDialog):
 
         # start offset
         self.grid.addWidget(QLabel("Start offset:"), 1, 0)
-        self.start_offset_spin = QDoubleSpinBox()
+        self.start_offset_spin = FlatDoubleSpinBox()
         self.start_offset_spin.setAlignment(Qt.AlignRight)
         self.start_offset_spin.setSingleStep(0.5)
         self.start_offset_spin.setMinimum(-99)
@@ -73,7 +74,7 @@ class AnnotationsIntervalDialog(QDialog):
 
         # end offset
         self.grid.addWidget(QLabel("End offset:"), 3, 0)
-        self.end_offset_spin = QDoubleSpinBox()
+        self.end_offset_spin = FlatDoubleSpinBox()
         self.end_offset_spin.setAlignment(Qt.AlignRight)
         self.end_offset_spin.setSingleStep(0.5)
         self.end_offset_spin.setMinimum(-99)

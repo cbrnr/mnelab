@@ -7,13 +7,14 @@ from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
     QDialogButtonBox,
-    QDoubleSpinBox,
     QGridLayout,
     QLineEdit,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
 )
+
+from mnelab.widgets import FlatDoubleSpinBox
 
 
 class RenameChannelsDialog(QDialog):
@@ -28,7 +29,7 @@ class RenameChannelsDialog(QDialog):
         self.method.setCurrentIndex(0)
 
         self.strip_chars = QLineEdit()
-        self.slice_num = QDoubleSpinBox()
+        self.slice_num = FlatDoubleSpinBox()
         self.slice_num.setMinimum(0)
         self.slice_num.setDecimals(0)
 

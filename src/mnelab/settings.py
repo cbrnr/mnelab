@@ -19,11 +19,12 @@ from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
     QDialogButtonBox,
-    QGridLayout,
-    QHBoxLayout,
+    QFormLayout,
     QLabel,
-    QSpinBox,
+    QVBoxLayout,
 )
+
+from mnelab.widgets import FlatSpinBox
 
 SETTINGS_PATH = str(
     Path(
@@ -95,37 +96,40 @@ class SettingsDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Settings")
 
-        grid = QGridLayout(self)
+        vbox = QVBoxLayout(self)
+        form = QFormLayout()
+        form.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
+        form.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
 
         backend = read_settings("plot_backend")
         if backend not in backends:
             backend = _DEFAULTS["plot_backend"]
-        grid.addWidget(QLabel("Plot backend:"), 0, 0)
         self.plot_backend = QComboBox()
         self.plot_backend.addItems(backends)
         self.plot_backend.setCurrentIndex(backends.index(backend))
-        grid.addWidget(self.plot_backend, 0, 1)
+        form.addRow("Plot backend:", self.plot_backend)
 
-        grid.addWidget(QLabel("Recent files:"), 1, 0)
-        self.max_recent = QSpinBox()
+        self.max_recent = FlatSpinBox()
         self.max_recent.setRange(5, 25)
         self.max_recent.setValue(read_settings("max_recent"))
         self.max_recent.setAlignment(Qt.AlignRight)
-        grid.addWidget(self.max_recent, 1, 1)
+        form.addRow("Recent files:", self.max_recent)
 
-        grid.addWidget(QLabel("Displayed channels:"), 2, 0)
-        self.max_channels = QSpinBox()
+        self.max_channels = FlatSpinBox()
         self.max_channels.setRange(1, 256)
         self.max_channels.setValue(read_settings("max_channels"))
         self.max_channels.setAlignment(Qt.AlignRight)
-        grid.addWidget(self.max_channels, 2, 1)
+        form.addRow("Displayed channels:", self.max_channels)
+
+        vbox.addLayout(form)
 
         mnelab_label = QLabel(
             f'<i>Settings are stored in <a href="{SETTINGS_PATH}">'
             f"{SETTINGS_PATH}</a>.</i>"
         )
         mnelab_label.linkActivated.connect(self.open_path)
-        grid.addWidget(mnelab_label, 3, 0, 1, 2)
+        vbox.addSpacing(8)
+        vbox.addWidget(mnelab_label)
 
         mne_config_path = get_config_path()
         mne_label = QLabel(
@@ -133,17 +137,15 @@ class SettingsDialog(QDialog):
             f"{mne_config_path}</a>.</i>"
         )
         mne_label.linkActivated.connect(self.open_path)
-        grid.addWidget(mne_label, 4, 0, 1, 2)
+        vbox.addWidget(mne_label)
 
-        hbox = QHBoxLayout()
         self.buttonbox = QDialogButtonBox(
             QDialogButtonBox.Apply | QDialogButtonBox.Ok | QDialogButtonBox.Cancel
         )
         self.reset_button = self.buttonbox.addButton(
             "Reset to defaults", QDialogButtonBox.ResetRole
         )
-        hbox.addWidget(self.buttonbox)
-        grid.addLayout(hbox, 5, 0, 1, 2)
+        vbox.addWidget(self.buttonbox)
 
         self.reset_button.clicked.connect(self.reset_settings)
         self.buttonbox.button(QDialogButtonBox.Apply).clicked.connect(
@@ -152,7 +154,7 @@ class SettingsDialog(QDialog):
         self.buttonbox.accepted.connect(self.on_ok_clicked)
         self.buttonbox.rejected.connect(self.reject)
 
-        grid.setSizeConstraint(QGridLayout.SetFixedSize)
+        vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
 
     @Slot(str)
     def open_path(self, path):

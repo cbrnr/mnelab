@@ -9,7 +9,6 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QDialog,
     QDialogButtonBox,
-    QDoubleSpinBox,
     QHBoxLayout,
     QLabel,
     QPushButton,
@@ -19,6 +18,7 @@ from PySide6.QtWidgets import (
 )
 
 from mnelab.dialogs.utils import FloatTableWidgetItem, IntTableWidgetItem
+from mnelab.widgets import FlatDoubleSpinBox
 
 
 class XDFStreamsDialog(QDialog):
@@ -62,7 +62,7 @@ class XDFStreamsDialog(QDialog):
         self.resample = QCheckBox()
         self.resample.stateChanged.connect(self._toggle_gap_threshold)
         self.resample_label = QLabel("Resample to")
-        self.fs_new = QDoubleSpinBox()
+        self.fs_new = FlatDoubleSpinBox()
         self.fs_new.setRange(1, max(r[5] for r in rows))
         self.fs_new.setValue(1)
         self.fs_new.setDecimals(1)
@@ -73,7 +73,7 @@ class XDFStreamsDialog(QDialog):
         self.gap_threshold_checkbox.stateChanged.connect(
             self._toggle_gap_threshold_spinbox
         )
-        self.gap_threshold = QDoubleSpinBox()
+        self.gap_threshold = FlatDoubleSpinBox()
         self.gap_threshold.setRange(0.1, 10)
         self.gap_threshold.setValue(0.1)
         self.gap_threshold.setDecimals(1)

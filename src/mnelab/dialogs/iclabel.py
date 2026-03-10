@@ -11,7 +11,6 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QDialog,
     QDialogButtonBox,
-    QDoubleSpinBox,
     QGridLayout,
     QHBoxLayout,
     QHeaderView,
@@ -26,6 +25,7 @@ from mnelab.dialogs.utils import (
     NumberSortProxyModel,
     get_detailed_ica_properties,
 )
+from mnelab.widgets import FlatDoubleSpinBox
 
 
 class PlotDetailDialog(QDialog):
@@ -52,7 +52,7 @@ class PlotDetailDialog(QDialog):
 class AutoSelectDialog(QDialog):
     def __init__(self, parent, labels):
         super().__init__(parent)
-        self.setWindowTitle("Auto-Select Components")
+        self.setWindowTitle("Auto-Select ICs")
         self.criteria = {}
 
         layout = QVBoxLayout(self)
@@ -75,7 +75,7 @@ class AutoSelectDialog(QDialog):
             if label in ["Eye", "Muscle"]:
                 checkbox.setChecked(True)
 
-            spinbox = QDoubleSpinBox()
+            spinbox = FlatDoubleSpinBox()
             spinbox.setRange(0.0, 1.0)
             spinbox.setSingleStep(0.05)
             spinbox.setValue(0.90)
@@ -95,7 +95,7 @@ class AutoSelectDialog(QDialog):
         self.buttonbox.rejected.connect(self.reject)
         layout.addWidget(self.buttonbox)
 
-        self.setFixedSize(300, self.sizeHint().height())
+        self.setFixedSize(self.sizeHint().width(), self.sizeHint().height())
         self.setFocus()
 
     def get_selection_rules(self):

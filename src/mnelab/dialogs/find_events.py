@@ -12,9 +12,10 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QHBoxLayout,
     QLabel,
-    QSpinBox,
     QVBoxLayout,
 )
+
+from mnelab.widgets import FlatSpinBox
 
 MAX_INT = 2147483647
 DEFAULT_MASK = 2**16 - 1
@@ -49,7 +50,7 @@ class FindEventsDialog(QDialog):
         self.mask_enabled = QCheckBox()
         self.mask_enabled.setChecked(mask_enabled)
         mask_hbox.addWidget(self.mask_enabled)
-        self.mask_value = QSpinBox()
+        self.mask_value = FlatSpinBox()
         self.mask_value.setMinimum(0)
         self.mask_value.setMaximum(MAX_INT)
         self.mask_value.setValue(DEFAULT_MASK)
@@ -67,13 +68,13 @@ class FindEventsDialog(QDialog):
         self.mask_value.valueChanged.connect(self._update_mask_bits_label)
 
         grid.addWidget(QLabel("Minimum duration:"), 4, 0)
-        self.minduredit = QSpinBox()
+        self.minduredit = FlatSpinBox()
         self.minduredit.setMaximum(MAX_INT)
         self.minduredit.setAlignment(Qt.AlignRight)
         grid.addWidget(self.minduredit, 4, 1)
 
         grid.addWidget(QLabel("Shortest event:"), 5, 0)
-        self.shortesteventedit = QSpinBox()
+        self.shortesteventedit = FlatSpinBox()
         self.shortesteventedit.setValue(2)
         self.shortesteventedit.setMaximum(MAX_INT)
         self.shortesteventedit.setAlignment(Qt.AlignRight)
