@@ -47,12 +47,16 @@ class ReferenceDialog(QDialog):
         self.reref_channellist.insertItems(0, available_channels)
         self.reref_average.setChecked(True)
         self.reref_channellist.setEnabled(False)
-        self.reref_channellist.setSelectionMode(QListWidget.ExtendedSelection)
+        self.reref_channellist.setSelectionMode(
+            QListWidget.SelectionMode.ExtendedSelection
+        )
         reref_grid = QGridLayout()
         reref_grid.setColumnStretch(0, 2)
         reref_grid.setColumnStretch(1, 3)
         reref_grid.addWidget(self.reref_average, 0, 0)
-        reref_grid.addWidget(self.reref_channels, 1, 0, alignment=Qt.AlignTop)
+        reref_grid.addWidget(
+            self.reref_channels, 1, 0, alignment=Qt.AlignmentFlag.AlignTop
+        )
         reref_grid.addWidget(self.reref_channellist, 1, 1)
 
         self.reref_group.setLayout(reref_grid)
@@ -64,11 +68,13 @@ class ReferenceDialog(QDialog):
         self.reref_channels.toggled.connect(self.toggle_ok)
         self.reref_channellist.itemSelectionChanged.connect(self.toggle_ok)
 
-        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttonbox = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         vbox.addWidget(self.buttonbox)
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
-        vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+        vbox.setSizeConstraint(QVBoxLayout.SizeConstraint.SetFixedSize)
         self.setFocus()
 
     def toggle_reref_channellist(self):
@@ -76,11 +82,11 @@ class ReferenceDialog(QDialog):
 
     def toggle_ok(self):
         if self.add_group.isChecked() and not self.add_channellist.text():
-            self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(False)
+            self.buttonbox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(False)
             return
 
         if not self.add_group.isChecked() and not self.reref_group.isChecked():
-            self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(False)
+            self.buttonbox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(False)
             return
 
         if (
@@ -88,7 +94,7 @@ class ReferenceDialog(QDialog):
             and self.reref_channels.isChecked()
             and not self.reref_channellist.selectedItems()
         ):
-            self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(False)
+            self.buttonbox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(False)
             return
 
-        self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(True)
+        self.buttonbox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(True)

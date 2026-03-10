@@ -54,11 +54,13 @@ class FindEventsDialog(QDialog):
         self.mask_value.setMinimum(0)
         self.mask_value.setMaximum(MAX_INT)
         self.mask_value.setValue(DEFAULT_MASK)
-        self.mask_value.setAlignment(Qt.AlignRight)
+        self.mask_value.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.mask_value.setEnabled(mask_enabled)
         mask_hbox.addWidget(self.mask_value)
         self.mask_bits_label = QLabel()
-        self.mask_bits_label.setFont(QFontDatabase.systemFont(QFontDatabase.FixedFont))
+        self.mask_bits_label.setFont(
+            QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont)
+        )
         self._update_mask_bits_label(DEFAULT_MASK)
         self.mask_bits_label.setEnabled(mask_enabled)
         mask_hbox.addWidget(self.mask_bits_label)
@@ -70,23 +72,25 @@ class FindEventsDialog(QDialog):
         grid.addWidget(QLabel("Minimum duration:"), 4, 0)
         self.minduredit = FlatSpinBox()
         self.minduredit.setMaximum(MAX_INT)
-        self.minduredit.setAlignment(Qt.AlignRight)
+        self.minduredit.setAlignment(Qt.AlignmentFlag.AlignRight)
         grid.addWidget(self.minduredit, 4, 1)
 
         grid.addWidget(QLabel("Shortest event:"), 5, 0)
         self.shortesteventedit = FlatSpinBox()
         self.shortesteventedit.setValue(2)
         self.shortesteventedit.setMaximum(MAX_INT)
-        self.shortesteventedit.setAlignment(Qt.AlignRight)
+        self.shortesteventedit.setAlignment(Qt.AlignmentFlag.AlignRight)
 
         grid.addWidget(self.shortesteventedit, 5, 1)
 
         vbox.addLayout(grid)
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttonbox = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         vbox.addWidget(buttonbox)
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)
-        vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+        vbox.setSizeConstraint(QVBoxLayout.SizeConstraint.SetFixedSize)
         self.setFocus()
 
     def _on_mask_toggled(self, checked):

@@ -44,27 +44,27 @@ class ChannelStats(QDialog):
         # create table view
         self.view = QTableView(self)
         self.view.setModel(self.proxy_model)
-        self.view.setSelectionMode(QAbstractItemView.NoSelection)
-        self.view.setEditTriggers(QTableView.NoEditTriggers)
+        self.view.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
+        self.view.setEditTriggers(QTableView.EditTrigger.NoEditTriggers)
         self.view.setSortingEnabled(True)
         self.view.setShowGrid(True)
 
         # configure header
         header = self.view.horizontalHeader()
-        header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(1, QHeaderView.Stretch)
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         for col in range(2, self.model.columnCount()):
-            header.setSectionResizeMode(col, QHeaderView.ResizeToContents)
+            header.setSectionResizeMode(col, QHeaderView.ResizeMode.ResizeToContents)
 
         # disable row height changes
-        self.view.verticalHeader().setSectionResizeMode(QHeaderView.Fixed)
+        self.view.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
 
         layout.addWidget(self.view)
 
         # add buttons
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Close)
+        buttonbox = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
         savebutton = QPushButton("Save to CSV...")
-        buttonbox.addButton(savebutton, QDialogButtonBox.ActionRole)
+        buttonbox.addButton(savebutton, QDialogButtonBox.ButtonRole.ActionRole)
         savebutton.clicked.connect(self._save_to_csv)
         layout.addWidget(buttonbox)
         buttonbox.rejected.connect(self.reject)
@@ -95,8 +95,8 @@ class ChannelStats(QDialog):
         for i in range(nchan):
             # Channel
             item = QStandardItem()
-            item.setData(i, Qt.UserRole)
-            item.setData(i, Qt.DisplayRole)
+            item.setData(i, Qt.ItemDataRole.UserRole)
+            item.setData(i, Qt.ItemDataRole.DisplayRole)
             item.setFlags(Qt.ItemFlag.ItemIsEnabled)
             item.setTextAlignment(
                 Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
@@ -105,18 +105,18 @@ class ChannelStats(QDialog):
 
             # Name
             item = QStandardItem(cols["name"][i])
-            item.setFlags(Qt.ItemIsEnabled)
+            item.setFlags(Qt.ItemFlag.ItemIsEnabled)
             self.model.setItem(i, 1, item)
 
             # Type
             item = QStandardItem(cols["type"][i].upper())
-            item.setFlags(Qt.ItemIsEnabled)
+            item.setFlags(Qt.ItemFlag.ItemIsEnabled)
             item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
             self.model.setItem(i, 2, item)
 
             # Unit
             item = QStandardItem(cols["unit"][i])
-            item.setFlags(Qt.ItemIsEnabled)
+            item.setFlags(Qt.ItemFlag.ItemIsEnabled)
             item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
             self.model.setItem(i, 3, item)
 
@@ -126,9 +126,9 @@ class ChannelStats(QDialog):
             ):
                 value = cols[key][i]
                 item = QStandardItem()
-                item.setData(f"{value:.2f}", Qt.DisplayRole)
-                item.setData(value, Qt.UserRole)
-                item.setFlags(Qt.ItemIsEnabled)
+                item.setData(f"{value:.2f}", Qt.ItemDataRole.DisplayRole)
+                item.setData(value, Qt.ItemDataRole.UserRole)
+                item.setFlags(Qt.ItemFlag.ItemIsEnabled)
                 item.setTextAlignment(
                     Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
                 )
@@ -159,7 +159,9 @@ class ChannelStats(QDialog):
 
                 # write header
                 headers = [
-                    self.model.headerData(col, Qt.Horizontal, Qt.DisplayRole)
+                    self.model.headerData(
+                        col, Qt.Orientation.Horizontal, Qt.ItemDataRole.DisplayRole
+                    )
                     for col in range(self.model.columnCount())
                 ]
                 writer.writerow(headers)
@@ -169,13 +171,13 @@ class ChannelStats(QDialog):
                     row_data = []
                     for col in range(self.model.columnCount()):
                         item = self.model.item(row, col)
-                        user_data = item.data(Qt.UserRole)
+                        user_data = item.data(Qt.ItemDataRole.UserRole)
                         if user_data is not None and isinstance(
                             user_data, (int, float)
                         ):
                             row_data.append(user_data)
                         else:
-                            row_data.append(item.data(Qt.DisplayRole))
+                            row_data.append(item.data(Qt.ItemDataRole.DisplayRole))
                     writer.writerow(row_data)
 
             ChannelStats._last_directory = str(Path(filename).parent)

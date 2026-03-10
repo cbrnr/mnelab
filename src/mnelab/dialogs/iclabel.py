@@ -31,7 +31,7 @@ from mnelab.widgets import FlatDoubleSpinBox
 class PlotDetailDialog(QDialog):
     def __init__(self, parent, fig):
         super().__init__(parent)
-        self.setAttribute(Qt.WA_DeleteOnClose)
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.resize(950, 700)
         self.fig = fig
 
@@ -84,13 +84,15 @@ class AutoSelectDialog(QDialog):
             spinbox.setEnabled(checkbox.isChecked())
             checkbox.toggled.connect(spinbox.setEnabled)
 
-            grid.addWidget(checkbox, row, 0, Qt.AlignLeft)
-            grid.addWidget(QLabel(">"), row, 1, Qt.AlignRight)
+            grid.addWidget(checkbox, row, 0, Qt.AlignmentFlag.AlignLeft)
+            grid.addWidget(QLabel(">"), row, 1, Qt.AlignmentFlag.AlignRight)
             grid.addWidget(spinbox, row, 2)
 
             self.criteria[label] = checkbox, spinbox
 
-        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttonbox = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
         layout.addWidget(self.buttonbox)
@@ -144,17 +146,19 @@ class ICLabelDialog(QDialog):
         n_components = len(self.probs)
         for row_id in range(n_components):
             item = QStandardItem()
-            item.setData(row_id, Qt.UserRole)
-            item.setData(row_id, Qt.DisplayRole)
+            item.setData(row_id, Qt.ItemDataRole.UserRole)
+            item.setData(row_id, Qt.ItemDataRole.DisplayRole)
             item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
             item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
             self.model.setItem(row_id, 0, item)
 
             for col_id, prob in enumerate(self.probs[row_id]):
                 prob_item = QStandardItem()
-                prob_item.setData(f"{prob:.2f}", Qt.DisplayRole)
-                prob_item.setData(prob, Qt.UserRole)
-                prob_item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
+                prob_item.setData(f"{prob:.2f}", Qt.ItemDataRole.DisplayRole)
+                prob_item.setData(prob, Qt.ItemDataRole.UserRole)
+                prob_item.setFlags(
+                    Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
+                )
                 prob_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
                 alpha = int(prob * 200)
@@ -165,11 +169,13 @@ class ICLabelDialog(QDialog):
 
             exclude = QStandardItem()
             exclude.setFlags(
-                Qt.ItemIsUserCheckable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
+                Qt.ItemFlag.ItemIsUserCheckable
+                | Qt.ItemFlag.ItemIsEnabled
+                | Qt.ItemFlag.ItemIsSelectable
             )
             is_excluded = row_id in exclude_set
             state = Qt.CheckState.Checked if is_excluded else Qt.CheckState.Unchecked
-            exclude.setData(state, Qt.CheckStateRole)
+            exclude.setData(state, Qt.ItemDataRole.CheckStateRole)
             self.model.setItem(row_id, self.check_col, exclude)
 
         self.proxy_model = NumberSortProxyModel()
@@ -179,18 +185,20 @@ class ICLabelDialog(QDialog):
         self.view.setModel(self.proxy_model)
         self.view.setItemDelegateForColumn(self.check_col, CheckBoxDelegate(self))
 
-        self.view.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.view.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.view.setEditTriggers(QTableView.NoEditTriggers)
+        self.view.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.view.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.view.setEditTriggers(QTableView.EditTrigger.NoEditTriggers)
         self.view.selectionModel().selectionChanged.connect(self.selection_state)
         self.view.setSortingEnabled(True)
         self.view.setShowGrid(True)
 
         header = self.view.horizontalHeader()
-        header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
-        header.setSectionResizeMode(self.check_col, QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(
+            self.check_col, QHeaderView.ResizeMode.ResizeToContents
+        )
         for col in range(1, self.check_col):
-            header.setSectionResizeMode(col, QHeaderView.Stretch)
+            header.setSectionResizeMode(col, QHeaderView.ResizeMode.Stretch)
 
         vbox = QVBoxLayout(self)
         vbox.addWidget(self.view)
@@ -208,7 +216,9 @@ class ICLabelDialog(QDialog):
         button_layout.addWidget(self.visualize_button)
         button_layout.addStretch()
 
-        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttonbox = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
         button_layout.addWidget(self.buttonbox)
@@ -236,15 +246,17 @@ class ICLabelDialog(QDialog):
                 col_idx = label_col_map.get(label)
                 if col_idx:
                     prob_item = self.model.item(row, col_idx)
-                    prob = prob_item.data(Qt.UserRole)
+                    prob = prob_item.data(Qt.ItemDataRole.UserRole)
 
                     if prob >= threshold:
                         should_exclude = True
                         break
 
             exclude_item = self.model.item(row, exclude_col)
-            new_state = Qt.Checked if should_exclude else Qt.Unchecked
-            exclude_item.setData(new_state, Qt.CheckStateRole)
+            new_state = (
+                Qt.CheckState.Checked if should_exclude else Qt.CheckState.Unchecked
+            )
+            exclude_item.setData(new_state, Qt.ItemDataRole.CheckStateRole)
 
     def get_excluded_indices(self):
         excluded_comp = []
@@ -254,7 +266,7 @@ class ICLabelDialog(QDialog):
 
             if item.checkState() == Qt.CheckState.Checked:
                 id_item = self.model.item(row, 0)
-                comp_id = id_item.data(Qt.UserRole)
+                comp_id = id_item.data(Qt.ItemDataRole.UserRole)
                 excluded_comp.append(comp_id)
         return excluded_comp
 
@@ -262,7 +274,7 @@ class ICLabelDialog(QDialog):
         exclude_col = self.model.columnCount() - 1
         for row in range(self.model.rowCount()):
             item = self.model.item(row, exclude_col)
-            item.setData(Qt.CheckState.Unchecked, Qt.CheckStateRole)
+            item.setData(Qt.CheckState.Unchecked, Qt.ItemDataRole.CheckStateRole)
 
     def selection_state(self):
         has_selection = self.view.selectionModel().hasSelection()
@@ -273,7 +285,7 @@ class ICLabelDialog(QDialog):
 
         proxy_index = selected_rows[0]
         source_index = self.proxy_model.mapToSource(proxy_index)
-        comp_id = self.model.item(source_index.row(), 0).data(Qt.UserRole)
+        comp_id = self.model.item(source_index.row(), 0).data(Qt.ItemDataRole.UserRole)
 
         fig = get_detailed_ica_properties(
             ica=self.ica,

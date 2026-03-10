@@ -13,7 +13,7 @@ def test_initial_actions(qtbot):
     model.view = view
     qtbot.addWidget(view)
 
-    for name, action in view.actions.items():
+    for name, action in view.all_actions.items():
         if name in view.always_enabled:
             assert action.isEnabled()
         else:

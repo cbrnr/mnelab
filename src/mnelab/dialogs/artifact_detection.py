@@ -145,12 +145,12 @@ class ArtifactDetectionDialog(QDialog):
         button_layout.addWidget(self.preview_button)
 
         self.button_box = QDialogButtonBox(
-            QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )
 
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
-        self.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
+        self.button_box.button(QDialogButtonBox.StandardButton.Ok).setEnabled(False)
         button_layout.addWidget(self.button_box)
         layout.addLayout(button_layout)
 
@@ -182,7 +182,7 @@ class ArtifactDetectionDialog(QDialog):
             self.detection_done = False
             self.info_label.setText("")
             self.preview_button.setEnabled(False)
-            self.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
+            self.button_box.button(QDialogButtonBox.StandardButton.Ok).setEnabled(False)
             self.detection_timer.stop()
             self.pending_methods.clear()
             return
@@ -211,7 +211,7 @@ class ArtifactDetectionDialog(QDialog):
         )
 
         # update tooltip
-        ok_button = self.button_box.button(QDialogButtonBox.Ok)
+        ok_button = self.button_box.button(QDialogButtonBox.StandardButton.Ok)
         ok_button.setToolTip(
             f"Apply rejection (will drop {n_rejected}/{n_total} epochs)."
         )
@@ -257,12 +257,12 @@ class ArtifactDetectionDialog(QDialog):
         self.detection_done = True
         self.update_info_label()
         self.preview_button.setEnabled(True)
-        self.button_box.button(QDialogButtonBox.Ok).setEnabled(True)
+        self.button_box.button(QDialogButtonBox.StandardButton.Ok).setEnabled(True)
 
     def show_preview_table(self):
         """Show preview table dialog."""
         dialog = ArtifactPreviewTable(self, self.data, self.detection_results)
-        if dialog.exec() == QDialog.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted:
             self.detection_results = dialog.detection_results
             self.update_info_label()
 
@@ -354,9 +354,11 @@ class ArtifactPreviewTable(QDialog):
         self.table_view.setModel(self.proxy_model)
 
         self.table_view.setSortingEnabled(True)
-        self.table_view.setSelectionBehavior(QTableView.SelectRows)
-        self.table_view.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.table_view.setEditTriggers(QTableView.NoEditTriggers)
+        self.table_view.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
+        self.table_view.setSelectionMode(
+            QAbstractItemView.SelectionMode.SingleSelection
+        )
+        self.table_view.setEditTriggers(QTableView.EditTrigger.NoEditTriggers)
         self.table_view.setAlternatingRowColors(False)
         self.table_view.verticalHeader().setVisible(False)
 
@@ -374,7 +376,9 @@ class ArtifactPreviewTable(QDialog):
         self.view_epochs_button.clicked.connect(self.show_epoch_visualization)
         button_layout.addWidget(self.view_epochs_button)
 
-        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        button_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         button_box.accepted.connect(self.accept)
         button_box.rejected.connect(self.reject)
         button_layout.addWidget(button_box)
@@ -400,8 +404,8 @@ class ArtifactPreviewTable(QDialog):
             row_items = []
 
             item = QStandardItem()
-            item.setData(epoch_idx, Qt.DisplayRole)
-            item.setData(epoch_idx, Qt.UserRole)
+            item.setData(epoch_idx, Qt.ItemDataRole.DisplayRole)
+            item.setData(epoch_idx, Qt.ItemDataRole.UserRole)
             item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
             item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
             row_items.append(item)
@@ -418,7 +422,7 @@ class ArtifactPreviewTable(QDialog):
                     item.setForeground(QColor(220, 45, 45))
 
                 item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
-                item.setData(int(bad_epochs), Qt.UserRole)
+                item.setData(int(bad_epochs), Qt.ItemDataRole.UserRole)
                 row_items.append(item)
 
             reject_item = QStandardItem()
@@ -432,7 +436,7 @@ class ArtifactPreviewTable(QDialog):
                 if results.get("reject", False)
                 else Qt.CheckState.Unchecked
             )
-            reject_item.setData(check_state, Qt.CheckStateRole)
+            reject_item.setData(check_state, Qt.ItemDataRole.CheckStateRole)
             row_items.append(reject_item)
 
             self.model.appendRow(row_items)
@@ -531,7 +535,7 @@ class ArtifactPreviewTable(QDialog):
                 if self.detection_results[row_idx].get("reject", False)
                 else Qt.CheckState.Unchecked
             )
-            reject_item.setData(check_state, Qt.CheckStateRole)
+            reject_item.setData(check_state, Qt.ItemDataRole.CheckStateRole)
 
         self.update_info_label()
 
@@ -543,7 +547,10 @@ class ArtifactPreviewTable(QDialog):
             real_row_idx = source_index.row()
 
             reject_item = self.model.item(real_row_idx, self.reject_col_idx)
-            is_checked = reject_item.data(Qt.CheckStateRole) == Qt.CheckState.Checked
+            is_checked = (
+                reject_item.data(Qt.ItemDataRole.CheckStateRole)
+                == Qt.CheckState.Checked
+            )
 
             self.detection_results[real_row_idx]["reject"] = is_checked
 
@@ -556,7 +563,7 @@ class ArtifactPreviewTable(QDialog):
 class EpochVisualization(QDialog):
     def __init__(self, parent, fig):
         super().__init__(parent)
-        self.setAttribute(Qt.WA_DeleteOnClose)
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         self.resize(1600, 800)
         self.fig = fig
         self.flagged_epochs = []

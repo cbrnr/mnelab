@@ -23,17 +23,17 @@ def populate_tree(parent, nodes):
         for i, v in enumerate(nodes):
             item = QTreeWidgetItem(parent)
             item.setText(0, f"[{i}]")
-            item.setFlags(item.flags() & ~Qt.ItemIsSelectable)
+            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsSelectable)
             populate_tree(item, v)
     else:  # dict containing variable/value pairs
         for k, v in nodes.items():
             item = QTreeWidgetItem(parent)
             item.setText(0, k)
             if isinstance(v, dict):
-                item.setFlags(item.flags() & ~Qt.ItemIsSelectable)
+                item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsSelectable)
                 populate_tree(item, v)
             elif isinstance(v, list):
-                item.setFlags(item.flags() & ~Qt.ItemIsSelectable)
+                item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsSelectable)
                 populate_tree(item, v)
             else:
                 item.setText(1, type(v).__name__)
@@ -41,11 +41,11 @@ def populate_tree(parent, nodes):
                     item.setText(1, f"{type(v).__name__} ({v.dtype.name})")  # add dtype
                     item.setText(2, " × ".join(map(str, v.shape)))
                     if v.ndim > 2:  # arrays cannot have more than two dimensions
-                        item.setFlags(Qt.NoItemFlags)
+                        item.setFlags(Qt.ItemFlag.NoItemFlags)
                     elif v.dtype not in (np.float32, np.float64):  # must be numeric
-                        item.setFlags(Qt.NoItemFlags)
+                        item.setFlags(Qt.ItemFlag.NoItemFlags)
                 else:
-                    item.setFlags(Qt.NoItemFlags)
+                    item.setFlags(Qt.ItemFlag.NoItemFlags)
                     item.setText(3, repr(v))
 
 
@@ -63,7 +63,7 @@ class MatDialog(QDialog):
 
         self.root = QTreeWidgetItem(self.tree)
         self.root.setText(0, fname)
-        self.root.setFlags(self.root.flags() & ~Qt.ItemIsSelectable)
+        self.root.setFlags(self.root.flags() & ~Qt.ItemFlag.ItemIsSelectable)
 
         populate_tree(self.root, nodes)
 
@@ -85,7 +85,9 @@ class MatDialog(QDialog):
         hbox.addWidget(self._transpose)
         vbox.addLayout(hbox)
 
-        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttonbox = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         vbox.addWidget(self.buttonbox)
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
@@ -118,9 +120,9 @@ class MatDialog(QDialog):
     @Slot()
     def toggle(self):
         """Toggle OK and Transpose buttons."""
-        self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(False)
+        self.buttonbox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(False)
         if items := self.tree.selectedItems():
-            self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(True)
+            self.buttonbox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(True)
             shape = [int(dim) for dim in items[0].text(2).split(" × ")]
             if len(shape) == 1:
                 self._transpose.setEnabled(False)

@@ -49,7 +49,7 @@ def main():
             self.mainwindow = None
 
         def event(self, event):
-            if event.type() == QEvent.FileOpen:
+            if event.type() == QEvent.Type.FileOpen:
                 self.mainwindow.open_data(event.file())
                 return True
             return super().event(event)

@@ -51,19 +51,21 @@ class RenameChannelsDialog(QDialog):
         self.preview.horizontalHeader().setStretchLastSection(True)
         self.preview.verticalHeader().setVisible(False)
         self.preview.setShowGrid(False)
-        self.preview.setSelectionBehavior(QTableWidget.SelectRows)
+        self.preview.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.preview.setColumnWidth(0, 190)
         self.preview.setColumnWidth(1, 190)
-        self.preview.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.preview.setSelectionMode(QTableWidget.NoSelection)
-        self.preview.setFocusPolicy(Qt.NoFocus)
+        self.preview.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self.preview.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
+        self.preview.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         vbox = QVBoxLayout(self)
         vbox.addLayout(option_grid)
         vbox.addSpacing(10)
         vbox.addWidget(self.preview)
 
-        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttonbox = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         vbox.addWidget(self.buttonbox)
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)

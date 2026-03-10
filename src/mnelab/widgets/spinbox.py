@@ -16,8 +16,8 @@ class _StepButton(QWidget):
         super().__init__(parent)
         self._symbol = symbol
         self._hovered = False
-        self.setCursor(Qt.PointingHandCursor)
-        self.setFocusPolicy(Qt.NoFocus)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
     def enterEvent(self, event):
         if self.parent().isEnabled():
@@ -32,31 +32,31 @@ class _StepButton(QWidget):
         super().leaveEvent(event)
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton and self.parent().isEnabled():
+        if event.button() == Qt.MouseButton.LeftButton and self.parent().isEnabled():
             self.clicked.emit()
         super().mousePressEvent(event)
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         if self._hovered and self.parent().isEnabled():
-            color = self.palette().color(QPalette.Highlight)
+            color = self.palette().color(QPalette.ColorRole.Highlight)
             color.setAlpha(60)
-            painter.setPen(Qt.NoPen)
+            painter.setPen(Qt.PenStyle.NoPen)
             painter.setBrush(color)
             painter.drawRoundedRect(self.rect().adjusted(1, 1, -1, -1), 3, 3)
-        painter.setPen(self.palette().color(QPalette.WindowText))
+        painter.setPen(self.palette().color(QPalette.ColorRole.WindowText))
         font = painter.font()
         font.setPixelSize(max(10, self.height() - 8))
         painter.setFont(font)
-        painter.drawText(self.rect(), Qt.AlignCenter, self._symbol)
+        painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, self._symbol)
 
 
 class _FlatSpinBoxMixin:
     """Mixin that replaces the native spin-box arrows with inline − / + buttons."""
 
     def _init_buttons(self):
-        self.setButtonSymbols(QAbstractSpinBox.NoButtons)
+        self.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
         self._minus_btn = _StepButton("−", self)
         self._plus_btn = _StepButton("+", self)
         self._minus_btn.clicked.connect(self.stepDown)

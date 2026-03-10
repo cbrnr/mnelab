@@ -35,9 +35,9 @@ class AnnotationsDialog(QDialog):
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.verticalHeader().setVisible(False)
         self.table.setShowGrid(False)
-        self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setSortingEnabled(True)
-        self.table.sortByColumn(0, Qt.AscendingOrder)
+        self.table.sortByColumn(0, Qt.SortOrder.AscendingOrder)
 
         vbox = QVBoxLayout(self)
         vbox.addWidget(self.table)
@@ -45,7 +45,9 @@ class AnnotationsDialog(QDialog):
         self.add_button = QPushButton("+")
         self.remove_button = QPushButton("-")
         self.counts_button = QPushButton("Counts...")
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttonbox = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         hbox.addWidget(self.add_button)
         hbox.addWidget(self.remove_button)
         hbox.addWidget(self.counts_button)
@@ -90,7 +92,7 @@ class AnnotationsDialog(QDialog):
     def add_event(self):
         if self.table.selectedIndexes():
             current_row = self.table.selectedIndexes()[0].row()
-            pos = int(self.table.item(current_row, 0).data(Qt.DisplayRole))
+            pos = int(self.table.item(current_row, 0).data(Qt.ItemDataRole.DisplayRole))
         else:
             current_row = 0
             pos = 0
@@ -123,12 +125,14 @@ class EventCountsDialog(QDialog):
         self.counts_table.horizontalHeader().setStretchLastSection(True)
         self.counts_table.verticalHeader().setVisible(False)
         self.counts_table.setShowGrid(False)
-        self.counts_table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.counts_table.setSelectionBehavior(
+            QAbstractItemView.SelectionBehavior.SelectRows
+        )
         self.fill_counts_table()
 
         vbox = QVBoxLayout(self)
         vbox.addWidget(self.counts_table)
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok)
+        buttonbox = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
         vbox.addWidget(buttonbox)
         buttonbox.accepted.connect(self.accept)
 
@@ -139,7 +143,7 @@ class EventCountsDialog(QDialog):
         self.counts_table.setRowCount(0)
         for row, (id_, count) in enumerate(sorted(self.unique_annotations.items())):
             id_item = IntTableWidgetItem(id_)
-            id_item.setFlags(id_item.flags() ^ Qt.ItemIsEditable)
+            id_item.setFlags(id_item.flags() ^ Qt.ItemFlag.ItemIsEditable)
             self.counts_table.insertRow(row)
             self.counts_table.setItem(row, 0, id_item)
             self.counts_table.setItem(row, 1, QTableWidgetItem(str(count)))

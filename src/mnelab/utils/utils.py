@@ -260,4 +260,4 @@ def merge_annotations(onsets, durations, descriptions):
 class Montage:
     montage: DigMontage
     name: str
-    path: Path = None
+    path: Path | None = None

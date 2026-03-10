@@ -97,8 +97,8 @@ class SettingsDialog(QDialog):
 
         vbox = QVBoxLayout(self)
         form = QFormLayout()
-        form.setFieldGrowthPolicy(QFormLayout.FieldsStayAtSizeHint)
-        form.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
+        form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.FieldsStayAtSizeHint)
+        form.setFormAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
 
         backend = read_settings("plot_backend")
         if backend not in backends:
@@ -111,14 +111,14 @@ class SettingsDialog(QDialog):
         self.max_recent = FlatSpinBox()
         self.max_recent.setRange(5, 25)
         self.max_recent.setValue(read_settings("max_recent"))
-        self.max_recent.setAlignment(Qt.AlignRight)
+        self.max_recent.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.max_recent.setFixedWidth(80)
         form.addRow("Recent files:", self.max_recent)
 
         self.max_channels = FlatSpinBox()
         self.max_channels.setRange(1, 256)
         self.max_channels.setValue(read_settings("max_channels"))
-        self.max_channels.setAlignment(Qt.AlignRight)
+        self.max_channels.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.max_channels.setFixedWidth(80)
         form.addRow("Displayed channels:", self.max_channels)
 
@@ -141,21 +141,23 @@ class SettingsDialog(QDialog):
         vbox.addWidget(mne_label)
 
         self.buttonbox = QDialogButtonBox(
-            QDialogButtonBox.Apply | QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+            QDialogButtonBox.StandardButton.Apply
+            | QDialogButtonBox.StandardButton.Ok
+            | QDialogButtonBox.StandardButton.Cancel
         )
         self.reset_button = self.buttonbox.addButton(
-            "Reset to defaults", QDialogButtonBox.ResetRole
+            "Reset to defaults", QDialogButtonBox.ButtonRole.ResetRole
         )
         vbox.addWidget(self.buttonbox)
 
         self.reset_button.clicked.connect(self.reset_settings)
-        self.buttonbox.button(QDialogButtonBox.Apply).clicked.connect(
+        self.buttonbox.button(QDialogButtonBox.StandardButton.Apply).clicked.connect(
             self.apply_settings
         )
         self.buttonbox.accepted.connect(self.on_ok_clicked)
         self.buttonbox.rejected.connect(self.reject)
 
-        vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+        vbox.setSizeConstraint(QVBoxLayout.SizeConstraint.SetFixedSize)
 
         self.setFocus()
 

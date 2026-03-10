@@ -30,8 +30,8 @@ class BVRFDialog(QDialog):
         self._participant_list.addItems(participants)
         for i in range(self._participant_list.count()):
             item = self._participant_list.item(i)
-            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
-            item.setCheckState(Qt.Checked)  # All selected by default
+            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            item.setCheckState(Qt.CheckState.Checked)  # All selected by default
         vbox.addWidget(self._participant_list)
 
         # checkbox for creating separate datasets
@@ -39,12 +39,14 @@ class BVRFDialog(QDialog):
         self._create_separate.setChecked(True)  # Checked by default
         vbox.addWidget(self._create_separate)
 
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttonbox = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         vbox.addWidget(buttonbox)
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)
 
-        vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+        vbox.setSizeConstraint(QVBoxLayout.SizeConstraint.SetFixedSize)
         self.setFocus()
 
     @property
@@ -53,7 +55,7 @@ class BVRFDialog(QDialog):
         selected = []
         for i in range(self._participant_list.count()):
             item = self._participant_list.item(i)
-            if item.checkState() == Qt.Checked:
+            if item.checkState() == Qt.CheckState.Checked:
                 selected.append(item.text())
         return selected
 

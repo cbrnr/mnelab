@@ -82,7 +82,9 @@ class IntTableWidgetItem(QTableWidgetItem):
         super().__init__(str(value))
 
     def __lt__(self, other):
-        return int(self.data(Qt.EditRole)) < int(other.data(Qt.EditRole))
+        return int(self.data(Qt.ItemDataRole.EditRole)) < int(
+            other.data(Qt.ItemDataRole.EditRole)
+        )
 
     def setData(self, role, value):
         try:
@@ -94,7 +96,7 @@ class IntTableWidgetItem(QTableWidgetItem):
                 super().setData(role, str(value))
 
     def value(self):
-        return int(self.data(Qt.DisplayRole))
+        return int(self.data(Qt.ItemDataRole.DisplayRole))
 
 
 class FloatTableWidgetItem(QTableWidgetItem):
@@ -102,7 +104,9 @@ class FloatTableWidgetItem(QTableWidgetItem):
         super().__init__(str(value))
 
     def __lt__(self, other):
-        return float(self.data(Qt.EditRole)) < float(other.data(Qt.EditRole))
+        return float(self.data(Qt.ItemDataRole.EditRole)) < float(
+            other.data(Qt.ItemDataRole.EditRole)
+        )
 
     def setData(self, role, value):
         try:
@@ -114,7 +118,7 @@ class FloatTableWidgetItem(QTableWidgetItem):
                 super().setData(role, str(value))
 
     def value(self):
-        return float(self.data(Qt.DisplayRole))
+        return float(self.data(Qt.ItemDataRole.DisplayRole))
 
 
 class NumberSortProxyModel(QSortFilterProxyModel):
@@ -122,11 +126,11 @@ class NumberSortProxyModel(QSortFilterProxyModel):
 
     def lessThan(self, left, right):
         left_data = self.sourceModel().data(
-            left, Qt.UserRole
-        ) or self.sourceModel().data(left, Qt.CheckStateRole)
+            left, Qt.ItemDataRole.UserRole
+        ) or self.sourceModel().data(left, Qt.ItemDataRole.CheckStateRole)
         right_data = self.sourceModel().data(
-            right, Qt.UserRole
-        ) or self.sourceModel().data(right, Qt.CheckStateRole)
+            right, Qt.ItemDataRole.UserRole
+        ) or self.sourceModel().data(right, Qt.ItemDataRole.CheckStateRole)
 
         if left_data is None:
             return True
@@ -146,12 +150,12 @@ class CheckBoxDelegate(QStyledItemDelegate):
         self.initStyleOption(option, index)
 
         # remove the checkbox from the item view drawing
-        option.features &= ~QStyleOptionViewItem.HasCheckIndicator
+        option.features &= ~QStyleOptionViewItem.ViewItemFeature.HasCheckIndicator
         option.widget.style().drawControl(
-            QStyle.CE_ItemViewItem, option, painter, option.widget
+            QStyle.ControlElement.CE_ItemViewItem, option, painter, option.widget
         )
 
-        data = index.data(Qt.CheckStateRole)
+        data = index.data(Qt.ItemDataRole.CheckStateRole)
 
         if data is None:
             check_state = Qt.CheckState.Unchecked
@@ -159,17 +163,17 @@ class CheckBoxDelegate(QStyledItemDelegate):
             check_state = Qt.CheckState(data)
 
         opts = QStyleOptionButton()
-        opts.state |= QStyle.State_Enabled
+        opts.state |= QStyle.StateFlag.State_Enabled
 
         if check_state == Qt.CheckState.Checked:
-            opts.state |= QStyle.State_On
+            opts.state |= QStyle.StateFlag.State_On
         else:
-            opts.state |= QStyle.State_Off
+            opts.state |= QStyle.StateFlag.State_Off
 
         # checkbox size
         s_size = (
             option.widget.style()
-            .subElementRect(QStyle.SE_CheckBoxIndicator, opts, option.widget)
+            .subElementRect(QStyle.SubElement.SE_CheckBoxIndicator, opts, option.widget)
             .size()
         )
 
@@ -181,27 +185,29 @@ class CheckBoxDelegate(QStyledItemDelegate):
 
         # draw the checkbox
         option.widget.style().drawPrimitive(
-            QStyle.PE_IndicatorCheckBox, opts, painter, option.widget
+            QStyle.PrimitiveElement.PE_IndicatorCheckBox, opts, painter, option.widget
         )
 
     def editorEvent(self, event, model, _option, index):
         flags = model.flags(index)
-        if not (flags & Qt.ItemIsUserCheckable) or not (flags & Qt.ItemIsEnabled):
+        if not (flags & Qt.ItemFlag.ItemIsUserCheckable) or not (
+            flags & Qt.ItemFlag.ItemIsEnabled
+        ):
             return False
 
         if (
-            event.type() == QEvent.MouseButtonRelease
-            and event.button() == Qt.LeftButton
+            event.type() == QEvent.Type.MouseButtonRelease
+            and event.button() == Qt.MouseButton.LeftButton
         ):
             self.toggle(model, index)
             return True
         return False
 
     def toggle(self, model, index):
-        curr = index.data(Qt.CheckStateRole)
+        curr = index.data(Qt.ItemDataRole.CheckStateRole)
         new_state = (
             Qt.CheckState.Checked
             if curr != Qt.CheckState.Checked
             else Qt.CheckState.Unchecked
         )
-        model.setData(index, new_state, Qt.CheckStateRole)
+        model.setData(index, new_state, Qt.ItemDataRole.CheckStateRole)

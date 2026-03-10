@@ -29,34 +29,34 @@ class TypeBadgeDelegate(QStyledItemDelegate):
     """Renders a rounded-rectangle badge for the data type column."""
 
     def paint(self, painter, option, index):
-        dtype = index.data(Qt.DisplayRole)
+        dtype = index.data(Qt.ItemDataRole.DisplayRole)
         if not dtype:
             return
         bg_hex, fg_hex = DTYPE_COLORS.get(dtype.lower(), ("#6B7280", "#FFFFFF"))
         label = dtype.capitalize()
 
         painter.save()
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         rect = option.rect
         pad_y = 5
         badge_h = rect.height() - 2 * pad_y
         badge_rect = QRectF(rect.x() + 2, rect.y() + pad_y, rect.width() - 4, badge_h)
 
-        painter.setPen(Qt.NoPen)
+        painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(QColor(bg_hex))
         painter.drawRoundedRect(badge_rect, badge_h / 2, badge_h / 2)
 
         # add a subtle border
         painter.setPen(QColor(0, 0, 0, 40))
-        painter.setBrush(Qt.NoBrush)
+        painter.setBrush(Qt.BrushStyle.NoBrush)
         painter.drawRoundedRect(badge_rect, badge_h / 2, badge_h / 2)
 
         font = painter.font()
         font.setPointSizeF(max(6.0, font.pointSizeF() - 1))
         painter.setFont(font)
         painter.setPen(QColor(fg_hex))
-        painter.drawText(badge_rect, Qt.AlignCenter, label)
+        painter.drawText(badge_rect, Qt.AlignmentFlag.AlignCenter, label)
 
         painter.restore()
 
@@ -94,14 +94,14 @@ class SidebarTableWidget(QTableWidget):
         self.parent = parent
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
-        self.setDragDropMode(QAbstractItemView.InternalMove)
-        self.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.setDefaultDropAction(Qt.MoveAction)
+        self.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
+        self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.setDefaultDropAction(Qt.DropAction.MoveAction)
         self.setDropIndicatorShown(False)
         self.setDragDropOverwriteMode(False)
-        self.setFrameStyle(QFrame.NoFrame)
-        self.setEditTriggers(QAbstractItemView.DoubleClicked)
+        self.setFrameStyle(QFrame.Shape.NoFrame)
+        self.setEditTriggers(QAbstractItemView.EditTrigger.DoubleClicked)
         self.setColumnCount(4)
         self.setShowGrid(False)
         if sys.platform != "darwin":
@@ -116,19 +116,23 @@ class SidebarTableWidget(QTableWidget):
         self.drop_row = -1
 
         header = SpanningHeaderView(
-            Qt.Horizontal, span_start=1, span_count=3, parent=self
+            Qt.Orientation.Horizontal, span_start=1, span_count=3, parent=self
         )
         self.setHorizontalHeader(header)
         self.setHorizontalHeaderLabels(["#", "Dataset", "", ""])
-        self.horizontalHeaderItem(0).setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        self.horizontalHeaderItem(1).setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.horizontalHeaderItem(0).setTextAlignment(
+            Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+        )
+        self.horizontalHeaderItem(1).setTextAlignment(
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
+        )
         self.verticalHeader().hide()
         self.horizontalHeader().setStretchLastSection(False)
         self.horizontalHeader().setMinimumSectionSize(0)
-        self.horizontalHeader().setSectionResizeMode(0, QHeaderView.Fixed)
-        self.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
-        self.horizontalHeader().setSectionResizeMode(2, QHeaderView.Fixed)
-        self.horizontalHeader().setSectionResizeMode(3, QHeaderView.Fixed)
+        self.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)
+        self.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        self.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
+        self.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)
         self.setColumnWidth(2, 56)
         self.setColumnWidth(3, 28)
         self.resizeColumnToContents(0)
@@ -200,7 +204,7 @@ class SidebarTableWidget(QTableWidget):
             self.drop_row = -1
             self.viewport().update()
             self.rowsMoved.emit(selected_rows[0], drop_row)
-            event.setDropAction(Qt.IgnoreAction)
+            event.setDropAction(Qt.DropAction.IgnoreAction)
             event.accept()
         else:
             event.ignore()
@@ -208,8 +212,8 @@ class SidebarTableWidget(QTableWidget):
     def set_dtype(self, row, dtype):
         """Set the data type badge for the given row."""
         item = QTableWidgetItem(dtype)
-        item.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
-        item.setTextAlignment(Qt.AlignCenter)
+        item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
+        item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         item.setToolTip(f"Data type: {dtype.capitalize()}")
         self.setItem(row, 2, item)
 
@@ -218,13 +222,23 @@ class SidebarTableWidget(QTableWidget):
         for i in range(self.rowCount()):
             self.resizeRowToContents(i)
             self.setRowHeight(i, ROW_HEIGHT)
-            self.item(i, 0).setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            self.item(i, 0).setTextAlignment(
+                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+            )
             self.item(i, 0).setForeground(QColor("gray"))
-            self.item(i, 0).setFlags(self.item(i, 0).flags() & ~Qt.ItemIsEditable)
-            self.item(i, 1).setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-            self.item(i, 1).setFlags(self.item(i, 1).flags() | Qt.ItemIsEditable)
+            self.item(i, 0).setFlags(
+                self.item(i, 0).flags() & ~Qt.ItemFlag.ItemIsEditable
+            )
+            self.item(i, 1).setTextAlignment(
+                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
+            )
+            self.item(i, 1).setFlags(
+                self.item(i, 1).flags() | Qt.ItemFlag.ItemIsEditable
+            )
             if self.item(i, 2) is not None:
-                self.item(i, 2).setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable)
+                self.item(i, 2).setFlags(
+                    Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
+                )
         # after a rebuild (e.g. row removed), the cursor may already be hovering
         # over a row without a MouseMove firing — update the close button immediately
         pos = self.viewport().mapFromGlobal(QCursor.pos())
@@ -236,13 +250,13 @@ class SidebarTableWidget(QTableWidget):
         self.setVerticalHeaderLabels([str(i) for i in range(row_count)])
 
     def eventFilter(self, source, event):
-        if source == self.viewport() and event.type() == QEvent.MouseMove:
+        if source == self.viewport() and event.type() == QEvent.Type.MouseMove:
             index = self.indexAt(event.pos())
             if index.isValid():
                 self.showCloseButton(index.row())
             else:
                 self.showCloseButton(-1)
-        elif source == self.viewport() and event.type() == QEvent.Leave:
+        elif source == self.viewport() and event.type() == QEvent.Type.Leave:
             self.showCloseButton(-1)
 
         return False
@@ -251,7 +265,7 @@ class SidebarTableWidget(QTableWidget):
         for i in range(self.rowCount()):
             if i == row_index:
                 delete_button = QToolButton(self)
-                delete_button.setFocusPolicy(Qt.NoFocus)
+                delete_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
                 delete_button.setFixedSize(24, ROW_HEIGHT)
                 delete_button.setIcon(QIcon.fromTheme("close-data"))
                 delete_button.setToolTip("Close dataset")

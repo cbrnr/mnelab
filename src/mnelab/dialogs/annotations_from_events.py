@@ -47,9 +47,11 @@ class AnnotationsIntervalDialog(QDialog):
         self.grid.setColumnStretch(1, 1)
 
         # start event
-        self.grid.addWidget(QLabel("Start event(s):"), 0, 0, Qt.AlignTop)
+        self.grid.addWidget(QLabel("Start event(s):"), 0, 0, Qt.AlignmentFlag.AlignTop)
         self.start_event_list = QListWidget()
-        self.start_event_list.setSelectionMode(QListWidget.ExtendedSelection)
+        self.start_event_list.setSelectionMode(
+            QListWidget.SelectionMode.ExtendedSelection
+        )
         self.start_event_list.addItems(self.event_names)
         self.start_event_list.setMaximumHeight(100)
         self.grid.addWidget(self.start_event_list, 0, 1)
@@ -57,7 +59,7 @@ class AnnotationsIntervalDialog(QDialog):
         # start offset
         self.grid.addWidget(QLabel("Start offset:"), 1, 0)
         self.start_offset_spin = FlatDoubleSpinBox()
-        self.start_offset_spin.setAlignment(Qt.AlignRight)
+        self.start_offset_spin.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.start_offset_spin.setSingleStep(0.5)
         self.start_offset_spin.setMinimum(-99)
         self.start_offset_spin.setMaximum(99)
@@ -65,9 +67,11 @@ class AnnotationsIntervalDialog(QDialog):
         self.grid.addWidget(self.start_offset_spin, 1, 1)
 
         # end event
-        self.grid.addWidget(QLabel("End event(s):"), 2, 0, Qt.AlignTop)
+        self.grid.addWidget(QLabel("End event(s):"), 2, 0, Qt.AlignmentFlag.AlignTop)
         self.end_event_list = QListWidget()
-        self.end_event_list.setSelectionMode(QListWidget.ExtendedSelection)
+        self.end_event_list.setSelectionMode(
+            QListWidget.SelectionMode.ExtendedSelection
+        )
         self.end_event_list.addItems(self.event_names)
         self.end_event_list.setMaximumHeight(100)
         self.grid.addWidget(self.end_event_list, 2, 1)
@@ -75,7 +79,7 @@ class AnnotationsIntervalDialog(QDialog):
         # end offset
         self.grid.addWidget(QLabel("End offset:"), 3, 0)
         self.end_offset_spin = FlatDoubleSpinBox()
-        self.end_offset_spin.setAlignment(Qt.AlignRight)
+        self.end_offset_spin.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.end_offset_spin.setSingleStep(0.5)
         self.end_offset_spin.setMinimum(-99)
         self.end_offset_spin.setMaximum(99)
@@ -111,13 +115,15 @@ class AnnotationsIntervalDialog(QDialog):
         vbox.addWidget(self.interval_settings_widget)
 
         # buttons
-        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttonbox = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
         vbox.addWidget(self.buttonbox)
 
         # connections
-        self.ok_button = self.buttonbox.button(QDialogButtonBox.Ok)
+        self.ok_button = self.buttonbox.button(QDialogButtonBox.StandardButton.Ok)
         self.annotation_type_group.buttonToggled.connect(self._on_interval_type_changed)
         self.annotation_type_group.buttonToggled.connect(self._check_validity)
 
@@ -132,7 +138,7 @@ class AnnotationsIntervalDialog(QDialog):
         # initial check
         self._check_validity()
 
-        vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+        vbox.setSizeConstraint(QVBoxLayout.SizeConstraint.SetFixedSize)
         self.setFocus()
 
     def _check_validity(self):
