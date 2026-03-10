@@ -6,7 +6,6 @@ from pathlib import Path
 
 from mne import get_config_path
 from PySide6.QtCore import (
-    QByteArray,
     QPoint,
     QSettings,
     QSize,
@@ -45,7 +44,7 @@ _DEFAULTS = {
     "size": QSize(700, 500),
     "pos": QPoint(100, 100),
     "plot_backend": "Matplotlib",
-    "splitter": QByteArray(),
+    "splitter": 0.4,
 }
 
 
@@ -98,7 +97,7 @@ class SettingsDialog(QDialog):
 
         vbox = QVBoxLayout(self)
         form = QFormLayout()
-        form.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
+        form.setFieldGrowthPolicy(QFormLayout.FieldsStayAtSizeHint)
         form.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
 
         backend = read_settings("plot_backend")
@@ -113,12 +112,14 @@ class SettingsDialog(QDialog):
         self.max_recent.setRange(5, 25)
         self.max_recent.setValue(read_settings("max_recent"))
         self.max_recent.setAlignment(Qt.AlignRight)
+        self.max_recent.setFixedWidth(80)
         form.addRow("Recent files:", self.max_recent)
 
         self.max_channels = FlatSpinBox()
         self.max_channels.setRange(1, 256)
         self.max_channels.setValue(read_settings("max_channels"))
         self.max_channels.setAlignment(Qt.AlignRight)
+        self.max_channels.setFixedWidth(80)
         form.addRow("Displayed channels:", self.max_channels)
 
         vbox.addLayout(form)
@@ -156,6 +157,8 @@ class SettingsDialog(QDialog):
 
         vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
 
+        self.setFocus()
+
     @Slot(str)
     def open_path(self, path):
         """Open a path in the default application."""
@@ -186,4 +189,5 @@ class SettingsDialog(QDialog):
         self.parent().resize(_DEFAULTS["size"])
         self.parent().move(_DEFAULTS["pos"])
         self.parent().recent = []
+        self.parent()._set_splitter_ratio(_DEFAULTS["splitter"])
         clear_settings()
