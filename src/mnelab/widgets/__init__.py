@@ -4,3 +4,4 @@
 
 from mnelab.widgets.infowidget import EmptyWidget, InfoWidget
 from mnelab.widgets.sidebar import SidebarTableWidget
+from mnelab.widgets.spinbox import FlatDoubleSpinBox
