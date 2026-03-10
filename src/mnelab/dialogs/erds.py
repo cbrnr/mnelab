@@ -7,7 +7,6 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QDialog,
     QDialogButtonBox,
-    QDoubleSpinBox,
     QGridLayout,
     QLabel,
     QListWidget,
@@ -15,6 +14,7 @@ from PySide6.QtWidgets import (
 )
 
 from mnelab.dialogs.utils import select_all
+from mnelab.widgets import FlatDoubleSpinBox
 
 
 class ERDSDialog(QDialog):
@@ -25,14 +25,14 @@ class ERDSDialog(QDialog):
         grid = QGridLayout()
 
         grid.addWidget(QLabel("Frequency range:"), 0, 0)
-        self._f1 = QDoubleSpinBox()
+        self._f1 = FlatDoubleSpinBox()
         self._f1.setRange(*f_range)
         self._f1.setValue(f_range[0])
         self._f1.setDecimals(1)
         self._f1.setSuffix(" Hz")
         grid.addWidget(self._f1, 0, 1)
 
-        self._f2 = QDoubleSpinBox()
+        self._f2 = FlatDoubleSpinBox()
         self._f2.setRange(*f_range)
         self._f2.setValue(f_range[1])
         self._f2.setDecimals(1)
@@ -40,7 +40,7 @@ class ERDSDialog(QDialog):
         grid.addWidget(self._f2, 0, 2)
 
         grid.addWidget(QLabel("Step size:"), 1, 0)
-        self._step = QDoubleSpinBox()
+        self._step = FlatDoubleSpinBox()
         self._step.setRange(0.1, 5)
         self._step.setValue(1)
         self._step.setDecimals(1)
@@ -49,7 +49,7 @@ class ERDSDialog(QDialog):
         grid.addWidget(self._step, 1, 1)
 
         grid.addWidget(QLabel("Time range:"), 2, 0)
-        self._t1 = QDoubleSpinBox()
+        self._t1 = FlatDoubleSpinBox()
         self._t1.setRange(*t_range)
         self._t1.setValue(t_range[0])
         self._t1.setDecimals(1)
@@ -57,7 +57,7 @@ class ERDSDialog(QDialog):
         self._t1.setSuffix(" s")
         grid.addWidget(self._t1, 2, 1)
 
-        self._t2 = QDoubleSpinBox()
+        self._t2 = FlatDoubleSpinBox()
         self._t2.setRange(*t_range)
         self._t2.setValue(t_range[1])
         self._t2.setDecimals(1)
@@ -66,7 +66,7 @@ class ERDSDialog(QDialog):
         grid.addWidget(self._t2, 2, 2)
 
         grid.addWidget(QLabel("Baseline:"), 3, 0)
-        self._b1 = QDoubleSpinBox()
+        self._b1 = FlatDoubleSpinBox()
         self._b1.setRange(*t_range)
         self._b1.setValue(t_range[0])
         self._b1.setDecimals(1)
@@ -74,7 +74,7 @@ class ERDSDialog(QDialog):
         self._b1.setSuffix(" s")
         grid.addWidget(self._b1, 3, 1)
 
-        self._b2 = QDoubleSpinBox()
+        self._b2 = FlatDoubleSpinBox()
         self._b2.setRange(*t_range)
         self._b2.setValue(0)
         self._b2.setDecimals(1)
@@ -84,7 +84,7 @@ class ERDSDialog(QDialog):
 
         self.significance_mask = QCheckBox("Significance level:")
         self.significance_mask.setChecked(False)
-        self.alpha = QDoubleSpinBox()
+        self.alpha = FlatDoubleSpinBox()
         self.alpha.setMinimum(0)
         self.alpha.setValue(0.05)
         self.alpha.setDecimals(2)
@@ -143,14 +143,14 @@ class ERDSTopomapsDialog(QDialog):
         grid = QGridLayout()
 
         grid.addWidget(QLabel("Frequency range:"), 0, 0)
-        self._f1 = QDoubleSpinBox()
+        self._f1 = FlatDoubleSpinBox()
         self._f1.setRange(*f_range)
         self._f1.setValue(f_range[0])
         self._f1.setDecimals(1)
         self._f1.setSuffix(" Hz")
         grid.addWidget(self._f1, 0, 1)
 
-        self._f2 = QDoubleSpinBox()
+        self._f2 = FlatDoubleSpinBox()
         self._f2.setRange(*f_range)
         self._f2.setValue(f_range[1])
         self._f2.setDecimals(1)
@@ -158,7 +158,7 @@ class ERDSTopomapsDialog(QDialog):
         grid.addWidget(self._f2, 0, 2)
 
         grid.addWidget(QLabel("Time range:"), 1, 0)
-        self._t1 = QDoubleSpinBox()
+        self._t1 = FlatDoubleSpinBox()
         self._t1.setRange(*t_range)
         self._t1.setValue(t_range[0])
         self._t1.setDecimals(1)
@@ -166,7 +166,7 @@ class ERDSTopomapsDialog(QDialog):
         self._t1.setSuffix(" s")
         grid.addWidget(self._t1, 1, 1)
 
-        self._t2 = QDoubleSpinBox()
+        self._t2 = FlatDoubleSpinBox()
         self._t2.setRange(*t_range)
         self._t2.setValue(t_range[1])
         self._t2.setDecimals(1)
@@ -175,7 +175,7 @@ class ERDSTopomapsDialog(QDialog):
         grid.addWidget(self._t2, 1, 2)
 
         grid.addWidget(QLabel("Baseline:"), 2, 0)
-        self._b1 = QDoubleSpinBox()
+        self._b1 = FlatDoubleSpinBox()
         self._b1.setRange(*t_range)
         self._b1.setValue(t_range[0])
         self._b1.setDecimals(1)
@@ -183,7 +183,7 @@ class ERDSTopomapsDialog(QDialog):
         self._b1.setSuffix(" s")
         grid.addWidget(self._b1, 2, 1)
 
-        self._b2 = QDoubleSpinBox()
+        self._b2 = FlatDoubleSpinBox()
         self._b2.setRange(*t_range)
         self._b2.setValue(0)
         self._b2.setDecimals(1)
@@ -202,7 +202,7 @@ class ERDSTopomapsDialog(QDialog):
         grid.addWidget(self.events, 3, 1, 1, 2)
 
         grid.addWidget(QLabel("Frequency step:"), 4, 0)
-        self._step = QDoubleSpinBox()
+        self._step = FlatDoubleSpinBox()
         self._step.setRange(0.1, 5)
         self._step.setValue(1)
         self._step.setDecimals(1)

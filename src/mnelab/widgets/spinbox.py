@@ -2,9 +2,9 @@
 #
 # License: BSD (3-clause)
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QSize, Qt, Signal
 from PySide6.QtGui import QPainter, QPalette
-from PySide6.QtWidgets import QAbstractSpinBox, QDoubleSpinBox, QWidget
+from PySide6.QtWidgets import QAbstractSpinBox, QDoubleSpinBox, QSpinBox, QWidget
 
 
 class _StepButton(QWidget):
@@ -50,21 +50,27 @@ class _StepButton(QWidget):
         painter.drawText(self.rect(), Qt.AlignCenter, self._symbol)
 
 
-class FlatDoubleSpinBox(QDoubleSpinBox):
-    """QDoubleSpinBox with inline − / + step buttons instead of tiny arrows.
+class _FlatSpinBoxMixin:
+    """Mixin that replaces the native spin-box arrows with inline − / + buttons."""
 
-    The buttons are rendered as plain symbols (no button chrome) inside the
-    right edge of the input field.  Hovering highlights them with a subtle
-    rounded background.
-    """
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def _init_buttons(self):
         self.setButtonSymbols(QAbstractSpinBox.NoButtons)
         self._minus_btn = _StepButton("−", self)
         self._plus_btn = _StepButton("+", self)
         self._minus_btn.clicked.connect(self.stepDown)
         self._plus_btn.clicked.connect(self.stepUp)
+
+    def minimumSizeHint(self):
+        msh = super().minimumSizeHint()
+        h = msh.height()
+        # reserve space for two buttons (h-4 each), one gap pixel, and one right-edge
+        # pixel (matching _reposition_buttons)
+        return QSize(msh.width() + (h - 4) * 2 + 2, h)
+
+    def sizeHint(self):
+        sh = super().sizeHint()
+        h = sh.height()
+        return QSize(sh.width() + (h - 4) * 2 + 2, h)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -86,3 +92,27 @@ class FlatDoubleSpinBox(QDoubleSpinBox):
         le_right_in_spinbox = le.x() + le.width()
         right_margin = max(0, le_right_in_spinbox - x_minus + 2)
         le.setTextMargins(0, 0, right_margin, 0)
+
+
+class FlatDoubleSpinBox(_FlatSpinBoxMixin, QDoubleSpinBox):
+    """QDoubleSpinBox with inline − / + step buttons instead of up/down arrows.
+
+    The buttons are rendered as plain symbols (no button chrome) inside the right edge
+    of the input field.  Hovering highlights them with a subtle rounded background.
+    """
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._init_buttons()
+
+
+class FlatSpinBox(_FlatSpinBoxMixin, QSpinBox):
+    """QSpinBox with inline − / + step buttons instead of up/down arrows.
+
+    The buttons are rendered as plain symbols (no button chrome) inside the right edge
+    of the input field.  Hovering highlights them with a subtle rounded background.
+    """
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._init_buttons()

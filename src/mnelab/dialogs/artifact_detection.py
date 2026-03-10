@@ -11,7 +11,6 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QDialog,
     QDialogButtonBox,
-    QDoubleSpinBox,
     QFormLayout,
     QGridLayout,
     QHBoxLayout,
@@ -31,6 +30,7 @@ from mnelab.utils import (
     find_bad_epochs_ptp,
 )
 from mnelab.utils.dependencies import have
+from mnelab.widgets import FlatDoubleSpinBox
 
 
 class ArtifactDetectionDialog(QDialog):
@@ -97,7 +97,7 @@ class ArtifactDetectionDialog(QDialog):
             for param_name, display_name, default, unit, prefix in details[
                 "parameters"
             ]:
-                spin_box = QDoubleSpinBox()
+                spin_box = FlatDoubleSpinBox()
                 spin_box.setRange(-1e6, 1e6)
                 spin_box.setValue(default)
                 spin_box.setDecimals(1)

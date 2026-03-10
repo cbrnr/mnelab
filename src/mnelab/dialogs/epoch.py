@@ -7,11 +7,12 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QDialog,
     QDialogButtonBox,
-    QDoubleSpinBox,
     QGridLayout,
     QLabel,
     QListWidget,
 )
+
+from mnelab.widgets import FlatDoubleSpinBox
 
 
 class EpochDialog(QDialog):
@@ -30,12 +31,12 @@ class EpochDialog(QDialog):
         grid.addWidget(self.events, 0, 1, 1, 2)
 
         grid.addWidget(QLabel("Interval around events:"), 1, 0, 1, 1)
-        self.tmin = QDoubleSpinBox()
+        self.tmin = FlatDoubleSpinBox()
         self.tmin.setMinimum(-10000)
         self.tmin.setValue(-0.2)
         self.tmin.setSingleStep(0.1)
         self.tmin.setAlignment(Qt.AlignRight)
-        self.tmax = QDoubleSpinBox()
+        self.tmax = FlatDoubleSpinBox()
         self.tmax.setMinimum(-10000)
         self.tmax.setValue(0.5)
         self.tmax.setSingleStep(0.1)
@@ -47,12 +48,12 @@ class EpochDialog(QDialog):
         self.baseline.setChecked(True)
         self.baseline.stateChanged.connect(self.toggle_baseline)
         grid.addWidget(self.baseline, 2, 0, 1, 1)
-        self.a = QDoubleSpinBox()
+        self.a = FlatDoubleSpinBox()
         self.a.setMinimum(-10000)
         self.a.setValue(-0.2)
         self.a.setSingleStep(0.1)
         self.a.setAlignment(Qt.AlignRight)
-        self.b = QDoubleSpinBox()
+        self.b = FlatDoubleSpinBox()
         self.b.setMinimum(-10000)
         self.b.setValue(0)
         self.b.setSingleStep(0.1)

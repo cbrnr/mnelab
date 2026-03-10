@@ -8,13 +8,14 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QDialog,
     QDialogButtonBox,
-    QDoubleSpinBox,
     QHBoxLayout,
     QLabel,
     QTreeWidget,
     QTreeWidgetItem,
     QVBoxLayout,
 )
+
+from mnelab.widgets import FlatDoubleSpinBox
 
 
 def populate_tree(parent, nodes):
@@ -71,7 +72,7 @@ class MatDialog(QDialog):
         vbox = QVBoxLayout(self)
         vbox.addWidget(self.tree)
         hbox = QHBoxLayout()
-        self._fs = QDoubleSpinBox()
+        self._fs = FlatDoubleSpinBox()
         self._fs.setMaximum(999999)
         self._fs.setValue(250)
         self._fs.setDecimals(2)

@@ -6,11 +6,12 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QDialog,
     QDialogButtonBox,
-    QDoubleSpinBox,
     QGridLayout,
     QLabel,
     QVBoxLayout,
 )
+
+from mnelab.widgets import FlatDoubleSpinBox
 
 
 class NpyDialog(QDialog):
@@ -25,7 +26,7 @@ class NpyDialog(QDialog):
         grid.addWidget(QLabel(f"{' × '.join(map(str, shape))}"), 0, 1)
         grid.addWidget(QLabel("Sampling frequency:"), 1, 0)
 
-        self._fs = QDoubleSpinBox()
+        self._fs = FlatDoubleSpinBox()
         self._fs.setRange(0, 20e3)
         self._fs.setValue(250)
         self._fs.setSuffix(" Hz")

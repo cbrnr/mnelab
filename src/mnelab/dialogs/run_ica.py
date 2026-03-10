@@ -10,9 +10,10 @@ from PySide6.QtWidgets import (
     QDialogButtonBox,
     QGridLayout,
     QLabel,
-    QSpinBox,
     QVBoxLayout,
 )
+
+from mnelab.widgets import FlatSpinBox
 
 
 class RunICADialog(QDialog):
@@ -45,7 +46,7 @@ class RunICADialog(QDialog):
             self.ortho.hide()
 
         grid.addWidget(QLabel("Number of components:"), 3, 0)
-        self.n_components = QSpinBox()
+        self.n_components = FlatSpinBox()
         self.n_components.setRange(0, nchan)
         self.n_components.setValue(nchan)
         self.n_components.setAlignment(Qt.AlignRight)
