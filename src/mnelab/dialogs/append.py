@@ -25,9 +25,9 @@ class DragDropTableWidget(QTableWidget):
         super().__init__(parent)
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
-        self.setDragDropMode(QAbstractItemView.DragDrop)
-        self.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.setDefaultDropAction(Qt.MoveAction)
+        self.setDragDropMode(QAbstractItemView.DragDropMode.DragDrop)
+        self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.setDefaultDropAction(Qt.DropAction.MoveAction)
         self.setDropIndicatorShown(False)
         self.setDragDropOverwriteMode(False)
         self.drop_row = -1
@@ -36,9 +36,11 @@ class DragDropTableWidget(QTableWidget):
         self.horizontalHeader().hide()
         self.verticalHeader().hide()
         self.setShowGrid(False)
-        self.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        self.horizontalHeader().setSectionResizeMode(
+            0, QHeaderView.ResizeMode.ResizeToContents
+        )
         self.horizontalHeader().setStretchLastSection(True)
-        self.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         if items is not None:
             self.setRowCount(len(items))
             for i, (idx, name) in enumerate(items):
@@ -50,11 +52,19 @@ class DragDropTableWidget(QTableWidget):
         for i in range(self.rowCount()):
             self.resizeRowToContents(i)
             self.setRowHeight(i, ROW_HEIGHT)
-            self.item(i, 0).setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            self.item(i, 0).setTextAlignment(
+                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+            )
             self.item(i, 0).setForeground(QColor("gray"))
-            self.item(i, 0).setFlags(self.item(i, 0).flags() & ~Qt.ItemIsEditable)
-            self.item(i, 1).setTextAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-            self.item(i, 1).setFlags(self.item(i, 1).flags() & ~Qt.ItemIsEditable)
+            self.item(i, 0).setFlags(
+                self.item(i, 0).flags() & ~Qt.ItemFlag.ItemIsEditable
+            )
+            self.item(i, 1).setTextAlignment(
+                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
+            )
+            self.item(i, 1).setFlags(
+                self.item(i, 1).flags() & ~Qt.ItemFlag.ItemIsEditable
+            )
 
     def dragMoveEvent(self, event):
         drop_row = self.indexAt(event.pos()).row()
@@ -124,14 +134,14 @@ class AppendDialog(QDialog):
         vbox = QVBoxLayout(self)
         grid = QGridLayout()
 
-        grid.addWidget(QLabel("Source"), 0, 0, Qt.AlignCenter)
-        grid.addWidget(QLabel("Destination"), 0, 2, Qt.AlignCenter)
+        grid.addWidget(QLabel("Source"), 0, 0, Qt.AlignmentFlag.AlignCenter)
+        grid.addWidget(QLabel("Destination"), 0, 2, Qt.AlignmentFlag.AlignCenter)
 
         self.source = DragDropTableWidget(self, items=compatibles)
 
         self.move_button = QPushButton("→")
         self.move_button.setEnabled(False)
-        grid.addWidget(self.move_button, 1, 1, Qt.AlignHCenter)
+        grid.addWidget(self.move_button, 1, 1, Qt.AlignmentFlag.AlignHCenter)
 
         self.destination = DragDropTableWidget(self)
 
@@ -139,12 +149,14 @@ class AppendDialog(QDialog):
         grid.addWidget(self.destination, 1, 2)
         vbox.addLayout(grid)
 
-        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttonbox = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
 
         vbox.addWidget(self.buttonbox)
-        vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+        vbox.setSizeConstraint(QVBoxLayout.SizeConstraint.SetFixedSize)
         self.destination.model().rowsInserted.connect(self.toggle_ok_button)
         self.destination.model().rowsRemoved.connect(self.toggle_ok_button)
         self.source.itemSelectionChanged.connect(self.toggle_move_source)
@@ -167,9 +179,9 @@ class AppendDialog(QDialog):
     @Slot()
     def toggle_ok_button(self):
         if self.destination.rowCount() > 0:
-            self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(True)
+            self.buttonbox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(True)
         else:
-            self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(False)
+            self.buttonbox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(False)
 
     @Slot()
     def toggle_move_source(self):

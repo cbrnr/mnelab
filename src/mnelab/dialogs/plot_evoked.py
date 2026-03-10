@@ -29,20 +29,20 @@ class PlotEvokedDialog(QDialog):
         grid.setColumnStretch(1, 3)
 
         label = QLabel("Channels:")
-        label.setAlignment(Qt.AlignTop)
+        label.setAlignment(Qt.AlignmentFlag.AlignTop)
         grid.addWidget(label, 0, 0)
         self.picks = QListWidget()
         self.picks.insertItems(0, channels)
-        self.picks.setSelectionMode(QListWidget.ExtendedSelection)
+        self.picks.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
         select_all(self.picks)
         grid.addWidget(self.picks, 0, 1)
 
         label = QLabel("Events:")
-        label.setAlignment(Qt.AlignTop)
+        label.setAlignment(Qt.AlignmentFlag.AlignTop)
         grid.addWidget(label, 1, 0)
         self.events = QListWidget()
         self.events.insertItems(0, events)
-        self.events.setSelectionMode(QListWidget.ExtendedSelection)
+        self.events.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
         self.events.setMaximumHeight(self.events.sizeHintForRow(0) * 5.5)
         select_all(self.events)
         grid.addWidget(self.events, 1, 1)
@@ -88,22 +88,24 @@ class PlotEvokedDialog(QDialog):
         self.topomaps_times.toggled.connect(self.toggle_ok)
         self.topomaps_timelist.textChanged.connect(self.toggle_ok)
 
-        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttonbox = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
         grid.addWidget(self.buttonbox, 5, 0, 1, -1)
         self.picks.itemSelectionChanged.connect(self.toggle_ok)
         self.events.itemSelectionChanged.connect(self.toggle_ok)
         self.toggle_ok()
-        grid.setSizeConstraint(QGridLayout.SetFixedSize)
+        grid.setSizeConstraint(QGridLayout.SizeConstraint.SetFixedSize)
         self.setFocus()
 
     @Slot()
     def toggle_ok(self):
         if self.picks.selectedItems() and self.events.selectedItems():
-            self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(True)
+            self.buttonbox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(True)
         else:
-            self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(False)
+            self.buttonbox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(False)
 
     @Slot()
     def toggle_topomaps_timelist(self):
@@ -120,20 +122,20 @@ class PlotEvokedComparisonDialog(QDialog):
         grid.setColumnStretch(1, 3)
 
         label = QLabel("Channels:")
-        label.setAlignment(Qt.AlignTop)
+        label.setAlignment(Qt.AlignmentFlag.AlignTop)
         grid.addWidget(label, 0, 0, 1, 1)
         self.picks = QListWidget()
         self.picks.insertItems(0, channels)
-        self.picks.setSelectionMode(QListWidget.ExtendedSelection)
+        self.picks.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
         select_all(self.picks)
         grid.addWidget(self.picks, 0, 1, 1, 1)
 
         label = QLabel("Events:")
-        label.setAlignment(Qt.AlignTop)
+        label.setAlignment(Qt.AlignmentFlag.AlignTop)
         grid.addWidget(label, 1, 0, 1, 1)
         self.events = QListWidget()
         self.events.insertItems(0, events)
-        self.events.setSelectionMode(QListWidget.ExtendedSelection)
+        self.events.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
         self.events.setMaximumHeight(self.events.sizeHintForRow(0) * 5.5)
         select_all(self.events)
         grid.addWidget(self.events, 1, 1, 1, 1)
@@ -155,22 +157,24 @@ class PlotEvokedComparisonDialog(QDialog):
         self.confidence_intervals.setChecked(True)
         grid.addWidget(self.confidence_intervals, 4, 1)
 
-        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttonbox = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
         grid.addWidget(self.buttonbox, 5, 0, 1, -1)
         self.picks.itemSelectionChanged.connect(self.toggle_ok)
         self.events.itemSelectionChanged.connect(self.toggle_ok)
         self.toggle_ok()
-        grid.setSizeConstraint(QGridLayout.SetFixedSize)
+        grid.setSizeConstraint(QGridLayout.SizeConstraint.SetFixedSize)
         self.setFocus()
 
     @Slot()
     def toggle_ok(self):
         if self.picks.selectedItems() and self.events.selectedItems():
-            self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(True)
+            self.buttonbox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(True)
         else:
-            self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(False)
+            self.buttonbox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(False)
 
 
 class PlotEvokedTopomaps(QDialog):
@@ -183,11 +187,11 @@ class PlotEvokedTopomaps(QDialog):
         grid.setColumnStretch(1, 3)
 
         label = QLabel("Events:")
-        label.setAlignment(Qt.AlignTop)
+        label.setAlignment(Qt.AlignmentFlag.AlignTop)
         grid.addWidget(label, 0, 0)
         self.events = QListWidget()
         self.events.insertItems(0, events)
-        self.events.setSelectionMode(QListWidget.ExtendedSelection)
+        self.events.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
         self.events.setMaximumHeight(self.events.sizeHintForRow(0) * 5.5)
         select_all(self.events)
         grid.addWidget(self.events, 0, 1)
@@ -218,19 +222,21 @@ class PlotEvokedTopomaps(QDialog):
         self.manual.toggled.connect(self.toggle_timelist)
         grid.addWidget(timepoints, 2, 0, 1, 2)
 
-        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttonbox = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
         grid.addWidget(self.buttonbox, 3, 0, 1, -1)
         self.events.itemSelectionChanged.connect(self.toggle_ok)
         self.toggle_ok()
-        grid.setSizeConstraint(QGridLayout.SetFixedSize)
+        grid.setSizeConstraint(QGridLayout.SizeConstraint.SetFixedSize)
         self.setFocus()
 
     @Slot()
     def toggle_ok(self):
         enable = bool(self.events.selectedItems())
-        self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(enable)
+        self.buttonbox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(enable)
 
     @Slot()
     def toggle_timelist(self):

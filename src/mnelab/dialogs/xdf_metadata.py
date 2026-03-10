@@ -47,7 +47,7 @@ class XDFMetadataDialog(QDialog):
 
         vbox = QVBoxLayout(self)
         vbox.addWidget(tree)
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok)
+        buttonbox = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
         vbox.addWidget(buttonbox)
         buttonbox.accepted.connect(self.accept)
 

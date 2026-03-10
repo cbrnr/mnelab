@@ -19,19 +19,19 @@ class PythonHighlighter(QSyntaxHighlighter):
 
         # keywords
         f = QTextCharFormat()
-        f.setFontWeight(QFont.Bold)
-        f.setForeground(Qt.darkBlue)
+        f.setFontWeight(QFont.Weight.Bold)
+        f.setForeground(Qt.GlobalColor.darkBlue)
         for kw in keyword.kwlist:
             self.rules.append((QRegularExpression(rf"\b{kw}\b"), f))
 
         # numerals
         f = QTextCharFormat()
-        f.setForeground(Qt.blue)
+        f.setForeground(Qt.GlobalColor.blue)
         self.rules.append((QRegularExpression("[0-9]+"), f))
 
         # strings
         f = QTextCharFormat()
-        f.setForeground(Qt.darkCyan)
+        f.setForeground(Qt.GlobalColor.darkCyan)
         self.rules.append((QRegularExpression('"[^"]*"'), f))
         self.rules.append((QRegularExpression("'[^']*'"), f))
 

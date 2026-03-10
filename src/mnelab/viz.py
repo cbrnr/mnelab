@@ -4,6 +4,7 @@
 
 import math
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 from mne.stats import permutation_cluster_1samp_test as pcluster_test
@@ -160,7 +161,7 @@ def plot_erds(tfr_and_masks):
             n_rows, n_cols + 1, gridspec_kw={"width_ratios": widths}
         )
         vmin, vmax = -1, 2  # default for ERDS maps
-        cmap = _center_cmap(plt.cm.RdBu, vmin, vmax)
+        cmap = _center_cmap(mpl.colormaps["RdBu"], vmin, vmax)
 
         # skip the last column in `axes`, as it contains the colorbar
         for (ch_name, mask), ax in zip(masks.items(), axes[..., :-1].flat):
@@ -208,7 +209,7 @@ def plot_erds_topomaps(epochs, events, freqs, baseline, times):
         A list of the figure(s) generated.
     """
     vmin, vmax = -1, 2
-    cmap = _center_cmap(plt.cm.RdBu, vmin, vmax)
+    cmap = _center_cmap(mpl.colormaps["RdBu"], vmin, vmax)
 
     figs = []
     for event in events:

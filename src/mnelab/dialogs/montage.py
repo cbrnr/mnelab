@@ -56,7 +56,7 @@ class MontageDialog(QDialog):
 
         vbox = QVBoxLayout()
         self.montages = QListWidget()
-        self.montages.setSelectionMode(QListWidget.SingleSelection)
+        self.montages.setSelectionMode(QListWidget.SelectionMode.SingleSelection)
         for name in montages:
             montage = make_standard_montage(name)
             item = MontageItem(montage, name)
@@ -91,10 +91,12 @@ class MontageDialog(QDialog):
         self.open_file_button.clicked.connect(self.load_custom_montage)
         button_layout.addWidget(self.open_file_button)
         button_layout.addStretch()
-        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttonbox = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
-        button_layout.addWidget(self.buttonbox, alignment=Qt.AlignLeft)
+        button_layout.addWidget(self.buttonbox, alignment=Qt.AlignmentFlag.AlignLeft)
 
         main_layout = QVBoxLayout(self)
         main_layout.addLayout(hbox)

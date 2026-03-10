@@ -47,15 +47,15 @@ class XDFStreamsDialog(QDialog):
             ]
         )
 
-        self.view.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.view.setSelectionBehavior(QTableWidget.SelectRows)
+        self.view.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self.view.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.view.verticalHeader().setVisible(False)
         self.view.horizontalHeader().setStretchLastSection(True)
         self.view.setShowGrid(False)
         if selected is not None:
             self.view.selectRow(selected)
         self.view.setSortingEnabled(True)
-        self.view.sortByColumn(0, Qt.AscendingOrder)
+        self.view.sortByColumn(0, Qt.SortOrder.AscendingOrder)
 
         self.view.itemSelectionChanged.connect(self.toggle_buttons)
 
@@ -104,7 +104,9 @@ class XDFStreamsDialog(QDialog):
         self.details_button.clicked.connect(self.details)
         hbox2.addWidget(self.details_button)
         hbox2.addStretch()
-        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttonbox = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         hbox2.addWidget(self.buttonbox)
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
@@ -161,9 +163,9 @@ class XDFStreamsDialog(QDialog):
 
         # if there is no stream selection disable OK
         if not self.selected_streams:
-            self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(False)
+            self.buttonbox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(False)
         else:
-            self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(True)
+            self.buttonbox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(True)
             # suggest the most common sampling rate (with the most channels)
             channel_counts = []
             sampling_rates = []

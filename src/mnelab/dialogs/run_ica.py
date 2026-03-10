@@ -49,7 +49,7 @@ class RunICADialog(QDialog):
         self.n_components = FlatSpinBox()
         self.n_components.setRange(0, nchan)
         self.n_components.setValue(nchan)
-        self.n_components.setAlignment(Qt.AlignRight)
+        self.n_components.setAlignment(Qt.AlignmentFlag.AlignRight)
         grid.addWidget(self.n_components, 3, 1)
 
         grid.addWidget(QLabel("Exclude bad segments:"), 4, 0)
@@ -59,11 +59,13 @@ class RunICADialog(QDialog):
 
         vbox.addLayout(grid)
 
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttonbox = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         vbox.addWidget(buttonbox)
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)
-        vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+        vbox.setSizeConstraint(QVBoxLayout.SizeConstraint.SetFixedSize)
 
         self.toggle_options()
         self.setFocus()

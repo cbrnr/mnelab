@@ -30,7 +30,7 @@ class PSDDialog(QDialog):
         self.fmin_input.setValue(fmin)
         self.fmin_input.setSingleStep(1)
         self.fmin_input.setMaximum(fmax)
-        self.fmin_input.setAlignment(Qt.AlignRight)
+        self.fmin_input.setAlignment(Qt.AlignmentFlag.AlignRight)
         grid.addWidget(fmin_label, 0, 0)
         grid.addWidget(self.fmin_input, 0, 1)
 
@@ -41,7 +41,7 @@ class PSDDialog(QDialog):
         self.fmax_input.setValue(60)
         self.fmax_input.setSingleStep(1)
         self.fmax_input.setMaximum(fmax)
-        self.fmax_input.setAlignment(Qt.AlignRight)
+        self.fmax_input.setAlignment(Qt.AlignmentFlag.AlignRight)
         grid.addWidget(fmax_label, 1, 0)
         grid.addWidget(self.fmax_input, 1, 1)
 
@@ -63,7 +63,9 @@ class PSDDialog(QDialog):
 
         vbox.addLayout(grid)
 
-        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttonbox = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         vbox.addWidget(self.buttonbox)
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
@@ -71,7 +73,7 @@ class PSDDialog(QDialog):
         self.fmin_input.valueChanged.connect(self.fmax_input.setMinimum)
         self.fmax_input.valueChanged.connect(self.fmin_input.setMaximum)
 
-        vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+        vbox.setSizeConstraint(QVBoxLayout.SizeConstraint.SetFixedSize)
         self.setFocus()
 
     @property

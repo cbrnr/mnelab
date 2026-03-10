@@ -11,7 +11,7 @@ class CalcDialog(QDialog):
         self.setWindowTitle(title)
         vbox = QVBoxLayout(self)
         label = QLabel(message)
-        button = QDialogButtonBox(QDialogButtonBox.Cancel)
+        button = QDialogButtonBox(QDialogButtonBox.StandardButton.Cancel)
         button.rejected.connect(self.close)
         vbox.addWidget(label)
         vbox.addWidget(button)

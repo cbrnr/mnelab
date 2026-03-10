@@ -66,19 +66,21 @@ class DropBadEpochsDialog(QDialog):
         self.flat_box.setLayout(flat_grid)
         vbox.addWidget(self.flat_box)
 
-        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttonbox = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         vbox.addWidget(self.buttonbox)
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
         self.flat_box.toggled.connect(self.toggle_ok)
         self.reject_box.toggled.connect(self.toggle_ok)
         self.toggle_ok()
-        vbox.setSizeConstraint(QGridLayout.SetFixedSize)
+        vbox.setSizeConstraint(QGridLayout.SizeConstraint.SetFixedSize)
         self.setFocus()
 
     @Slot()
     def toggle_ok(self):
-        ok_btn = self.buttonbox.button(QDialogButtonBox.Ok)
+        ok_btn = self.buttonbox.button(QDialogButtonBox.StandardButton.Ok)
         ok_btn.setEnabled(False)
 
         # require at least one group checked

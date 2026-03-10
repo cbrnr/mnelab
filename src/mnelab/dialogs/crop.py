@@ -29,7 +29,7 @@ class CropDialog(QDialog):
         self._start.setValue(start)
         self._start.setDecimals(2)
         self._start.setSuffix(" s")
-        self._start.setAlignment(Qt.AlignRight)
+        self._start.setAlignment(Qt.AlignmentFlag.AlignRight)
         self._start.setMinimumWidth(140)
         grid.addWidget(self._start, 0, 1)
 
@@ -42,15 +42,17 @@ class CropDialog(QDialog):
         self._stop.setValue(stop)
         self._stop.setDecimals(2)
         self._stop.setSuffix(" s")
-        self._stop.setAlignment(Qt.AlignRight)
+        self._stop.setAlignment(Qt.AlignmentFlag.AlignRight)
         self._stop.setMinimumWidth(140)
         grid.addWidget(self._stop, 1, 1)
         vbox.addLayout(grid)
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttonbox = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         vbox.addWidget(buttonbox)
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)
-        vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+        vbox.setSizeConstraint(QVBoxLayout.SizeConstraint.SetFixedSize)
         self.setFocus()
 
     @property

@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (
 
 def _add_item(item):
     tmp = QStandardItem()
-    tmp.setData(item, Qt.DisplayRole)
+    tmp.setData(item, Qt.ItemDataRole.DisplayRole)
     return tmp
 
 
@@ -55,11 +55,11 @@ class XDFChunksDialog(QDialog):
         self.view.verticalHeader().setVisible(False)
         self.view.horizontalHeader().setStretchLastSection(True)
         self.view.setShowGrid(False)
-        self.view.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.view.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.view.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.view.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.view.setSortingEnabled(True)
-        self.view.sortByColumn(0, Qt.AscendingOrder)
-        self.view.setEditTriggers(QTableView.NoEditTriggers)
+        self.view.sortByColumn(0, Qt.SortOrder.AscendingOrder)
+        self.view.setEditTriggers(QTableView.EditTrigger.NoEditTriggers)
         self.view.selectRow(0)
 
         self.details = QPlainTextEdit("")
@@ -67,9 +67,9 @@ class XDFChunksDialog(QDialog):
         self.details.setTabStopDistance(30)
         font = QFont()
         font.setFamily("monospace")
-        font.setStyleHint(QFont.Monospace)
+        font.setStyleHint(QFont.StyleHint.Monospace)
         self.details.setFont(font)
-        self.details.setLineWrapMode(QPlainTextEdit.NoWrap)
+        self.details.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
 
         hbox = QHBoxLayout()
         hbox.addWidget(self.view)
@@ -77,7 +77,7 @@ class XDFChunksDialog(QDialog):
 
         vbox = QVBoxLayout(self)
         vbox.addLayout(hbox)
-        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Close)
+        self.buttonbox = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
         vbox.addWidget(self.buttonbox)
         self.buttonbox.rejected.connect(self.reject)
 

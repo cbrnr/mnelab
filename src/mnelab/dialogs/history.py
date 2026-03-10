@@ -37,7 +37,7 @@ class HistoryDialog(QDialog):
         else:
             fontname = "monospace"
         font.setFamily(fontname)
-        font.setStyleHint(QFont.Monospace)
+        font.setStyleHint(QFont.StyleHint.Monospace)
 
         history_text = QPlainTextEdit()
         history_text.setFont(font)
@@ -57,11 +57,13 @@ class HistoryDialog(QDialog):
         layout = QVBoxLayout()
         layout.addWidget(self.tabs)
 
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok)
+        buttonbox = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
         self.clipboardbutton = QPushButton("Copy to clipboard")
         self.savebutton = QPushButton("Save to file...")
-        buttonbox.addButton(self.clipboardbutton, QDialogButtonBox.ActionRole)
-        buttonbox.addButton(self.savebutton, QDialogButtonBox.ActionRole)
+        buttonbox.addButton(
+            self.clipboardbutton, QDialogButtonBox.ButtonRole.ActionRole
+        )
+        buttonbox.addButton(self.savebutton, QDialogButtonBox.ButtonRole.ActionRole)
         self.clipboardbutton.clicked.connect(self._copy_to_clipboard)
         self.savebutton.clicked.connect(self._save_to_file)
         layout.addWidget(buttonbox)

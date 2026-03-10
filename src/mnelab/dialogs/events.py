@@ -34,9 +34,11 @@ class EventsDialog(QDialog):
         self.event_table.horizontalHeader().setStretchLastSection(True)
         self.event_table.verticalHeader().setVisible(False)
         self.event_table.setShowGrid(False)
-        self.event_table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.event_table.setSelectionBehavior(
+            QAbstractItemView.SelectionBehavior.SelectRows
+        )
         self.event_table.setSortingEnabled(True)
-        self.event_table.sortByColumn(0, Qt.AscendingOrder)
+        self.event_table.sortByColumn(0, Qt.SortOrder.AscendingOrder)
 
         self.event_mapping = defaultdict(str, event_mapping)  # make copy
 
@@ -47,7 +49,9 @@ class EventsDialog(QDialog):
         self.remove_button = QPushButton("-")
         self.counts_button = QPushButton("Counts...")
         self.mapping_button = QPushButton("Mapping...")
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttonbox = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         hbox.addWidget(self.add_button)
         hbox.addWidget(self.remove_button)
         hbox.addWidget(self.counts_button)
@@ -141,12 +145,14 @@ class EventCountsDialog(QDialog):
         self.counts_table.horizontalHeader().setStretchLastSection(True)
         self.counts_table.verticalHeader().setVisible(False)
         self.counts_table.setShowGrid(False)
-        self.counts_table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.counts_table.setSelectionBehavior(
+            QAbstractItemView.SelectionBehavior.SelectRows
+        )
         self.fill_counts_table()
 
         vbox = QVBoxLayout(self)
         vbox.addWidget(self.counts_table)
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok)
+        buttonbox = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
         vbox.addWidget(buttonbox)
         buttonbox.accepted.connect(self.accept)
 
@@ -156,7 +162,7 @@ class EventCountsDialog(QDialog):
         self.counts_table.setRowCount(0)
         for row, (id_, count) in enumerate(sorted(self.unique_events.items())):
             id_item = IntTableWidgetItem(id_)
-            id_item.setFlags(id_item.flags() ^ Qt.ItemIsEditable)
+            id_item.setFlags(id_item.flags() ^ Qt.ItemFlag.ItemIsEditable)
             self.counts_table.insertRow(row)
             self.counts_table.setItem(row, 0, id_item)
             self.counts_table.setItem(row, 1, QTableWidgetItem(str(count)))
@@ -175,7 +181,9 @@ class EventMappingDialog(QDialog):
         self.mapping_table.horizontalHeader().setStretchLastSection(True)
         self.mapping_table.verticalHeader().setVisible(False)
         self.mapping_table.setShowGrid(False)
-        self.mapping_table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.mapping_table.setSelectionBehavior(
+            QAbstractItemView.SelectionBehavior.SelectRows
+        )
         self.fill_mapping_table()
         self.clear_button = QPushButton("Clear mapping")
 
@@ -184,7 +192,9 @@ class EventMappingDialog(QDialog):
         hbox = QHBoxLayout()
         hbox.addWidget(self.clear_button)
         hbox.addStretch()
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttonbox = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         hbox.addWidget(buttonbox)
         vbox.addLayout(hbox)
         buttonbox.accepted.connect(self.accept)
@@ -199,7 +209,7 @@ class EventMappingDialog(QDialog):
         self.mapping_table.setRowCount(0)
         for row, id_ in enumerate(sorted(self.unique_events.keys())):
             id_item = IntTableWidgetItem(id_)
-            id_item.setFlags(id_item.flags() ^ Qt.ItemIsEditable)
+            id_item.setFlags(id_item.flags() ^ Qt.ItemFlag.ItemIsEditable)
             self.mapping_table.insertRow(row)
             self.mapping_table.setItem(row, 0, id_item)
             self.mapping_table.setItem(

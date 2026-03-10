@@ -59,19 +59,19 @@ class FilterDialog(QDialog):
         self.lower_edit.setMinimum(0)
         self.lower_edit.setDecimals(2)
         self.lower_edit.setValue(1)
-        self.lower_edit.setAlignment(Qt.AlignRight)
+        self.lower_edit.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.upper_label = QLabel("Upper cutoff frequency (Hz):")
         self.upper_edit = FlatDoubleSpinBox()
         self.upper_edit.setMinimum(0)
         self.upper_edit.setDecimals(2)
         self.upper_edit.setValue(30)
-        self.upper_edit.setAlignment(Qt.AlignRight)
+        self.upper_edit.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.notch_label = QLabel("Notch frequency (Hz):")
         self.notch_edit = FlatDoubleSpinBox()
         self.notch_edit.setMinimum(0)
         self.notch_edit.setDecimals(2)
         self.notch_edit.setValue(50)
-        self.notch_edit.setAlignment(Qt.AlignRight)
+        self.notch_edit.setAlignment(Qt.AlignmentFlag.AlignRight)
 
         self.grid.addWidget(self.lower_label, 0, 0)
         self.grid.addWidget(self.lower_edit, 0, 1)
@@ -84,8 +84,10 @@ class FilterDialog(QDialog):
         vbox.addWidget(filter_settings_groupbox)
 
         # buttons
-        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        self.ok_button = self.buttonbox.button(QDialogButtonBox.Ok)
+        self.buttonbox = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
+        self.ok_button = self.buttonbox.button(QDialogButtonBox.StandardButton.Ok)
         vbox.addWidget(self.buttonbox)
         self.ok_button.setEnabled(False)
         self.buttonbox.accepted.connect(self.accept)
@@ -109,7 +111,7 @@ class FilterDialog(QDialog):
         }
 
         self._on_filter_type_changed(self.filter_group.checkedButton(), True)
-        vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+        vbox.setSizeConstraint(QVBoxLayout.SizeConstraint.SetFixedSize)
         self.setFocus()
 
     def _on_filter_type_changed(self, button, checked):

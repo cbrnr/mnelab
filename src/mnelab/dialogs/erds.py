@@ -95,11 +95,13 @@ class ERDSDialog(QDialog):
         self.toggle_alpha()
 
         vbox.addLayout(grid)
-        buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttonbox = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         vbox.addWidget(buttonbox)
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)
-        vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+        vbox.setSizeConstraint(QVBoxLayout.SizeConstraint.SetFixedSize)
         self.setFocus()
 
     @property
@@ -192,11 +194,11 @@ class ERDSTopomapsDialog(QDialog):
         grid.addWidget(self._b2, 2, 2)
 
         label = QLabel("Events:")
-        label.setAlignment(Qt.AlignTop)
+        label.setAlignment(Qt.AlignmentFlag.AlignTop)
         grid.addWidget(label, 3, 0)
         self.events = QListWidget()
         self.events.insertItems(0, events)
-        self.events.setSelectionMode(QListWidget.ExtendedSelection)
+        self.events.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
         self.events.setMaximumHeight(self.events.sizeHintForRow(0) * 5.5)
         select_all(self.events)
         grid.addWidget(self.events, 3, 1, 1, 2)
@@ -211,18 +213,20 @@ class ERDSTopomapsDialog(QDialog):
         grid.addWidget(self._step, 4, 1)
 
         vbox.addLayout(grid)
-        self.buttonbox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.buttonbox = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
         vbox.addWidget(self.buttonbox)
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
         self.events.itemSelectionChanged.connect(self.toggle_ok)
-        vbox.setSizeConstraint(QVBoxLayout.SetFixedSize)
+        vbox.setSizeConstraint(QVBoxLayout.SizeConstraint.SetFixedSize)
         self.setFocus()
 
     @Slot()
     def toggle_ok(self):
         enable = bool(self.events.selectedItems())
-        self.buttonbox.button(QDialogButtonBox.Ok).setEnabled(enable)
+        self.buttonbox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(enable)
 
     @property
     def f1(self):

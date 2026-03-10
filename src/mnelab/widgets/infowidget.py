@@ -39,7 +39,9 @@ def _make_shortcuts_table(actions):
           <tbody>"""
     for action in actions:
         name = action.text().replace("&", "").replace(".", "")
-        shortcut = action.shortcut().toString(format=QKeySequence.NativeText)
+        shortcut = action.shortcut().toString(
+            format=QKeySequence.SequenceFormat.NativeText
+        )
         modifier, key = shortcut[:-1].strip(), shortcut[-1]
         html += f'\n            <tr><td align="right" width="50%">{name} </td>'
         if modifier[-1] == "+":
@@ -102,7 +104,9 @@ class InfoWidget(QWidget):
             for row, (key, value) in enumerate(values.items()):
                 left = QLabel(str(key) + ":")
                 right = QLabel(str(value))
-                right.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
+                right.setSizePolicy(
+                    QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed
+                )
                 self.grid.addWidget(left, row, 0)
                 self.grid.addWidget(right, row, 1)
                 if key == "File name" and value != "-":
@@ -146,12 +150,12 @@ class InfoWidget(QWidget):
             self._copy_btn.setIcon(self._copy_icon if self._hovered else QIcon())
 
     def eventFilter(self, obj, event):
-        if event.type() == QEvent.Enter:
+        if event.type() == QEvent.Type.Enter:
             self._hovered = True
             self._hide_timer.stop()
             if self._copy_btn and not self._restore_timer.isActive():
                 self._copy_btn.setIcon(self._copy_icon)
-        elif event.type() == QEvent.Leave:
+        elif event.type() == QEvent.Type.Leave:
             self._hovered = False
             self._hide_timer.start()
         return super().eventFilter(obj, event)
