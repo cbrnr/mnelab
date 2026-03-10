@@ -1631,10 +1631,12 @@ class MainWindow(QMainWindow):
 
     def event(self, event):
         if event.type() == QEvent.Close:
+            sizes = self.splitter.sizes()
+            total = sum(sizes)
             write_settings(
                 size=self.size(),
                 pos=self.pos(),
-                splitter=self.splitter.sizes()[0] / sum(self.splitter.sizes()),
+                splitter=sizes[0] / total if total > 0 else read_settings("splitter"),
             )
             if self.model.history:
                 print("\n# Command History\n")
