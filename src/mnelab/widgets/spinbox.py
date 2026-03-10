@@ -2,7 +2,7 @@
 #
 # License: BSD (3-clause)
 
-from PySide6.QtCore import Qt, QSize, QTimer, Signal
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPainter, QPalette
 from PySide6.QtWidgets import QAbstractSpinBox, QDoubleSpinBox, QWidget
 
@@ -66,27 +66,13 @@ class FlatDoubleSpinBox(QDoubleSpinBox):
         self._minus_btn.clicked.connect(self.stepDown)
         self._plus_btn.clicked.connect(self.stepUp)
 
-    def sizeHint(self):
-        sh = super().sizeHint()
-        return QSize(sh.width() + self._btn_area_width(sh.height()), sh.height())
-
-    def minimumSizeHint(self):
-        msh = super().minimumSizeHint()
-        return QSize(msh.width() + self._btn_area_width(msh.height()), msh.height())
-
-    def _btn_area_width(self, h):
-        # Two buttons of size (h-4), one gap pixel, one right-edge pixel, two
-        # breathing pixels — must match _reposition_buttons exactly.
-        return (h - 4) * 2 + 1 + 1 + 2
-
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        # Defer so Qt's native-style child-geometry adjustments settle first.
-        QTimer.singleShot(0, self._reposition_buttons)
+        self._reposition_buttons()
 
     def showEvent(self, event):
         super().showEvent(event)
-        QTimer.singleShot(0, self._reposition_buttons)
+        self._reposition_buttons()
 
     def _reposition_buttons(self):
         h = self.height()
@@ -96,12 +82,6 @@ class FlatDoubleSpinBox(QDoubleSpinBox):
         x_minus = x_plus - gap - btn_size
         self._plus_btn.setGeometry(x_plus, 2, btn_size, btn_size)
         self._minus_btn.setGeometry(x_minus, 2, btn_size, btn_size)
-
-        # Compute the right text margin from measured positions so that the
-        # margin is exact regardless of platform-specific frame offsets.  The
-        # QLineEdit (in its own coordinate space) must reserve the horizontal
-        # distance from its right edge back to the left edge of the minus
-        # button, plus 2 px breathing room.
         le = self.lineEdit()
         le_right_in_spinbox = le.x() + le.width()
         right_margin = max(0, le_right_in_spinbox - x_minus + 2)
