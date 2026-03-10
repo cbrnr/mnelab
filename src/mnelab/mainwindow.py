@@ -680,7 +680,9 @@ class MainWindow(QMainWindow):
         """Open raw file."""
         if fname is None:
             # getOpenFileNames returns a tuple (filenames, selected_filter)
-            fnames, _ = QFileDialog.getOpenFileNames(self, "Open raw", self._get_last_dir())
+            fnames, _ = QFileDialog.getOpenFileNames(
+                self, "Open raw", self._get_last_dir()
+            )
         else:
             fnames = [fname]
         for fname in fnames:
@@ -785,7 +787,9 @@ class MainWindow(QMainWindow):
 
     def open_file(self, f, text, ffilter="*"):
         """Open file."""
-        fname = QFileDialog.getOpenFileName(self, text, self._get_last_dir(), ffilter)[0]
+        fname = QFileDialog.getOpenFileName(self, text, self._get_last_dir(), ffilter)[
+            0
+        ]
         if fname:
             self._set_last_dir(fname)
             f(fname)
@@ -814,7 +818,9 @@ class MainWindow(QMainWindow):
 
     def import_file(self, f, text, ffilter="*"):
         """Import file."""
-        fname = QFileDialog.getOpenFileName(self, text, self._get_last_dir(), ffilter)[0]
+        fname = QFileDialog.getOpenFileName(self, text, self._get_last_dir(), ffilter)[
+            0
+        ]
         if fname:
             self._set_last_dir(fname)
             try:
