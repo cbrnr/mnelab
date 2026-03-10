@@ -45,6 +45,7 @@ _DEFAULTS = {
     "pos": QPoint(100, 100),
     "plot_backend": "Matplotlib",
     "splitter": 0.4,
+    "last_dir": str(Path.home()),
 }
 
 
