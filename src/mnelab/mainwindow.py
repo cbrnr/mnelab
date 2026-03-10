@@ -830,7 +830,8 @@ class MainWindow(QMainWindow):
         self.splitter.setSizes([left, total - left])
 
     def _get_last_dir(self):
-        return read_settings("last_dir")
+        last_dir = read_settings("last_dir")
+        return last_dir if Path(last_dir).is_dir() else str(Path.home())
 
     def _set_last_dir(self, fname):
         write_settings(last_dir=str(Path(fname).parent))
