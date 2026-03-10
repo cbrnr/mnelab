@@ -9,6 +9,7 @@
 - Add option to navigate between datasets in the sidebar with the up and down arrow keys ([#573](https://github.com/cbrnr/mnelab/pull/573) by [Richard Höchenberger](https://github.com/hoechenberger))
 - Improve sidebar styling ([#573](https://github.com/cbrnr/mnelab/pull/573) by [Richard Höchenberger](https://github.com/hoechenberger))
 - Improve dark mode theme for the Artifact Detection preview dialog ([#585](https://github.com/cbrnr/mnelab/pull/585) by [Fabian Schellander](https://github.com/SchellanderF))
+- Improve settings dialog layout and include the splitter position when resetting to defaults ([#590](https://github.com/cbrnr/mnelab/pull/590) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🌀 Changed
 - Consistently focus the OK button in all dialogs ([#586](https://github.com/cbrnr/mnelab/pull/586) by [Clemens Brunner](https://github.com/cbrnr))
