@@ -17,7 +17,6 @@ import numpy as np
 from mne import channel_type
 from pybvrf import read_bvrf_header
 from PySide6.QtCore import (
-    QByteArray,
     QEvent,
     QMetaObject,
     QModelIndex,
@@ -450,19 +449,7 @@ class MainWindow(QMainWindow):
         )
         self.infowidget.addWidget(emptywidget)
         self.splitter.addWidget(self.infowidget)
-        saved_splitter = settings["splitter"]
-        if saved_splitter:
-            self.splitter.restoreState(saved_splitter)
-        else:
-            QTimer.singleShot(
-                0,
-                lambda: self.splitter.setSizes(
-                    [
-                        int(self.splitter.size().width() * 0.4),
-                        int(self.splitter.size().width() * 0.6),
-                    ]
-                ),
-            )
+        QTimer.singleShot(0, lambda: self._set_splitter_ratio(settings["splitter"]))
         self.setCentralWidget(self.splitter)
 
         self.status_label = QLabel()
@@ -820,6 +807,11 @@ class MainWindow(QMainWindow):
                 QMessageBox.critical(self, "Channel labels not found", str(e))
             except InvalidAnnotationsError as e:
                 QMessageBox.critical(self, "Invalid annotations", str(e))
+
+    def _set_splitter_ratio(self, ratio):
+        total = sum(self.splitter.sizes())
+        left = round(total * ratio)
+        self.splitter.setSizes([left, total - left])
 
     def close_all(self):
         """Close all currently open data sets."""
@@ -1639,10 +1631,12 @@ class MainWindow(QMainWindow):
 
     def event(self, event):
         if event.type() == QEvent.Close:
+            sizes = self.splitter.sizes()
+            total = sum(sizes)
             write_settings(
                 size=self.size(),
                 pos=self.pos(),
-                splitter=QByteArray(self.splitter.saveState()),
+                splitter=sizes[0] / total if total > 0 else read_settings("splitter"),
             )
             if self.model.history:
                 print("\n# Command History\n")
