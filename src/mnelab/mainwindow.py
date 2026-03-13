@@ -1001,18 +1001,20 @@ class MainWindow(QMainWindow):
         events = self.model.current["events"]
         nchan = self.model.current["data"].info["nchan"]
         nchan = min(nchan, read_settings("max_channels"))
+        duration = read_settings("duration")
 
         fig = self.model.current["data"].plot(
             events=events,
             n_channels=nchan,
+            duration=duration,
             title=self.model.current["name"],
-            scalings="auto",
+            clipping=None,
             show=False,
         )
         if events is not None:
-            hist = f"data.plot(events=events, n_channels={nchan})"
+            hist = f"data.plot(events=events, n_channels={nchan}, duration={duration})"
         else:
-            hist = f"data.plot(n_channels={nchan})"
+            hist = f"data.plot(n_channels={nchan}, duration={duration})"
         self.model.history.append(hist)
         if mne.viz.get_browser_backend() == "matplotlib":
             win = fig.canvas.manager.window

@@ -38,6 +38,7 @@ SETTINGS_PATH = str(
 _DEFAULTS = {
     "max_recent": 6,
     "max_channels": 20,
+    "duration": 20,
     "recent": [],
     "toolbar": True,
     "statusbar": True,
@@ -113,15 +114,23 @@ class SettingsDialog(QDialog):
         self.max_recent.setRange(5, 25)
         self.max_recent.setValue(read_settings("max_recent"))
         self.max_recent.setAlignment(Qt.AlignmentFlag.AlignRight)
-        self.max_recent.setFixedWidth(80)
+        self.max_recent.setFixedWidth(100)
         form.addRow("Recent files:", self.max_recent)
 
         self.max_channels = FlatSpinBox()
         self.max_channels.setRange(1, 256)
         self.max_channels.setValue(read_settings("max_channels"))
         self.max_channels.setAlignment(Qt.AlignmentFlag.AlignRight)
-        self.max_channels.setFixedWidth(80)
+        self.max_channels.setFixedWidth(100)
         form.addRow("Displayed channels:", self.max_channels)
+
+        self.duration = FlatSpinBox()
+        self.duration.setRange(1, 3600)
+        self.duration.setValue(read_settings("duration"))
+        self.duration.setSuffix(" s")
+        self.duration.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.duration.setFixedWidth(100)
+        form.addRow("Displayed duration:", self.duration)
 
         vbox.addLayout(form)
 
@@ -172,6 +181,7 @@ class SettingsDialog(QDialog):
         write_settings(
             max_recent=int(self.max_recent.text()),
             max_channels=int(self.max_channels.text()),
+            duration=self.duration.value(),
             recent=self.parent().recent,
             plot_backend=self.plot_backend.currentText(),
         )
@@ -186,6 +196,7 @@ class SettingsDialog(QDialog):
     def reset_settings(self):
         self.max_recent.setValue(_DEFAULTS["max_recent"])
         self.max_channels.setValue(_DEFAULTS["max_channels"])
+        self.duration.setValue(_DEFAULTS["duration"])
         self.plot_backend.setCurrentIndex(
             self.plot_backend.findText(_DEFAULTS["plot_backend"])
         )
