@@ -14,6 +14,7 @@
 - Improve dark mode theme for the Artifact Detection preview dialog ([#585](https://github.com/cbrnr/mnelab/pull/585) by [Fabian Schellander](https://github.com/SchellanderF))
 - Improve settings dialog layout and include the splitter position when resetting to defaults ([#590](https://github.com/cbrnr/mnelab/pull/590) by [Clemens Brunner](https://github.com/cbrnr))
 - Data traces are not clipped in the raw plot anymore ([#594](https://github.com/cbrnr/mnelab/pull/594) by [Clemens Brunner](https://github.com/cbrnr))
+- Work around an issue where "Plot IC properties..." (inside the "Label ICs..." dialog) would not work ([#596](https://github.com/cbrnr/mnelab/pull/596) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🌀 Changed
 - Consistently focus the OK button in all dialogs ([#586](https://github.com/cbrnr/mnelab/pull/586) by [Clemens Brunner](https://github.com/cbrnr))
