@@ -21,10 +21,10 @@ def select_all(list_widget):
 
 
 def get_detailed_ica_properties(ica, data, comp_id, ic_probs, labels):
-    # TODO: initialize MNE properties plot workaround until
-    # https://github.com/mne-tools/mne-python/pull/13746 is merged: if all fixed-length
-    # epochs are covered by bad annotations, stitch the good segments together and retry
-    # so the plot can still be generated
+    """Initialize the ICA properties plot."""
+    # TODO: workaround until https://github.com/mne-tools/mne-python/pull/13746 is
+    # merged (if all fixed-length epochs are covered by bad annotations, stitch the good
+    # segments together and retry so the plot can still be generated)
     from mne.io import BaseRaw, RawArray
 
     inst = data
