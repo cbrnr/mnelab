@@ -21,8 +21,25 @@ def select_all(list_widget):
 
 
 def get_detailed_ica_properties(ica, data, comp_id, ic_probs, labels):
-    # initialize MNE properties plot
-    figs = ica.plot_properties(data, picks=comp_id, show=False)
+    """Initialize the ICA properties plot."""
+    # TODO: workaround until https://github.com/mne-tools/mne-python/pull/13746 is
+    # merged (if all fixed-length epochs are covered by bad annotations, stitch the good
+    # segments together and retry so the plot can still be generated)
+    from mne.io import BaseRaw, RawArray
+
+    inst = data
+    if isinstance(data, BaseRaw):
+        try:
+            figs = ica.plot_properties(data, picks=comp_id, show=False)
+        except RuntimeError:
+            good_data = data.get_data(reject_by_annotation="omit")
+            if good_data.shape[1] >= int(2 * data.info["sfreq"]):
+                inst = RawArray(good_data, data.info.copy(), verbose=False)
+            figs = ica.plot_properties(
+                inst, picks=comp_id, show=False, reject_by_annotation=False
+            )
+    else:
+        figs = ica.plot_properties(data, picks=comp_id, show=False)
     fig = figs[0]
 
     # adjust overall figure dimensions
