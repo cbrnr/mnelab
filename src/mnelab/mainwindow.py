@@ -1214,10 +1214,11 @@ class MainWindow(QMainWindow):
         if have["scikit-learn"]:
             methods.append("FastICA")
 
-        dialog = RunICADialog(self, self.model.current["data"].info["nchan"], methods)
+        data = self.model.current["data"]
+        dialog = RunICADialog(self, data.info["nchan"], data.info["highpass"], methods)
 
         if dialog.exec():
-            calc = CalcDialog(self, "Calculating ICA", "Calculating ICA.")
+            calc = CalcDialog(self, "Calculating ICA", "Calculating ICA...")
 
             method = dialog.method.currentText().lower()
             exclude_bad_segments = dialog.exclude_bad_segments.isChecked()
