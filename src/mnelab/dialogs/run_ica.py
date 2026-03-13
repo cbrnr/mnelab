@@ -17,11 +17,12 @@ from mnelab.widgets import FlatSpinBox
 
 
 class RunICADialog(QDialog):
-    def __init__(self, parent, nchan, methods):
+    def __init__(self, parent, nchan, highpass, methods):
         super().__init__(parent)
         self.setWindowTitle("Run ICA")
 
         vbox = QVBoxLayout(self)
+
         grid = QGridLayout()
         grid.addWidget(QLabel("Method:"), 0, 0)
         self.method = QComboBox()
@@ -58,6 +59,20 @@ class RunICADialog(QDialog):
         grid.addWidget(self.exclude_bad_segments, 4, 1)
 
         vbox.addLayout(grid)
+
+        if highpass > 0:
+            hp_label = QLabel(
+                "<i>High-pass filtering before ICA is essential "
+                f"({highpass:.1f} Hz high-pass filter detected).</i>"
+            )
+        else:
+            hp_label = QLabel(
+                "<i>High-pass filtering before ICA is essential "
+                "(no high-pass filter detected).</i>"
+            )
+            hp_label.setStyleSheet("color: #d32f2f;")
+        hp_label.setWordWrap(True)
+        vbox.addWidget(hp_label)
 
         buttonbox = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
