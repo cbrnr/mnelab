@@ -5,6 +5,7 @@
 - The info pane now displays a copy button when hovering over the file name ([#578](https://github.com/cbrnr/mnelab/pull/578) and [#581](https://github.com/cbrnr/mnelab/pull/581) by [Richard Höchenberger](https://github.com/hoechenberger))
 - Remember the last directory used for opening and saving files ([#592](https://github.com/cbrnr/mnelab/pull/592) by [Clemens Brunner](https://github.com/cbrnr))
 - Add a setting for the default duration shown in the raw plot ([#594](https://github.com/cbrnr/mnelab/pull/594) by [Clemens Brunner](https://github.com/cbrnr))
+- Add an info message to the ICA dialog reminding users to high-pass filter their data before running ICA ([#595](https://github.com/cbrnr/mnelab/pull/595) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🔧 Fixed
 - Fix toolbar button hover effects on macOS ([#565](https://github.com/cbrnr/mnelab/pull/565) by [Clemens Brunner](https://github.com/cbrnr))
