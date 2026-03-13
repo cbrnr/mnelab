@@ -4,6 +4,7 @@
 - Add mask argument to Find Events dialog, which is useful for parsing events in BDF files ([#584](https://github.com/cbrnr/mnelab/pull/584) by [Clemens Brunner](https://github.com/cbrnr))
 - The info pane now displays a copy button when hovering over the file name ([#578](https://github.com/cbrnr/mnelab/pull/578) and [#581](https://github.com/cbrnr/mnelab/pull/581) by [Richard Höchenberger](https://github.com/hoechenberger))
 - Remember the last directory used for opening and saving files ([#592](https://github.com/cbrnr/mnelab/pull/592) by [Clemens Brunner](https://github.com/cbrnr))
+- Add a setting for the default duration shown in the raw plot ([#594](https://github.com/cbrnr/mnelab/pull/594) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🔧 Fixed
 - Fix toolbar button hover effects on macOS ([#565](https://github.com/cbrnr/mnelab/pull/565) by [Clemens Brunner](https://github.com/cbrnr))
@@ -11,6 +12,7 @@
 - Improve sidebar styling ([#573](https://github.com/cbrnr/mnelab/pull/573) by [Richard Höchenberger](https://github.com/hoechenberger))
 - Improve dark mode theme for the Artifact Detection preview dialog ([#585](https://github.com/cbrnr/mnelab/pull/585) by [Fabian Schellander](https://github.com/SchellanderF))
 - Improve settings dialog layout and include the splitter position when resetting to defaults ([#590](https://github.com/cbrnr/mnelab/pull/590) by [Clemens Brunner](https://github.com/cbrnr))
+- Data traces are not clipped in the raw plot anymore ([#594](https://github.com/cbrnr/mnelab/pull/594) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🌀 Changed
 - Consistently focus the OK button in all dialogs ([#586](https://github.com/cbrnr/mnelab/pull/586) by [Clemens Brunner](https://github.com/cbrnr))
