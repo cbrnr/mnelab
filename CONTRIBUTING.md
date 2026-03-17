@@ -62,18 +62,31 @@ MNELAB uses [Ruff](https://docs.astral.sh/ruff/formatter/) for formatting. Becau
 Follow these steps to make a new [PyPI](https://pypi.org/project/mnelab/) release (requires write permissions for GitHub and PyPI project sites):
 
 1. Remove the `.dev0` suffix from the `version` field in `pyproject.toml` (and/or adapt the version to be released if necessary)
-2. Update the section in `CHANGELOG.md` corresponding to the new release with the version and current date
-3. Update the section on the standalone installers in `README.md` and `docs/tutorial/index.md` (use the to-be-released version in the URLs, e.g., https://github.com/cbrnr/mnelab/releases/download/v1.0.3/MNELAB-1.0.3.exe)
-4. Commit these changes and push
-5. Create a new release on GitHub and use the version as the tag name (make sure to prepend the version with a `v`, e.g. `v0.7.0`)
-6. A GitHub Action takes care of building and uploading wheels to PyPI as well as adding standalone installers to the release
+2. Run `uv lock` to update `uv.lock` with the new version
+3. Update the section in `CHANGELOG.md` corresponding to the new release with the version and current date
+4. Update the section on the standalone installers in `README.md` and `docs/tutorial/index.md` (use the to-be-released version in the URLs, e.g., https://github.com/cbrnr/mnelab/releases/download/v1.0.3/MNELAB-1.0.3.exe)
+5. Commit these changes and push
+6. Create a new release on GitHub and use the version as the tag name (make sure to prepend the version with a `v`, e.g. `v0.7.0`)
+7. A GitHub Action takes care of building and uploading wheels to PyPI as well as adding standalone installers to the release
 
 This concludes the new release. Now prepare the source for the next planned release as follows:
 
 1. Update the `version` field to the next planned release and append `.dev0`
-2. Start a new section at the top of `CHANGELOG.md` titled `## [UNRELEASED] · YYYY-MM-DD`
+2. Run `uv lock` to update `uv.lock` with the new version
+3. Start a new section at the top of `CHANGELOG.md` titled `## [UNRELEASED] · YYYY-MM-DD`
 
 Don't forget to push these changes!
+
+
+## Upgrading dependencies
+
+To upgrade all locked dependencies to their latest allowed versions, run:
+
+```
+uv lock --upgrade
+```
+
+Commit the resulting `uv.lock` changes. This can be done at any time, independently of a release. Just keep in mind that if you later bump the version in `pyproject.toml` (e.g., as part of a release), you must run `uv lock` again afterwards — otherwise the lockfile will be out of sync and CI will fail with `--locked`.
 
 
 ## Creating standalone packages
