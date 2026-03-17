@@ -1,6 +1,6 @@
 ## [UNRELEASED] · YYYY-MM-DD
 ### ✨ Added
-- The dataset pane now contains badges that make it easy to recognize the data type of each entry ([#576](https://github.com/cbrnr/mnelab/pull/576) by [Richard Höchenberger](https://github.com/hoechenberger))
+- The dataset pane now contains badges that make it easy to recognize the data type of each entry (these can be toggled in the settings) ([#576](https://github.com/cbrnr/mnelab/pull/576) and [#598](https://github.com/cbrnr/mnelab/pull/598) by [Richard Höchenberger](https://github.com/hoechenberger) and [Clemens Brunner](https://github.com/cbrnr))
 - Add mask argument to Find Events dialog, which is useful for parsing events in BDF files ([#584](https://github.com/cbrnr/mnelab/pull/584) by [Clemens Brunner](https://github.com/cbrnr))
 - The info pane now displays a copy button when hovering over the file name ([#578](https://github.com/cbrnr/mnelab/pull/578) and [#581](https://github.com/cbrnr/mnelab/pull/581) by [Richard Höchenberger](https://github.com/hoechenberger))
 - Remember the last directory used for opening and saving files ([#592](https://github.com/cbrnr/mnelab/pull/592) by [Clemens Brunner](https://github.com/cbrnr))
