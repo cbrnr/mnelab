@@ -245,6 +245,10 @@ class SidebarTableWidget(QTableWidget):
         index = self.indexAt(pos)
         self.showCloseButton(index.row() if index.isValid() else -1)
 
+    def set_badges_visible(self, visible):
+        """Show or hide the data type badge column."""
+        self.setColumnHidden(2, not visible)
+
     def update_vertical_header(self):
         row_count = self.rowCount()
         self.setVerticalHeaderLabels([str(i) for i in range(row_count)])
