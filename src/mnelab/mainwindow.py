@@ -51,6 +51,7 @@ from mnelab.utils import (
     annotations_between_events,
     count_locations,
     format_code,
+    get_annotation_types_from_file,
     have,
     image_path,
     natural_sort,
@@ -162,9 +163,7 @@ class MainWindow(QMainWindow):
         )
         self.all_actions["import_annotations"] = file_menu.addAction(
             "Import annotations...",
-            lambda: self.import_file(
-                model.import_annotations, "Import annotations", "*.csv"
-            ),
+            self.import_annotations,
         )
         self.all_actions["import_ica"] = file_menu.addAction(
             "Import &ICA...",
@@ -188,9 +187,7 @@ class MainWindow(QMainWindow):
         )
         self.all_actions["export_annotations"] = file_menu.addAction(
             "Export &annotations...",
-            lambda: self.export_file(
-                model.export_annotations, "Export annotations", "*.csv"
-            ),
+            self.export_annotations,
         )
         self.all_actions["export_ica"] = file_menu.addAction(
             "Export ICA...",
@@ -830,6 +827,61 @@ class MainWindow(QMainWindow):
                 QMessageBox.critical(self, "Channel labels not found", str(e))
             except InvalidAnnotationsError as e:
                 QMessageBox.critical(self, "Invalid annotations", str(e))
+
+    def export_annotations(self):
+        """Export annotations, optionally filtered by type."""
+        all_types = sorted(set(self.model.current["data"].annotations.description))
+        fname = QFileDialog.getSaveFileName(
+            self, "Export annotations", self._get_last_dir(), "*.csv"
+        )[0]
+        if not fname:
+            return
+        self._set_last_dir(fname)
+        if len(all_types) > 1:
+            dialog = AnnotationTypesDialog(
+                self,
+                all_types,
+                title="Export annotations",
+                label="Select annotation types to export:",
+            )
+            if not dialog.exec():
+                return
+            types = dialog.selected_types
+        else:
+            types = all_types
+        if not fname.endswith(".csv"):
+            fname += ".csv"
+        self.model.export_annotations(fname, types=types)
+
+    def import_annotations(self):
+        """Import annotations, optionally filtered by type."""
+        fname = QFileDialog.getOpenFileName(
+            self, "Import annotations", self._get_last_dir(), "*.csv"
+        )[0]
+        if not fname:
+            return
+        self._set_last_dir(fname)
+        try:
+            all_types = get_annotation_types_from_file(fname)
+        except Exception as e:
+            QMessageBox.critical(self, "Invalid annotations file", str(e))
+            return
+        if len(all_types) > 1:
+            dialog = AnnotationTypesDialog(
+                self,
+                all_types,
+                title="Import annotations",
+                label="Select annotation types to import:",
+            )
+            if not dialog.exec():
+                return
+            types = dialog.selected_types
+        else:
+            types = all_types
+        try:
+            self.model.import_annotations(fname, types=types if types else None)
+        except InvalidAnnotationsError as e:
+            QMessageBox.critical(self, "Invalid annotations", str(e))
 
     def _set_splitter_ratio(self, ratio):
         total = sum(self.splitter.sizes())

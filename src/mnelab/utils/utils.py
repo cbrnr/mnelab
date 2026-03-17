@@ -256,6 +256,28 @@ def merge_annotations(onsets, durations, descriptions):
     return merged_onsets, merged_durations, merged_descriptions
 
 
+def get_annotation_types_from_file(fname):
+    """Return the sorted unique annotation types present in a CSV annotation file.
+
+    Parameters
+    ----------
+    fname : str
+        Path to a CSV annotation file (type, onset, duration).
+
+    Returns
+    -------
+    list of str
+    """
+    types = set()
+    with open(fname) as f:
+        f.readline()  # skip header
+        for line in f:
+            parts = line.split(",")
+            if len(parts) == 3:
+                types.add(parts[0].strip())
+    return sorted(types)
+
+
 @dataclass
 class Montage:
     montage: DigMontage

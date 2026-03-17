@@ -279,17 +279,29 @@ class Model:
             comments="",
         )
 
-    def export_annotations(self, fname):
-        """Export annotations to a CSV file."""
+    def export_annotations(self, fname, types=None):
+        """Export annotations to a CSV file.
+
+        Parameters
+        ----------
+        fname : str
+            Destination file path.
+        types : list of str or None
+            Annotation types (descriptions) to export.  If `None`, all types are
+            exported.
+        """
         name, ext = splitext(split(fname)[-1])
         ext = ext if ext else ".csv"  # automatically add extension
         fname = join(split(fname)[0], name + ext)
         annots = self.current["data"].annotations
         with open(fname, "w") as f:
             f.write("type,onset,duration\n")
-            for a in zip(annots.description, annots.onset, annots.duration):
-                f.write(",".join([a[0], str(a[1]), str(a[2])]))
-                f.write("\n")
+            for desc, onset, duration in zip(
+                annots.description, annots.onset, annots.duration
+            ):
+                if types is None or desc in types:
+                    f.write(",".join([desc, str(onset), str(duration)]))
+                    f.write("\n")
 
     def export_ica(self, fname):
         """Export ICA solution to file."""
@@ -335,8 +347,17 @@ class Model:
             raise ValueError(f"Unsupported event file: {fname}")
 
     @data_changed
-    def import_annotations(self, fname):
-        """Import annotations from a CSV file."""
+    def import_annotations(self, fname, types=None):
+        """Import annotations from a CSV file.
+
+        Parameters
+        ----------
+        fname : str
+            Source file path.
+        types : list of str or None
+            Annotation types (descriptions) to import.  If `None`, all types are
+            imported.
+        """
         descs, onsets, durations = [], [], []
         fs = self.current["data"].info["sfreq"]
         with open(fname) as f:
@@ -344,6 +365,9 @@ class Model:
             for line in f:
                 annot = line.split(",")
                 if len(annot) == 3:  # type, onset, duration
+                    desc = annot[0].strip()
+                    if types is not None and desc not in types:
+                        continue
                     onset = float(annot[1].strip())
                     duration = float(annot[2].strip())
                     if onset > self.current["data"].n_times / fs:
@@ -351,7 +375,7 @@ class Model:
                             "One or more annotations are outside the data range."
                         )
                     else:
-                        descs.append(annot[0].strip())
+                        descs.append(desc)
                         onsets.append(onset)
                         durations.append(duration)
         annotations = mne.Annotations(onsets, durations, descs)

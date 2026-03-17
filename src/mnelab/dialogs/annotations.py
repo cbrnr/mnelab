@@ -10,13 +10,15 @@ from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QHBoxLayout,
+    QLabel,
+    QListWidget,
     QPushButton,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
 )
 
-from mnelab.dialogs.utils import IntTableWidgetItem
+from mnelab.dialogs.utils import IntTableWidgetItem, select_all
 
 
 class AnnotationsDialog(QDialog):
@@ -147,3 +149,41 @@ class EventCountsDialog(QDialog):
             self.counts_table.insertRow(row)
             self.counts_table.setItem(row, 0, id_item)
             self.counts_table.setItem(row, 1, QTableWidgetItem(str(count)))
+
+
+class AnnotationTypesDialog(QDialog):
+    """Dialog for selecting annotation types to import or export."""
+
+    def __init__(self, parent, types, title="Select annotation types", label=None):
+        super().__init__(parent)
+        self.setWindowTitle(title)
+
+        vbox = QVBoxLayout(self)
+        if label is not None:
+            vbox.addWidget(QLabel(label))
+        self.list_widget = QListWidget()
+        self.list_widget.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
+        self.list_widget.insertItems(0, types)
+        select_all(self.list_widget)
+        vbox.addWidget(self.list_widget)
+        self.buttonbox = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
+        vbox.addWidget(self.buttonbox)
+        self.buttonbox.accepted.connect(self.accept)
+        self.buttonbox.rejected.connect(self.reject)
+        self.list_widget.itemSelectionChanged.connect(self.toggle_ok)
+        self.toggle_ok()
+        self.setFocus()
+
+    @Slot()
+    def toggle_ok(self):
+        """Disable OK when nothing is selected."""
+        self.buttonbox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(
+            bool(self.list_widget.selectedItems())
+        )
+
+    @property
+    def selected_types(self):
+        """Return list of selected annotation type strings."""
+        return [item.text() for item in self.list_widget.selectedItems()]

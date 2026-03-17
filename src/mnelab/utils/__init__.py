@@ -16,6 +16,7 @@ from mnelab.utils.utils import (
     annotations_between_events,
     calculate_channel_stats,
     count_locations,
+    get_annotation_types_from_file,
     image_path,
     merge_annotations,
     natural_sort,
