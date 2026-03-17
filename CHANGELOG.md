@@ -1,4 +1,4 @@
-## [UNRELEASED] · YYYY-MM-DD
+## [1.4.0] · 2026-03-17
 ### ✨ Added
 - The dataset pane now contains badges that make it easy to recognize the data type of each entry (these can be toggled in the settings) ([#576](https://github.com/cbrnr/mnelab/pull/576) and [#598](https://github.com/cbrnr/mnelab/pull/598) by [Richard Höchenberger](https://github.com/hoechenberger) and [Clemens Brunner](https://github.com/cbrnr))
 - Add mask argument to Find Events dialog, which is useful for parsing events in BDF files ([#584](https://github.com/cbrnr/mnelab/pull/584) by [Clemens Brunner](https://github.com/cbrnr))
