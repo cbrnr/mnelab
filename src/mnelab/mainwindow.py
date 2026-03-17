@@ -550,6 +550,7 @@ class MainWindow(QMainWindow):
                 self.sidebar.set_dtype(row_index, dtype)
 
             self.sidebar.style_rows()
+            self.sidebar.set_badges_visible(read_settings("dtype_badges"))
             self.sidebar.selectRow(self.model.index)
             self.sidebar.blockSignals(False)
             self.sidebar.setFocus()
@@ -1547,11 +1548,15 @@ class MainWindow(QMainWindow):
 
     def settings(self):
         old_backend = read_settings("plot_backend")
+        old_badges = read_settings("dtype_badges")
         SettingsDialog(self, self.plot_backends).exec()
         new_backend = read_settings("plot_backend")
+        new_badges = read_settings("dtype_badges")
         if old_backend != new_backend:
             mne.viz.set_browser_backend(new_backend)
             self.model.history.append(f'mne.viz.set_browser_backend("{new_backend}")')
+        if old_badges != new_badges:
+            self.sidebar.set_badges_visible(new_badges)
 
     def auto_duplicate(self):
         """Automatically duplicate current data set.

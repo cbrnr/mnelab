@@ -15,6 +15,7 @@ from PySide6.QtCore import (
 )
 from PySide6.QtGui import QDesktopServices, Qt
 from PySide6.QtWidgets import (
+    QCheckBox,
     QComboBox,
     QDialog,
     QDialogButtonBox,
@@ -47,6 +48,7 @@ _DEFAULTS = {
     "plot_backend": "Matplotlib",
     "splitter": 0.4,
     "last_dir": str(Path.home()),
+    "dtype_badges": True,
 }
 
 
@@ -132,6 +134,10 @@ class SettingsDialog(QDialog):
         self.duration.setFixedWidth(100)
         form.addRow("Displayed duration:", self.duration)
 
+        self.dtype_badges = QCheckBox()
+        self.dtype_badges.setChecked(read_settings("dtype_badges"))
+        form.addRow("Data type badges:", self.dtype_badges)
+
         vbox.addLayout(form)
 
         mnelab_label = QLabel(
@@ -151,9 +157,7 @@ class SettingsDialog(QDialog):
         vbox.addWidget(mne_label)
 
         self.buttonbox = QDialogButtonBox(
-            QDialogButtonBox.StandardButton.Apply
-            | QDialogButtonBox.StandardButton.Ok
-            | QDialogButtonBox.StandardButton.Cancel
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )
         self.reset_button = self.buttonbox.addButton(
             "Reset to defaults", QDialogButtonBox.ButtonRole.ResetRole
@@ -161,9 +165,6 @@ class SettingsDialog(QDialog):
         vbox.addWidget(self.buttonbox)
 
         self.reset_button.clicked.connect(self.reset_settings)
-        self.buttonbox.button(QDialogButtonBox.StandardButton.Apply).clicked.connect(
-            self.apply_settings
-        )
         self.buttonbox.accepted.connect(self.on_ok_clicked)
         self.buttonbox.rejected.connect(self.reject)
 
@@ -177,19 +178,16 @@ class SettingsDialog(QDialog):
         QDesktopServices.openUrl(QUrl.fromLocalFile(path))
 
     @Slot()
-    def apply_settings(self):
+    def on_ok_clicked(self):
         write_settings(
             max_recent=int(self.max_recent.text()),
             max_channels=int(self.max_channels.text()),
             duration=self.duration.value(),
             recent=self.parent().recent,
             plot_backend=self.plot_backend.currentText(),
+            dtype_badges=self.dtype_badges.isChecked(),
         )
         self.parent().recent = self.parent().recent[: read_settings("max_recent")]
-
-    @Slot()
-    def on_ok_clicked(self):
-        self.apply_settings()
         self.accept()
 
     @Slot()
@@ -197,6 +195,7 @@ class SettingsDialog(QDialog):
         self.max_recent.setValue(_DEFAULTS["max_recent"])
         self.max_channels.setValue(_DEFAULTS["max_channels"])
         self.duration.setValue(_DEFAULTS["duration"])
+        self.dtype_badges.setChecked(_DEFAULTS["dtype_badges"])
         self.plot_backend.setCurrentIndex(
             self.plot_backend.findText(_DEFAULTS["plot_backend"])
         )
