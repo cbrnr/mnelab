@@ -1,4 +1,7 @@
 ## [UNRELEASED] · YYYY-MM-DD
+### 🔧 Fixed
+- Fix a bug where the sidebar would not be visible after loading a dataset ([#601](https://github.com/cbrnr/mnelab/pull/601) by [Clemens Brunner](https://github.com/cbrnr))
+
 ### 🗑️ Removed
 - Remove support for Python 3.10 and 3.11 ([#600](https://github.com/cbrnr/mnelab/pull/600) by [Clemens Brunner](https://github.com/cbrnr))
 
