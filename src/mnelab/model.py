@@ -245,13 +245,21 @@ class Model:
             event_desc=mapping,
         )
         if len(annots) > 0:
-            self.current["data"].set_annotations(annots)
+            annots = mne.Annotations(
+                onset=annots.onset,
+                duration=annots.duration,
+                description=annots.description,
+                orig_time=self.current["data"].annotations.orig_time,
+            )
+            self.current["data"].set_annotations(
+                self.current["data"].annotations + annots
+            )
             hist = 'annots = mne.annotations_from_events(events, data.info["sfreq"]'
             if mapping is not None:
                 hist += f", event_desc={mapping}"
-            hist += ")"
+            hist += ")\n"
+            hist += "data.set_annotations(data.annotations + annots)"
             self.history.append(hist)
-            self.history.append("data = data.set_annotations(annots)")
 
     def export_data(self, fname):
         """Export raw to file."""
