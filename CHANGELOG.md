@@ -1,4 +1,6 @@
 ## [UNRELEASED] · YYYY-MM-DD
+### 🗑️ Removed
+- Remove support for Python 3.10 and 3.11 ([#600](https://github.com/cbrnr/mnelab/pull/600) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.4.0] · 2026-03-17
 ### ✨ Added
