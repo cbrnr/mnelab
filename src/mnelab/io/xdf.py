@@ -5,7 +5,7 @@
 import struct
 import xml.etree.ElementTree as ETree
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import mne
 import numpy as np
@@ -169,7 +169,7 @@ class RawXDF(BaseRaw):
         if recording_datetime is not None:
             recording_datetime = recording_datetime[:-2] + ":" + recording_datetime[-2:]
             meas_date = datetime.fromisoformat(recording_datetime)
-            self.set_meas_date(meas_date.astimezone(timezone.utc))
+            self.set_meas_date(meas_date.astimezone(UTC))
 
 
 def _mark_gaps(data, timestamps, original_timestamps, gap_threshold, cols):
