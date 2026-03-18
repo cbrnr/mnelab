@@ -360,26 +360,44 @@ class Model:
         """
         descs, onsets, durations = [], [], []
         fs = self.current["data"].info["sfreq"]
-        with open(fname) as f:
-            f.readline()  # skip header
-            for line in f:
-                annot = line.split(",")
-                if len(annot) == 3:  # type, onset, duration
-                    desc = annot[0].strip()
-                    if types is not None and desc not in types:
-                        continue
-                    onset = float(annot[1].strip())
-                    duration = float(annot[2].strip())
-                    if onset > self.current["data"].n_times / fs:
-                        raise InvalidAnnotationsError(
-                            "One or more annotations are outside the data range."
-                        )
-                    else:
+        try:
+            with open(fname) as f:
+                header = f.readline().strip()
+                if header != "type,onset,duration":
+                    raise InvalidAnnotationsError(
+                        "Invalid annotations file (expected header: "
+                        "'type,onset,duration')."
+                    )
+                for line in f:
+                    annot = line.split(",")
+                    if len(annot) == 3:  # type, onset, duration
+                        desc = annot[0].strip()
+                        if types is not None and desc not in types:
+                            continue
+                        try:
+                            onset = float(annot[1].strip())
+                            duration = float(annot[2].strip())
+                        except ValueError:
+                            raise InvalidAnnotationsError(
+                                "One or more annotations have invalid onset or duration"
+                                " values."
+                            )
+                        if onset > self.current["data"].n_times / fs:
+                            raise InvalidAnnotationsError(
+                                "One or more annotations are outside the data range."
+                            )
                         descs.append(desc)
                         onsets.append(onset)
                         durations.append(duration)
-        annotations = mne.Annotations(onsets, durations, descs)
-        self.current["data"].set_annotations(annotations)
+        except InvalidAnnotationsError:
+            raise
+        except UnicodeDecodeError:
+            raise InvalidAnnotationsError(
+                "The file contains binary data and cannot be read as CSV."
+            )
+        existing = self.current["data"].annotations
+        new = mne.Annotations(onsets, durations, descs, orig_time=existing.orig_time)
+        self.current["data"].set_annotations(existing + new)
 
     @data_changed
     def import_ica(self, fname):

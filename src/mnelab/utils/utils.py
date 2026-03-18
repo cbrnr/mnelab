@@ -77,6 +77,7 @@ def annotations_between_events(
     end_offset=0.0,
     extend_start=True,
     extend_end=True,
+    orig_time=None,
 ):
     """Create annotations between events.
 
@@ -110,6 +111,9 @@ def annotations_between_events(
     extend_end : bool
         Whether to extend the last annotation to the end of the recording. Defaults to
         True.
+    orig_time : datetime | None
+        The orig_time to assign to the returned Annotations object. Pass orig_time from
+        existing annotations to allow concatenation without errors. Defaults to None.
     Returns
     -------
     mne.Annotations
@@ -197,7 +201,9 @@ def annotations_between_events(
                     descriptions.append(annotation)
 
     onsets, durations, descriptions = merge_annotations(onsets, durations, descriptions)
-    return mne.Annotations(onset=onsets, duration=durations, description=descriptions)
+    return mne.Annotations(
+        onset=onsets, duration=durations, description=descriptions, orig_time=orig_time
+    )
 
 
 def merge_annotations(onsets, durations, descriptions):
