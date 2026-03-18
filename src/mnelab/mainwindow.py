@@ -1734,11 +1734,10 @@ class MainWindow(QMainWindow):
         if event.type() == QEvent.Type.Close:
             sizes = self.splitter.sizes()
             total = sum(sizes)
-            write_settings(
-                size=self.size(),
-                pos=self.pos(),
-                splitter=sizes[0] / total if total > 0 else read_settings("splitter"),
-            )
+            kwargs = {"size": self.size(), "pos": self.pos()}
+            if self.sidebar.isVisible() and total > 0:
+                kwargs["splitter"] = sizes[0] / total
+            write_settings(**kwargs)
             if self.model.history:
                 print("\n# Command History\n")
                 print(format_code("\n".join(self.model.history)))
