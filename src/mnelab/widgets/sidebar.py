@@ -271,13 +271,36 @@ class SidebarTableWidget(QTableWidget):
                 self.showCloseButton(-1)
         elif source == self.viewport() and event.type() == QEvent.Type.Leave:
             self.showCloseButton(-1)
+        elif isinstance(source, QToolButton) and event.type() == QEvent.Type.Enter:
+            # guard against the spurious Enter fired by setCellWidget while the button
+            # is still at (0, 0) before the layout pass moves it to column 3
+            for row in range(self.rowCount()):
+                if self.cellWidget(row, 3) is source:
+                    btn_rect = self.visualRect(self.model().index(row, 3))
+                    cursor = self.viewport().mapFromGlobal(QCursor.pos())
+                    if btn_rect.contains(cursor):
+                        source.setStyleSheet("""
+                            QToolButton {
+                                background: rgba(128, 128, 128, 0.2);
+                                border-radius: 4px;
+                            }
+                            QToolButton:pressed {
+                                background: rgba(128, 128, 128, 0.35);
+                                border-radius: 4px;
+                            }
+                        """)
+                    break
+        elif isinstance(source, QToolButton) and event.type() == QEvent.Type.Leave:
+            source.setStyleSheet(
+                "QToolButton { background: transparent; border: none; }"
+            )
 
         return False
 
     def showCloseButton(self, row_index):
         for i in range(self.rowCount()):
             if i == row_index:
-                delete_button = QToolButton(self)
+                delete_button = QToolButton()
                 delete_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
                 delete_button.setFixedSize(24, ROW_HEIGHT)
                 delete_button.setIcon(QIcon.fromTheme("close-data"))
@@ -286,10 +309,6 @@ class SidebarTableWidget(QTableWidget):
                     QToolButton {
                         background: transparent;
                         border: none;
-                    }
-                    QToolButton:hover {
-                        background: rgba(128, 128, 128, 0.2);
-                        border-radius: 4px;
                     }
                     QToolButton:pressed {
                         background: rgba(128, 128, 128, 0.35);
