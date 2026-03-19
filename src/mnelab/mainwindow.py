@@ -35,9 +35,11 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QMenu,
     QMessageBox,
+    QProxyStyle,
     QSizePolicy,
     QSplitter,
     QStackedWidget,
+    QStyle,
     QTableWidgetItem,
     QToolButton,
     QWidget,
@@ -72,6 +74,16 @@ from mnelab.viz import (
     plot_evoked_topomaps,
 )
 from mnelab.widgets import EmptyWidget, InfoWidget, SidebarTableWidget
+
+
+class MenuPaddingStyle(QProxyStyle):
+    def sizeFromContents(self, contents_type, option, size, widget=None):
+        base_size = super().sizeFromContents(contents_type, option, size, widget)
+
+        if contents_type == QStyle.ContentsType.CT_MenuItem:
+            base_size.setWidth(base_size.width() + 30)  # increase width
+
+        return base_size
 
 
 class _MNELogHandler(logging.Handler):
@@ -452,6 +464,8 @@ class MainWindow(QMainWindow):
             self._hamburger_button.setIcon(QIcon.fromTheme("hamburger-menu"))
             self._hamburger_button.setToolTip("Menu")
             hamburger_popup = QMenu(self)
+            self._menu_style = MenuPaddingStyle()
+            hamburger_popup.setStyle(self._menu_style)
             for menu_action in self.menuBar().actions():
                 if (submenu := menu_action.menu()) is not None:
                     hamburger_popup.addMenu(submenu)
