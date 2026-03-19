@@ -1,3 +1,5 @@
+## [UNRELEASED] · YYYY-MM-DD
+
 ## [1.4.1] · 2026-03-19
 ### 🔧 Fixed
 - Fix a bug where the sidebar would not be visible after loading a dataset ([#601](https://github.com/cbrnr/mnelab/pull/601) by [Clemens Brunner](https://github.com/cbrnr))
