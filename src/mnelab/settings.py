@@ -49,6 +49,7 @@ _DEFAULTS = {
     "splitter": 0.4,
     "last_dir": str(Path.home()),
     "dtype_badges": True,
+    "show_menubar": True,
 }
 
 

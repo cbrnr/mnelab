@@ -1,4 +1,6 @@
 ## [UNRELEASED] · YYYY-MM-DD
+### ✨ Added
+- Add option to toggle between showing the menubar and using a hamburger menu (View – Menubar) on Windows and Linux ([#603](https://github.com/cbrnr/mnelab/pull/603) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.4.1] · 2026-03-19
 ### 🔧 Fixed

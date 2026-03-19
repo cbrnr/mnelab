@@ -31,10 +31,14 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QLabel,
     QMainWindow,
+    QMenu,
     QMessageBox,
+    QSizePolicy,
     QSplitter,
     QStackedWidget,
     QTableWidgetItem,
+    QToolButton,
+    QWidget,
 )
 from pyxdf import resolve_streams
 
@@ -373,6 +377,13 @@ class MainWindow(QMainWindow):
             "&Statusbar", self._toggle_statusbar
         )
         self.all_actions["statusbar"].setCheckable(True)
+        if sys.platform != "darwin":
+            self.all_actions["menubar"] = view_menu.addAction(
+                "&Menubar",
+                self._toggle_menubar,
+                QKeySequence(Qt.Modifier.CTRL | Qt.Key.Key_M),
+            )
+            self.all_actions["menubar"].setCheckable(True)
 
         help_menu = self.menuBar().addMenu("&Help")
         self.all_actions["about"] = help_menu.addAction("&About", self.show_about)
@@ -393,6 +404,7 @@ class MainWindow(QMainWindow):
             "xdf_chunks",
             "toolbar",
             "statusbar",
+            "menubar",
             "settings",
             "documentation",
             "history",
@@ -416,6 +428,30 @@ class MainWindow(QMainWindow):
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.all_actions["settings"])
         self.toolbar.setMovable(False)
+        # hamburger menu button (Windows/Linux only)
+        if sys.platform != "darwin":
+            hamburger_spacer = QWidget()
+            hamburger_spacer.setSizePolicy(
+                QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
+            )
+            self._hamburger_spacer_action = self.toolbar.addWidget(hamburger_spacer)
+            self._hamburger_button = QToolButton()
+            self._hamburger_button.setIcon(QIcon.fromTheme("hamburger-menu"))
+            self._hamburger_button.setToolTip("Menu")
+            hamburger_popup = QMenu(self)
+            for menu_action in self.menuBar().actions():
+                if (submenu := menu_action.menu()) is not None:
+                    hamburger_popup.addMenu(submenu)
+            self._hamburger_button.setMenu(hamburger_popup)
+            self._hamburger_button.setPopupMode(
+                QToolButton.ToolButtonPopupMode.InstantPopup
+            )
+            self._hamburger_action = self.toolbar.addWidget(self._hamburger_button)
+            hamburger_enabled = not settings["show_menubar"]
+            self._hamburger_spacer_action.setVisible(hamburger_enabled)
+            self._hamburger_action.setVisible(hamburger_enabled)
+            self.menuBar().setVisible(not hamburger_enabled)
+            self.all_actions["menubar"].setChecked(not hamburger_enabled)
         self.setUnifiedTitleAndToolBarOnMac(True)
         if sys.platform == "darwin":
             self.toolbar.setStyleSheet("""
@@ -1718,6 +1754,22 @@ class MainWindow(QMainWindow):
         else:
             self.toolbar.hide()
         write_settings(toolbar=not self.toolbar.isHidden())
+
+    def _apply_hamburger_menu_setting(self, enabled):
+        self.menuBar().setVisible(not enabled)
+        self._hamburger_spacer_action.setVisible(enabled)
+        self._hamburger_action.setVisible(enabled)
+        write_settings(show_menubar=not enabled)
+
+    @Slot()
+    def _toggle_menubar(self):
+        menubar_visible = self.menuBar().isVisible()
+        self.menuBar().setVisible(not menubar_visible)
+        hamburger_enabled = menubar_visible
+        self._hamburger_spacer_action.setVisible(hamburger_enabled)
+        self._hamburger_action.setVisible(hamburger_enabled)
+        self.all_actions["menubar"].setChecked(not menubar_visible)
+        write_settings(show_menubar=not hamburger_enabled)
 
     @Slot()
     def _toggle_statusbar(self):
