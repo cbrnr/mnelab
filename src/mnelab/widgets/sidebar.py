@@ -102,13 +102,22 @@ class SidebarTableWidget(QTableWidget):
         self.setDragDropOverwriteMode(False)
         self.setFrameStyle(QFrame.Shape.NoFrame)
         self.setEditTriggers(QAbstractItemView.EditTrigger.DoubleClicked)
+        self.setObjectName("sidebar")
         self.setColumnCount(4)
         self.setShowGrid(False)
         if sys.platform != "darwin":
             # disable cell style changes upon focusing (clicking); not needed on macOS
             self.setStyleSheet("""
-                QTableWidget { outline: 0; }
-                QTableWidget::item:focus {
+                QTableWidget#sidebar { outline: 0; }
+                QTableWidget#sidebar::item:hover {
+                    background: transparent;
+                    color: palette(text);
+                }
+                QTableWidget#sidebar::item:selected {
+                    background: palette(highlight);
+                    color: palette(highlighted-text);
+                }
+                QTableWidget#sidebar::item:focus {
                     background: palette(highlight);
                     color: palette(highlighted-text);
                 }
@@ -273,10 +282,20 @@ class SidebarTableWidget(QTableWidget):
                 delete_button.setFixedSize(24, ROW_HEIGHT)
                 delete_button.setIcon(QIcon.fromTheme("close-data"))
                 delete_button.setToolTip("Close dataset")
-                delete_button.setAutoRaise(True)
-                delete_button.setStyleSheet(
-                    "QToolButton { background: transparent; border: none; }"
-                )
+                delete_button.setStyleSheet("""
+                    QToolButton {
+                        background: transparent;
+                        border: none;
+                    }
+                    QToolButton:hover {
+                        background: rgba(128, 128, 128, 0.2);
+                        border-radius: 4px;
+                    }
+                    QToolButton:pressed {
+                        background: rgba(128, 128, 128, 0.35);
+                        border-radius: 4px;
+                    }
+                """)
                 delete_button.clicked.connect(
                     lambda _, index=row_index: self.parent.model.remove_data(index)
                 )

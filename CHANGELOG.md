@@ -3,6 +3,9 @@
 - Add option to toggle between showing the menubar and using a hamburger menu (View – Menubar) on Windows and Linux ([#603](https://github.com/cbrnr/mnelab/pull/603) by [Clemens Brunner](https://github.com/cbrnr))
 - Add a "Check for Updates" option ([#604](https://github.com/cbrnr/mnelab/pull/604) by [Clemens Brunner](https://github.com/cbrnr))
 
+### 🔧 Fixed
+- Fix sidebar hover effects on Linux and Windows ([#605](https://github.com/cbrnr/mnelab/pull/605) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [1.4.1] · 2026-03-19
 ### 🔧 Fixed
 - Fix a bug where the sidebar would not be visible after loading a dataset ([#601](https://github.com/cbrnr/mnelab/pull/601) by [Clemens Brunner](https://github.com/cbrnr))
