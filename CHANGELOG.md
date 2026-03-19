@@ -4,7 +4,7 @@
 - Add a "Check for Updates" option ([#604](https://github.com/cbrnr/mnelab/pull/604) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🔧 Fixed
-- Fix sidebar hover effects on Linux and Windows ([#605](https://github.com/cbrnr/mnelab/pull/605) by [Clemens Brunner](https://github.com/cbrnr))
+- Fix sidebar hover effects on Linux and Windows ([#605](https://github.com/cbrnr/mnelab/pull/605) and [#607](https://github.com/cbrnr/mnelab/pull/607) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.4.1] · 2026-03-19
 ### 🔧 Fixed
