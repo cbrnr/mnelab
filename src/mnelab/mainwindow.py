@@ -2,6 +2,7 @@
 #
 # License: BSD (3-clause)
 
+import json
 import logging
 import multiprocessing as mp
 import sys
@@ -11,6 +12,7 @@ from functools import partial
 from operator import itemgetter
 from pathlib import Path
 from sys import version_info
+from urllib.request import Request, urlopen
 
 import mne
 import numpy as np
@@ -42,6 +44,7 @@ from PySide6.QtWidgets import (
 )
 from pyxdf import resolve_streams
 
+from mnelab import IS_DEV_VERSION, __version__
 from mnelab.dialogs import *  # noqa: F403
 from mnelab.dialogs.channel_stats import ChannelStats
 from mnelab.io import writers
@@ -390,6 +393,15 @@ class MainWindow(QMainWindow):
         self.all_actions["about_qt"] = help_menu.addAction(
             "About &Qt", self.show_about_qt
         )
+        if sys.platform != "darwin":
+            help_menu.addSeparator()
+        self.all_actions["check_updates"] = help_menu.addAction(
+            "Check for &Updates", self.show_check_for_updates
+        )
+        if sys.platform == "darwin":
+            self.all_actions["check_updates"].setMenuRole(
+                QAction.MenuRole.ApplicationSpecificRole
+            )
         help_menu.addSeparator()
         self.all_actions["documentation"] = help_menu.addAction(
             "&Documentation",
@@ -400,6 +412,7 @@ class MainWindow(QMainWindow):
             "open_file",
             "about",
             "about_qt",
+            "check_updates",
             "quit",
             "xdf_chunks",
             "toolbar",
@@ -1600,8 +1613,6 @@ class MainWindow(QMainWindow):
 
     def show_about(self):
         """Show About dialog."""
-        from . import __version__
-
         msg_box = QMessageBox(self)
         text = f"<img src='{image_path('mnelab_logo.png')}'><p>MNELAB {__version__}</p>"
         msg_box.setText(text)
@@ -1631,6 +1642,61 @@ class MainWindow(QMainWindow):
     def show_about_qt(self):
         """Show About Qt dialog."""
         QMessageBox.aboutQt(self, "About Qt")
+
+    def show_check_for_updates(self):
+        """Check GitHub for a newer MNELAB release."""
+        try:
+            req = Request(
+                "https://api.github.com/repos/cbrnr/mnelab/releases/latest",
+                headers={"User-Agent": "MNELAB"},
+            )
+            with urlopen(req, timeout=10) as response:
+                data = json.loads(response.read())
+            latest = data["tag_name"].lstrip("v")
+        except Exception:
+            latest = None
+
+        repo_url = "https://github.com/cbrnr/mnelab"
+        repo_link = f'<a href="{repo_url}">{repo_url}</a>'
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle("Check for Updates")
+        if latest is None:
+            msg_box.setIcon(QMessageBox.Icon.Warning)
+            msg_box.setText("Could not retrieve update information.")
+            msg_box.setInformativeText(
+                "Please check your internet connection and try again."
+            )
+        elif IS_DEV_VERSION:
+            msg_box.setIcon(QMessageBox.Icon.Information)
+            msg_box.setText(f"You are running a development version ({__version__}).")
+            msg_box.setInformativeText(
+                f"The latest release is {latest}.<br><br>"
+                f"Visit {repo_link} for more information."
+            )
+        else:
+
+            def _version_tuple(v):
+                parts = []
+                for part in v.split("."):
+                    try:
+                        parts.append(int(part))
+                    except ValueError:
+                        break
+                return tuple(parts)
+
+            if _version_tuple(latest) > _version_tuple(__version__):
+                msg_box.setIcon(QMessageBox.Icon.Information)
+                msg_box.setText(
+                    f"MNELAB {latest} is available (you have {__version__})."
+                )
+                msg_box.setInformativeText(
+                    f"Visit {repo_link} to find download links for the latest release."
+                )
+            else:
+                msg_box.setIcon(QMessageBox.Icon.Information)
+                msg_box.setText(f"MNELAB {__version__} is the latest version.")
+                msg_box.setInformativeText("No update is available.")
+        msg_box.exec()
 
     def show_documentation(self):
         url = QUrl("https://mnelab.readthedocs.io/")
