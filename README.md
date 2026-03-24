@@ -36,8 +36,8 @@ Instructions for installing and using MNELAB as well as step-by-step examples fo
 
 We recommend our standalone installers currently available for macOS and Windows:
 
-- [MNELAB 1.4.1 (macOS)](https://github.com/cbrnr/mnelab/releases/download/v1.4.1/MNELAB-1.4.1.dmg)
-- [MNELAB 1.4.1 (Windows)](https://github.com/cbrnr/mnelab/releases/download/v1.4.1/MNELAB-1.4.1.exe)
+- [MNELAB 1.4.2 (macOS)](https://github.com/cbrnr/mnelab/releases/download/v1.4.2/MNELAB-1.4.2.dmg)
+- [MNELAB 1.4.2 (Windows)](https://github.com/cbrnr/mnelab/releases/download/v1.4.2/MNELAB-1.4.2.exe)
 
 If you use Arch Linux, you can install MNELAB from the [AUR](https://aur.archlinux.org/packages/python-mnelab) (e.g., `yay -S python-mnelab`).
 

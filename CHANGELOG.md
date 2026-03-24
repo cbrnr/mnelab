@@ -1,4 +1,4 @@
-## [UNRELEASED] · YYYY-MM-DD
+## [1.4.2] · 2026-03-24
 ### ✨ Added
 - Add option to toggle between showing the menubar and using a hamburger menu (View – Menubar) on Windows and Linux ([#603](https://github.com/cbrnr/mnelab/pull/603) and [#606](https://github.com/cbrnr/mnelab/pull/606) by [Clemens Brunner](https://github.com/cbrnr))
 - Add a "Check for Updates" option ([#604](https://github.com/cbrnr/mnelab/pull/604) by [Clemens Brunner](https://github.com/cbrnr))
