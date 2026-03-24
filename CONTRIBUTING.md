@@ -75,7 +75,7 @@ This concludes the new release. Now prepare the source for the next planned rele
 2. Run `uv lock` to update `uv.lock` with the new version
 3. Start a new section at the top of `CHANGELOG.md` titled `## [UNRELEASED] · YYYY-MM-DD`
 
-Don't forget to push these changes!
+Don't forget to commit and push these changes!
 
 
 ## Upgrading dependencies
