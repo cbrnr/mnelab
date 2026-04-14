@@ -1734,10 +1734,12 @@ class MainWindow(QMainWindow):
         old_backend = read_settings("plot_backend")
         old_badges = read_settings("dtype_badges")
         old_theme = read_settings("theme")
+        old_menu_icons = read_settings("menu_icons")
         SettingsDialog(self, self.plot_backends).exec()
         new_backend = read_settings("plot_backend")
         new_badges = read_settings("dtype_badges")
         new_theme = read_settings("theme")
+        new_menu_icons = read_settings("menu_icons")
         if old_backend != new_backend:
             mne.viz.set_browser_backend(new_backend)
             self.model.history.append(f'mne.viz.set_browser_backend("{new_backend}")')
@@ -1745,6 +1747,12 @@ class MainWindow(QMainWindow):
             self.sidebar.set_badges_visible(new_badges)
         if old_theme != new_theme:
             apply_theme(new_theme)
+        if old_menu_icons != new_menu_icons:
+            QMessageBox.information(
+                self,
+                "Restart required",
+                'The "Menu icons" setting will take effect after restarting MNELAB.',
+            )
 
     def auto_duplicate(self):
         """Automatically duplicate current data set.

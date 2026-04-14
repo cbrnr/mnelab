@@ -49,6 +49,7 @@ _DEFAULTS = {
     "splitter": 0.4,
     "last_dir": str(Path.home()),
     "dtype_badges": True,
+    "menu_icons": True,
     "show_menubar": True,
     "theme": "Auto",
 }
@@ -167,6 +168,10 @@ class SettingsDialog(QDialog):
         self.dtype_badges.setChecked(read_settings("dtype_badges"))
         form.addRow("Data type badges:", self.dtype_badges)
 
+        self.menu_icons = QCheckBox()
+        self.menu_icons.setChecked(read_settings("menu_icons"))
+        form.addRow("Menu icons:", self.menu_icons)
+
         vbox.addLayout(form)
 
         mnelab_label = QLabel(
@@ -215,6 +220,7 @@ class SettingsDialog(QDialog):
             recent=self.parent().recent,
             plot_backend=self.plot_backend.currentText(),
             dtype_badges=self.dtype_badges.isChecked(),
+            menu_icons=self.menu_icons.isChecked(),
             theme=self.theme.currentText(),
         )
         self.parent().recent = self.parent().recent[: read_settings("max_recent")]
@@ -226,6 +232,7 @@ class SettingsDialog(QDialog):
         self.max_channels.setValue(_DEFAULTS["max_channels"])
         self.duration.setValue(_DEFAULTS["duration"])
         self.dtype_badges.setChecked(_DEFAULTS["dtype_badges"])
+        self.menu_icons.setChecked(_DEFAULTS["menu_icons"])
         self.plot_backend.setCurrentIndex(
             self.plot_backend.findText(_DEFAULTS["plot_backend"])
         )
