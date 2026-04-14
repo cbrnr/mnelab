@@ -4,6 +4,9 @@
 - Add option to change the theme (Auto/Light/Dark) ([#615](https://github.com/cbrnr/mnelab/pull/615) by [Clemens Brunner](https://github.com/cbrnr))
 - Add "Menu icons" setting to enable or disable icons in menus on all platforms ([#617](https://github.com/cbrnr/mnelab/pull/617) by [Clemens Brunner](https://github.com/cbrnr))
 
+### 🔧 Fixed
+- Improve startup time in standalone releases by properly reusing the Matplotlib font cache directory ([#618](https://github.com/cbrnr/mnelab/pull/618) by [Clemens Brunner](https://github.com/cbrnr))
+
 ### 🌀 Changed
 - Restructure main menu (replace Edit and Tools with dedicated Channels, Markers, Process, and Epochs menus) for a more intuitive EEG workflow ([#616](https://github.com/cbrnr/mnelab/pull/616) by [Clemens Brunner](https://github.com/cbrnr))
 

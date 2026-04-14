@@ -9,6 +9,13 @@ pyinstaller `
     --noupx `
     --clean `
     --noconfirm `
+    --optimize 1 `
+    --exclude-module tkinter `
+    --exclude-module _tkinter `
+    --exclude-module mne.tests `
+    --exclude-module sklearn.tests `
+    --exclude-module scipy.tests `
+    --exclude-module matplotlib.tests `
     --icon ..\src\mnelab\icons\mnelab-logo.ico `
     ..\src\mnelab\__main__.py
 
