@@ -6,16 +6,11 @@ from functools import partial
 from pathlib import Path
 
 import mne
+from pybvrf import read_raw_bvrf
 
 from mnelab.io.mat import read_raw_mat
 from mnelab.io.npy import read_raw_npy
 from mnelab.io.xdf import read_raw_xdf
-
-
-def _read_raw_bvrf(fname, participants=None, split=False, *args, **kwargs):
-    from pybvrf import read_raw_bvrf
-
-    return read_raw_bvrf(fname, participants=participants, split=split, *args, **kwargs)
 
 
 def _read_unsupported(fname, **kwargs):
@@ -46,10 +41,10 @@ supported = {
     ".xdf.gz": read_raw_xdf,
     ".mat": read_raw_mat,
     ".npy": read_raw_npy,
-    ".bvrh": _read_raw_bvrf,
-    ".bvrd": _read_raw_bvrf,
-    ".bvrm": _read_raw_bvrf,
-    ".bvri": _read_raw_bvrf,
+    ".bvrh": read_raw_bvrf,
+    ".bvrd": read_raw_bvrf,
+    ".bvrm": read_raw_bvrf,
+    ".bvri": read_raw_bvrf,
 }
 
 # known but unsupported file formats
