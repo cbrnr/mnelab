@@ -10,10 +10,9 @@ pyinstaller `
     --clean `
     --noconfirm `
     --optimize 1 `
+    --runtime-hook rthooks/rthook_matplotlib.py `
     --exclude-module tkinter `
     --exclude-module _tkinter `
-    --exclude-module numpy.f2py `
-    --exclude-module numpy.testing `
     --exclude-module mne.tests `
     --exclude-module sklearn.tests `
     --exclude-module scipy.tests `

@@ -24,12 +24,10 @@ a = Analysis(
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
-    runtime_hooks=[],
+    runtime_hooks=['rthooks/rthook_matplotlib.py'],
     excludes=[
         'tkinter',
         '_tkinter',
-        'numpy.f2py',
-        'numpy.testing',
         'mne.tests',
         'sklearn.tests',
         'scipy.tests',
