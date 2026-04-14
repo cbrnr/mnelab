@@ -4,10 +4,10 @@
 - Add option to change the theme (Auto/Light/Dark) ([#615](https://github.com/cbrnr/mnelab/pull/615) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🌀 Changed
-- Restructure main menu (replace Edit and Tools with dedicated Channels, Markers, Process, and Epochs menus) for a more intuitive EEG workflow
+- Restructure main menu (replace Edit and Tools with dedicated Channels, Markers, Process, and Epochs menus) for a more intuitive EEG workflow ([#616](https://github.com/cbrnr/mnelab/pull/616) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🗑️ Removed
-- Remove poorly integrated fNIRS actions
+- Remove poorly integrated fNIRS actions ([#616](https://github.com/cbrnr/mnelab/pull/616) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.4.2] · 2026-03-24
 ### ✨ Added
