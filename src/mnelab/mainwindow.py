@@ -56,7 +56,7 @@ from mnelab.io.npy import parse_npy
 from mnelab.io.readers import read_raw, split_name_ext
 from mnelab.io.xdf import get_xml, list_chunks
 from mnelab.model import InvalidAnnotationsError, LabelsNotFoundError, Model
-from mnelab.settings import SettingsDialog, read_settings, write_settings
+from mnelab.settings import SettingsDialog, apply_theme, read_settings, write_settings
 from mnelab.utils import (
     annotations_between_events,
     count_locations,
@@ -149,7 +149,11 @@ class MainWindow(QMainWindow):
             [f"{Path(__file__).parent}/icons"] + QIcon.themeSearchPaths()
         )
         QIcon.setFallbackThemeName("light")
-        QApplication.sendEvent(self, QEvent(QEvent.Type.PaletteChange))
+        apply_theme(settings["theme"])
+        # for "Auto", setColorScheme(Unknown) is the Qt default and may not fire
+        # PaletteChange, so send it manually to initialize the icon theme
+        if settings["theme"] == "Auto":
+            QApplication.sendEvent(self, QEvent(QEvent.Type.PaletteChange))
 
         self.all_actions = {}  # contains all actions
 
@@ -1756,14 +1760,18 @@ class MainWindow(QMainWindow):
     def settings(self):
         old_backend = read_settings("plot_backend")
         old_badges = read_settings("dtype_badges")
+        old_theme = read_settings("theme")
         SettingsDialog(self, self.plot_backends).exec()
         new_backend = read_settings("plot_backend")
         new_badges = read_settings("dtype_badges")
+        new_theme = read_settings("theme")
         if old_backend != new_backend:
             mne.viz.set_browser_backend(new_backend)
             self.model.history.append(f'mne.viz.set_browser_backend("{new_backend}")')
         if old_badges != new_badges:
             self.sidebar.set_badges_visible(new_badges)
+        if old_theme != new_theme:
+            apply_theme(new_theme)
 
     def auto_duplicate(self):
         """Automatically duplicate current data set.
