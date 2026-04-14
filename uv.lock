@@ -1262,16 +1262,15 @@ wheels = [
 
 [[package]]
 name = "pybvrf"
-version = "0.1.2"
+version = "0.1.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jsonschema" },
-    { name = "mne" },
     { name = "numpy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/56/07/ab0ae019d1d0992efd8fb7941dd1fc35ca3a2ab19c3ecfe038da8cabcb27/pybvrf-0.1.2.tar.gz", hash = "sha256:e1978553413b737e1e2f7ac6d4ac73d39ad7d2ba1d8634d00a9f75744eca4c67", size = 11966, upload-time = "2026-02-26T09:59:39.845Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c3/6f/15a86f70d88562edb7d72eb9ee92d860c8d6add853583cf5575220aae59d/pybvrf-0.1.3.tar.gz", hash = "sha256:67b993d476f3cd3ad6156e263a662449230ecf35adb042c81e3fc9c8511a165f", size = 12240, upload-time = "2026-04-14T15:05:56.837Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bb/7e/a82cbdb8e164e5802d18bd9cccc8018e4b09c186b69395451413dd6d074e/pybvrf-0.1.2-py3-none-any.whl", hash = "sha256:9c9287fc90d857694723b1ac8ed338290b4b754b4c7c0adc9213bedc4ef490b8", size = 14467, upload-time = "2026-02-26T09:59:40.755Z" },
+    { url = "https://files.pythonhosted.org/packages/92/7d/d804df74b413fa6083f09825ba2ce6a602fdc3e2e8a682e04461b327b2d3/pybvrf-0.1.3-py3-none-any.whl", hash = "sha256:b0946902cb91d1f62ec84a77398499b8f7b570364b6dc1542b8fa76daac595dc", size = 14747, upload-time = "2026-04-14T15:05:57.721Z" },
 ]
 
 [[package]]
