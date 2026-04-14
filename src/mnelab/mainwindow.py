@@ -165,7 +165,7 @@ class MainWindow(QMainWindow):
             self.open_data,
             QKeySequence.StandardKey.Open,
         )
-        self.recent_menu = file_menu.addMenu("Open recent")
+        self.recent_menu = file_menu.addMenu("Open Recent")
         self.recent_menu.aboutToShow.connect(self._update_recent_menu)
         self.recent_menu.triggered.connect(self._load_recent)
         if not self.recent:
@@ -173,58 +173,23 @@ class MainWindow(QMainWindow):
         self.all_actions["close_file"] = file_menu.addAction(
             "&Close", self.model.remove_data, QKeySequence.StandardKey.Close
         )
-        self.all_actions["close_all"] = file_menu.addAction("Close all", self.close_all)
+        self.all_actions["close_all"] = file_menu.addAction("Close All", self.close_all)
         file_menu.addSeparator()
-        self.all_actions["import_bads"] = file_menu.addAction(
-            "Import bad channels...",
-            lambda: self.import_file(model.import_bads, "Import bad channels", "*.csv"),
-        )
-        self.all_actions["import_events"] = file_menu.addAction(
-            "Import events...",
-            lambda: self.import_file(
-                model.import_events, "Import events", "*.csv *.fif"
-            ),
-        )
-        self.all_actions["import_annotations"] = file_menu.addAction(
-            "Import annotations...",
-            self.import_annotations,
-        )
-        self.all_actions["import_ica"] = file_menu.addAction(
-            "Import &ICA...",
-            lambda: self.open_file(model.import_ica, "Import ICA", "*.fif *.fif.gz"),
-        )
-        file_menu.addSeparator()
-        self.export_menu = file_menu.addMenu("Export data")
+        self.export_menu = file_menu.addMenu("Export")
         for ext, description in writers.items():
             action = "export_data" + ext.replace(".", "_")
             self.all_actions[action] = self.export_menu.addAction(
                 f"{ext[1:].upper()} ({description[1]})...",
                 partial(self.export_file, model.export_data, "Export data", "*" + ext),
             )
-        self.all_actions["export_bads"] = file_menu.addAction(
-            "Export &bad channels...",
-            lambda: self.export_file(model.export_bads, "Export bad channels", "*.csv"),
-        )
-        self.all_actions["export_events"] = file_menu.addAction(
-            "Export &events...",
-            lambda: self.export_file(model.export_events, "Export events", "*.csv"),
-        )
-        self.all_actions["export_annotations"] = file_menu.addAction(
-            "Export &annotations...",
-            self.export_annotations,
-        )
-        self.all_actions["export_ica"] = file_menu.addAction(
-            "Export ICA...",
-            lambda: self.export_file(model.export_ica, "Export ICA", "*.fif *.fif.gz"),
-        )
         file_menu.addSeparator()
         self.all_actions["xdf_metadata"] = file_menu.addAction(
             QIcon.fromTheme("xdf-metadata"),
-            "Show XDF metadata",
+            "Show XDF Metadata",
             self.xdf_metadata,
         )
         self.all_actions["xdf_chunks"] = file_menu.addAction(
-            "Inspect XDF chunks...", self.xdf_chunks
+            "Inspect XDF Chunks...", self.xdf_chunks
         )
         file_menu.addSeparator()
         self.all_actions["settings"] = file_menu.addAction(
@@ -238,52 +203,93 @@ class MainWindow(QMainWindow):
             "&Quit", self.close, QKeySequence.StandardKey.Quit
         )
 
-        edit_menu = self.menuBar().addMenu("&Edit")
-        self.all_actions["pick_chans"] = edit_menu.addAction(
-            "P&ick channels...", self.pick_channels
+        channels_menu = self.menuBar().addMenu("&Channels")
+        self.all_actions["pick_chans"] = channels_menu.addAction(
+            "P&ick Channels...", self.pick_channels
         )
-        self.all_actions["rename_channels"] = edit_menu.addAction(
-            "Rename channels...",
+        self.all_actions["rename_channels"] = channels_menu.addAction(
+            "Rename Channels...",
             self.rename_channels,
         )
-        self.all_actions["chan_props"] = edit_menu.addAction(
+        self.all_actions["chan_props"] = channels_menu.addAction(
             QIcon.fromTheme("chan-props"),
-            "Edit channel &properties...",
+            "Edit Channel &Properties...",
             self.channel_properties,
         )
-        edit_menu.addSeparator()
-        self.all_actions["set_montage"] = edit_menu.addAction(
-            "Set &montage...", self.set_montage
+        channels_menu.addSeparator()
+        self.all_actions["set_montage"] = channels_menu.addAction(
+            "Set &Montage...", self.set_montage
         )
-        self.all_actions["clear_montage"] = edit_menu.addAction(
-            "Clear montage",
+        self.all_actions["clear_montage"] = channels_menu.addAction(
+            "Clear Montage",
             self.clear_montage,
         )
-        edit_menu.addSeparator()
-        self.all_actions["change_ref"] = edit_menu.addAction(
-            "Change &reference...",
+        channels_menu.addSeparator()
+        self.all_actions["change_ref"] = channels_menu.addAction(
+            "Change &Reference...",
             self.change_reference,
         )
-        edit_menu.addSeparator()
-        self.all_actions["annotations"] = edit_menu.addAction(
-            "Edit &annotations...",
-            self.edit_annotations,
+        channels_menu.addSeparator()
+        self.all_actions["import_bads"] = channels_menu.addAction(
+            "Import Bad Channels...",
+            lambda: self.import_file(model.import_bads, "Import bad channels", "*.csv"),
         )
-        self.all_actions["events"] = edit_menu.addAction(
-            "Edit &events...",
-            self.edit_events,
+        self.all_actions["export_bads"] = channels_menu.addAction(
+            "Export &Bad Channels...",
+            lambda: self.export_file(model.export_bads, "Export bad channels", "*.csv"),
+        )
+        self.all_actions["interpolate_bads"] = channels_menu.addAction(
+            "Interpolate Bad Channels", self.interpolate_bads
+        )
+        channels_menu.addSeparator()
+        self.all_actions["channel_stats"] = channels_menu.addAction(
+            "&Channel Statistics",
+            self.show_channel_stats,
         )
 
-        edit_menu.addSeparator()
-        self.all_actions["crop"] = edit_menu.addAction("&Crop data...", self.crop)
-        self.all_actions["append_data"] = edit_menu.addAction(
-            "Appen&d data...", self.append_data
+        events_menu = self.menuBar().addMenu("&Markers")
+        self.all_actions["annotations"] = events_menu.addAction(
+            "Edit &Annotations...",
+            self.edit_annotations,
+        )
+        self.all_actions["import_annotations"] = events_menu.addAction(
+            "Import Annotations...",
+            self.import_annotations,
+        )
+        self.all_actions["export_annotations"] = events_menu.addAction(
+            "Export &Annotations...",
+            self.export_annotations,
+        )
+        events_menu.addSeparator()
+        self.all_actions["events"] = events_menu.addAction(
+            "Edit &Events...",
+            self.edit_events,
+        )
+        self.all_actions["import_events"] = events_menu.addAction(
+            "Import Events...",
+            lambda: self.import_file(
+                model.import_events, "Import events", "*.csv *.fif"
+            ),
+        )
+        self.all_actions["export_events"] = events_menu.addAction(
+            "Export &Events...",
+            lambda: self.export_file(model.export_events, "Export events", "*.csv"),
+        )
+        events_menu.addSeparator()
+        self.all_actions["find_events"] = events_menu.addAction(
+            QIcon.fromTheme("find-events"), "Find &Events...", self.find_events
+        )
+        self.all_actions["events_from_annotations"] = events_menu.addAction(
+            "Events from Annotations", self.events_from_annotations
+        )
+        self.all_actions["annotations_from_events"] = events_menu.addAction(
+            "Annotations from Events...", self.annotations_from_events
         )
 
         plot_menu = self.menuBar().addMenu("&Plot")
         self.all_actions["plot_data"] = plot_menu.addAction(
             QIcon.fromTheme("plot-data"),
-            "Plot &data",
+            "Plot &Data",
             self.plot_data,
         )
         self.all_actions["plot_psd"] = plot_menu.addAction(
@@ -294,88 +300,79 @@ class MainWindow(QMainWindow):
         plot_menu.addSeparator()
         self.all_actions["plot_locations"] = plot_menu.addAction(
             QIcon.fromTheme("plot-locations"),
-            "Plot &channel locations",
+            "Plot &Channel Locations",
             self.plot_locations,
         )
         plot_menu.addSeparator()
         self.all_actions["plot_erds"] = plot_menu.addAction(
-            "Plot &ERDS maps...",
+            "Plot &ERDS Maps...",
             self.plot_erds,
         )
         self.all_actions["plot_erds_topomaps"] = plot_menu.addAction(
-            "Plot ERDS topomaps...",
+            "Plot ERDS Topomaps...",
             self.plot_erds_topomaps,
         )
         plot_menu.addSeparator()
         self.all_actions["plot_evoked"] = plot_menu.addAction(
-            "Plot evoked...",
+            "Plot Evoked...",
             self.plot_evoked,
         )
         self.all_actions["plot_evoked_comparison"] = plot_menu.addAction(
-            "Plot evoked comparison...",
+            "Plot Evoked Comparison...",
             self.plot_evoked_comparison,
         )
         self.all_actions["plot_evoked_topomaps"] = plot_menu.addAction(
-            "Plot evoked topomaps...",
+            "Plot Evoked Topomaps...",
             self.plot_evoked_topomaps,
         )
         plot_menu.addSeparator()
         self.all_actions["plot_ica_components"] = plot_menu.addAction(
-            "Plot ICA &components",
+            "Plot ICA &Components",
             self.plot_ica_components,
         )
         self.all_actions["plot_ica_sources"] = plot_menu.addAction(
-            "Plot ICA &sources",
+            "Plot ICA &Sources",
             self.plot_ica_sources,
         )
 
-        tools_menu = self.menuBar().addMenu("&Tools")
-        self.all_actions["filter"] = tools_menu.addAction(
-            QIcon.fromTheme("filter-data"), "&Filter data...", self.filter_data
+        process_menu = self.menuBar().addMenu("&Process")
+        self.all_actions["filter"] = process_menu.addAction(
+            QIcon.fromTheme("filter-data"), "&Filter Data...", self.filter_data
         )
-        self.all_actions["find_events"] = tools_menu.addAction(
-            QIcon.fromTheme("find-events"), "Find &events...", self.find_events
+        process_menu.addSeparator()
+        self.all_actions["crop"] = process_menu.addAction("&Crop Data...", self.crop)
+        self.all_actions["append_data"] = process_menu.addAction(
+            "Appen&d Data...", self.append_data
         )
-        self.all_actions["events_from_annotations"] = tools_menu.addAction(
-            "Events from annotations", self.events_from_annotations
-        )
-        self.all_actions["annotations_from_events"] = tools_menu.addAction(
-            "Annotations from events...", self.annotations_from_events
-        )
-        tools_menu.addSeparator()
-        self.all_actions["convert_od"] = tools_menu.addAction(
-            "Convert to &optical density",
-            self.convert_od,
-        )
-        self.all_actions["convert_bl"] = tools_menu.addAction(
-            "Convert to &haemoglobin",
-            self.convert_bl,
-        )
-        tools_menu.addSeparator()
-
-        self.all_actions["run_ica"] = tools_menu.addAction(
+        process_menu.addSeparator()
+        self.all_actions["run_ica"] = process_menu.addAction(
             QIcon.fromTheme("run-ica"), "Run &ICA...", self.run_ica
         )
-        self.all_actions["label_ica"] = tools_menu.addAction(
+        self.all_actions["import_ica"] = process_menu.addAction(
+            "Import &ICA...",
+            lambda: self.open_file(model.import_ica, "Import ICA", "*.fif *.fif.gz"),
+        )
+        self.all_actions["label_ica"] = process_menu.addAction(
             "Label &ICs...", self.label_ica
         )
-        self.all_actions["apply_ica"] = tools_menu.addAction(
+        self.all_actions["apply_ica"] = process_menu.addAction(
             "Apply &ICA", self.apply_ica
         )
-        tools_menu.addSeparator()
-        self.all_actions["interpolate_bads"] = tools_menu.addAction(
-            "Interpolate bad channels", self.interpolate_bads
+        self.all_actions["export_ica"] = process_menu.addAction(
+            "Export ICA...",
+            lambda: self.export_file(model.export_ica, "Export ICA", "*.fif *.fif.gz"),
         )
-        tools_menu.addSeparator()
-        self.all_actions["epoch_data"] = tools_menu.addAction(
-            QIcon.fromTheme("epoch-data"), "Create epochs...", self.epoch_data
+
+        epochs_menu = self.menuBar().addMenu("Ep&ochs")
+        self.all_actions["epoch_data"] = epochs_menu.addAction(
+            QIcon.fromTheme("epoch-data"), "Create Epochs...", self.epoch_data
         )
-        self.all_actions["drop_bad_epochs"] = tools_menu.addAction(
-            "Drop bad epochs...",
+        self.all_actions["drop_bad_epochs"] = epochs_menu.addAction(
+            "Drop Bad Epochs...",
             self.drop_bad_epochs,
         )
-        self.all_actions["artifact_detection"] = tools_menu.addAction(
-            "Artifact detection...",
+        self.all_actions["artifact_detection"] = epochs_menu.addAction(
+            "Detect &Artifacts...",
             self.artifact_detection,
         )
 
@@ -384,10 +381,6 @@ class MainWindow(QMainWindow):
             "&History",
             self.show_history,
             QKeySequence(Qt.Modifier.CTRL | Qt.Key.Key_Y),
-        )
-        self.all_actions["channel_stats"] = view_menu.addAction(
-            "&Channel stats",
-            self.show_channel_stats,
         )
         self.all_actions["toolbar"] = view_menu.addAction(
             "&Toolbar", self._toggle_toolbar
@@ -719,16 +712,6 @@ class MainWindow(QMainWindow):
             )
             self.all_actions["xdf_metadata"].setEnabled(
                 enabled and self.model.current["ftype"] in ["XDF", "XDFZ", "XDF.GZ"]
-            )
-            self.all_actions["convert_od"].setEnabled(
-                len(
-                    mne.pick_types(
-                        self.model.current["data"].info, fnirs="fnirs_cw_amplitude"
-                    )
-                )
-            )
-            self.all_actions["convert_bl"].setEnabled(
-                len(mne.pick_types(self.model.current["data"].info, fnirs="fnirs_od"))
             )
             # disable unsupported exporters for epochs (all must support raw)
             if self.model.current["dtype"] == "epochs":
@@ -1613,16 +1596,6 @@ class MainWindow(QMainWindow):
             self.model.drop_detected_artifacts(bad_epochs)
             self.data_changed()
             self.model.history.append(dialog.get_history_code())
-
-    def convert_od(self):
-        """Convert to optical density."""
-        self.auto_duplicate()
-        self.model.convert_od()
-
-    def convert_bl(self):
-        """Convert to haemoglobin."""
-        self.auto_duplicate()
-        self.model.convert_beer_lambert()
 
     def change_reference(self):
         """Change reference."""

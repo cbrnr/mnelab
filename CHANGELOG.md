@@ -3,6 +3,12 @@
 - Add support for importing annotations from CSV files without a "type" column (assuming a single type) and for files where onset and duration are specified in samples ([#613](https://github.com/cbrnr/mnelab/pull/613) by [Clemens Brunner](https://github.com/cbrnr))
 - Add option to change the theme (Auto/Light/Dark) ([#615](https://github.com/cbrnr/mnelab/pull/615) by [Clemens Brunner](https://github.com/cbrnr))
 
+### 🌀 Changed
+- Restructure main menu (replace Edit and Tools with dedicated Channels, Markers, Process, and Epochs menus) for a more intuitive EEG workflow
+
+### 🗑️ Removed
+- Remove poorly integrated fNIRS actions
+
 ## [1.4.2] · 2026-03-24
 ### ✨ Added
 - Add option to toggle between showing the menubar and using a hamburger menu (View – Menubar) on Windows and Linux ([#603](https://github.com/cbrnr/mnelab/pull/603) and [#606](https://github.com/cbrnr/mnelab/pull/606) by [Clemens Brunner](https://github.com/cbrnr))
