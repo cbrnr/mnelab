@@ -1,6 +1,7 @@
 ## [UNRELEASED] · YYYY-MM-DD
 ### ✨ Added
 - Add support for importing annotations from CSV files without a "type" column (assuming a single type) and for files where onset and duration are specified in samples ([#613](https://github.com/cbrnr/mnelab/pull/613) by [Clemens Brunner](https://github.com/cbrnr))
+- Add option to change the theme (Auto/Light/Dark) ([#615](https://github.com/cbrnr/mnelab/pull/615) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.4.2] · 2026-03-24
 ### ✨ Added
