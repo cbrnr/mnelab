@@ -13,7 +13,7 @@ from PySide6.QtCore import (
     QUrl,
     Slot,
 )
-from PySide6.QtGui import QDesktopServices, Qt
+from PySide6.QtGui import QDesktopServices, QGuiApplication, Qt
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -50,6 +50,7 @@ _DEFAULTS = {
     "last_dir": str(Path.home()),
     "dtype_badges": True,
     "show_menubar": True,
+    "theme": "Auto",
 }
 
 
@@ -95,6 +96,24 @@ def clear_settings():
     QSettings(SETTINGS_PATH, QSettings.Format.IniFormat).clear()
 
 
+def apply_theme(theme):
+    """Apply a color scheme to the application.
+
+    Parameters
+    ----------
+    theme : str
+        One of `"Auto"`, `"Light"`, or `"Dark"`.
+    """
+    mapping = {
+        "Auto": Qt.ColorScheme.Unknown,
+        "Light": Qt.ColorScheme.Light,
+        "Dark": Qt.ColorScheme.Dark,
+    }
+    QGuiApplication.styleHints().setColorScheme(
+        mapping.get(theme, Qt.ColorScheme.Unknown)
+    )
+
+
 class SettingsDialog(QDialog):
     def __init__(self, parent, backends):
         super().__init__(parent)
@@ -104,6 +123,15 @@ class SettingsDialog(QDialog):
         form = QFormLayout()
         form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.FieldsStayAtSizeHint)
         form.setFormAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+
+        themes = ["Auto", "Light", "Dark"]
+        theme = read_settings("theme")
+        if theme not in themes:
+            theme = _DEFAULTS["theme"]
+        self.theme = QComboBox()
+        self.theme.addItems(themes)
+        self.theme.setCurrentIndex(themes.index(theme))
+        form.addRow("Theme:", self.theme)
 
         backend = read_settings("plot_backend")
         if backend not in backends:
@@ -187,6 +215,7 @@ class SettingsDialog(QDialog):
             recent=self.parent().recent,
             plot_backend=self.plot_backend.currentText(),
             dtype_badges=self.dtype_badges.isChecked(),
+            theme=self.theme.currentText(),
         )
         self.parent().recent = self.parent().recent[: read_settings("max_recent")]
         self.accept()
@@ -200,6 +229,7 @@ class SettingsDialog(QDialog):
         self.plot_backend.setCurrentIndex(
             self.plot_backend.findText(_DEFAULTS["plot_backend"])
         )
+        self.theme.setCurrentIndex(self.theme.findText(_DEFAULTS["theme"]))
         self.parent().resize(_DEFAULTS["size"])
         self.parent().move(_DEFAULTS["pos"])
         self.parent().recent = []
