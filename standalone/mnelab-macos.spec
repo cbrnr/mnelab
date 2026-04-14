@@ -25,9 +25,18 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=[
+        'tkinter',
+        '_tkinter',
+        'numpy.f2py',
+        'numpy.testing',
+        'mne.tests',
+        'sklearn.tests',
+        'scipy.tests',
+        'matplotlib.tests',
+    ],
     noarchive=False,
-    optimize=0,
+    optimize=1,
 )
 pyz = PYZ(a.pure)
 
@@ -39,7 +48,7 @@ exe = EXE(
     name='MNELAB',
     debug=False,
     bootloader_ignore_signals=False,
-    strip=False,
+    strip=True,
     upx=False,
     console=False,
     disable_windowed_traceback=False,
@@ -53,7 +62,7 @@ coll = COLLECT(
     exe,
     a.binaries,
     a.datas,
-    strip=False,
+    strip=True,
     upx=False,
     upx_exclude=[],
     name='MNELAB',

@@ -9,5 +9,15 @@ pyinstaller \
     --noupx \
     --clean \
     --noconfirm \
+    --optimize 1 \
+    --strip \
+    --exclude-module tkinter \
+    --exclude-module _tkinter \
+    --exclude-module numpy.f2py \
+    --exclude-module numpy.testing \
+    --exclude-module mne.tests \
+    --exclude-module sklearn.tests \
+    --exclude-module scipy.tests \
+    --exclude-module matplotlib.tests \
     --icon ../src/mnelab/icons/mnelab-logo.svg \
     ../src/mnelab/__main__.py
