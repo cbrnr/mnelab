@@ -5,7 +5,7 @@
 [![License](https://img.shields.io/github/license/cbrnr/mnelab?color=68%2C192%2C58)](LICENSE)
 
 
-## MNELAB
+# MNELAB
 
 ![](https://raw.githubusercontent.com/cbrnr/mnelab/main/mnelab/images/mnelab_logo.png)
 
@@ -27,12 +27,12 @@ Key features include:
 - Plotting capabilities for raw data, epochs, evoked responses, independent components, ERD/ERS maps, and more.
  
 
-### Documentation
+## Documentation
 
 Instructions for installing and using MNELAB as well as step-by-step examples for different use cases are available in the [documentation](https://mnelab.readthedocs.io/). Check out the [changelog](https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md) to learn what we added, changed, or fixed.
 
 
-### Quick start
+## Quick start
 
 We recommend our standalone installers currently available for macOS and Windows:
 
@@ -54,6 +54,6 @@ uvx --from https://github.com/cbrnr/mnelab/archive/refs/heads/main.zip mnelab
 ```
 
 
-### Contributing
+## Contributing
 
 The [contributing guide](https://github.com/cbrnr/mnelab/blob/main/CONTRIBUTING.md) contains detailed instructions on how to contribute to MNELAB.
