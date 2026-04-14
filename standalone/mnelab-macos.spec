@@ -24,7 +24,7 @@ a = Analysis(
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
-    runtime_hooks=['rthooks/rthook_matplotlib.py'],
+    runtime_hooks=[],
     excludes=[
         'tkinter',
         '_tkinter',

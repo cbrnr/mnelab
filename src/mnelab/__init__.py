@@ -26,10 +26,12 @@ def main():
     mp.freeze_support()
     mp.set_start_method("spawn", force=True)
 
+    import os
     import signal
     from pathlib import Path
 
     import matplotlib
+    import platformdirs
     from PySide6.QtCore import QEvent, QLoggingCategory, Qt, QTimer
     from PySide6.QtGui import QIcon
     from PySide6.QtWidgets import QApplication
@@ -39,6 +41,11 @@ def main():
     from mnelab.settings import read_settings
 
     QLoggingCategory.setFilterRules("*.debug=false\n*.warning=false")
+
+    if getattr(sys, "frozen", False):
+        cache_dir = Path(platformdirs.user_cache_dir("mnelab", "mnelab"))
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        os.environ.setdefault("MPLCONFIGDIR", str(cache_dir))
 
     matplotlib.use("QtAgg")
 

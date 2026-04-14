@@ -11,7 +11,6 @@ pyinstaller \
     --noconfirm \
     --optimize 1 \
     --strip \
-    --runtime-hook rthooks/rthook_matplotlib.py \
     --exclude-module tkinter \
     --exclude-module _tkinter \
     --exclude-module mne.tests \
