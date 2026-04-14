@@ -36,6 +36,7 @@ def main():
 
     from mnelab.mainwindow import MainWindow
     from mnelab.model import Model
+    from mnelab.settings import read_settings
 
     QLoggingCategory.setFilterRules("*.debug=false\n*.warning=false")
 
@@ -60,11 +61,14 @@ def main():
     app.setDesktopFileName("mnelab")
     app.setOrganizationName("mnelab")
     if sys.platform.startswith("darwin"):
-        app.setAttribute(Qt.ApplicationAttribute.AA_DontShowIconsInMenus, True)
         # prevent any code from changing the dock icon (the app bundle handles it)
         app.setWindowIcon = lambda icon: None
     else:
         app.setWindowIcon(QIcon(f"{Path(__file__).parent}/icons/mnelab-logo.svg"))
+    app.setAttribute(
+        Qt.ApplicationAttribute.AA_DontShowIconsInMenus,
+        not read_settings("menu_icons"),
+    )
     if sys.platform.startswith("win"):
         app.setStyle("fusion")
     model = Model()
