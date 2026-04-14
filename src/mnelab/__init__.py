@@ -33,7 +33,7 @@ def main():
     if getattr(sys, "frozen", False):
         cache_dir = Path.home() / ".matplotlib"
         cache_dir.mkdir(parents=True, exist_ok=True)
-        os.environ.setdefault("MPLCONFIGDIR", str(cache_dir))
+        os.environ["MPLCONFIGDIR"] = str(cache_dir)
 
     import matplotlib
     from PySide6.QtCore import QEvent, QLoggingCategory, Qt, QTimer
