@@ -263,25 +263,48 @@ def merge_annotations(onsets, durations, descriptions):
 
 
 def get_annotation_types_from_file(fname):
-    """Return the sorted unique annotation types present in a CSV annotation file.
+    """Return annotation types and whether all numeric values are integers.
 
     Parameters
     ----------
     fname : str
-        Path to a CSV annotation file (type, onset, duration).
+        Path to a CSV annotation file with header `type,onset,duration` or
+        `onset,duration`.
 
     Returns
     -------
-    list of str
+    types : list of str or None
+        Sorted unique annotation types, or `None` if the file has no type column (header
+        is `onset,duration`).
+    integer : bool
+        `True` when the file has at least one data row and all onset and duration values
+        are whole numbers (useful for detecting if values are in samples or in seconds);
+        `False` otherwise.
     """
-    types = set()
     with open(fname) as f:
-        f.readline()  # skip header
+        header = f.readline().strip()
+        no_type = header == "onset,duration"
+        types = None if no_type else set()
+        found_any = False
+        all_integers = True
         for line in f:
-            parts = line.split(",")
-            if len(parts) == 3:
-                types.add(parts[0].strip())
-    return sorted(types)
+            parts = line.strip().split(",")
+            try:
+                if no_type:
+                    onset, dur = float(parts[0]), float(parts[1])
+                else:
+                    type_, onset, dur = (
+                        parts[0].strip(),
+                        float(parts[1]),
+                        float(parts[2]),
+                    )
+                    types.add(type_)
+            except (ValueError, IndexError):
+                continue
+            found_any = True
+            if onset != int(onset) or dur != int(dur):
+                all_integers = False
+    return (sorted(types) if types is not None else None), (found_any and all_integers)
 
 
 @dataclass

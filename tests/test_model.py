@@ -194,3 +194,58 @@ def test_import_annotations_outside_range_does_not_change_existing(
     annots = model_with_data.current["data"].annotations
     assert len(annots) == 1
     assert annots.description[0] == "EXISTING"
+
+
+def test_import_annotations_no_type_column(model_with_data, tmp_path):
+    """A two-column file (onset,duration) uses the supplied description."""
+    csv = tmp_path / "no_type.csv"
+    with open(csv, "w") as f:
+        f.write("onset,duration\n")
+        f.write("1.0,0.5\n")
+        f.write("5.0,1.0\n")
+    model_with_data.import_annotations(csv, description="BAD")
+    annots = model_with_data.current["data"].annotations
+    assert len(annots) == 2
+    assert list(annots.description) == ["BAD", "BAD"]
+    np.testing.assert_allclose(annots.onset, [1.0, 5.0])
+    np.testing.assert_allclose(annots.duration, [0.5, 1.0])
+
+
+def test_import_annotations_no_type_column_default_description(
+    model_with_data, tmp_path
+):
+    """A two-column file without a supplied description defaults to 'annotation'."""
+    csv = tmp_path / "no_type.csv"
+    with open(csv, "w") as f:
+        f.write("onset,duration\n")
+        f.write("1.0,0.5\n")
+    model_with_data.import_annotations(csv, description=None)
+    annots = model_with_data.current["data"].annotations
+    assert annots.description[0] == "annotation"
+
+
+def test_import_annotations_in_samples(model_with_data, tmp_path):
+    """When unit='samples', onset and duration are divided by sfreq."""
+    fs = model_with_data.current["data"].info["sfreq"]  # 256 Hz
+    csv = tmp_path / "samples.csv"
+    _write_annotations_csv(csv, [("BAD", int(1.0 * fs), int(0.5 * fs))])
+    model_with_data.import_annotations(csv, unit="samples")
+    annots = model_with_data.current["data"].annotations
+    assert len(annots) == 1
+    np.testing.assert_allclose(annots.onset, [1.0], rtol=1e-6)
+    np.testing.assert_allclose(annots.duration, [0.5], rtol=1e-6)
+
+
+def test_import_annotations_in_samples_no_type_column(model_with_data, tmp_path):
+    """unit='samples' works with two-column files as well."""
+    fs = model_with_data.current["data"].info["sfreq"]
+    csv = tmp_path / "samples_no_type.csv"
+    with open(csv, "w") as f:
+        f.write("onset,duration\n")
+        f.write(f"{int(2.0 * fs)},{int(1.0 * fs)}\n")
+    model_with_data.import_annotations(csv, description="STIM", unit="samples")
+    annots = model_with_data.current["data"].annotations
+    assert len(annots) == 1
+    assert annots.description[0] == "STIM"
+    np.testing.assert_allclose(annots.onset, [2.0], rtol=1e-6)
+    np.testing.assert_allclose(annots.duration, [1.0], rtol=1e-6)

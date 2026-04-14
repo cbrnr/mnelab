@@ -5,7 +5,11 @@
 import numpy as np
 import pytest
 
-from mnelab.utils import annotations_between_events, merge_annotations
+from mnelab.utils import (
+    annotations_between_events,
+    get_annotation_types_from_file,
+    merge_annotations,
+)
 
 SFREQ = 100.0
 
@@ -355,3 +359,65 @@ def test_merge_annotations_contained_interval():
     np.testing.assert_allclose(m_onsets, [1.0])
     np.testing.assert_allclose(m_durations, [3.0])
     assert m_descriptions == ["A"]
+
+
+# --- get_annotation_types_from_file ---
+
+
+def test_get_annotation_types_from_file_three_column(tmp_path):
+    """Returns sorted unique types from a type,onset,duration file."""
+    csv = tmp_path / "annots.csv"
+    csv.write_text("type,onset,duration\nBAD,1.0,0.5\nGOOD,2.0,0.5\nBAD,5.0,1.0\n")
+    types, _ = get_annotation_types_from_file(csv)
+    assert types == ["BAD", "GOOD"]
+
+
+def test_get_annotation_types_from_file_two_column_returns_none(tmp_path):
+    """Returns None for a file with no type column (onset,duration header)."""
+    csv = tmp_path / "no_type.csv"
+    csv.write_text("onset,duration\n1.0,0.5\n2.0,1.0\n")
+    types, _ = get_annotation_types_from_file(csv)
+    assert types is None
+
+
+# --- integer-value detection ---
+
+
+def test_check_annotation_values_are_integer_all_integers(tmp_path):
+    """Returns True when all onset/duration values are whole numbers."""
+    csv = tmp_path / "annots.csv"
+    csv.write_text("type,onset,duration\nBAD,256,128\nBAD,512,64\n")
+    _, values_are_integer = get_annotation_types_from_file(csv)
+    assert values_are_integer is True
+
+
+def test_check_annotation_values_are_integer_float_integers(tmp_path):
+    """Returns True when values are float-encoded whole numbers (e.g. 256.0)."""
+    csv = tmp_path / "annots.csv"
+    csv.write_text("type,onset,duration\nBAD,256.0,128.0\n")
+    _, values_are_integer = get_annotation_types_from_file(csv)
+    assert values_are_integer is True
+
+
+def test_check_annotation_values_are_integer_has_fractions(tmp_path):
+    """Returns False when any value has a fractional part."""
+    csv = tmp_path / "annots.csv"
+    csv.write_text("type,onset,duration\nBAD,1.5,0.5\n")
+    _, values_are_integer = get_annotation_types_from_file(csv)
+    assert values_are_integer is False
+
+
+def test_check_annotation_values_are_integer_two_column(tmp_path):
+    """Works with two-column (onset,duration) files."""
+    csv = tmp_path / "no_type.csv"
+    csv.write_text("onset,duration\n100,50\n200,25\n")
+    _, values_are_integer = get_annotation_types_from_file(csv)
+    assert values_are_integer is True
+
+
+def test_check_annotation_values_are_integer_empty_file(tmp_path):
+    """Returns False when the file has no data rows."""
+    csv = tmp_path / "empty.csv"
+    csv.write_text("type,onset,duration\n")
+    _, values_are_integer = get_annotation_types_from_file(csv)
+    assert values_are_integer is False
