@@ -355,7 +355,7 @@ class Model:
             raise ValueError(f"Unsupported event file: {fname}")
 
     @data_changed
-    def import_annotations(self, fname, types=None):
+    def import_annotations(self, fname, types=None, description=None, unit="seconds"):
         """Import annotations from a CSV file.
 
         Parameters
@@ -363,40 +363,60 @@ class Model:
         fname : str
             Source file path.
         types : list of str or None
-            Annotation types (descriptions) to import.  If `None`, all types are
-            imported.
+            Annotation types to import. `None` imports all types.
+        description : str or None
+            Label assigned to every annotation when the file has no type column. Ignored
+            when the type column is present.
+        unit : str
+            `"seconds"` (default) or `"samples"`. When `"samples"`, onset and duration
+            values are divided by `sfreq` to convert them to seconds.
         """
         descs, onsets, durations = [], [], []
         fs = self.current["data"].info["sfreq"]
         try:
             with open(fname) as f:
                 header = f.readline().strip()
-                if header != "type,onset,duration":
+                has_type_col = header == "type,onset,duration"
+                no_type_col = header == "onset,duration"
+                if not has_type_col and not no_type_col:
                     raise InvalidAnnotationsError(
                         "Invalid annotations file (expected header: "
-                        "'type,onset,duration')."
+                        "'type,onset,duration' or 'onset,duration')."
                     )
                 for line in f:
                     annot = line.split(",")
-                    if len(annot) == 3:  # type, onset, duration
-                        desc = annot[0].strip()
-                        if types is not None and desc not in types:
+                    if has_type_col:
+                        if len(annot) < 3:
                             continue
-                        try:
-                            onset = float(annot[1].strip())
-                            duration = float(annot[2].strip())
-                        except ValueError:
-                            raise InvalidAnnotationsError(
-                                "One or more annotations have invalid onset or duration"
-                                " values."
-                            )
-                        if onset > self.current["data"].n_times / fs:
-                            raise InvalidAnnotationsError(
-                                "One or more annotations are outside the data range."
-                            )
-                        descs.append(desc)
-                        onsets.append(onset)
-                        durations.append(duration)
+                        desc = annot[0].strip()
+                        onset_str = annot[1].strip()
+                        duration_str = annot[2].strip()
+                    else:  # no type column
+                        if len(annot) < 2:
+                            continue
+                        desc = description if description is not None else "annotation"
+                        onset_str = annot[0].strip()
+                        duration_str = annot[1].strip()
+                    if types is not None and desc not in types:
+                        continue
+                    try:
+                        onset = float(onset_str)
+                        duration = float(duration_str)
+                    except ValueError:
+                        raise InvalidAnnotationsError(
+                            "One or more annotations have invalid onset or duration"
+                            " values."
+                        )
+                    if unit == "samples":
+                        onset /= fs
+                        duration /= fs
+                    if onset > self.current["data"].n_times / fs:
+                        raise InvalidAnnotationsError(
+                            "One or more annotations are outside the data range."
+                        )
+                    descs.append(desc)
+                    onsets.append(onset)
+                    durations.append(duration)
         except InvalidAnnotationsError:
             raise
         except UnicodeDecodeError:

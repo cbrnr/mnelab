@@ -31,6 +31,7 @@ from PySide6.QtGui import QAction, QDesktopServices, QIcon, QKeySequence
 from PySide6.QtWidgets import (
     QApplication,
     QFileDialog,
+    QInputDialog,
     QLabel,
     QMainWindow,
     QMenu,
@@ -925,24 +926,59 @@ class MainWindow(QMainWindow):
             return
         self._set_last_dir(fname)
         try:
-            all_types = get_annotation_types_from_file(fname)
+            all_types, integer = get_annotation_types_from_file(fname)
         except Exception as e:
             QMessageBox.critical(self, "Invalid annotations file", str(e))
             return
-        if len(all_types) > 1:
-            dialog = AnnotationTypesDialog(
+        # handle missing type column (ask the user for a description)
+        if all_types is None:
+            desc, ok = QInputDialog.getText(
                 self,
-                all_types,
-                title="Import annotations",
-                label="Select annotation types to import:",
+                "Import annotations",
+                "The file has no type column. Enter a description for all annotations:",
+                text="annotation",
             )
-            if not dialog.exec():
+            if not ok:
                 return
-            types = dialog.selected_types
+            description = desc.strip() or "annotation"
+            types = None
         else:
-            types = all_types
+            description = None
+            if len(all_types) > 1:
+                dialog = AnnotationTypesDialog(
+                    self,
+                    all_types,
+                    title="Import annotations",
+                    label="Select annotation types to import:",
+                )
+                if not dialog.exec():
+                    return
+                types = dialog.selected_types
+            else:
+                types = all_types
+        # check if all values look like integers (may be in samples)
+        unit = "seconds"
         try:
-            self.model.import_annotations(fname, types=types if types else None)
+            if integer:
+                sfreq = self.model.current["data"].info["sfreq"]
+                reply = QMessageBox.question(
+                    self,
+                    "Import annotations",
+                    f"All onset and duration values are integers. They may be in "
+                    f"samples (fs = {sfreq:.1f}\u202fHz) rather than "
+                    f"seconds.\n\nImport as samples?",
+                )
+                if reply == QMessageBox.StandardButton.Yes:
+                    unit = "samples"
+        except Exception:
+            pass
+        try:
+            self.model.import_annotations(
+                fname,
+                types=types if description is None else None,
+                description=description,
+                unit=unit,
+            )
         except InvalidAnnotationsError as e:
             QMessageBox.critical(self, "Invalid annotations", str(e))
 
