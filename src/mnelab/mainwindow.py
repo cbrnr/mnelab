@@ -165,17 +165,24 @@ class MainWindow(QMainWindow):
             self.open_data,
             QKeySequence.StandardKey.Open,
         )
-        self.recent_menu = file_menu.addMenu("Open Recent")
+        self.recent_menu = file_menu.addMenu(
+            QIcon.fromTheme("open-recent"), "Open Recent"
+        )
         self.recent_menu.aboutToShow.connect(self._update_recent_menu)
         self.recent_menu.triggered.connect(self._load_recent)
         if not self.recent:
             self.recent_menu.setEnabled(False)
         self.all_actions["close_file"] = file_menu.addAction(
-            "&Close", self.model.remove_data, QKeySequence.StandardKey.Close
+            QIcon.fromTheme("close-file"),
+            "&Close",
+            self.model.remove_data,
+            QKeySequence.StandardKey.Close,
         )
-        self.all_actions["close_all"] = file_menu.addAction("Close All", self.close_all)
+        self.all_actions["close_all"] = file_menu.addAction(
+            QIcon.fromTheme("close-all"), "Close All", self.close_all
+        )
         file_menu.addSeparator()
-        self.export_menu = file_menu.addMenu("Export")
+        self.export_menu = file_menu.addMenu(QIcon.fromTheme("export"), "Export")
         for ext, description in writers.items():
             action = "export_data" + ext.replace(".", "_")
             self.all_actions[action] = self.export_menu.addAction(
@@ -189,7 +196,7 @@ class MainWindow(QMainWindow):
             self.xdf_metadata,
         )
         self.all_actions["xdf_chunks"] = file_menu.addAction(
-            "Inspect XDF Chunks...", self.xdf_chunks
+            QIcon.fromTheme("xdf-chunks"), "Inspect XDF Chunks...", self.xdf_chunks
         )
         file_menu.addSeparator()
         self.all_actions["settings"] = file_menu.addAction(
@@ -200,78 +207,95 @@ class MainWindow(QMainWindow):
         )
         file_menu.addSeparator()
         self.all_actions["quit"] = file_menu.addAction(
-            "&Quit", self.close, QKeySequence.StandardKey.Quit
+            QIcon.fromTheme("quit"),
+            "&Quit",
+            self.close,
+            QKeySequence.StandardKey.Quit,
         )
 
         channels_menu = self.menuBar().addMenu("&Channels")
         self.all_actions["pick_chans"] = channels_menu.addAction(
-            "P&ick Channels...", self.pick_channels
+            QIcon.fromTheme("pick-chans"), "P&ick Channels...", self.pick_channels
         )
         self.all_actions["rename_channels"] = channels_menu.addAction(
+            QIcon.fromTheme("rename-channels"),
             "Rename Channels...",
             self.rename_channels,
         )
         self.all_actions["chan_props"] = channels_menu.addAction(
             QIcon.fromTheme("chan-props"),
-            "Edit Channel &Properties...",
+            "Channel &Properties...",
             self.channel_properties,
         )
         channels_menu.addSeparator()
         self.all_actions["set_montage"] = channels_menu.addAction(
-            "Set &Montage...", self.set_montage
+            QIcon.fromTheme("plot-locations"), "Set &Montage...", self.set_montage
         )
         self.all_actions["clear_montage"] = channels_menu.addAction(
+            QIcon.fromTheme("clear-montage"),
             "Clear Montage",
             self.clear_montage,
         )
         channels_menu.addSeparator()
         self.all_actions["change_ref"] = channels_menu.addAction(
+            QIcon.fromTheme("placeholder"),
             "Change &Reference...",
             self.change_reference,
         )
         channels_menu.addSeparator()
         self.all_actions["import_bads"] = channels_menu.addAction(
+            QIcon.fromTheme("import"),
             "Import Bad Channels...",
             lambda: self.import_file(model.import_bads, "Import bad channels", "*.csv"),
         )
         self.all_actions["export_bads"] = channels_menu.addAction(
+            QIcon.fromTheme("export"),
             "Export &Bad Channels...",
             lambda: self.export_file(model.export_bads, "Export bad channels", "*.csv"),
         )
         self.all_actions["interpolate_bads"] = channels_menu.addAction(
-            "Interpolate Bad Channels", self.interpolate_bads
+            QIcon.fromTheme("placeholder"),
+            "Interpolate Bad Channels",
+            self.interpolate_bads,
         )
         channels_menu.addSeparator()
         self.all_actions["channel_stats"] = channels_menu.addAction(
+            QIcon.fromTheme("channel-stats"),
             "&Channel Statistics",
             self.show_channel_stats,
         )
 
         events_menu = self.menuBar().addMenu("&Markers")
         self.all_actions["annotations"] = events_menu.addAction(
+            QIcon.fromTheme("edit"),
             "Edit &Annotations...",
             self.edit_annotations,
         )
         self.all_actions["import_annotations"] = events_menu.addAction(
+            QIcon.fromTheme("import"),
             "Import Annotations...",
             self.import_annotations,
         )
         self.all_actions["export_annotations"] = events_menu.addAction(
+            QIcon.fromTheme("export"),
             "Export &Annotations...",
             self.export_annotations,
         )
         events_menu.addSeparator()
         self.all_actions["events"] = events_menu.addAction(
+            QIcon.fromTheme("edit"),
             "Edit &Events...",
             self.edit_events,
         )
         self.all_actions["import_events"] = events_menu.addAction(
+            QIcon.fromTheme("import"),
             "Import Events...",
             lambda: self.import_file(
                 model.import_events, "Import events", "*.csv *.fif"
             ),
         )
         self.all_actions["export_events"] = events_menu.addAction(
+            QIcon.fromTheme("export"),
             "Export &Events...",
             lambda: self.export_file(model.export_events, "Export events", "*.csv"),
         )
@@ -280,10 +304,14 @@ class MainWindow(QMainWindow):
             QIcon.fromTheme("find-events"), "Find &Events...", self.find_events
         )
         self.all_actions["events_from_annotations"] = events_menu.addAction(
-            "Events from Annotations", self.events_from_annotations
+            QIcon.fromTheme("events-from-annotations"),
+            "Events from Annotations",
+            self.events_from_annotations,
         )
         self.all_actions["annotations_from_events"] = events_menu.addAction(
-            "Annotations from Events...", self.annotations_from_events
+            QIcon.fromTheme("annotations-from-events"),
+            "Annotations from Events...",
+            self.annotations_from_events,
         )
 
         plot_menu = self.menuBar().addMenu("&Plot")
@@ -305,32 +333,39 @@ class MainWindow(QMainWindow):
         )
         plot_menu.addSeparator()
         self.all_actions["plot_erds"] = plot_menu.addAction(
+            QIcon.fromTheme("placeholder"),
             "Plot &ERDS Maps...",
             self.plot_erds,
         )
         self.all_actions["plot_erds_topomaps"] = plot_menu.addAction(
+            QIcon.fromTheme("placeholder"),
             "Plot ERDS Topomaps...",
             self.plot_erds_topomaps,
         )
         plot_menu.addSeparator()
         self.all_actions["plot_evoked"] = plot_menu.addAction(
+            QIcon.fromTheme("placeholder"),
             "Plot Evoked...",
             self.plot_evoked,
         )
         self.all_actions["plot_evoked_comparison"] = plot_menu.addAction(
+            QIcon.fromTheme("placeholder"),
             "Plot Evoked Comparison...",
             self.plot_evoked_comparison,
         )
         self.all_actions["plot_evoked_topomaps"] = plot_menu.addAction(
+            QIcon.fromTheme("placeholder"),
             "Plot Evoked Topomaps...",
             self.plot_evoked_topomaps,
         )
         plot_menu.addSeparator()
         self.all_actions["plot_ica_components"] = plot_menu.addAction(
+            QIcon.fromTheme("placeholder"),
             "Plot ICA &Components",
             self.plot_ica_components,
         )
         self.all_actions["plot_ica_sources"] = plot_menu.addAction(
+            QIcon.fromTheme("placeholder"),
             "Plot ICA &Sources",
             self.plot_ica_sources,
         )
@@ -340,25 +375,29 @@ class MainWindow(QMainWindow):
             QIcon.fromTheme("filter-data"), "&Filter Data...", self.filter_data
         )
         process_menu.addSeparator()
-        self.all_actions["crop"] = process_menu.addAction("&Crop Data...", self.crop)
+        self.all_actions["crop"] = process_menu.addAction(
+            QIcon.fromTheme("crop"), "&Crop Data...", self.crop
+        )
         self.all_actions["append_data"] = process_menu.addAction(
-            "Appen&d Data...", self.append_data
+            QIcon.fromTheme("append-data"), "Appen&d Data...", self.append_data
         )
         process_menu.addSeparator()
         self.all_actions["run_ica"] = process_menu.addAction(
             QIcon.fromTheme("run-ica"), "Run &ICA...", self.run_ica
         )
+        self.all_actions["label_ica"] = process_menu.addAction(
+            QIcon.fromTheme("label-ica"), "Label &ICs...", self.label_ica
+        )
+        self.all_actions["apply_ica"] = process_menu.addAction(
+            QIcon.fromTheme("apply-ica"), "Apply &ICA", self.apply_ica
+        )
         self.all_actions["import_ica"] = process_menu.addAction(
+            QIcon.fromTheme("import"),
             "Import &ICA...",
             lambda: self.open_file(model.import_ica, "Import ICA", "*.fif *.fif.gz"),
         )
-        self.all_actions["label_ica"] = process_menu.addAction(
-            "Label &ICs...", self.label_ica
-        )
-        self.all_actions["apply_ica"] = process_menu.addAction(
-            "Apply &ICA", self.apply_ica
-        )
         self.all_actions["export_ica"] = process_menu.addAction(
+            QIcon.fromTheme("export"),
             "Export ICA...",
             lambda: self.export_file(model.export_ica, "Export ICA", "*.fif *.fif.gz"),
         )
@@ -368,16 +407,19 @@ class MainWindow(QMainWindow):
             QIcon.fromTheme("epoch-data"), "Create Epochs...", self.epoch_data
         )
         self.all_actions["drop_bad_epochs"] = epochs_menu.addAction(
+            QIcon.fromTheme("drop-bad-epochs"),
             "Drop Bad Epochs...",
             self.drop_bad_epochs,
         )
         self.all_actions["artifact_detection"] = epochs_menu.addAction(
+            QIcon.fromTheme("artifact-detection"),
             "Detect &Artifacts...",
             self.artifact_detection,
         )
 
         view_menu = self.menuBar().addMenu("&View")
         self.all_actions["history"] = view_menu.addAction(
+            QIcon.fromTheme("history"),
             "&History",
             self.show_history,
             QKeySequence(Qt.Modifier.CTRL | Qt.Key.Key_Y),
@@ -392,6 +434,7 @@ class MainWindow(QMainWindow):
         self.all_actions["statusbar"].setCheckable(True)
         if sys.platform != "darwin":
             self.all_actions["menubar"] = view_menu.addAction(
+                QIcon.fromTheme("placeholder"),
                 "&Menubar",
                 self._toggle_menubar,
                 QKeySequence(Qt.Modifier.CTRL | Qt.Key.Key_M),
@@ -399,14 +442,18 @@ class MainWindow(QMainWindow):
             self.all_actions["menubar"].setCheckable(True)
 
         help_menu = self.menuBar().addMenu("&Help")
-        self.all_actions["about"] = help_menu.addAction("&About", self.show_about)
+        self.all_actions["about"] = help_menu.addAction(
+            QIcon.fromTheme("info"), "&About", self.show_about
+        )
         self.all_actions["about_qt"] = help_menu.addAction(
-            "About &Qt", self.show_about_qt
+            QIcon.fromTheme("info"), "About &Qt", self.show_about_qt
         )
         if sys.platform != "darwin":
             help_menu.addSeparator()
         self.all_actions["check_updates"] = help_menu.addAction(
-            "Check for &Updates", self.show_check_for_updates
+            QIcon.fromTheme("check-updates"),
+            "Check for &Updates",
+            self.show_check_for_updates,
         )
         if sys.platform == "darwin":
             self.all_actions["check_updates"].setMenuRole(
@@ -414,6 +461,7 @@ class MainWindow(QMainWindow):
             )
         help_menu.addSeparator()
         self.all_actions["documentation"] = help_menu.addAction(
+            QIcon.fromTheme("placeholder"),
             "&Documentation",
             self.show_documentation,
         )
