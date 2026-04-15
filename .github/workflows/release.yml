@@ -6,9 +6,11 @@ on:
 
 jobs:
   test:
+    name: Test
     uses: ./.github/workflows/test.yml
 
   build_standalone:
+    name: Build standalone executables
     needs: test
     uses: ./.github/workflows/standalone.yml
     secrets:
