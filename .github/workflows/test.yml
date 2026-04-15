@@ -9,8 +9,8 @@ on:
   workflow_call:
 
 jobs:
-  style:
-    name: Check style
+  check:
+    name: Run checks
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
@@ -24,9 +24,21 @@ jobs:
           python-version: "3.14"
       - name: Check license headers
         run: python .github/check_license_headers.py
+      - name: Get latest uv version
+        id: uv-version
+        run: |
+          LATEST=$(curl -s https://api.github.com/repos/astral-sh/uv/releases/latest | jq -r '.tag_name' | sed 's/^v//')
+          echo "version=$LATEST" >> $GITHUB_OUTPUT
+          echo "Latest uv version: $LATEST"
+      - name: Check uv_build compatibility
+        env:
+          UV_LATEST_VERSION: ${{ steps.uv-version.outputs.version }}
+        run: |
+          pip install packaging
+          python .github/check_uv_build.py
 
   test:
-    needs: style
+    needs: check
     strategy:
       matrix:
         python-version: ["3.12", "3.13", "3.14"]
