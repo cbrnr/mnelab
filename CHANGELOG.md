@@ -1,6 +1,7 @@
 ## [UNRELEASED] · YYYY-MM-DD
 ### ✨ Added
 - Add icons to menu actions ([#620](https://github.com/cbrnr/mnelab/pull/620) by [Clemens Brunner](https://github.com/cbrnr))
+- Add support for custom annotation colors via Markers – Annotation Colors ([#621](https://github.com/cbrnr/mnelab/pull/621) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.4.3] · 2026-04-14
 ### ✨ Added
