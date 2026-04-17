@@ -2,7 +2,11 @@
 #
 # License: BSD (3-clause)
 
-from mnelab.dialogs.annotations import AnnotationsDialog, AnnotationTypesDialog
+from mnelab.dialogs.annotations import (
+    AnnotationColorsDialog,
+    AnnotationsDialog,
+    AnnotationTypesDialog,
+)
 from mnelab.dialogs.annotations_from_events import AnnotationsIntervalDialog
 from mnelab.dialogs.append import AppendDialog
 from mnelab.dialogs.artifact_detection import ArtifactDetectionDialog

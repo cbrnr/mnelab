@@ -2,6 +2,7 @@
 #
 # License: BSD (3-clause)
 
+import json
 from pathlib import Path
 
 from mne import get_config_path
@@ -52,10 +53,20 @@ _DEFAULTS = {
     "menu_icons": True,
     "show_menubar": True,
     "theme": "Auto",
+    "annotation_colors": {},
 }
+
+_JSON_KEYS = {"annotation_colors"}
 
 
 def _get_value(key):
+    if key in _JSON_KEYS:
+        raw = QSettings(SETTINGS_PATH, QSettings.Format.IniFormat).value(
+            key, defaultValue=None
+        )
+        if raw is None:
+            return _DEFAULTS[key]
+        return json.loads(raw)
     return QSettings(SETTINGS_PATH, QSettings.Format.IniFormat).value(
         key, defaultValue=_DEFAULTS[key], type=type(_DEFAULTS[key])
     )
@@ -89,6 +100,8 @@ def write_settings(**kwargs):
     for key, value in kwargs.items():
         if key not in _DEFAULTS:
             raise KeyError(f"Invalid setting key: {key}")
+        if key in _JSON_KEYS:
+            value = json.dumps(value)
         settings.setValue(key, value)
 
 

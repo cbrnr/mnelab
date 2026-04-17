@@ -271,6 +271,11 @@ class MainWindow(QMainWindow):
             "Edit &Annotations...",
             self.edit_annotations,
         )
+        self.all_actions["annotation_colors"] = events_menu.addAction(
+            QIcon.fromTheme("annotation-colors"),
+            "Annotation &Colors...",
+            self.set_annotation_colors,
+        )
         self.all_actions["import_annotations"] = events_menu.addAction(
             QIcon.fromTheme("import"),
             "Import Annotations...",
@@ -479,6 +484,7 @@ class MainWindow(QMainWindow):
             "settings",
             "documentation",
             "history",
+            "annotation_colors",
         ]
 
         # set up toolbar
@@ -1138,6 +1144,13 @@ class MainWindow(QMainWindow):
                 description.append(data)
             self.model.set_annotations(onset, duration, description)
 
+    def set_annotation_colors(self):
+        """Open dialog to manage custom annotation colors."""
+        colors = read_settings("annotation_colors")
+        dialog = AnnotationColorsDialog(self, colors)
+        if dialog.exec():
+            write_settings(annotation_colors=dialog.annotation_colors)
+
     def edit_events(self):
         pos = self.model.current["events"][:, 0].tolist()
         desc = self.model.current["events"][:, 2].tolist()
@@ -1189,6 +1202,7 @@ class MainWindow(QMainWindow):
         nchan = self.model.current["data"].info["nchan"]
         nchan = min(nchan, read_settings("max_channels"))
         duration = read_settings("duration")
+        annotation_colors = read_settings("annotation_colors") or None
 
         fig = self.model.current["data"].plot(
             events=events,
@@ -1196,6 +1210,7 @@ class MainWindow(QMainWindow):
             duration=duration,
             title=self.model.current["name"],
             clipping=None,
+            annotation_colors=annotation_colors,
             show=False,
         )
         if events is not None:

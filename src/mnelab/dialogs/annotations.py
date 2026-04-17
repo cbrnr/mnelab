@@ -2,23 +2,43 @@
 #
 # License: BSD (3-clause)
 
+import re
 from collections import defaultdict
 
 from PySide6.QtCore import Qt, Slot
+from PySide6.QtGui import QColor, QValidator
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QColorDialog,
     QDialog,
     QDialogButtonBox,
     QHBoxLayout,
+    QHeaderView,
     QLabel,
+    QLineEdit,
     QListWidget,
     QPushButton,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
+    QWidget,
 )
 
 from mnelab.dialogs.utils import IntTableWidgetItem, select_all
+
+_HEX_PARTIAL = re.compile(r"#[0-9A-Fa-f]{0,6}$")
+_HEX_FULL = re.compile(r"#[0-9A-Fa-f]{6}$")
+
+
+class _HexColorValidator(QValidator):
+    """Validator that enforces the # prefix and hex digits for color codes."""
+
+    def validate(self, text, pos):
+        if _HEX_FULL.match(text):
+            return QValidator.State.Acceptable, text, pos
+        if _HEX_PARTIAL.match(text):
+            return QValidator.State.Intermediate, text, pos
+        return QValidator.State.Invalid, text, pos
 
 
 class AnnotationsDialog(QDialog):
@@ -187,3 +207,148 @@ class AnnotationTypesDialog(QDialog):
     def selected_types(self):
         """Return list of selected annotation type strings."""
         return [item.text() for item in self.list_widget.selectedItems()]
+
+
+class AnnotationColorsDialog(QDialog):
+    """Dialog for managing custom annotation description to color mappings."""
+
+    def __init__(self, parent, colors):
+        super().__init__(parent)
+        self.setWindowTitle("Annotation Colors")
+
+        self.table = QTableWidget(0, 2)
+        self.table.setHorizontalHeaderLabels(["Description", "Color"])
+        header = self.table.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
+        self.table.setColumnWidth(1, 130)
+        self.table.verticalHeader().setVisible(False)
+        self.table.setShowGrid(False)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table.itemSelectionChanged.connect(self._toggle_buttons)
+
+        for desc, color in colors.items():
+            self._insert_row(desc, color)
+
+        vbox = QVBoxLayout(self)
+        vbox.addWidget(self.table)
+
+        hbox = QHBoxLayout()
+        self.add_button = QPushButton("+")
+        self.remove_button = QPushButton("-")
+        buttonbox = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
+        hbox.addWidget(self.add_button)
+        hbox.addWidget(self.remove_button)
+        hbox.addStretch()
+        hbox.addWidget(buttonbox)
+        vbox.addLayout(hbox)
+
+        self.add_button.clicked.connect(self._add_row)
+        self.remove_button.clicked.connect(self._remove_row)
+        buttonbox.accepted.connect(self.accept)
+        buttonbox.rejected.connect(self.reject)
+
+        self._toggle_buttons()
+        self.setMinimumSize(400, 300)
+        self.setFocus()
+
+    def _make_color_cell(self, color):
+        """Create a cell widget showing a circular swatch and editable hex value."""
+        container = QWidget()
+        container.setProperty("color", color)
+        layout = QHBoxLayout(container)
+        layout.setContentsMargins(8, 4, 8, 4)
+        layout.setSpacing(6)
+
+        swatch = QPushButton()
+        swatch.setFixedSize(20, 20)
+        self._style_swatch(swatch, color)
+        swatch.clicked.connect(lambda: self._pick_color(container))
+        layout.addWidget(swatch)
+
+        qcolor = QColor(color)
+        hex_edit = QLineEdit(qcolor.name() if qcolor.isValid() else color)
+        hex_edit.setMaxLength(7)
+        hex_edit.setValidator(_HexColorValidator(hex_edit))
+        hex_edit.setStyleSheet("QLineEdit { border: none; background: transparent; }")
+        hex_edit.textEdited.connect(lambda text: self._hex_edited(container, text))
+        layout.addWidget(hex_edit)
+
+        return container
+
+    def _style_swatch(self, btn, color):
+        """Apply a circular background style to the swatch button."""
+        qcolor = QColor(color)
+        if qcolor.isValid():
+            btn.setStyleSheet(
+                f"QPushButton {{ background-color: {qcolor.name()}; "
+                "border-radius: 10px; "
+                "border: 1px solid rgba(128,128,128,0.5); padding: 0px; }}"
+            )
+        else:
+            btn.setStyleSheet(
+                "QPushButton { border-radius: 10px; "
+                "border: 1px solid rgba(128,128,128,0.5); padding: 0px; }"
+            )
+
+    def _pick_color(self, container):
+        """Open a color picker and update the cell widget."""
+        initial = QColor(container.property("color") or "#ffffff")
+        color = QColorDialog.getColor(initial, self, "Pick Color")
+        if color.isValid():
+            container.setProperty("color", color.name())
+            swatch = container.findChild(QPushButton)
+            hex_edit = container.findChild(QLineEdit)
+            if swatch:
+                self._style_swatch(swatch, color.name())
+            if hex_edit:
+                hex_edit.setText(color.name())
+
+    def _hex_edited(self, container, text):
+        """Update the swatch when the user types a valid hex color."""
+        qcolor = QColor(text)
+        if qcolor.isValid():
+            container.setProperty("color", qcolor.name())
+            swatch = container.findChild(QPushButton)
+            if swatch:
+                self._style_swatch(swatch, qcolor.name())
+
+    def _insert_row(self, desc="New Annotation", color="#ffffff"):
+        row = self.table.rowCount()
+        self.table.insertRow(row)
+        self.table.setItem(row, 0, QTableWidgetItem(desc))
+        cell = self._make_color_cell(color)
+        self.table.setCellWidget(row, 1, cell)
+
+    @Slot()
+    def _add_row(self):
+        self._insert_row()
+        self._toggle_buttons()
+
+    @Slot()
+    def _remove_row(self):
+        rows = {index.row() for index in self.table.selectedIndexes()}
+        self.table.clearSelection()
+        for row in sorted(rows, reverse=True):
+            self.table.removeRow(row)
+        self._toggle_buttons()
+
+    @Slot()
+    def _toggle_buttons(self):
+        self.remove_button.setEnabled(bool(self.table.selectedItems()))
+
+    @property
+    def annotation_colors(self):
+        """Return the current description to color mapping as a dict."""
+        result = {}
+        for row in range(self.table.rowCount()):
+            desc_item = self.table.item(row, 0)
+            cell = self.table.cellWidget(row, 1)
+            if desc_item and cell:
+                desc = desc_item.text().strip()
+                color = cell.property("color")
+                if desc and color:
+                    result[desc] = color
+        return result
