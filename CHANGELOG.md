@@ -1,3 +1,5 @@
+## [UNRELEASED] · YYYY-MM-DD
+
 ## [1.4.4] · 2026-04-21
 ### ✨ Added
 - Add icons to menu actions ([#620](https://github.com/cbrnr/mnelab/pull/620) by [Clemens Brunner](https://github.com/cbrnr))
