@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "mnelab"
-version = "1.5.0.dev0"
+version = "1.4.4"
 description = "A graphical user interface for MNE"
 license = "BSD-3-Clause"
 license-files = ["LICENSE"]
@@ -26,7 +26,7 @@ dependencies = [
     "edfio >= 0.4.13",
     "isort >= 8.0.1",
     "matplotlib >= 3.10.8",
-    "mne @ git+https://github.com/mne-tools/mne-python.git@825eea337069508d6ec3039a84915def87f4c7a4",  # annotation_colors, will be available in mne >= 1.13
+    "mne >= 1.12.1",
     "numpy >= 2.4.4",
     "onnx>=1.21.0",
     "pybv >= 0.7.6",
@@ -73,6 +73,3 @@ select = ["C4", "E", "F", "I", "PERF", "UP", "W"]
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
 "mainwindow.py" = ["F405"]
-
-[tool.uv.sources]
-mne = { git = "https://github.com/mne-tools/mne-python.git", rev = "825eea337069508d6ec3039a84915def87f4c7a4" }

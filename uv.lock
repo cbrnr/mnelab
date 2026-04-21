@@ -876,8 +876,8 @@ wheels = [
 
 [[package]]
 name = "mne"
-version = "1.13.0.dev17+g825eea337"
-source = { git = "https://github.com/mne-tools/mne-python.git?rev=825eea337069508d6ec3039a84915def87f4c7a4#825eea337069508d6ec3039a84915def87f4c7a4" }
+version = "1.12.1"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "decorator" },
     { name = "jinja2" },
@@ -888,6 +888,10 @@ dependencies = [
     { name = "pooch" },
     { name = "scipy" },
     { name = "tqdm" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/95/72/24cd8137df5a185fe0856ff9b6f8a8f9d387d6783c51961a1c6300a4efe8/mne-1.12.1.tar.gz", hash = "sha256:244f844057f28a4da2509039dba637832ffb65f678ca76fc667312c493b12044", size = 7211821, upload-time = "2026-04-20T17:16:57.295Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6c/da/a3280dbd8f0024b287b625ef97f8ef79ae853ed852e7732641d0ec3c2160/mne-1.12.1-py3-none-any.whl", hash = "sha256:7823bd276d570e9bed2e63e8d86fdbe74d5ee7817b6d01a8e4dc9510ef9e3a91", size = 7509566, upload-time = "2026-04-20T17:16:54.447Z" },
 ]
 
 [package.optional-dependencies]
@@ -920,7 +924,7 @@ wheels = [
 
 [[package]]
 name = "mnelab"
-version = "1.5.0.dev0"
+version = "1.4.4"
 source = { editable = "." }
 dependencies = [
     { name = "black" },
@@ -967,7 +971,7 @@ requires-dist = [
     { name = "isort", specifier = ">=8.0.1" },
     { name = "matplotlib", specifier = ">=3.10.8" },
     { name = "mkdocs-material", marker = "extra == 'docs'", specifier = ">=9.7.6" },
-    { name = "mne", git = "https://github.com/mne-tools/mne-python.git?rev=825eea337069508d6ec3039a84915def87f4c7a4" },
+    { name = "mne", specifier = ">=1.12.1" },
     { name = "mne-qt-browser", marker = "extra == 'full'", specifier = ">=0.7.4" },
     { name = "numpy", specifier = ">=2.4.4" },
     { name = "onnx", specifier = ">=1.21.0" },
