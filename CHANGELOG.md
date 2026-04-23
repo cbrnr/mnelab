@@ -1,4 +1,6 @@
 ## [UNRELEASED] · YYYY-MM-DD
+### 🔧 Fixed
+- Fix the sidebar background color on Windows and Linux ([#622](https://github.com/cbrnr/mnelab/pull/622) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.4.4] · 2026-04-21
 ### ✨ Added

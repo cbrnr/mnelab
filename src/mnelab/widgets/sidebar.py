@@ -108,7 +108,7 @@ class SidebarTableWidget(QTableWidget):
         if sys.platform != "darwin":
             # disable cell style changes upon focusing (clicking); not needed on macOS
             self.setStyleSheet("""
-                QTableWidget#sidebar { outline: 0; }
+                QTableWidget#sidebar { outline: 0; background: palette(base); }
                 QTableWidget#sidebar::item:hover {
                     background: transparent;
                     color: palette(text);
