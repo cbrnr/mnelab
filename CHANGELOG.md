@@ -1,6 +1,6 @@
 ## [UNRELEASED] · YYYY-MM-DD
 ### 🔧 Fixed
-- Fix the sidebar background color on Windows and Linux ([#622](https://github.com/cbrnr/mnelab/pull/622) by [Clemens Brunner](https://github.com/cbrnr))
+- Fix the sidebar background color on Windows and Linux ([#622](https://github.com/cbrnr/mnelab/pull/622) and [#623](https://github.com/cbrnr/mnelab/pull/623) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🗑️ Removed
 - Remove manual Light/Dark theme options as this did not work reliably; the app now always follows the system theme ([#623](https://github.com/cbrnr/mnelab/pull/623) by [Clemens Brunner](https://github.com/cbrnr))

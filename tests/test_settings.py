@@ -5,12 +5,7 @@
 import pytest
 
 from mnelab import settings
-from mnelab.settings import (
-    _DEFAULTS,
-    clear_settings,
-    read_settings,
-    write_settings,
-)
+from mnelab.settings import _DEFAULTS, clear_settings, read_settings, write_settings
 
 
 @pytest.fixture(autouse=True)
