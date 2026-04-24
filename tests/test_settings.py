@@ -3,9 +3,16 @@
 # License: BSD (3-clause)
 
 import pytest
+from PySide6.QtGui import QPalette
 
 from mnelab import settings
-from mnelab.settings import _DEFAULTS, clear_settings, read_settings, write_settings
+from mnelab.settings import (
+    _DEFAULTS,
+    apply_theme,
+    clear_settings,
+    read_settings,
+    write_settings,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -26,3 +33,21 @@ def test_write_read_clear_settings():
     assert read_settings() == {**_DEFAULTS, "max_recent": 10}
     clear_settings()
     assert read_settings() == _DEFAULTS
+
+
+def test_apply_theme_palette_fallback(qapp):
+    base_window = qapp.palette().color(QPalette.ColorRole.Window).name()
+    try:
+        apply_theme("Dark")
+        dark_window = qapp.palette().color(QPalette.ColorRole.Window).name()
+
+        apply_theme("Light")
+        light_window = qapp.palette().color(QPalette.ColorRole.Window).name()
+
+        apply_theme("Auto")
+        auto_window = qapp.palette().color(QPalette.ColorRole.Window).name()
+    finally:
+        apply_theme("Auto")
+
+    assert dark_window != light_window
+    assert auto_window == base_window

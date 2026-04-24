@@ -98,6 +98,14 @@ class _MNELogHandler(logging.Handler):
         self._log.append(self.format(record))
 
 
+def _resolve_icon_theme_name(theme_setting, color_scheme):
+    if theme_setting in {"Light", "Dark"}:
+        return theme_setting.lower()
+    if color_scheme != Qt.ColorScheme.Unknown:
+        return color_scheme.name.lower()
+    return "light"
+
+
 class MainWindow(QMainWindow):
     """MNELAB main window."""
 
@@ -150,10 +158,8 @@ class MainWindow(QMainWindow):
         )
         QIcon.setFallbackThemeName("light")
         apply_theme(settings["theme"])
-        # for "Auto", setColorScheme(Unknown) is the Qt default and may not fire
-        # PaletteChange, so send it manually to initialize the icon theme
-        if settings["theme"] == "Auto":
-            QApplication.sendEvent(self, QEvent(QEvent.Type.PaletteChange))
+        # some styles do not emit PaletteChange after theme changes
+        QApplication.sendEvent(self, QEvent(QEvent.Type.PaletteChange))
 
         self.all_actions = {}  # contains all actions
 
@@ -1810,6 +1816,8 @@ class MainWindow(QMainWindow):
             self.sidebar.set_badges_visible(new_badges)
         if old_theme != new_theme:
             apply_theme(new_theme)
+            QApplication.sendEvent(self, QEvent(QEvent.Type.PaletteChange))
+            self.sidebar.refresh_theme()
         if old_menu_icons != new_menu_icons:
             QMessageBox.information(
                 self,
@@ -1966,12 +1974,11 @@ class MainWindow(QMainWindow):
                 print(format_code("\n".join(self.model.history)))
             event.accept()
         elif event.type() == QEvent.Type.PaletteChange:
-            if (
-                style := QApplication.styleHints().colorScheme()
-            ) != Qt.ColorScheme.Unknown:
-                QIcon.setThemeName(style.name.lower())
-            else:
-                QIcon.setThemeName("light")  # fallback
+            theme_setting = read_settings("theme")
+            color_scheme = QApplication.styleHints().colorScheme()
+            QIcon.setThemeName(_resolve_icon_theme_name(theme_setting, color_scheme))
+            if hasattr(self, "sidebar"):
+                self.sidebar.refresh_theme()
         elif event.type() == QEvent.Type.DragEnter:
             if event.mimeData().hasUrls():
                 event.acceptProposedAction()

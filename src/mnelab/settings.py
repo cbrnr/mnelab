@@ -3,6 +3,7 @@
 # License: BSD (3-clause)
 
 import json
+import sys
 from pathlib import Path
 
 from mne import get_config_path
@@ -14,8 +15,9 @@ from PySide6.QtCore import (
     QUrl,
     Slot,
 )
-from PySide6.QtGui import QDesktopServices, QGuiApplication, Qt
+from PySide6.QtGui import QColor, QDesktopServices, QGuiApplication, QPalette, Qt
 from PySide6.QtWidgets import (
+    QApplication,
     QCheckBox,
     QComboBox,
     QDialog,
@@ -57,6 +59,60 @@ _DEFAULTS = {
 }
 
 _JSON_KEYS = {"annotation_colors"}
+
+
+def _dark_palette():
+    palette = QPalette()
+    palette.setColor(QPalette.ColorRole.Window, QColor(53, 53, 53))
+    palette.setColor(QPalette.ColorRole.WindowText, QColor(255, 255, 255))
+    palette.setColor(QPalette.ColorRole.Base, QColor(35, 35, 35))
+    palette.setColor(QPalette.ColorRole.AlternateBase, QColor(53, 53, 53))
+    palette.setColor(QPalette.ColorRole.ToolTipBase, QColor(35, 35, 35))
+    palette.setColor(QPalette.ColorRole.ToolTipText, QColor(255, 255, 255))
+    palette.setColor(QPalette.ColorRole.Text, QColor(255, 255, 255))
+    palette.setColor(QPalette.ColorRole.Button, QColor(53, 53, 53))
+    palette.setColor(QPalette.ColorRole.ButtonText, QColor(255, 255, 255))
+    palette.setColor(QPalette.ColorRole.BrightText, QColor(255, 0, 0))
+    palette.setColor(QPalette.ColorRole.Link, QColor(42, 130, 218))
+    palette.setColor(QPalette.ColorRole.Highlight, QColor(42, 130, 218))
+    palette.setColor(QPalette.ColorRole.HighlightedText, QColor(0, 0, 0))
+    palette.setColor(QPalette.ColorRole.PlaceholderText, QColor(200, 200, 200))
+
+    palette.setColor(
+        QPalette.ColorGroup.Disabled,
+        QPalette.ColorRole.WindowText,
+        QColor(127, 127, 127),
+    )
+    palette.setColor(
+        QPalette.ColorGroup.Disabled,
+        QPalette.ColorRole.Text,
+        QColor(127, 127, 127),
+    )
+    palette.setColor(
+        QPalette.ColorGroup.Disabled,
+        QPalette.ColorRole.ButtonText,
+        QColor(127, 127, 127),
+    )
+    palette.setColor(
+        QPalette.ColorGroup.Disabled,
+        QPalette.ColorRole.Highlight,
+        QColor(80, 80, 80),
+    )
+    palette.setColor(
+        QPalette.ColorGroup.Disabled,
+        QPalette.ColorRole.HighlightedText,
+        QColor(160, 160, 160),
+    )
+
+    return palette
+
+
+def _get_native_style_name(app):
+    native_style = app.property("_mnelab_native_style")
+    if not native_style:
+        native_style = app.style().objectName()
+        app.setProperty("_mnelab_native_style", native_style)
+    return native_style
 
 
 def _get_value(key):
@@ -123,9 +179,26 @@ def apply_theme(theme):
         "Light": Qt.ColorScheme.Light,
         "Dark": Qt.ColorScheme.Dark,
     }
-    QGuiApplication.styleHints().setColorScheme(
-        mapping.get(theme, Qt.ColorScheme.Unknown)
-    )
+    target_scheme = mapping.get(theme, Qt.ColorScheme.Unknown)
+
+    if QGuiApplication.instance() is not None:
+        QGuiApplication.styleHints().setColorScheme(target_scheme)
+
+    widget_app = QApplication.instance()
+    if isinstance(widget_app, QApplication):
+        if theme == "Auto":
+            native_style = _get_native_style_name(widget_app)
+            if native_style:
+                widget_app.setStyle(native_style)
+            widget_app.setPalette(QPalette())
+        elif sys.platform.startswith(("linux", "win")):
+            # some Qt platform styles ignore setColorScheme(); force a fallback
+            if widget_app.style().objectName().lower() != "fusion":
+                widget_app.setStyle("fusion")
+            if theme == "Dark":
+                widget_app.setPalette(_dark_palette())
+            else:
+                widget_app.setPalette(widget_app.style().standardPalette())
 
 
 class SettingsDialog(QDialog):
