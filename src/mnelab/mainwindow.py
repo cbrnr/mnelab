@@ -56,7 +56,7 @@ from mnelab.io.npy import parse_npy
 from mnelab.io.readers import read_raw, split_name_ext
 from mnelab.io.xdf import get_xml, list_chunks
 from mnelab.model import InvalidAnnotationsError, LabelsNotFoundError, Model
-from mnelab.settings import SettingsDialog, apply_theme, read_settings, write_settings
+from mnelab.settings import SettingsDialog, read_settings, write_settings
 from mnelab.utils import (
     annotations_between_events,
     count_locations,
@@ -96,14 +96,6 @@ class _MNELogHandler(logging.Handler):
 
     def emit(self, record):
         self._log.append(self.format(record))
-
-
-def _resolve_icon_theme_name(theme_setting, color_scheme):
-    if theme_setting in {"Light", "Dark"}:
-        return theme_setting.lower()
-    if color_scheme != Qt.ColorScheme.Unknown:
-        return color_scheme.name.lower()
-    return "light"
 
 
 class MainWindow(QMainWindow):
@@ -157,8 +149,7 @@ class MainWindow(QMainWindow):
             [f"{Path(__file__).parent}/icons"] + QIcon.themeSearchPaths()
         )
         QIcon.setFallbackThemeName("light")
-        apply_theme(settings["theme"])
-        # some styles do not emit PaletteChange after theme changes
+        # some styles do not emit PaletteChange on startup
         QApplication.sendEvent(self, QEvent(QEvent.Type.PaletteChange))
 
         self.all_actions = {}  # contains all actions
@@ -1802,22 +1793,16 @@ class MainWindow(QMainWindow):
     def settings(self):
         old_backend = read_settings("plot_backend")
         old_badges = read_settings("dtype_badges")
-        old_theme = read_settings("theme")
         old_menu_icons = read_settings("menu_icons")
         SettingsDialog(self, self.plot_backends).exec()
         new_backend = read_settings("plot_backend")
         new_badges = read_settings("dtype_badges")
-        new_theme = read_settings("theme")
         new_menu_icons = read_settings("menu_icons")
         if old_backend != new_backend:
             mne.viz.set_browser_backend(new_backend)
             self.model.history.append(f'mne.viz.set_browser_backend("{new_backend}")')
         if old_badges != new_badges:
             self.sidebar.set_badges_visible(new_badges)
-        if old_theme != new_theme:
-            apply_theme(new_theme)
-            QApplication.sendEvent(self, QEvent(QEvent.Type.PaletteChange))
-            self.sidebar.refresh_theme()
         if old_menu_icons != new_menu_icons:
             QMessageBox.information(
                 self,
@@ -1974,9 +1959,11 @@ class MainWindow(QMainWindow):
                 print(format_code("\n".join(self.model.history)))
             event.accept()
         elif event.type() == QEvent.Type.PaletteChange:
-            theme_setting = read_settings("theme")
             color_scheme = QApplication.styleHints().colorScheme()
-            QIcon.setThemeName(_resolve_icon_theme_name(theme_setting, color_scheme))
+            if color_scheme != Qt.ColorScheme.Unknown:
+                QIcon.setThemeName(color_scheme.name.lower())
+            else:
+                QIcon.setThemeName("light")  # fallback
             if hasattr(self, "sidebar"):
                 self.sidebar.refresh_theme()
         elif event.type() == QEvent.Type.DragEnter:

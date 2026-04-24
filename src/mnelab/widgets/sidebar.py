@@ -152,7 +152,6 @@ class SidebarTableWidget(QTableWidget):
         self.viewport().setAutoFillBackground(True)
         self.setStyleSheet(f"""
             QTableWidget#sidebar {{ outline: 0; background-color: {base_color}; }}
-            QTableWidget#sidebar::viewport {{ background-color: {base_color}; }}
             QTableWidget#sidebar::item {{
                 background: {base_color};
                 color: {text_color};

@@ -1,7 +1,9 @@
 ## [UNRELEASED] · YYYY-MM-DD
 ### 🔧 Fixed
 - Fix the sidebar background color on Windows and Linux ([#622](https://github.com/cbrnr/mnelab/pull/622) by [Clemens Brunner](https://github.com/cbrnr))
-- Make manual Light/Dark settings work on Linux distributions where Qt ignores explicit color-scheme requests (by [Clemens Brunner](https://github.com/cbrnr))
+
+### 🗑️ Removed
+- Remove manual Light/Dark theme options as this did not work reliably; the app now always follows the system theme ([#623](https://github.com/cbrnr/mnelab/pull/623) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.4.4] · 2026-04-21
 ### ✨ Added
