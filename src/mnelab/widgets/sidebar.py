@@ -5,9 +5,10 @@
 import sys
 
 from PySide6.QtCore import QEvent, QRect, QRectF, Qt, Signal
-from PySide6.QtGui import QColor, QCursor, QIcon, QPainter
+from PySide6.QtGui import QColor, QCursor, QIcon, QPainter, QPalette
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QApplication,
     QFrame,
     QHeaderView,
     QStyledItemDelegate,
@@ -106,22 +107,7 @@ class SidebarTableWidget(QTableWidget):
         self.setColumnCount(4)
         self.setShowGrid(False)
         if sys.platform != "darwin":
-            # disable cell style changes upon focusing (clicking); not needed on macOS
-            self.setStyleSheet("""
-                QTableWidget#sidebar { outline: 0; background: palette(base); }
-                QTableWidget#sidebar::item:hover {
-                    background: transparent;
-                    color: palette(text);
-                }
-                QTableWidget#sidebar::item:selected {
-                    background: palette(highlight);
-                    color: palette(highlighted-text);
-                }
-                QTableWidget#sidebar::item:focus {
-                    background: palette(highlight);
-                    color: palette(highlighted-text);
-                }
-            """)
+            self._apply_base_stylesheet()
         self.drop_row = -1
 
         header = SpanningHeaderView(
@@ -151,6 +137,43 @@ class SidebarTableWidget(QTableWidget):
         self.setMouseTracking(True)
         self.setTabKeyNavigation(False)
         self.viewport().installEventFilter(self)
+
+    def _apply_base_stylesheet(self):
+        app = QApplication.instance()
+        palette = app.palette() if isinstance(app, QApplication) else self.palette()
+        base_color = palette.color(QPalette.ColorRole.Base).name()
+        text_color = palette.color(QPalette.ColorRole.Text).name()
+        highlight_color = palette.color(QPalette.ColorRole.Highlight).name()
+        highlighted_text_color = palette.color(
+            QPalette.ColorRole.HighlightedText
+        ).name()
+        self.setPalette(palette)
+        self.viewport().setPalette(palette)
+        self.viewport().setAutoFillBackground(True)
+        self.setStyleSheet(f"""
+            QTableWidget#sidebar {{ outline: 0; background-color: {base_color}; }}
+            QTableWidget#sidebar::item {{
+                background: {base_color};
+                color: {text_color};
+            }}
+            QTableWidget#sidebar::item:hover {{
+                background: transparent;
+                color: {text_color};
+            }}
+            QTableWidget#sidebar::item:selected {{
+                background: {highlight_color};
+                color: {highlighted_text_color};
+            }}
+            QTableWidget#sidebar::item:focus {{
+                background: {highlight_color};
+                color: {highlighted_text_color};
+            }}
+        """)
+
+    def refresh_theme(self):
+        if sys.platform != "darwin":
+            self._apply_base_stylesheet()
+            self.viewport().update()
 
     def mousePressEvent(self, event):
         item = self.itemAt(event.pos())
