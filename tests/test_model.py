@@ -51,9 +51,11 @@ def test_append_data(edf_files, duplicate_data):
 
     model.append_data(idx_list)
 
-    assert (
-        len(model.data) == len(edf_files) + 1 if duplicate_data else len(edf_files)
-    ), "Number of data sets in model is not equal to number of files after appending"
+    # @pipeline_step always creates one child; duplicate_data adds a second level
+    expected_len = len(edf_files) + (2 if duplicate_data else 1)
+    assert len(model.data) == expected_len, (
+        "Number of data sets in model is not equal to number of files after appending"
+    )
 
     assert model.current["name"].endswith("(appended)"), (
         "Name of appended data set does not match expected name"
@@ -249,3 +251,44 @@ def test_import_annotations_in_samples_no_type_column(model_with_data, tmp_path)
     assert annots.description[0] == "STIM"
     np.testing.assert_allclose(annots.onset, [2.0], rtol=1e-6)
     np.testing.assert_allclose(annots.duration, [1.0], rtol=1e-6)
+
+
+def test_pipeline_step_parent_index_consistency(edf_files):
+    """Inserting a pipeline step must not corrupt parent_index of other trees.
+
+    Regression test: @pipeline_step used list.insert() without updating the parent_index
+    values of existing datasets that were displaced by the insertion.  As a result a
+    sibling tree's child could end up parented to the newly inserted node instead of its
+    real parent.
+    """
+    model = Model()
+    model.load(edf_files[0])  # Dataset 1 at index 0
+    model.load(edf_files[1])  # Dataset 2 at index 1
+
+    # add a step to Dataset 1 (navigate back, then operate)
+    model.index = 0
+    model.find_events(stim_channel=model.current["data"].info["ch_names"][0])
+    # now: 0=Dataset1, 1=FindEvents1(parent=0), 2=Dataset2
+
+    # add a step to Dataset 2 (navigate there, then operate)
+    model.index = 2
+    model.find_events(stim_channel=model.current["data"].info["ch_names"][0])
+    # now: 0=Dataset1, 1=FindEvents1(parent=0), 2=Dataset2, 3=FindEvents2(parent=2)
+
+    # go back to FindEvents1 and add another step
+    model.index = 1
+    model.crop(0, 5)
+    # should give: 0=D1, 1=FE1, 2=Crop(parent=1), 3=D2, 4=FE2(parent=3)
+
+    # verify Dataset2's subtree is still intact
+    tree = model.get_pipeline_tree()
+    roots = {node["index"]: node for node in tree}
+    assert 0 in roots, "Dataset 1 should be a root"
+    assert 3 in roots, "Dataset 2 should be a root"
+
+    d2_children = roots[3]["children"]
+    assert len(d2_children) == 1, "Dataset 2 should still have exactly one child"
+    assert d2_children[0]["index"] == 4, "FindEvents2 should be child of Dataset 2"
+    assert model.data[4].get("parent_index") == 3, (
+        "parent_index of FindEvents2 must point to Dataset 2"
+    )
