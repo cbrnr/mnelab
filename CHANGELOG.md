@@ -1,5 +1,12 @@
 ## [UNRELEASED] · YYYY-MM-DD
+### ✨ Added
+- Add multi-dataset pipeline apply selection, execution modes, and run reports for reviewable pipeline steps (by [Dennis Wambacher ](https://github.com/D3njo/))
+
+### 🌀 Changed
+- Add branch-aware history and pipeline actions to the info pane and align replayable pipeline controls across the UI (by [Dennis Wambacher](https://github.com/D3njo/))
+
 ### 🔧 Fixed
+- Fix pipeline JSON export, replayability guards, generated history imports, and lineage index updates when datasets move (by [Dennis Wambacher](https://github.com/D3njo/))
 - Fix the sidebar background color on Windows and Linux ([#622](https://github.com/cbrnr/mnelab/pull/622) and [#623](https://github.com/cbrnr/mnelab/pull/623) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🗑️ Removed

@@ -4,7 +4,7 @@
 
 from pathlib import Path
 
-from PySide6.QtCore import QEvent, QTimer
+from PySide6.QtCore import QEvent, Qt, QTimer, Signal
 from PySide6.QtGui import QGuiApplication, QIcon, QKeySequence
 from PySide6.QtWidgets import (
     QGridLayout,
@@ -65,6 +65,12 @@ class InfoWidget(QWidget):
         Each key/value pair in this dict is displayed in a row separated by a colon.
     """
 
+    datasetSelected = Signal(int)
+    showHistoryRequested = Signal(int)
+    createPipelineRequested = Signal(int)
+    savePipelineRequested = Signal(int)
+    exportHistoryRequested = Signal(int)
+
     def __init__(self, values=None):
         from mnelab import IS_DEV_VERSION
 
@@ -101,14 +107,42 @@ class InfoWidget(QWidget):
         """
         self.clear()
         if values:
-            for row, (key, value) in enumerate(values.items()):
+            row = 0
+            for key, value in values.items():
+                if str(key).startswith("_"):
+                    continue
                 left = QLabel(str(key) + ":")
                 right = QLabel(str(value))
-                right.setSizePolicy(
-                    QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed
+                right.setTextInteractionFlags(
+                    Qt.TextInteractionFlag.TextSelectableByMouse
                 )
+                right_text = str(value)
+                if "\n" in right_text or len(right_text) > 72:
+                    right.setWordWrap(True)
+                    right.setSizePolicy(
+                        QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred
+                    )
+                else:
+                    right.setSizePolicy(
+                        QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed
+                    )
                 self.grid.addWidget(left, row, 0)
                 self.grid.addWidget(right, row, 1)
+
+                if key == "Parent dataset":
+                    dataset_index = values.get("_parent_dataset_index")
+                    if dataset_index is not None and value != "-":
+                        btn = QToolButton()
+                        btn.setText("Jump")
+                        btn.setAutoRaise(True)
+                        btn.setToolTip("Jump to parent dataset")
+                        btn.clicked.connect(
+                            lambda checked=False, idx=dataset_index: (
+                                self.datasetSelected.emit(idx)
+                            )
+                        )
+                        self.grid.addWidget(btn, row, 2)
+
                 if key == "File name" and value != "-":
                     right.setText(Path(str(value)).name)  # filename only, not full path
                     btn = QToolButton()
@@ -137,6 +171,62 @@ class InfoWidget(QWidget):
                     btn.installEventFilter(self)
                     self._copy_btn = btn
                     self.grid.addWidget(btn, row, 2)
+
+                row += 1
+
+            self._add_action_row(row, values)
+
+    def _add_action_row(self, row, values):
+        """Add context-aware history/pipeline actions below the info grid."""
+        dataset_index = values.get("_dataset_index")
+        if dataset_index is None:
+            return
+
+        scope = values.get("_history_scope", "branch")
+        has_replayable_steps = bool(values.get("_has_replayable_steps"))
+
+        if scope == "dataset":
+            action_specs = [
+                ("Dataset history...", self.showHistoryRequested),
+                ("Export dataset history...", self.exportHistoryRequested),
+            ]
+        else:
+            action_specs = [
+                ("Branch history...", self.showHistoryRequested),
+                ("Export branch history...", self.exportHistoryRequested),
+            ]
+            if has_replayable_steps:
+                action_specs.extend(
+                    [
+                        (
+                            "Create pipeline from branch...",
+                            self.createPipelineRequested,
+                        ),
+                        ("Save pipeline for branch...", self.savePipelineRequested),
+                    ]
+                )
+
+        if not action_specs:
+            return
+
+        action_label = QLabel("Actions:")
+        action_widget = QWidget()
+        action_layout = QVBoxLayout(action_widget)
+        action_layout.setContentsMargins(0, 0, 0, 0)
+        action_layout.setSpacing(4)
+
+        for text, signal in action_specs:
+            button = QToolButton()
+            button.setText(text)
+            button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
+            button.setAutoRaise(True)
+            button.clicked.connect(
+                lambda checked=False, idx=dataset_index, sig=signal: sig.emit(idx)
+            )
+            action_layout.addWidget(button, 0, Qt.AlignmentFlag.AlignLeft)
+
+        self.grid.addWidget(action_label, row, 0)
+        self.grid.addWidget(action_widget, row, 1, 1, 2)
 
     def _on_copy(self, path):
         QGuiApplication.clipboard().setText(path)
@@ -169,7 +259,10 @@ class InfoWidget(QWidget):
         self._copy_btn = None
         item = self.grid.takeAt(0)
         while item:
-            item.widget().deleteLater()
+            widget = item.widget()
+            if widget is not None:
+                widget.setParent(None)
+                widget.deleteLater()
             del item
             item = self.grid.takeAt(0)
 

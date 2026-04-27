@@ -2,14 +2,44 @@
 #
 # License: BSD (3-clause)
 
+import json
 import math
+from copy import deepcopy
+from datetime import datetime
 
+import mne
 import numpy as np
 import pytest
 from edfio import Edf, EdfSignal
 from mne import Annotations
 
-from mnelab.model import InvalidAnnotationsError, Model
+from mnelab.model import InvalidAnnotationsError, Model, PipelineCancelledError
+
+
+class DummyICA:
+    def __init__(
+        self,
+        method="infomax",
+        n_components=None,
+        fit_params=None,
+        random_state=None,
+    ):
+        self.method = method
+        self.requested_n_components = n_components
+        self.n_components_ = n_components or 1
+        self.fit_params = fit_params or {}
+        self.random_state = random_state
+        self.exclude = []
+        self.reject_by_annotation = None
+
+    def fit(self, inst, reject_by_annotation=True):
+        self.reject_by_annotation = reject_by_annotation
+        self.n_components_ = self.requested_n_components or 1
+        return self
+
+    def apply(self, inst):
+        inst._data[:] = inst.get_data() + 1.0
+        return inst
 
 
 @pytest.fixture(scope="module")
@@ -52,7 +82,7 @@ def test_append_data(edf_files, duplicate_data):
     model.append_data(idx_list)
 
     assert (
-        len(model.data) == len(edf_files) + 1 if duplicate_data else len(edf_files)
+        len(model.data) == len(edf_files) + 2 if duplicate_data else len(edf_files) + 1
     ), "Number of data sets in model is not equal to number of files after appending"
 
     assert model.current["name"].endswith("(appended)"), (
@@ -249,3 +279,392 @@ def test_import_annotations_in_samples_no_type_column(model_with_data, tmp_path)
     assert annots.description[0] == "STIM"
     np.testing.assert_allclose(annots.onset, [2.0], rtol=1e-6)
     np.testing.assert_allclose(annots.duration, [1.0], rtol=1e-6)
+
+
+def test_import_bads_creates_replayable_pipeline_step(model_with_data, tmp_path):
+    """Importing bad channels creates a replayable pipeline step."""
+    csv = tmp_path / "bads.csv"
+    csv.write_text("EEG")
+
+    model_with_data.import_bads(csv)
+
+    assert len(model_with_data.data) == 2
+    assert model_with_data.current["operation"] == "import_bads"
+    assert model_with_data.current["parent_index"] == 0
+    assert model_with_data.current["data"].info["bads"] == ["EEG"]
+    assert "data.info['bads']" in "\n".join(model_with_data.get_history())
+
+    pipeline_path = tmp_path / "import_bads.mnepipe"
+    model_with_data.save_pipeline(path=pipeline_path)
+    pipeline = json.loads(pipeline_path.read_text(encoding="utf-8"))
+    assert pipeline["steps"][-1]["operation"] == "import_bads"
+    assert pipeline["steps"][-1]["params"]["fname"] == str(csv)
+
+    replay_model = Model()
+    replay_model.load(model_with_data.data[0]["fname"])
+    replay_model.apply_pipeline(pipeline)
+    assert replay_model.current["data"].info["bads"] == ["EEG"]
+
+
+def test_import_events_creates_replayable_pipeline_step(model_with_data, tmp_path):
+    """Importing events is preserved in history and pipeline replay."""
+    csv = tmp_path / "events.csv"
+    csv.write_text("pos,type\n10,1\n20,2\n")
+
+    model_with_data.import_events(csv)
+
+    np.testing.assert_array_equal(
+        model_with_data.current["events"],
+        np.array([[10, 0, 1], [20, 0, 2]]),
+    )
+    assert model_with_data.current["operation"] == "import_events"
+    history = "\n".join(model_with_data.get_history())
+    assert "np.loadtxt" in history
+
+    pipeline_path = tmp_path / "import_events.mnepipe"
+    model_with_data.save_pipeline(path=pipeline_path)
+    replay_model = Model()
+    replay_model.load(model_with_data.data[0]["fname"])
+    replay_model.apply_pipeline(json.loads(pipeline_path.read_text(encoding="utf-8")))
+    np.testing.assert_array_equal(
+        replay_model.current["events"],
+        np.array([[10, 0, 1], [20, 0, 2]]),
+    )
+
+
+def test_import_annotations_creates_replayable_pipeline_step(model_with_data, tmp_path):
+    """Importing annotations is preserved in history and pipeline replay."""
+    csv = tmp_path / "annots.csv"
+    _write_annotations_csv(csv, [("BAD", 1.0, 0.5), ("GOOD", 2.0, 0.25)])
+
+    model_with_data.import_annotations(csv, types=["BAD"])
+
+    annots = model_with_data.current["data"].annotations
+    assert model_with_data.current["operation"] == "import_annotations"
+    assert list(annots.description) == ["BAD"]
+    history = "\n".join(model_with_data.get_history())
+    assert "new_annots = mne.Annotations(" in history
+
+    pipeline_path = tmp_path / "import_annotations.mnepipe"
+    model_with_data.save_pipeline(path=pipeline_path)
+    replay_model = Model()
+    replay_model.load(model_with_data.data[0]["fname"])
+    replay_model.apply_pipeline(json.loads(pipeline_path.read_text(encoding="utf-8")))
+    replay_annots = replay_model.current["data"].annotations
+    assert list(replay_annots.description) == ["BAD"]
+    np.testing.assert_allclose(replay_annots.onset, [1.0])
+    np.testing.assert_allclose(replay_annots.duration, [0.5])
+
+
+def test_set_events_and_annotations_are_saved_and_replayed(model_with_data, tmp_path):
+    """Manual event and annotation edits become replayable pipeline steps."""
+    events = np.array([[5, 0, 11], [15, 0, 22]])
+
+    model_with_data.set_events(events)
+    model_with_data.set_annotations([1.0], [0.5], ["MANUAL"])
+
+    steps = model_with_data.get_pipeline_steps()
+    assert [step["operation"] for step in steps[1:]] == [
+        "set_events",
+        "set_annotations",
+    ]
+    history = "\n".join(model_with_data.get_history())
+    assert "events = np.asarray(" in history
+    assert "data.set_annotations(mne.Annotations(" in history
+
+    pipeline_path = tmp_path / "manual_metadata.mnepipe"
+    model_with_data.save_pipeline(path=pipeline_path)
+    replay_model = Model()
+    replay_model.load(model_with_data.data[0]["fname"])
+    replay_model.apply_pipeline(json.loads(pipeline_path.read_text(encoding="utf-8")))
+
+    np.testing.assert_array_equal(replay_model.current["events"], events)
+    replay_annots = replay_model.current["data"].annotations
+    assert list(replay_annots.description) == ["MANUAL"]
+    np.testing.assert_allclose(replay_annots.onset, [1.0])
+    np.testing.assert_allclose(replay_annots.duration, [0.5])
+
+
+def test_ica_pipeline_steps_are_saved_and_replayed(
+    model_with_data, tmp_path, monkeypatch
+):
+    """Run/set exclude/apply ICA is saved and replayed as a pipeline."""
+    monkeypatch.setattr(mne.preprocessing, "ICA", DummyICA)
+
+    model_with_data.run_ica(
+        method="infomax",
+        n_components=1,
+        reject_by_annotation=True,
+        fit_params={"extended": True},
+        random_state=97,
+    )
+    model_with_data.set_ica_exclude([0])
+    model_with_data.apply_ica()
+
+    assert [step["operation"] for step in model_with_data.get_pipeline_steps()[1:]] == [
+        "run_ica",
+        "set_ica_exclude",
+        "apply_ica",
+    ]
+    history = "\n".join(model_with_data.get_history())
+    assert "mne.preprocessing.ICA(" in history
+    assert "ica.exclude = [0]" in history
+    assert "ica.apply(inst=data)" in history
+    assert model_with_data.current["ica"].exclude == [0]
+    np.testing.assert_allclose(
+        model_with_data.current["data"].get_data(),
+        np.ones_like(model_with_data.current["data"].get_data()),
+    )
+
+    pipeline_path = tmp_path / "ica_pipeline.mnepipe"
+    model_with_data.save_pipeline(path=pipeline_path)
+    pipeline = json.loads(pipeline_path.read_text(encoding="utf-8"))
+    assert [step["operation"] for step in pipeline["steps"]] == [
+        "run_ica",
+        "set_ica_exclude",
+        "apply_ica",
+    ]
+
+    replay_model = Model()
+    replay_model.load(model_with_data.data[0]["fname"])
+    monkeypatch.setattr(mne.preprocessing, "ICA", DummyICA)
+    replay_model.apply_pipeline(pipeline)
+    assert replay_model.current["ica"].exclude == [0]
+    np.testing.assert_allclose(
+        replay_model.current["data"].get_data(),
+        np.ones_like(replay_model.current["data"].get_data()),
+    )
+
+
+def test_import_ica_creates_replayable_pipeline_step(
+    model_with_data, tmp_path, monkeypatch
+):
+    """Importing an ICA solution is preserved in history and pipeline replay."""
+
+    def fake_read_ica(_fname):
+        imported = DummyICA(method="fastica", n_components=1)
+        imported.exclude = [0]
+        return imported
+
+    monkeypatch.setattr(mne.preprocessing, "read_ica", fake_read_ica)
+
+    ica_path = tmp_path / "solution-ica.fif"
+    ica_path.write_text("dummy")
+
+    model_with_data.import_ica(ica_path)
+
+    assert model_with_data.current["operation"] == "import_ica"
+    assert model_with_data.current["ica"].exclude == [0]
+    history = "\n".join(model_with_data.get_history())
+    assert "mne.preprocessing.read_ica" in history
+
+    pipeline_path = tmp_path / "import_ica.mnepipe"
+    model_with_data.save_pipeline(path=pipeline_path)
+    pipeline = json.loads(pipeline_path.read_text(encoding="utf-8"))
+    assert pipeline["steps"][-1]["operation"] == "import_ica"
+    assert pipeline["steps"][-1]["params"]["fname"] == str(ica_path)
+
+    replay_model = Model()
+    replay_model.load(model_with_data.data[0]["fname"])
+    monkeypatch.setattr(mne.preprocessing, "read_ica", fake_read_ica)
+    replay_model.apply_pipeline(pipeline)
+    assert replay_model.current["ica"].exclude == [0]
+
+
+def test_apply_pipeline_reports_progress_and_can_cancel(model_with_data):
+    """Pipeline replay reports completed steps and stops cleanly on cancel."""
+    pipeline = {
+        "pipeline_format": 1,
+        "steps": [
+            {"operation": "set_events", "params": {"events": [[5, 0, 11]]}},
+            {
+                "operation": "set_annotations",
+                "params": {
+                    "onset": [1.0],
+                    "duration": [0.5],
+                    "description": ["MANUAL"],
+                },
+            },
+        ],
+    }
+    progress = []
+
+    def progress_callback(step_index, step):
+        progress.append((step_index, step["operation"]))
+
+    def is_cancelled():
+        return len(progress) >= 1
+
+    with pytest.raises(PipelineCancelledError):
+        model_with_data.apply_pipeline(
+            pipeline,
+            progress_callback=progress_callback,
+            is_cancelled=is_cancelled,
+        )
+
+    assert progress == [(1, "set_events")]
+    np.testing.assert_array_equal(
+        model_with_data.current["events"],
+        np.array([[5, 0, 11]]),
+    )
+    assert len(model_with_data.current["data"].annotations) == 0
+
+
+def test_apply_pipeline_supports_execution_modes_and_report(model_with_data):
+    """Skip and review modes are represented in the run report."""
+    pipeline = {
+        "pipeline_format": 1,
+        "steps": [
+            {
+                "operation": "set_events",
+                "execution_mode": "skip",
+                "params": {"events": [[1, 0, 1]]},
+            },
+            {
+                "operation": "set_events",
+                "execution_mode": "review",
+                "params": {"events": [[2, 0, 2]]},
+            },
+        ],
+    }
+    review_calls = []
+
+    def review_callback(step_index, step, execution_mode):
+        review_calls.append((step_index, step["operation"], execution_mode))
+        return True
+
+    model_with_data.apply_pipeline(pipeline, review_callback=review_callback)
+
+    assert review_calls == [(2, "set_events", "review")]
+    np.testing.assert_array_equal(
+        model_with_data.current["events"],
+        np.array([[2, 0, 2]]),
+    )
+    assert [entry["status"] for entry in model_with_data.pipeline_run_report] == [
+        "skipped",
+        "complete",
+    ]
+
+
+def test_apply_pipeline_requires_review_callback(model_with_data):
+    """Review checkpoints are explicit and cannot run silently."""
+    pipeline = {
+        "pipeline_format": 1,
+        "steps": [
+            {
+                "operation": "set_events",
+                "execution_mode": "review",
+                "params": {"events": [[2, 0, 2]]},
+            }
+        ],
+    }
+
+    with pytest.raises(ValueError, match="review"):
+        model_with_data.apply_pipeline(pipeline)
+
+    assert model_with_data.pipeline_run_report[0]["status"] == "needs_review"
+
+
+def test_get_info_includes_provenance_for_derived_dataset(model_with_data):
+    """Derived datasets expose provenance details in the info block."""
+    parent_name = model_with_data.current["name"]
+
+    model_with_data.filter(lower=1.0)
+
+    info = model_with_data.get_info()
+
+    assert info["Lineage depth"] == 1
+    assert info["Created"].endswith("UTC")
+    assert info["Data mode"] == "Copied from parent"
+    assert info["Parent dataset"] == parent_name
+    assert info["Derivation"] == "Filter"
+    assert info["Derivation parameters"] == "lower=1.0"
+    assert info["Generated code"] == "data.filter(1.0, None)"
+    assert model_with_data.current["data_mode"] == "copied"
+    datetime.fromisoformat(model_with_data.current["created_at"])
+
+
+def test_get_info_marks_shared_pipeline_steps(model_with_data, monkeypatch):
+    """Shared-data pipeline steps are marked in the provenance info."""
+    monkeypatch.setattr(mne.preprocessing, "ICA", DummyICA)
+
+    model_with_data.run_ica(method="infomax", random_state=97)
+
+    info = model_with_data.get_info()
+
+    assert info["Data mode"] == "Shared with parent"
+    assert model_with_data.current["data_mode"] == "shared"
+
+
+def test_get_info_marks_unreplayable_branches(edf_files):
+    """Unreplayable branches are flagged so UI actions stay consistent."""
+    model = Model()
+    for file in edf_files[:2]:
+        model.load(file)
+
+    model.index = 0
+    model.append_data([1])
+
+    info = model.get_info()
+
+    assert info["_history_scope"] == "branch"
+    assert not info["_has_replayable_steps"]
+    assert not model.has_replayable_pipeline()
+    with pytest.raises(ValueError, match="append_data"):
+        model.save_pipeline(path="unreplayable.mnepipe")
+
+
+def test_get_history_does_not_import_missing_artifact_helpers(model_with_data):
+    """Generated history avoids stale imports and remains syntactically valid."""
+    model_with_data.filter(lower=1.0)
+
+    history = "\n".join(model_with_data.get_history())
+
+    assert "detect_extreme_values" not in history
+    assert "detect_kurtosis" not in history
+    assert "detect_peak_to_peak" not in history
+    assert "detect_with_autoreject" not in history
+    compile(history, "<mnelab-history>", "exec")
+
+
+def test_move_data_remaps_parent_indices():
+    """Moving rows keeps lineage references pointing at the same datasets."""
+    root_a = {
+        "name": "root-a",
+        "parent_index": None,
+        "operation": None,
+        "operation_params": None,
+        "dtype": "raw",
+    }
+    child_a = {
+        "name": "child-a",
+        "parent_index": 0,
+        "operation": "filter",
+        "operation_params": {"lower": 1.0},
+        "dtype": "raw",
+    }
+    root_b = {
+        "name": "root-b",
+        "parent_index": None,
+        "operation": None,
+        "operation_params": None,
+        "dtype": "raw",
+    }
+    model = Model()
+    model.data = [root_a, child_a, root_b]
+    original_child = deepcopy(child_a)
+
+    model.move_data(2, 0)
+
+    assert [dataset["name"] for dataset in model.data] == [
+        "root-b",
+        "root-a",
+        "child-a",
+    ]
+    assert model.index == 0
+    assert model.data[2]["parent_index"] == 1
+    assert model.data[2]["operation_params"] == original_child["operation_params"]
+    assert [step["name"] for step in model.get_pipeline_steps(2)] == [
+        "root-a",
+        "child-a",
+    ]
