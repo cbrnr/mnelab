@@ -414,6 +414,10 @@ class MainWindow(QMainWindow):
             "Export ICA...",
             lambda: self.export_file(model.export_ica, "Export ICA", "*.fif *.fif.gz"),
         )
+        process_menu.addSeparator()
+        self.all_actions["pipeline_builder"] = process_menu.addAction(
+            "Pipeline &Builder...", self.open_pipeline_builder
+        )
 
         epochs_menu = self.menuBar().addMenu("Ep&ochs")
         self.all_actions["epoch_data"] = epochs_menu.addAction(
@@ -493,6 +497,9 @@ class MainWindow(QMainWindow):
             "documentation",
             "history",
             "annotation_colors",
+            "pipeline_builder",
+            "edit_pipeline",
+            "apply_pipeline",
         ]
 
         # set up toolbar
@@ -1832,6 +1839,13 @@ class MainWindow(QMainWindow):
             with open(fname, "w", encoding="utf-8") as f:
                 f.write(format_code("\n".join(self.model.get_history(dataset_index))))
                 f.write("\n")
+
+    def open_pipeline_builder(self):
+        """Open the Pipeline Builder with the current dataset's pipeline or an empty one."""
+        pipeline = None
+        if self.model.data:
+            pipeline = self.model.get_pipeline(self.model.index)
+        self._open_pipeline_builder(pipeline)
 
     def edit_pipeline(self):
         """Open a .mnepipe file in the Pipeline Builder for inspection and editing."""
