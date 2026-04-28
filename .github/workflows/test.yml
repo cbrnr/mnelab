@@ -14,14 +14,15 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
-      - uses: astral-sh/ruff-action@v3
-      - uses: astral-sh/ruff-action@v3
-        with:
-          args: "format --diff"
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
           python-version: "3.14"
+      - uses: astral-sh/setup-uv@v7
+      - name: Check linting
+        run: uv run --locked --only-group dev ruff check
+      - name: Check formatting
+        run: uv run --locked --only-group dev ruff format --diff
       - name: Check license headers
         run: python .github/check_license_headers.py
       - name: Get latest uv version
