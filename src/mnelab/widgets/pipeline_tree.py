@@ -121,11 +121,8 @@ class PipelineTreeWidget(QTreeWidget):
     """Sidebar tree widget that shows datasets organised by pipeline lineage.
 
     Each root dataset (no parent in the model) appears as a bold top-level item.
-    All descendant operation steps are shown as flat, numbered children of the
-    root - one indentation level only - regardless of how deep the model's
-    pipeline chain is. Step numbers reflect the distance from the root
-    (1-based depth), so two items with the same step number belong to
-    different branches from the same ancestor.
+    All descendant operation steps are shown as flat children of the root - one
+    indentation level only - regardless of how deep the model's pipeline chain is.
     """
 
     datasetSelected = Signal(int)  # emits the model.data index of the selected item
@@ -134,6 +131,7 @@ class PipelineTreeWidget(QTreeWidget):
     createPipelineRequested = Signal(int)
     savePipelineRequested = Signal(int)
     exportHistoryRequested = Signal(int)
+    showDetailsRequested = Signal(int)
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -219,7 +217,7 @@ class PipelineTreeWidget(QTreeWidget):
 
         active_item = None
 
-        def _add_steps_flat(root_item, node, depth):
+        def _add_steps_flat(root_item, node):
             """DFS: add all descendants as direct children of root_item."""
             nonlocal active_item
             for child in node.get("children", []):
@@ -227,7 +225,7 @@ class PipelineTreeWidget(QTreeWidget):
                 operation = child.get("operation") or ""
                 params = child.get("operation_params")
                 dtype = child.get("dtype") or ""
-                label = f"{depth}.\u2009{_operation_label(operation, params)}"
+                label = _operation_label(operation, params)
 
                 item = QTreeWidgetItem(root_item)
                 item.setText(0, label)
@@ -245,7 +243,7 @@ class PipelineTreeWidget(QTreeWidget):
                     active_item = item
 
                 # recurse, keeping items flat under root_item
-                _add_steps_flat(root_item, child, depth + 1)
+                _add_steps_flat(root_item, child)
 
         for root_node in tree:
             idx = root_node["index"]
@@ -273,7 +271,7 @@ class PipelineTreeWidget(QTreeWidget):
             if idx == active_index:
                 active_item = root_item
 
-            _add_steps_flat(root_item, root_node, 1)
+            _add_steps_flat(root_item, root_node)
             root_item.setExpanded(True)
 
         self.blockSignals(False)
@@ -318,13 +316,8 @@ class PipelineTreeWidget(QTreeWidget):
                 btn.setFixedSize(ROW_HEIGHT, ROW_HEIGHT)
                 btn.setIcon(QIcon.fromTheme("close-data"))
                 btn.setToolTip("Close dataset")
-                btn.setStyleSheet(
-                    "QToolButton { background: transparent; border: none; }"
-                    "QToolButton:hover {"
-                    "  background: rgba(128,128,128,0.2); border-radius: 4px; }"
-                    "QToolButton:pressed {"
-                    "  background: rgba(128,128,128,0.4); border-radius: 4px; }"
-                )
+                btn.setStyleSheet(self._close_button_stylesheet(False))
+                btn.installEventFilter(self)
                 idx = self._dataset_index_for_item(item)
                 btn.clicked.connect(lambda _, i=idx: self._parent.model.remove_data(i))
                 self.setItemWidget(item, 2, btn)
@@ -335,6 +328,53 @@ class PipelineTreeWidget(QTreeWidget):
 
         for i in range(self.topLevelItemCount()):
             _walk(self.topLevelItem(i))
+
+    def _close_button_stylesheet(self, hovered):
+        if hovered:
+            return """
+                QToolButton {
+                    background: rgba(128, 128, 128, 0.2);
+                    border-radius: 4px;
+                }
+                QToolButton:pressed {
+                    background: rgba(128, 128, 128, 0.4);
+                    border-radius: 4px;
+                }
+            """
+        return """
+            QToolButton {
+                background: transparent;
+                border: none;
+            }
+            QToolButton:pressed {
+                background: rgba(128, 128, 128, 0.4);
+                border-radius: 4px;
+            }
+        """
+
+    def _item_for_close_button(self, button):
+        """Return the tree item that owns a close button."""
+
+        def _walk(item):
+            if self.itemWidget(item, 2) is button:
+                return item
+            for i in range(item.childCount()):
+                child = _walk(item.child(i))
+                if child is not None:
+                    return child
+            return None
+
+        for i in range(self.topLevelItemCount()):
+            item = _walk(self.topLevelItem(i))
+            if item is not None:
+                return item
+        return None
+
+    def _close_button_rect(self, item):
+        index = self.indexFromItem(item, 2)
+        if not index.isValid():
+            return None
+        return self.visualRect(index)
 
     def set_badges_visible(self, visible):
         """Show or hide the dtype badge column."""
@@ -365,12 +405,15 @@ class PipelineTreeWidget(QTreeWidget):
             show_history_label = "Show branch history..."
             export_history_label = "Export branch history..."
 
+        show_details_action = menu.addAction("Dataset details...")
+        menu.addSeparator()
         show_history_action = menu.addAction(show_history_label)
         export_history_action = menu.addAction(export_history_label)
 
         has_steps = self._branch_has_replayable_steps(dataset_index)
 
         actions = {
+            "show_details": show_details_action,
             "show_history": show_history_action,
             "export_history": export_history_action,
         }
@@ -395,6 +438,10 @@ class PipelineTreeWidget(QTreeWidget):
         menu, actions = self._create_context_menu(idx)
 
         selected_action = menu.exec(event.globalPos())
+        if selected_action == actions["show_details"]:
+            self.showDetailsRequested.emit(idx)
+            event.accept()
+            return
         if selected_action == actions["show_history"]:
             self.showHistoryRequested.emit(idx)
             event.accept()
@@ -424,4 +471,16 @@ class PipelineTreeWidget(QTreeWidget):
                 self._show_close_button(item)
             elif event.type() == QEvent.Type.Leave:
                 self._show_close_button(None)
+        elif isinstance(source, QToolButton):
+            if event.type() == QEvent.Type.Enter:
+                item = self._item_for_close_button(source)
+                rect = self._close_button_rect(item) if item is not None else None
+                cursor = self.viewport().mapFromGlobal(QCursor.pos())
+                source.setStyleSheet(
+                    self._close_button_stylesheet(
+                        rect is not None and rect.contains(cursor)
+                    )
+                )
+            elif event.type() == QEvent.Type.Leave:
+                source.setStyleSheet(self._close_button_stylesheet(False))
         return False

@@ -10,8 +10,9 @@ import pytest
 from edfio import Edf, EdfSignal
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QGuiApplication
-from PySide6.QtWidgets import QDialogButtonBox, QToolButton
+from PySide6.QtWidgets import QDialogButtonBox, QListWidget, QPushButton, QToolButton
 
+from mnelab.dialogs.dataset_details import DatasetDetailsDialog
 from mnelab.dialogs.history import HistoryDialog
 from mnelab.dialogs.pipeline import ApplyPipelineDialog, load_pipeline
 from mnelab.mainwindow import MainWindow
@@ -185,6 +186,8 @@ def test_history_dialog_creates_pipeline_from_selected_steps(view, qtbot):
     dialog = HistoryDialog(view, ["data.filter(...)"], [], pipeline, scope="branch")
     qtbot.addWidget(dialog)
     dialog.tabs.setCurrentIndex(2)
+    assert dialog.pipeline_list.item(0).text() == "Filter"
+    assert not dialog.pipeline_list.item(0).text().startswith("1.")
     dialog.pipeline_list.item(1).setSelected(True)
 
     with (
@@ -256,8 +259,10 @@ def test_apply_pipeline_dialog_disables_unreplayable_operations(view, qtbot):
     dialog = ApplyPipelineDialog(view, pipeline, view.model.current)
     qtbot.addWidget(dialog)
     buttonbox = dialog.findChild(QDialogButtonBox)
+    step_list = dialog.findChild(QListWidget)
 
     assert not buttonbox.button(QDialogButtonBox.StandardButton.Ok).isEnabled()
+    assert step_list.item(0).text() == "Append data"
 
 
 def test_apply_pipeline_dialog_selects_multiple_datasets(view, qtbot):
@@ -265,7 +270,7 @@ def test_apply_pipeline_dialog_selects_multiple_datasets(view, qtbot):
     pipeline = {"pipeline_format": 1, "steps": []}
     dataset_options = [
         {"index": 0, "name": "sub-01", "dtype": "raw", "checked": True},
-        {"index": 1, "name": "sub-02", "dtype": "raw", "checked": False},
+        {"index": 1, "name": "", "dtype": "raw", "checked": False},
     ]
 
     dialog = ApplyPipelineDialog(
@@ -275,8 +280,10 @@ def test_apply_pipeline_dialog_selects_multiple_datasets(view, qtbot):
         dataset_options=dataset_options,
     )
     qtbot.addWidget(dialog)
+    dataset_list = dialog.findChildren(QListWidget)[0]
 
     assert dialog.selected_dataset_indices() == [0]
+    assert dataset_list.item(1).text() == "Unnamed dataset (raw)"
 
 
 def test_history_dialog_uses_dataset_wording_for_roots(view, qtbot):
@@ -312,6 +319,7 @@ def test_info_widget_uses_dataset_or_branch_action_labels(qtbot):
         button.text() for button in widget.findChildren(QToolButton) if button.text()
     ]
     assert dataset_buttons == [
+        "Dataset details...",
         "Dataset history...",
         "Export dataset history...",
     ]
@@ -328,6 +336,7 @@ def test_info_widget_uses_dataset_or_branch_action_labels(qtbot):
         button.text() for button in widget.findChildren(QToolButton) if button.text()
     ]
     assert branch_buttons == [
+        "Dataset details...",
         "Branch history...",
         "Export branch history...",
         "Create pipeline from branch...",
@@ -348,17 +357,20 @@ def test_info_widget_branch_action_buttons_emit_signals(qtbot):
     qtbot.addWidget(widget)
 
     emitted = {
+        "details": [],
         "history": [],
         "export": [],
         "create": [],
         "save": [],
     }
+    widget.showDetailsRequested.connect(lambda idx: emitted["details"].append(idx))
     widget.showHistoryRequested.connect(lambda idx: emitted["history"].append(idx))
     widget.exportHistoryRequested.connect(lambda idx: emitted["export"].append(idx))
     widget.createPipelineRequested.connect(lambda idx: emitted["create"].append(idx))
     widget.savePipelineRequested.connect(lambda idx: emitted["save"].append(idx))
 
     buttons = {button.text(): button for button in widget.findChildren(QToolButton)}
+    qtbot.mouseClick(buttons["Dataset details..."], Qt.MouseButton.LeftButton)
     qtbot.mouseClick(buttons["Branch history..."], Qt.MouseButton.LeftButton)
     qtbot.mouseClick(buttons["Export branch history..."], Qt.MouseButton.LeftButton)
     qtbot.mouseClick(
@@ -367,6 +379,7 @@ def test_info_widget_branch_action_buttons_emit_signals(qtbot):
     qtbot.mouseClick(buttons["Save pipeline for branch..."], Qt.MouseButton.LeftButton)
 
     assert emitted == {
+        "details": [5],
         "history": [5],
         "export": [5],
         "create": [5],
@@ -486,8 +499,8 @@ def test_confirm_and_apply_pipeline_runs_selected_root_datasets(view, tmp_path):
     MockProgressDialog.assert_called_once_with(view, 2)
 
 
-def test_info_widget_can_jump_to_parent_dataset(view, qtbot, tmp_path):
-    """The provenance section can navigate back to the parent dataset."""
+def test_dataset_details_dialog_can_jump_to_parent_dataset(view, qtbot, tmp_path):
+    """The details dialog can navigate back to the parent dataset."""
     fs = 256
     signal = np.zeros(30 * fs)
     path = tmp_path / "sample.edf"
@@ -497,16 +510,40 @@ def test_info_widget_can_jump_to_parent_dataset(view, qtbot, tmp_path):
     parent_index = view.model.index
     view.model.filter(lower=1.0)
 
-    info_widget = view.infowidget.widget(0)
+    dialog = DatasetDetailsDialog(view, view.model.get_dataset_details())
+    dialog.datasetSelected.connect(view._update_data)
+    qtbot.addWidget(dialog)
     jump_button = next(
         button
-        for button in info_widget.findChildren(QToolButton)
+        for button in dialog.findChildren(QPushButton)
         if button.toolTip() == "Jump to parent dataset"
     )
 
     qtbot.mouseClick(jump_button, Qt.MouseButton.LeftButton)
 
     assert view.model.index == parent_index
+
+
+def test_show_dataset_details_signal_opens_dialog(view, tmp_path):
+    """Sidebar detail requests open the dataset details dialog."""
+    fs = 256
+    signal = np.zeros(30 * fs)
+    path = tmp_path / "sample.edf"
+    Edf([EdfSignal(signal, sampling_frequency=fs, label="EEG")]).write(path)
+
+    view.model.load(path)
+    dataset_index = view.model.index
+
+    with patch("mnelab.mainwindow.DatasetDetailsDialog") as MockDialog:
+        view.sidebar.showDetailsRequested.emit(dataset_index)
+
+    args = MockDialog.call_args.args
+    assert args[0] is view
+    assert args[1] == view.model.get_dataset_details(dataset_index)
+    MockDialog.return_value.datasetSelected.connect.assert_called_once_with(
+        view._update_data
+    )
+    MockDialog.return_value.exec.assert_called_once()
 
 
 def test_sidebar_history_signal_opens_branch_history(view, tmp_path):
@@ -654,6 +691,7 @@ def test_sidebar_context_menu_hides_pipeline_actions_for_root(view, tmp_path):
         action.text() for action in root_menu.actions() if not action.isSeparator()
     ]
     assert root_labels == [
+        "Dataset details...",
         "Show dataset history...",
         "Export dataset history...",
     ]
@@ -661,16 +699,19 @@ def test_sidebar_context_menu_hides_pipeline_actions_for_root(view, tmp_path):
     assert "Save pipeline for branch..." not in root_labels
     assert "create_pipeline" not in root_actions
     assert "save_pipeline" not in root_actions
+    assert root_actions["show_details"].isEnabled()
     assert root_actions["export_history"].isEnabled()
 
     view.model.filter(lower=1.0)
     branch_index = view.model.index
+    assert not view.sidebar.topLevelItem(0).child(0).text(0).startswith("1.")
     branch_menu, branch_actions = view.sidebar._create_context_menu(branch_index)
 
     branch_labels = [
         action.text() for action in branch_menu.actions() if not action.isSeparator()
     ]
     assert branch_labels == [
+        "Dataset details...",
         "Show branch history...",
         "Export branch history...",
         "Create pipeline from branch...",

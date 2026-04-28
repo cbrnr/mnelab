@@ -70,6 +70,7 @@ class InfoWidget(QWidget):
     createPipelineRequested = Signal(int)
     savePipelineRequested = Signal(int)
     exportHistoryRequested = Signal(int)
+    showDetailsRequested = Signal(int)
 
     def __init__(self, values=None):
         from mnelab import IS_DEV_VERSION
@@ -129,20 +130,6 @@ class InfoWidget(QWidget):
                 self.grid.addWidget(left, row, 0)
                 self.grid.addWidget(right, row, 1)
 
-                if key == "Parent dataset":
-                    dataset_index = values.get("_parent_dataset_index")
-                    if dataset_index is not None and value != "-":
-                        btn = QToolButton()
-                        btn.setText("Jump")
-                        btn.setAutoRaise(True)
-                        btn.setToolTip("Jump to parent dataset")
-                        btn.clicked.connect(
-                            lambda checked=False, idx=dataset_index: (
-                                self.datasetSelected.emit(idx)
-                            )
-                        )
-                        self.grid.addWidget(btn, row, 2)
-
                 if key == "File name" and value != "-":
                     right.setText(Path(str(value)).name)  # filename only, not full path
                     btn = QToolButton()
@@ -185,16 +172,22 @@ class InfoWidget(QWidget):
         scope = values.get("_history_scope", "branch")
         has_replayable_steps = bool(values.get("_has_replayable_steps"))
 
+        action_specs = [("Dataset details...", self.showDetailsRequested)]
+
         if scope == "dataset":
-            action_specs = [
-                ("Dataset history...", self.showHistoryRequested),
-                ("Export dataset history...", self.exportHistoryRequested),
-            ]
+            action_specs.extend(
+                [
+                    ("Dataset history...", self.showHistoryRequested),
+                    ("Export dataset history...", self.exportHistoryRequested),
+                ]
+            )
         else:
-            action_specs = [
-                ("Branch history...", self.showHistoryRequested),
-                ("Export branch history...", self.exportHistoryRequested),
-            ]
+            action_specs.extend(
+                [
+                    ("Branch history...", self.showHistoryRequested),
+                    ("Export branch history...", self.exportHistoryRequested),
+                ]
+            )
             if has_replayable_steps:
                 action_specs.extend(
                     [

@@ -6,6 +6,7 @@ import json
 import math
 from copy import deepcopy
 from datetime import datetime
+from pathlib import Path
 
 import mne
 import numpy as np
@@ -14,6 +15,7 @@ from edfio import Edf, EdfSignal
 from mne import Annotations
 
 from mnelab.model import InvalidAnnotationsError, Model, PipelineCancelledError
+from mnelab.utils import Montage
 
 
 class DummyICA:
@@ -471,6 +473,76 @@ def test_import_ica_creates_replayable_pipeline_step(
     assert replay_model.current["ica"].exclude == [0]
 
 
+def test_import_file_steps_are_parameterized_by_dataset_prefix(tmp_path, monkeypatch):
+    """Import sidecar files resolve against the replay target dataset prefix."""
+
+    def write_edf(path):
+        fs = 256
+        signal = np.zeros(30 * fs)
+        Edf([EdfSignal(signal, sampling_frequency=fs, label="EEG")]).write(path)
+
+    read_ica_paths = []
+
+    def fake_read_ica(fname):
+        read_ica_paths.append(Path(fname).name)
+        imported = DummyICA(method="fastica", n_components=1)
+        imported.exclude = [0]
+        return imported
+
+    monkeypatch.setattr(mne.preprocessing, "read_ica", fake_read_ica)
+
+    source_raw = tmp_path / "s01_raw.edf"
+    target_raw = tmp_path / "s02_raw.edf"
+    write_edf(source_raw)
+    write_edf(target_raw)
+
+    source_bads = tmp_path / "s01-bad_channels.csv"
+    target_bads = tmp_path / "s02-bad_channels.csv"
+    source_bads.write_text("EEG")
+    target_bads.write_text("EEG")
+
+    source_annotations = tmp_path / "s01-annotations.csv"
+    target_annotations = tmp_path / "s02-annotations.csv"
+    _write_annotations_csv(source_annotations, [("SOURCE", 1.0, 0.5)])
+    _write_annotations_csv(target_annotations, [("TARGET", 2.0, 0.25)])
+
+    source_ica = tmp_path / "s01-ica.fif.gz"
+    target_ica = tmp_path / "s02-ica.fif.gz"
+    source_ica.write_text("source")
+    target_ica.write_text("target")
+
+    model = Model()
+    model.load(source_raw)
+    model.import_bads(source_bads)
+    model.import_annotations(source_annotations)
+    model.import_ica(source_ica)
+
+    pipeline_path = tmp_path / "imports.mnepipe"
+    model.save_pipeline(path=pipeline_path)
+    pipeline = json.loads(pipeline_path.read_text(encoding="utf-8"))
+
+    assert pipeline["steps"][0]["params"]["fname"] == (
+        "{dataset_dir}/{dataset_prefix}-bad_channels.csv"
+    )
+    assert pipeline["steps"][1]["params"]["fname"] == (
+        "{dataset_dir}/{dataset_prefix}-annotations.csv"
+    )
+    assert pipeline["steps"][2]["params"]["fname"] == (
+        "{dataset_dir}/{dataset_prefix}-ica.fif.gz"
+    )
+
+    replay_model = Model()
+    replay_model.load(target_raw)
+    replay_model.apply_pipeline(pipeline)
+
+    assert replay_model.current["data"].info["bads"] == ["EEG"]
+    replay_annotations = replay_model.current["data"].annotations
+    assert list(replay_annotations.description) == ["TARGET"]
+    np.testing.assert_allclose(replay_annotations.onset, [2.0])
+    np.testing.assert_allclose(replay_annotations.duration, [0.25])
+    assert read_ica_paths[-1] == "s02-ica.fif.gz"
+
+
 def test_apply_pipeline_reports_progress_and_can_cancel(model_with_data):
     """Pipeline replay reports completed steps and stops cleanly on cancel."""
     pipeline = {
@@ -565,35 +637,68 @@ def test_apply_pipeline_requires_review_callback(model_with_data):
     assert model_with_data.pipeline_run_report[0]["status"] == "needs_review"
 
 
-def test_get_info_includes_provenance_for_derived_dataset(model_with_data):
-    """Derived datasets expose provenance details in the info block."""
+def test_dataset_details_include_provenance_for_derived_dataset(model_with_data):
+    """Derived datasets expose provenance details outside the main info block."""
     parent_name = model_with_data.current["name"]
 
     model_with_data.filter(lower=1.0)
 
     info = model_with_data.get_info()
+    details = model_with_data.get_dataset_details()
 
-    assert info["Lineage depth"] == 1
-    assert info["Created"].endswith("UTC")
-    assert info["Data mode"] == "Copied from parent"
-    assert info["Parent dataset"] == parent_name
-    assert info["Derivation"] == "Filter"
-    assert info["Derivation parameters"] == "lower=1.0"
-    assert info["Generated code"] == "data.filter(1.0, None)"
+    assert "Lineage depth" not in info
+    assert "Created" not in info
+    assert "Data mode" not in info
+    assert "Parent dataset" not in info
+    assert "Derivation" not in info
+    assert "Derivation parameters" not in info
+    assert "Generated code" not in info
+    assert details["Lineage depth"] == 1
+    assert details["Created"].endswith("UTC")
+    assert details["Data mode"] == "Copied from parent"
+    assert details["Parent dataset"] == parent_name
+    assert details["Derivation"] == "Filter"
+    assert details["Derivation parameters"] == "lower=1.0"
+    assert details["Generated code"] == "data.filter(1.0, None)"
     assert model_with_data.current["data_mode"] == "copied"
     datetime.fromisoformat(model_with_data.current["created_at"])
 
 
-def test_get_info_marks_shared_pipeline_steps(model_with_data, monkeypatch):
-    """Shared-data pipeline steps are marked in the provenance info."""
+def test_dataset_details_mark_shared_pipeline_steps(model_with_data, monkeypatch):
+    """Shared-data pipeline steps are marked in dataset details."""
     monkeypatch.setattr(mne.preprocessing, "ICA", DummyICA)
 
     model_with_data.run_ica(method="infomax", random_state=97)
 
-    info = model_with_data.get_info()
+    details = model_with_data.get_dataset_details()
 
-    assert info["Data mode"] == "Shared with parent"
+    assert details["Data mode"] == "Shared with parent"
     assert model_with_data.current["data_mode"] == "shared"
+
+
+def test_set_montage_is_shared_pipeline_step(model_with_data, tmp_path):
+    """Setting a montage records a shared-data pipeline step."""
+    montage = Montage(
+        mne.channels.make_standard_montage("standard_1020"),
+        "standard_1020",
+    )
+
+    parent_data = model_with_data.current["data"]
+    model_with_data.set_montage(montage, on_missing="ignore")
+
+    details = model_with_data.get_dataset_details()
+
+    assert model_with_data.current["operation"] == "set_montage"
+    assert model_with_data.current["data"] is parent_data
+    assert model_with_data.current["data_mode"] == "shared"
+    assert details["Data mode"] == "Shared with parent"
+    assert details["Derivation"] == "Set Montage"
+    assert "data.set_montage" in details["Generated code"]
+
+    pipeline_path = tmp_path / "montage.mnepipe"
+    model_with_data.save_pipeline(path=pipeline_path)
+    pipeline = json.loads(pipeline_path.read_text(encoding="utf-8"))
+    assert pipeline["steps"][-1]["operation"] == "set_montage"
 
 
 def test_get_info_marks_unreplayable_branches(edf_files):

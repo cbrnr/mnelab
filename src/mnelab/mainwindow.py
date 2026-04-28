@@ -574,6 +574,7 @@ class MainWindow(QMainWindow):
         self.sidebar.createPipelineRequested.connect(self.create_pipeline_from_dataset)
         self.sidebar.savePipelineRequested.connect(self.save_pipeline_for_dataset)
         self.sidebar.exportHistoryRequested.connect(self.export_history_for_dataset)
+        self.sidebar.showDetailsRequested.connect(self.show_dataset_details)
 
         self.splitter = QSplitter()
         self.splitter.setObjectName("main_splitter")
@@ -586,6 +587,7 @@ class MainWindow(QMainWindow):
         info_widget.createPipelineRequested.connect(self.create_pipeline_from_dataset)
         info_widget.savePipelineRequested.connect(self.save_pipeline_for_dataset)
         info_widget.exportHistoryRequested.connect(self.export_history_for_dataset)
+        info_widget.showDetailsRequested.connect(self.show_dataset_details)
         self.infowidget.addWidget(info_widget)
         emptywidget = EmptyWidget(
             itemgetter("open_file", "history", "settings")(self.all_actions)
@@ -1646,6 +1648,16 @@ class MainWindow(QMainWindow):
             self._confirm_and_apply_pipeline(dialog.get_pipeline())
 
     @Slot(int)
+    def show_dataset_details(self, dataset_index):
+        """Show details for a specific dataset in the lineage tree."""
+        dialog = DatasetDetailsDialog(
+            self,
+            self.model.get_dataset_details(dataset_index),
+        )
+        dialog.datasetSelected.connect(self._update_data)
+        dialog.exec()
+
+    @Slot(int)
     def show_history_for_dataset(self, dataset_index):
         """Show history for a specific dataset in the lineage tree."""
         scope = (
@@ -1841,7 +1853,7 @@ class MainWindow(QMainWindow):
                 f.write("\n")
 
     def open_pipeline_builder(self):
-        """Open the Pipeline Builder with the current dataset's pipeline or an empty one."""
+        """Open Pipeline Builder with the current dataset's pipeline or an empty one."""
         pipeline = None
         if self.model.data:
             pipeline = self.model.get_pipeline(self.model.index)

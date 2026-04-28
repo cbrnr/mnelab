@@ -146,7 +146,7 @@ class ApplyPipelineDialog(QDialog):
             self._dataset_list = QListWidget()
             self._dataset_list.setFrameStyle(QFrame.Shape.StyledPanel)
             for option in dataset_options:
-                name = option.get("name") or f"Dataset {option.get('index')}"
+                name = option.get("name") or "Unnamed dataset"
                 dtype = option.get("dtype") or "data"
                 item = QListWidgetItem(f"{name} ({dtype})")
                 item.setData(Qt.ItemDataRole.UserRole, option["index"])
@@ -162,12 +162,12 @@ class ApplyPipelineDialog(QDialog):
         layout.addWidget(QLabel(f"<b>Steps ({len(steps)})</b>"))
         step_list = QListWidget()
         step_list.setFrameStyle(QFrame.Shape.StyledPanel)
-        for i, step in enumerate(steps, start=1):
+        for step in steps:
             label = _operation_label(step.get("operation"), step.get("params"))
             execution_mode = step.get("execution_mode", "automatic")
             if execution_mode != "automatic":
                 label = f"{label} [{execution_mode}]"
-            item = QListWidgetItem(f"{i}. {label}")
+            item = QListWidgetItem(label)
             if execution_mode == "skip":
                 item.setForeground(QColor("gray"))
             step_list.addItem(item)

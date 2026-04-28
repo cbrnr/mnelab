@@ -15,6 +15,7 @@ from mnelab.dialogs.bvrf import BVRFDialog
 from mnelab.dialogs.calc import CalcDialog
 from mnelab.dialogs.channel_properties import ChannelPropertiesDialog
 from mnelab.dialogs.crop import CropDialog
+from mnelab.dialogs.dataset_details import DatasetDetailsDialog
 from mnelab.dialogs.drop_bad_epochs import DropBadEpochsDialog
 from mnelab.dialogs.epoch import EpochDialog
 from mnelab.dialogs.erds import ERDSDialog, ERDSTopomapsDialog

@@ -129,15 +129,11 @@ class _StepEditorDialog(QDialog):
 
 
 class _StepRowWidget(QWidget):
-    def __init__(self, index: int, step: dict, parent=None):
+    def __init__(self, step: dict, parent=None):
         super().__init__(parent)
         self.step = step
         row = QHBoxLayout(self)
         row.setContentsMargins(4, 2, 4, 2)
-
-        num = QLabel(f"<b>{index}.</b>")
-        num.setFixedWidth(28)
-        row.addWidget(num)
 
         op = step.get("operation", "")
         params = step.get("params")
@@ -243,9 +239,9 @@ class PipelineBuilderDialog(QDialog):
 
     def _rebuild_list(self):
         self._list.clear()
-        for i, step in enumerate(self._pipeline.get("steps", []), start=1):
+        for step in self._pipeline.get("steps", []):
             item = QListWidgetItem(self._list)
-            widget = _StepRowWidget(i, step)
+            widget = _StepRowWidget(step)
             item.setSizeHint(widget.sizeHint())
             self._list.addItem(item)
             self._list.setItemWidget(item, widget)

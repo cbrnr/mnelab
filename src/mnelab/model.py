@@ -37,6 +37,7 @@ class PipelineCancelledError(Exception):
 
 
 UNREPLAYABLE_PIPELINE_OPS = {"append_data"}
+PARAMETERIZED_IMPORT_OPS = {"import_annotations", "import_bads", "import_ica"}
 PIPELINE_EXECUTION_MODES = ("automatic", "prompt", "review", "skip")
 
 
@@ -644,32 +645,7 @@ class Model:
             annots = "-"
 
         parent_index = self.current.get("parent_index")
-        operation = self.current.get("operation")
-        operation_params = self.current.get("operation_params") or {}
-        pipeline_steps = self.get_pipeline_steps()
-        lineage_depth = len(pipeline_steps) - 1
-        has_replayable_steps = self.has_replayable_pipeline()
         history_scope = "dataset" if parent_index is None else "branch"
-
-        if parent_index is None:
-            parent_name = "-"
-            operation_label = "Root dataset"
-            params_text = "-"
-            generated_code = "-"
-            created_text = self._format_created_at(self.current.get("created_at"))
-            data_mode_text = "Loaded from file"
-        else:
-            parent_name = self.data[parent_index]["name"]
-            operation_label = operation.replace("_", " ").title()
-            operation_label = operation_label.replace("Ica", "ICA")
-            params_text = self._summarize_operation_params(operation_params)
-            generated_code = self._step_to_history(operation, operation_params) or "-"
-            created_text = self._format_created_at(self.current.get("created_at"))
-            data_mode = self.current.get("data_mode")
-            if data_mode == "shared":
-                data_mode_text = "Shared with parent"
-            else:
-                data_mode_text = "Copied from parent"
 
         return {
             "File name": fname if fname else "-",
@@ -686,17 +662,61 @@ class Model:
             "Reference": reference if reference else "-",
             "Montage": montage_text,
             "ICA": ica,
+            "_dataset_index": self.index,
+            "_history_scope": history_scope,
+            "_has_replayable_steps": self.has_replayable_pipeline(),
+        }
+
+    def get_dataset_details(self, idx=None):
+        """Get provenance details for a dataset.
+
+        Parameters
+        ----------
+        idx : int | None
+            Dataset index. Defaults to `self.index`.
+
+        Returns
+        -------
+        details : dict
+            Dictionary with provenance information for a dataset.
+        """
+        if idx is None:
+            idx = self.index
+        dataset = self.data[idx]
+        parent_index = dataset.get("parent_index")
+        operation = dataset.get("operation")
+        operation_params = dataset.get("operation_params") or {}
+
+        lineage_depth = len(self.get_pipeline_steps(idx)) - 1
+        created_text = self._format_created_at(dataset.get("created_at"))
+
+        if parent_index is None:
+            parent_name = "-"
+            operation_label = "Root dataset"
+            params_text = "-"
+            generated_code = "-"
+            data_mode_text = "Loaded from file"
+        else:
+            parent_name = self.data[parent_index]["name"]
+            operation_label = (operation or "Unknown step").replace("_", " ").title()
+            operation_label = operation_label.replace("Ica", "ICA")
+            params_text = self._summarize_operation_params(operation_params)
+            generated_code = self._step_to_history(operation, operation_params) or "-"
+            if dataset.get("data_mode") == "shared":
+                data_mode_text = "Shared with parent"
+            else:
+                data_mode_text = "Copied from parent"
+
+        return {
             "Lineage depth": lineage_depth,
             "Created": created_text,
             "Data mode": data_mode_text,
             "Parent dataset": parent_name,
-            "_parent_dataset_index": parent_index,
-            "_dataset_index": self.index,
-            "_history_scope": history_scope,
-            "_has_replayable_steps": has_replayable_steps,
             "Derivation": operation_label,
             "Derivation parameters": params_text,
             "Generated code": generated_code,
+            "_parent_dataset_index": parent_index,
+            "_dataset_index": idx,
         }
 
     def _format_created_at(self, timestamp):
@@ -770,7 +790,7 @@ class Model:
         # store computed mapping for history generation
         self.current["operation_params"]["_mapping"] = mapping
 
-    @pipeline_step("set_montage")
+    @pipeline_step("set_montage", copy_data=False)
     def set_montage(
         self,
         montage,
@@ -1353,7 +1373,86 @@ class Model:
             return "data = deepcopy(data)"
         return None
 
-    def _serialize_params(self, operation, params):
+    def _dataset_stem(self, dataset):
+        """Return the file-derived dataset stem for placeholder expansion."""
+        fname = dataset.get("fname") if dataset else None
+        if fname:
+            stem, _ = split_name_ext(fname)
+            return stem
+        return dataset.get("name") if dataset else ""
+
+    def _root_dataset(self, idx=None):
+        """Return the root ancestor dataset for `idx`."""
+        if idx is None:
+            idx = self.index
+        if idx < 0 or idx >= len(self.data):
+            return None
+        while self.data[idx].get("parent_index") is not None:
+            idx = self.data[idx]["parent_index"]
+        return self.data[idx]
+
+    def _dataset_prefix(self, dataset_stem):
+        """Return a shorter prefix for dataset sidecar files."""
+        if not dataset_stem:
+            return ""
+        return dataset_stem.split("_", 1)[0].split(" ", 1)[0]
+
+    def _serialize_import_fname(self, fname, root_dataset):
+        """Return a dataset-relative template for import sidecar files."""
+        if root_dataset is None or fname is None:
+            return str(fname) if fname is not None else None
+
+        path = Path(fname)
+        filename = path.name
+        root_stem = self._dataset_stem(root_dataset)
+        root_prefix = self._dataset_prefix(root_stem)
+
+        if root_stem and filename.startswith(root_stem):
+            filename = "{dataset}" + filename[len(root_stem) :]
+        elif (
+            root_prefix
+            and root_prefix != root_stem
+            and filename.startswith(root_prefix)
+        ):
+            filename = "{dataset_prefix}" + filename[len(root_prefix) :]
+        else:
+            return str(fname)
+
+        parent = path.parent
+        root_fname = root_dataset.get("fname")
+        if root_fname and parent == Path(root_fname).parent:
+            parent_text = "{dataset_dir}"
+        elif str(parent) in ("", "."):
+            parent_text = ""
+        else:
+            parent_text = parent.as_posix()
+
+        if parent_text:
+            return f"{parent_text}/{filename}"
+        return filename
+
+    def _resolve_import_fname(self, fname):
+        """Resolve a dataset-relative import filename template."""
+        if not isinstance(fname, str):
+            return fname
+        if not any(
+            token in fname
+            for token in ("{dataset}", "{dataset_prefix}", "{dataset_dir}")
+        ):
+            return fname
+
+        root_dataset = self._root_dataset()
+        dataset_stem = self._dataset_stem(root_dataset)
+        dataset_dir = "."
+        if root_dataset is not None and root_dataset.get("fname"):
+            dataset_dir = Path(root_dataset["fname"]).parent.as_posix()
+        return (
+            fname.replace("{dataset_dir}", dataset_dir)
+            .replace("{dataset_prefix}", self._dataset_prefix(dataset_stem))
+            .replace("{dataset}", dataset_stem)
+        )
+
+    def _serialize_params(self, operation, params, root_dataset=None):
         """Convert operation params to a JSON-serializable dict."""
         result = {}
         for k, v in (params or {}).items():
@@ -1361,6 +1460,8 @@ class Model:
                 continue  # skip internal keys (e.g. _mapping)
             if v is None:
                 result[k] = None
+            elif operation in PARAMETERIZED_IMPORT_OPS and k == "fname":
+                result[k] = self._serialize_import_fname(v, root_dataset)
             elif isinstance(v, Montage):
                 result[k] = {
                     "__type__": "Montage",
@@ -1389,7 +1490,9 @@ class Model:
 
         result = {}
         for k, v in (params or {}).items():
-            if isinstance(v, dict) and v.get("__type__") == "Montage":
+            if operation in PARAMETERIZED_IMPORT_OPS and k == "fname":
+                result[k] = self._resolve_import_fname(v)
+            elif isinstance(v, dict) and v.get("__type__") == "Montage":
                 if v.get("path"):
                     mne_montage = read_custom_montage(v["path"])
                     result[k] = Montage(
@@ -1467,7 +1570,11 @@ class Model:
                 {
                     "operation": operation,
                     "name": step["name"],
-                    "params": self._serialize_params(operation, step["params"]),
+                    "params": self._serialize_params(
+                        operation,
+                        step["params"],
+                        root_ds,
+                    ),
                 }
             )
 

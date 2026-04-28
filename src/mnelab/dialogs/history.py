@@ -72,9 +72,9 @@ class HistoryDialog(QDialog):
         self.pipeline_list.setSelectionMode(
             QAbstractItemView.SelectionMode.ExtendedSelection
         )
-        for i, step in enumerate(self.pipeline.get("steps", []), start=1):
+        for step in self.pipeline.get("steps", []):
             label = step.get("name") or step.get("operation", "Step")
-            self.pipeline_list.addItem(f"{i}. {label}")
+            self.pipeline_list.addItem(label)
 
         pipeline_tab = QWidget()
         pipeline_layout = QVBoxLayout(pipeline_tab)
