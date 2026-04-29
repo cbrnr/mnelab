@@ -17,7 +17,12 @@ import numpy as np
 
 from mnelab.io import read_raw, write_raw
 from mnelab.io.readers import split_name_ext
-from mnelab.utils import Montage, count_locations, run_iclabel
+from mnelab.utils import (
+    Montage,
+    count_locations,
+    read_annotations_from_file,
+    run_iclabel,
+)
 
 
 class LabelsNotFoundError(Exception):
@@ -455,61 +460,20 @@ class Model:
             `"seconds"` (default) or `"samples"`. When `"samples"`, onset and duration
             values are divided by `sfreq` to convert them to seconds.
         """
-        fname = str(fname)
-        descs, onsets, durations = [], [], []
+        existing = self.current["data"].annotations
         fs = self.current["data"].info["sfreq"]
         try:
-            with open(fname) as f:
-                header = f.readline().strip()
-                has_type_col = header == "type,onset,duration"
-                no_type_col = header == "onset,duration"
-                if not has_type_col and not no_type_col:
-                    raise InvalidAnnotationsError(
-                        "Invalid annotations file (expected header: "
-                        "'type,onset,duration' or 'onset,duration')."
-                    )
-                for line in f:
-                    annot = line.split(",")
-                    if has_type_col:
-                        if len(annot) < 3:
-                            continue
-                        desc = annot[0].strip()
-                        onset_str = annot[1].strip()
-                        duration_str = annot[2].strip()
-                    else:  # no type column
-                        if len(annot) < 2:
-                            continue
-                        desc = description if description is not None else "annotation"
-                        onset_str = annot[0].strip()
-                        duration_str = annot[1].strip()
-                    if types is not None and desc not in types:
-                        continue
-                    try:
-                        onset = float(onset_str)
-                        duration = float(duration_str)
-                    except ValueError:
-                        raise InvalidAnnotationsError(
-                            "One or more annotations have invalid onset or duration"
-                            " values."
-                        )
-                    if unit == "samples":
-                        onset /= fs
-                        duration /= fs
-                    if onset > self.current["data"].n_times / fs:
-                        raise InvalidAnnotationsError(
-                            "One or more annotations are outside the data range."
-                        )
-                    descs.append(desc)
-                    onsets.append(onset)
-                    durations.append(duration)
-        except InvalidAnnotationsError:
-            raise
-        except UnicodeDecodeError:
-            raise InvalidAnnotationsError(
-                "The file contains binary data and cannot be read as CSV."
+            new = read_annotations_from_file(
+                str(fname),
+                fs,
+                types=types,
+                description=description,
+                unit=unit,
+                orig_time=existing.orig_time,
+                max_time=self.current["data"].n_times / fs,
             )
-        existing = self.current["data"].annotations
-        new = mne.Annotations(onsets, durations, descs, orig_time=existing.orig_time)
+        except ValueError as exc:
+            raise InvalidAnnotationsError(str(exc)) from None
         self.current["data"].set_annotations(existing + new)
 
     @pipeline_step("import_ica", copy_data=False)
@@ -1130,7 +1094,11 @@ class Model:
             "from copy import deepcopy",
             "import mne",
             "from mnelab.io import read_raw",
-            "from mnelab.utils import annotations_between_events, run_iclabel",
+            "from mnelab.utils import (",
+            "    annotations_between_events,",
+            "    read_annotations_from_file,",
+            "    run_iclabel,",
+            ")",
             "import numpy as np",
             "",
             "",
@@ -1304,50 +1272,14 @@ class Model:
                 fname = str(fname)
             return "\n".join(
                 [
-                    f"with open({fname!r}) as f:",
-                    "    header = f.readline().strip()",
-                    "    has_type_col = header == 'type,onset,duration'",
-                    "    no_type_col = header == 'onset,duration'",
-                    "    if not has_type_col and not no_type_col:",
-                    "        raise ValueError(",
-                    '            "Invalid annotations file (expected header: '
-                    "'type,onset,duration' or 'onset,duration').\"",
-                    "        )",
-                    "    descs, onsets, durations = [], [], []",
-                    f"    types = {p.get('types')!r}",
-                    f"    description = {p.get('description')!r}",
-                    f"    unit = {p.get('unit', 'seconds')!r}",
-                    "    fs = data.info['sfreq']",
-                    "    for line in f:",
-                    "        annot = line.split(',')",
-                    "        if has_type_col:",
-                    "            if len(annot) < 3:",
-                    "                continue",
-                    "            desc = annot[0].strip()",
-                    "            onset_str = annot[1].strip()",
-                    "            duration_str = annot[2].strip()",
-                    "        else:",
-                    "            if len(annot) < 2:",
-                    "                continue",
-                    "            desc = (",
-                    "                description if description is not None else "
-                    "'annotation'",
-                    "            )",
-                    "            onset_str = annot[0].strip()",
-                    "            duration_str = annot[1].strip()",
-                    "        if types is not None and desc not in types:",
-                    "            continue",
-                    "        onset = float(onset_str)",
-                    "        duration = float(duration_str)",
-                    "        if unit == 'samples':",
-                    "            onset /= fs",
-                    "            duration /= fs",
-                    "        descs.append(desc)",
-                    "        onsets.append(onset)",
-                    "        durations.append(duration)",
-                    "new_annots = mne.Annotations(",
-                    "    onsets, durations, descs,",
+                    "new_annots = read_annotations_from_file(",
+                    f"    {fname!r},",
+                    "    data.info['sfreq'],",
+                    f"    types={p.get('types')!r},",
+                    f"    description={p.get('description')!r},",
+                    f"    unit={p.get('unit', 'seconds')!r},",
                     "    orig_time=data.annotations.orig_time,",
+                    "    max_time=data.n_times / data.info['sfreq'],",
                     ")",
                     "data.set_annotations(data.annotations + new_annots)",
                 ]

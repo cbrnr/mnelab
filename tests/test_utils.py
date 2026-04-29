@@ -9,6 +9,7 @@ from mnelab.utils import (
     annotations_between_events,
     get_annotation_types_from_file,
     merge_annotations,
+    read_annotations_from_file,
 )
 
 SFREQ = 100.0
@@ -359,6 +360,51 @@ def test_merge_annotations_contained_interval():
     np.testing.assert_allclose(m_onsets, [1.0])
     np.testing.assert_allclose(m_durations, [3.0])
     assert m_descriptions == ["A"]
+
+
+# --- read_annotations_from_file ---
+
+
+def test_read_annotations_from_file_three_column(tmp_path):
+    """Reads type,onset,duration CSV files as MNE annotations."""
+    csv = tmp_path / "annots.csv"
+    csv.write_text("type,onset,duration\nBAD,1.0,0.5\nGOOD,2.0,0.25\n")
+
+    annots = read_annotations_from_file(csv, SFREQ, types=["BAD"])
+
+    assert list(annots.description) == ["BAD"]
+    np.testing.assert_allclose(annots.onset, [1.0])
+    np.testing.assert_allclose(annots.duration, [0.5])
+
+
+def test_read_annotations_from_file_two_column_samples(tmp_path):
+    """Reads onset,duration CSV files and converts samples to seconds."""
+    csv = tmp_path / "annots.csv"
+    csv.write_text("onset,duration\n100,50\n")
+
+    annots = read_annotations_from_file(csv, SFREQ, description="BAD", unit="samples")
+
+    assert list(annots.description) == ["BAD"]
+    np.testing.assert_allclose(annots.onset, [1.0])
+    np.testing.assert_allclose(annots.duration, [0.5])
+
+
+def test_read_annotations_from_file_rejects_invalid_header(tmp_path):
+    """Rejects files without a supported annotations CSV header."""
+    csv = tmp_path / "bad.csv"
+    csv.write_text("bad-header\n")
+
+    with pytest.raises(ValueError, match="Invalid annotations file"):
+        read_annotations_from_file(csv, SFREQ)
+
+
+def test_read_annotations_from_file_rejects_out_of_range_onset(tmp_path):
+    """Rejects annotations starting outside the data range."""
+    csv = tmp_path / "bad.csv"
+    csv.write_text("type,onset,duration\nBAD,999.0,0.5\n")
+
+    with pytest.raises(ValueError, match="outside the data range"):
+        read_annotations_from_file(csv, SFREQ, max_time=10.0)
 
 
 # --- get_annotation_types_from_file ---

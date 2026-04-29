@@ -345,7 +345,7 @@ def test_import_annotations_creates_replayable_pipeline_step(model_with_data, tm
     assert model_with_data.current["operation"] == "import_annotations"
     assert list(annots.description) == ["BAD"]
     history = "\n".join(model_with_data.get_history())
-    assert "new_annots = mne.Annotations(" in history
+    assert "new_annots = read_annotations_from_file(" in history
 
     pipeline_path = tmp_path / "import_annotations.mnepipe"
     model_with_data.save_pipeline(path=pipeline_path)

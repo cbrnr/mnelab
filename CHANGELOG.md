@@ -9,6 +9,7 @@
 
 ### 🔧 Fixed
 - Fix pipeline JSON export, replayability guards, generated history imports, and lineage index updates when datasets move (by [Dennis Wambacher](https://github.com/D3njo/))
+- Shorten generated history for imported annotations by reusing the shared annotation CSV reader ([#625](https://github.com/cbrnr/mnelab/pull/625) by [Dennis Wambacher](https://github.com/D3njo/))
 - Fix the pipeline tree close button hover state near the first root expander ([#625](https://github.com/cbrnr/mnelab/pull/625) by [Dennis Wambacher](https://github.com/D3njo/))
 - Fix the sidebar background color on Windows and Linux ([#622](https://github.com/cbrnr/mnelab/pull/622) and [#623](https://github.com/cbrnr/mnelab/pull/623) by [Clemens Brunner](https://github.com/cbrnr))
 
