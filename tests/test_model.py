@@ -276,7 +276,9 @@ def test_pipeline_step_parent_index_consistency(edf_files):
 
     # add a step to Dataset 2 (navigate there, then operate)
     model.index = 2
-    model.find_events(stim_channel=model.current["data"].info["ch_names"][0])
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        model.find_events(stim_channel=model.current["data"].info["ch_names"][0])
     # now: 0=Dataset1, 1=FindEvents1(parent=0), 2=Dataset2, 3=FindEvents2(parent=2)
 
     # go back to FindEvents1 and add another step
