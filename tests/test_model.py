@@ -292,3 +292,64 @@ def test_pipeline_step_parent_index_consistency(edf_files):
     assert model.data[4].get("parent_index") == 3, (
         "parent_index of FindEvents2 must point to Dataset 2"
     )
+
+
+def test_pipeline_step_branches_from_intermediate_node(model_with_data):
+    """A new step from an intermediate node becomes a sibling branch."""
+    model = model_with_data
+    model.crop(0, 10)
+    first_crop = model.index
+    model.crop(0, 2)
+
+    model.index = first_crop
+    model.crop(3, 5)
+
+    tree = model.get_pipeline_tree()
+    assert len(tree) == 1
+    first_branch = tree[0]["children"][0]
+    assert first_branch["index"] == first_crop
+    assert [child["index"] for child in first_branch["children"]] == [2, 3]
+    assert model.data[2].get("parent_index") == first_crop
+    assert model.data[3].get("parent_index") == first_crop
+
+
+def test_remove_data_preserves_active_index_when_possible(model_with_data):
+    """Removing unrelated or parent subtrees keeps selection valid."""
+    model = model_with_data
+    model.crop(0, 10)
+    first_crop = model.index
+    model.crop(0, 2)
+
+    model.index = first_crop
+    model.crop(3, 5)
+    active_name = model.current["name"]
+
+    model.remove_data(2)
+    assert model.current["name"] == active_name
+    assert model.index == 2
+    assert model.current.get("parent_index") == 1
+
+    model.remove_data(1)
+    assert model.index == 0
+    assert len(model.data) == 1
+
+
+def test_append_data_adjusts_indices_after_subtree_insert(edf_files):
+    """Appending can reference descendants before the inserted pipeline child."""
+    model = Model()
+    for file in edf_files:
+        model.load(file)
+
+    root_len = len(model.data[0]["data"].times)
+    extra_lens = [len(model.data[i]["data"].times) for i in (1, 2)]
+
+    model.index = 0
+    model.crop(0, 1)
+    cropped_len = len(model.current["data"].times)
+
+    model.index = 0
+    model.append_data([1, 2, 3])
+
+    assert model.index == 2
+    assert model.current.get("parent_index") == 0
+    assert len(model.current["data"].times) == root_len + cropped_len + sum(extra_lens)

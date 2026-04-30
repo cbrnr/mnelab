@@ -4,14 +4,12 @@
 
 import json
 
-from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QFrame,
     QLabel,
     QListWidget,
-    QProgressDialog,
     QVBoxLayout,
 )
 
@@ -121,14 +119,3 @@ def load_pipeline(path):
             f"Unsupported pipeline format version: {data.get('pipeline_format')!r}"
         )
     return data
-
-
-class PipelineProgressDialog(QProgressDialog):
-    """Simple progress dialog shown while a pipeline is being applied."""
-
-    def __init__(self, parent, n_steps):
-        super().__init__("Applying pipeline…", "Cancel", 0, n_steps, parent)
-        self.setWindowTitle("Applying Pipeline")
-        self.setWindowModality(Qt.WindowModality.WindowModal)
-        self.setMinimumDuration(0)
-        self.setValue(0)

@@ -67,10 +67,11 @@ def pipeline_step(op_name, copy_data=True):
     """
 
     def decorator(f):
+        sig = inspect.signature(f)
+
         @wraps(f)
         def wrapper(self, *args, **kwargs):
             # capture params via introspection
-            sig = inspect.signature(f)
             bound = sig.bind(self, *args, **kwargs)
             bound.apply_defaults()
             params = dict(bound.arguments)
@@ -78,6 +79,7 @@ def pipeline_step(op_name, copy_data=True):
 
             # create child dataset
             parent_index = self.index
+            insert_index = self._child_insert_index(parent_index)
             if copy_data:
                 new_dataset = deepcopy(self.current)
             else:
@@ -92,36 +94,25 @@ def pipeline_step(op_name, copy_data=True):
             new_dataset["fname"] = None
             new_dataset["ftype"] = None
             new_dataset["fsize"] = None
-            self.index += 1
+            self.index = insert_index
             # _insert_at keeps parent_index refs consistent across all datasets
             self._insert_at(self.index, new_dataset)
+
+            def _run_operation():
+                try:
+                    return f(self, *args, **kwargs)
+                except Exception:
+                    self._pop_at(insert_index)
+                    self.index = parent_index
+                    raise
 
             # run the operation on the new (current) dataset
             if self.view is not None:
                 with self.view._wait_cursor():
-                    try:
-                        result = f(self, *args, **kwargs)
-                    except Exception:
-                        # remove the child and undo the parent_index shifts
-                        self.data.pop(self.index)
-                        for ds in self.data:
-                            pi = ds.get("parent_index")
-                            if pi is not None and pi >= self.index:
-                                ds["parent_index"] = pi - 1
-                        self.index = parent_index
-                        raise
+                    result = _run_operation()
                     self.view.data_changed()
             else:
-                try:
-                    result = f(self, *args, **kwargs)
-                except Exception:
-                    self.data.pop(self.index)
-                    for ds in self.data:
-                        pi = ds.get("parent_index")
-                        if pi is not None and pi >= self.index:
-                            ds["parent_index"] = pi - 1
-                    self.index = parent_index
-                    raise
+                result = _run_operation()
             return result
 
         return wrapper
@@ -154,9 +145,15 @@ class Model:
         """Remove data set and all its descendants."""
         if index == -1:
             index = self.index
+        old_index = self.index
 
         # collect the target and all its descendants
-        to_remove = sorted({index} | set(self._get_descendants(index)), reverse=True)
+        to_remove_set = {index} | set(self._get_descendants(index))
+        to_remove = sorted(to_remove_set, reverse=True)
+        parent_index = self.data[index].get("parent_index")
+
+        def adjusted(old):
+            return old - sum(1 for removed in to_remove if removed < old)
 
         for idx in to_remove:
             self.data.pop(idx)
@@ -165,13 +162,17 @@ class Model:
         for ds in self.data:
             pi = ds.get("parent_index")
             if pi is not None:
-                ds["parent_index"] = pi - sum(1 for r in to_remove if r < pi)
+                ds["parent_index"] = adjusted(pi)
 
         if not self.data:
             self.index = -1
+        elif old_index in to_remove_set:
+            if parent_index is not None and parent_index not in to_remove_set:
+                self.index = adjusted(parent_index)
+            else:
+                self.index = max(0, min(adjusted(index), len(self.data) - 1))
         else:
-            new_pos = index - sum(1 for r in to_remove if r <= index)
-            self.index = max(0, min(new_pos, len(self.data) - 1))
+            self.index = adjusted(old_index)
 
     @data_changed
     def duplicate_data(self):
@@ -184,7 +185,7 @@ class Model:
         new_dataset["fname"] = None
         new_dataset["ftype"] = None
         new_dataset["fsize"] = None
-        self.index += 1
+        self.index = self._child_insert_index(parent_index)
         self._insert_at(self.index, new_dataset)
 
     @property
@@ -720,8 +721,7 @@ class Model:
         """Append the given raw data sets."""
         self.current["name"] += " (appended)"
         # adjust indices for the insertion made by @pipeline_step
-        parent_idx = self.current["parent_index"]
-        adjusted_idx = [idx + 1 if idx > parent_idx else idx for idx in selected_idx]
+        adjusted_idx = [idx + 1 if idx >= self.index else idx for idx in selected_idx]
         datasets = [self.current["data"]]
         datasets.extend(self.data[idx]["data"] for idx in adjusted_idx)
         if self.current["dtype"] == "raw":
@@ -813,22 +813,6 @@ class Model:
             mne.Annotations(onset, duration, description)
         )
 
-    @data_changed
-    def move_data(self, source, target):
-        """
-        Change the position of a single data set in `self.data`.
-
-        Parameters
-        ----------
-        source : int
-            The data set's initial index.
-        target : int
-            The index the data set should be moved to.
-        """
-        item = self.data.pop(source)
-        self.data.insert(target, item)
-        self.index = target
-
     def _insert_at(self, at_index, dataset):
         """Insert *dataset* at *at_index* and fix all `parent_index` refs.
 
@@ -845,6 +829,18 @@ class Model:
             pi = ds.get("parent_index")
             if pi is not None and pi >= at_index:
                 ds["parent_index"] = pi + 1
+
+    def _pop_at(self, index):
+        """Remove one dataset and undo the `parent_index` shifts."""
+        self.data.pop(index)
+        for ds in self.data:
+            pi = ds.get("parent_index")
+            if pi is not None and pi > index:
+                ds["parent_index"] = pi - 1
+
+    def _child_insert_index(self, index):
+        """Return where a new child of dataset *index* should be inserted."""
+        return max([index, *self._get_descendants(index)]) + 1
 
     def _get_descendants(self, index):
         """Return all descendant dataset indices for the dataset at index."""
@@ -943,15 +939,8 @@ class Model:
         lines = [
             "from copy import deepcopy",
             "import mne",
-            "from mnelab.io import read_raw",
-            "from mnelab.utils import annotations_between_events, run_iclabel",
             "import numpy as np",
-            "from mnelab.utils import ("
-            "detect_extreme_values,"
-            "detect_kurtosis,"
-            "detect_peak_to_peak,"
-            "detect_with_autoreject,"
-            ")",
+            "from mnelab.io import read_raw",
             "",
             "",
         ]
@@ -1186,7 +1175,7 @@ class Model:
             json.dump(pipeline, f, indent=2)
 
     # operations that cannot be applied generically to a new dataset
-    _UNREPLAYABLE_OPS = {"append_data"}
+    _UNREPLAYABLE_OPS = {"append_data", "apply_ica"}
 
     def apply_pipeline(self, pipeline_dict):
         """Apply a saved pipeline to the current dataset.

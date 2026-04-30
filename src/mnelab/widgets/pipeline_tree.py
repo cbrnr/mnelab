@@ -94,11 +94,9 @@ class _TreeBadgeDelegate(TypeBadgeDelegate):
 class PipelineTreeWidget(QTreeWidget):
     """Sidebar tree widget that shows datasets organised by pipeline lineage.
 
-    Each root dataset (no parent in the model) appears as a bold top-level item.  All
-    descendant operation steps are shown as flat, numbered children of the root — one
-    indentation level only — regardless of how deep the model's pipeline chain is.  Step
-    numbers reflect the distance from the root (1-based depth), so two items with the
-    same step number belong to different branches from the same ancestor.
+    Each root dataset (no parent in the model) appears as a bold top-level item.
+    Descendant operation steps are nested under their actual parent operation so that
+    branches in the model are visible in the sidebar.
     """
 
     datasetSelected = Signal(int)  # emits the model.data index of the selected item
@@ -187,34 +185,40 @@ class PipelineTreeWidget(QTreeWidget):
         self.clear()
 
         active_item = None
+        previous_dtype = None
 
-        def _add_steps_flat(root_item, node, depth):
-            """DFS: add all descendants as direct children of root_item."""
+        def _set_dtype_badge(item, dtype):
+            """Show dtype only for the first item and later dtype changes."""
+            nonlocal previous_dtype
+            dtype = dtype or ""
+            if dtype and (previous_dtype is None or dtype != previous_dtype):
+                item.setText(1, dtype)
+                item.setTextAlignment(1, Qt.AlignmentFlag.AlignCenter)
+            if dtype:
+                previous_dtype = dtype
+
+        def _add_step(parent_item, node):
+            """Add a pipeline node below its actual parent item."""
             nonlocal active_item
+            idx = node["index"]
+            operation = node.get("operation") or ""
+            params = node.get("operation_params")
+
+            item = QTreeWidgetItem(parent_item)
+            item.setText(0, _operation_label(operation, params))
+            item.setToolTip(0, node["name"])
+            item.setData(0, Qt.ItemDataRole.UserRole, idx)
+            # step items are selectable but not user-editable
+            item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
+            item.setSizeHint(0, QSize(0, ROW_HEIGHT))
+            _set_dtype_badge(item, node.get("dtype"))
+
+            if idx == active_index:
+                active_item = item
+
             for child in node.get("children", []):
-                idx = child["index"]
-                operation = child.get("operation") or ""
-                params = child.get("operation_params")
-                dtype = child.get("dtype") or ""
-                label = f"{depth}.\u2009{_operation_label(operation, params)}"
-
-                item = QTreeWidgetItem(root_item)
-                item.setText(0, label)
-                item.setToolTip(0, child["name"])
-                item.setData(0, Qt.ItemDataRole.UserRole, idx)
-                # step items are selectable but not user-editable
-                item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
-                item.setSizeHint(0, QSize(0, ROW_HEIGHT))
-
-                if dtype:
-                    item.setText(1, dtype)
-                    item.setTextAlignment(1, Qt.AlignmentFlag.AlignCenter)
-
-                if idx == active_index:
-                    active_item = item
-
-                # recurse, keeping items flat under root_item
-                _add_steps_flat(root_item, child, depth + 1)
+                _add_step(item, child)
+            item.setExpanded(True)
 
         for root_node in tree:
             idx = root_node["index"]
@@ -234,21 +238,23 @@ class PipelineTreeWidget(QTreeWidget):
                 | Qt.ItemFlag.ItemIsEditable
             )
             root_item.setSizeHint(0, QSize(0, ROW_HEIGHT))
-
-            if dtype:
-                root_item.setText(1, dtype)
-                root_item.setTextAlignment(1, Qt.AlignmentFlag.AlignCenter)
+            _set_dtype_badge(root_item, dtype)
 
             if idx == active_index:
                 active_item = root_item
 
-            _add_steps_flat(root_item, root_node, 1)
+            for child in root_node.get("children", []):
+                _add_step(root_item, child)
             root_item.setExpanded(True)
 
         self.blockSignals(False)
 
         if active_item is not None:
             self.setCurrentItem(active_item)
+            parent = active_item.parent()
+            while parent is not None:
+                parent.setExpanded(True)
+                parent = parent.parent()
 
         self._refresh_close_buttons()
         self.setFocus()
