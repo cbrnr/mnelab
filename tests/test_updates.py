@@ -9,15 +9,13 @@ import numpy as np
 import pytest
 from edfio import Edf, EdfSignal
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QGuiApplication
-from PySide6.QtWidgets import QDialogButtonBox, QListWidget, QPushButton, QToolButton
+from PySide6.QtWidgets import QDialogButtonBox, QListWidget, QPushButton
 
 from mnelab.dialogs.dataset_details import DatasetDetailsDialog
-from mnelab.dialogs.history import HistoryDialog
+from mnelab.dialogs.history import LogDialog
 from mnelab.dialogs.pipeline import ApplyPipelineDialog, load_pipeline
 from mnelab.mainwindow import MainWindow
 from mnelab.model import Model
-from mnelab.widgets.infowidget import InfoWidget
 
 
 @pytest.fixture
@@ -113,131 +111,23 @@ def test_check_updates_dev_version(view):
     instance.exec.assert_called_once()
 
 
-def test_edit_pipeline_uses_apply_confirmation(view, tmp_path):
-    """Edited pipelines go through the same apply confirmation dialog."""
+def test_open_pipeline_editor_opens_builder(view, tmp_path):
+    """The Pipeline Editor opens pre-populated with the current dataset's pipeline."""
     _load_sample_edf(view, tmp_path)
-    original_pipeline = {
-        "pipeline_format": 1,
-        "steps": [{"operation": "crop", "params": {"tmin": 0.0, "tmax": 1.0}}],
-    }
-    edited_pipeline = {
-        "pipeline_format": 1,
-        "steps": [{"operation": "crop", "params": {"tmin": 0.0, "tmax": 2.0}}],
-    }
+
+    fixed_pipeline = view.model.get_pipeline(view.model.index)
+    fixed_history = view.model.get_history(view.model.index)
 
     with (
-        patch(
-            "mnelab.mainwindow.QFileDialog.getOpenFileName",
-            return_value=("pipeline.mnepipe", "MNELAB pipeline (*.mnepipe)"),
-        ),
-        patch("mnelab.dialogs.pipeline.load_pipeline", return_value=original_pipeline),
+        patch.object(view.model, "get_pipeline", return_value=fixed_pipeline),
+        patch.object(view.model, "get_history", return_value=fixed_history),
         patch("mnelab.dialogs.pipeline_builder.PipelineBuilderDialog") as MockBuilder,
-        patch("mnelab.dialogs.pipeline.ApplyPipelineDialog") as MockApplyDialog,
-        patch("mnelab.mainwindow.PipelineProgressDialog") as MockProgressDialog,
-        patch.object(view.model, "apply_pipeline") as apply_pipeline,
-        patch("mnelab.mainwindow.QApplication.processEvents"),
     ):
-        MockBuilder.return_value.exec.return_value = True
-        MockBuilder.return_value.get_pipeline.return_value = edited_pipeline
-        MockApplyDialog.return_value.exec.return_value = True
-        MockApplyDialog.return_value.selected_dataset_indices.return_value = [
-            view.model.index
-        ]
-        MockProgressDialog.return_value.wasCanceled.return_value = False
+        MockBuilder.return_value.exec.return_value = False
 
-        view.edit_pipeline()
+        view.open_pipeline_editor()
 
-    MockBuilder.assert_called_once_with(view, original_pipeline)
-    apply_args = MockApplyDialog.call_args.args
-    assert apply_args[:3] == (view, edited_pipeline, view.model.current)
-    args, kwargs = apply_pipeline.call_args
-    assert args == (edited_pipeline,)
-    assert "progress_callback" in kwargs
-    assert "is_cancelled" in kwargs
-    assert "review_callback" in kwargs
-
-
-def test_history_dialog_creates_pipeline_from_selected_steps(view, qtbot):
-    """History can seed the Pipeline Builder from selected pipeline steps."""
-    pipeline = {
-        "pipeline_format": 1,
-        "created": "2026-04-27T12:00:00+00:00",
-        "hints": {"dtype": "raw"},
-        "steps": [
-            {"operation": "filter", "name": "Filter", "params": {"l_freq": 1.0}},
-            {"operation": "crop", "name": "Crop", "params": {"tmin": 0.0, "tmax": 2.0}},
-        ],
-    }
-    selected_pipeline = {
-        "pipeline_format": 1,
-        "created": "2026-04-27T12:00:00+00:00",
-        "hints": {"dtype": "raw"},
-        "steps": [pipeline["steps"][1]],
-    }
-    edited_pipeline = {
-        "pipeline_format": 1,
-        "created": "2026-04-27T12:00:00+00:00",
-        "hints": {"dtype": "raw"},
-        "steps": [
-            {"operation": "crop", "name": "Crop", "params": {"tmin": 0.5, "tmax": 2.0}}
-        ],
-    }
-
-    dialog = HistoryDialog(view, ["data.filter(...)"], [], pipeline, scope="branch")
-    qtbot.addWidget(dialog)
-    dialog.tabs.setCurrentIndex(2)
-    assert dialog.pipeline_list.item(0).text() == "Filter"
-    assert not dialog.pipeline_list.item(0).text().startswith("1.")
-    dialog.pipeline_list.item(1).setSelected(True)
-
-    with (
-        patch("mnelab.dialogs.pipeline_builder.PipelineBuilderDialog") as MockBuilder,
-        patch.object(view, "_confirm_and_apply_pipeline") as confirm,
-    ):
-        MockBuilder.return_value.exec.return_value = True
-        MockBuilder.return_value.get_pipeline.return_value = edited_pipeline
-
-        dialog._create_pipeline()
-
-    assert dialog.windowTitle() == "Branch History"
-    assert dialog.tabs.count() == 3
-    assert dialog.tabs.tabText(2) == "Branch pipeline"
-    assert dialog.pipelinebutton.text() == "Create pipeline from branch..."
-    MockBuilder.assert_called_once_with(view, selected_pipeline)
-    confirm.assert_called_once_with(edited_pipeline)
-
-
-def test_history_dialog_pipeline_copy_and_save_are_valid_json(view, qtbot, tmp_path):
-    """Pipeline JSON from HistoryDialog can be loaded as strict JSON."""
-    pipeline = {
-        "pipeline_format": 1,
-        "created": "2026-04-27T12:00:00+00:00",
-        "hints": {"dtype": "raw"},
-        "steps": [
-            {
-                "operation": "crop",
-                "name": "Crop",
-                "params": {"start": 0.0, "stop": 1.0},
-            }
-        ],
-    }
-    dialog = HistoryDialog(view, ["data.crop(...)"], [], pipeline, scope="branch")
-    qtbot.addWidget(dialog)
-    dialog.tabs.setCurrentIndex(2)
-
-    dialog._copy_to_clipboard()
-    copied = QGuiApplication.clipboard().text()
-    assert json.loads(copied)["steps"][0]["operation"] == "crop"
-
-    save_path = tmp_path / "branch-pipeline"
-    with patch(
-        "mnelab.dialogs.history.QFileDialog.getSaveFileName",
-        return_value=(str(save_path), "MNELAB pipeline (*.mnepipe)"),
-    ):
-        dialog._save_pipeline()
-
-    saved = (tmp_path / "branch-pipeline.mnepipe").read_text(encoding="utf-8")
-    assert json.loads(saved)["steps"][0]["params"] == {"start": 0.0, "stop": 1.0}
+    MockBuilder.assert_called_once_with(view, fixed_pipeline, fixed_history)
 
 
 def test_load_pipeline_validates_step_shape(tmp_path):
@@ -265,148 +155,38 @@ def test_apply_pipeline_dialog_disables_unreplayable_operations(view, qtbot):
     assert step_list.item(0).text() == "Append data"
 
 
-def test_apply_pipeline_dialog_selects_multiple_datasets(view, qtbot):
-    """The apply dialog exposes checked root datasets for batch application."""
-    pipeline = {"pipeline_format": 1, "steps": []}
-    dataset_options = [
-        {"index": 0, "name": "sub-01", "dtype": "raw", "checked": True},
-        {"index": 1, "name": "", "dtype": "raw", "checked": False},
-    ]
-
-    dialog = ApplyPipelineDialog(
-        view,
-        pipeline,
-        view.model.current,
-        dataset_options=dataset_options,
-    )
-    qtbot.addWidget(dialog)
-    dataset_list = dialog.findChildren(QListWidget)[0]
-
-    assert dialog.selected_dataset_indices() == [0]
-    assert dataset_list.item(1).text() == "Unnamed dataset (raw)"
-
-
-def test_history_dialog_uses_dataset_wording_for_roots(view, qtbot):
-    """Root history dialogs use dataset wording instead of branch wording."""
-    dialog = HistoryDialog(
-        view,
-        ["data = read_raw(...)"],
-        [],
-        {"pipeline_format": 1, "steps": []},
-        scope="dataset",
-    )
+def test_log_dialog_shows_mne_log(view, qtbot):
+    """LogDialog shows the MNE log content."""
+    dialog = LogDialog(view, ["INFO: Opening raw..."])
     qtbot.addWidget(dialog)
 
-    assert dialog.windowTitle() == "Dataset History"
-    assert dialog.tabs.tabText(2) == "Dataset pipeline"
-    assert dialog.pipelinebutton.text() == "Create pipeline from dataset..."
+    assert dialog.windowTitle() == "Log"
+    assert dialog.log == "INFO: Opening raw..."
 
 
-def test_info_widget_uses_dataset_or_branch_action_labels(qtbot):
-    """The provenance action row uses dataset/branch wording consistently."""
-    widget = InfoWidget()
-    qtbot.addWidget(widget)
-
-    widget.set_values(
-        {
-            "File name": "-",
-            "_dataset_index": 0,
-            "_history_scope": "dataset",
-            "_has_replayable_steps": False,
-        }
-    )
-    dataset_buttons = [
-        button.text() for button in widget.findChildren(QToolButton) if button.text()
-    ]
-    assert dataset_buttons == [
-        "Dataset details...",
-        "Dataset history...",
-        "Export dataset history...",
-    ]
-
-    widget.set_values(
-        {
-            "File name": "-",
-            "_dataset_index": 1,
-            "_history_scope": "branch",
-            "_has_replayable_steps": True,
-        }
-    )
-    branch_buttons = [
-        button.text() for button in widget.findChildren(QToolButton) if button.text()
-    ]
-    assert branch_buttons == [
-        "Dataset details...",
-        "Branch history...",
-        "Export branch history...",
-        "Create pipeline from branch...",
-        "Save pipeline for branch...",
-    ]
-
-
-def test_info_widget_branch_action_buttons_emit_signals(qtbot):
-    """The provenance action row emits the correct dataset-scoped signals."""
-    widget = InfoWidget(
-        {
-            "File name": "-",
-            "_dataset_index": 5,
-            "_history_scope": "branch",
-            "_has_replayable_steps": True,
-        }
-    )
-    qtbot.addWidget(widget)
-
-    emitted = {
-        "details": [],
-        "history": [],
-        "export": [],
-        "create": [],
-        "save": [],
-    }
-    widget.showDetailsRequested.connect(lambda idx: emitted["details"].append(idx))
-    widget.showHistoryRequested.connect(lambda idx: emitted["history"].append(idx))
-    widget.exportHistoryRequested.connect(lambda idx: emitted["export"].append(idx))
-    widget.createPipelineRequested.connect(lambda idx: emitted["create"].append(idx))
-    widget.savePipelineRequested.connect(lambda idx: emitted["save"].append(idx))
-
-    buttons = {button.text(): button for button in widget.findChildren(QToolButton)}
-    qtbot.mouseClick(buttons["Dataset details..."], Qt.MouseButton.LeftButton)
-    qtbot.mouseClick(buttons["Branch history..."], Qt.MouseButton.LeftButton)
-    qtbot.mouseClick(buttons["Export branch history..."], Qt.MouseButton.LeftButton)
-    qtbot.mouseClick(
-        buttons["Create pipeline from branch..."], Qt.MouseButton.LeftButton
-    )
-    qtbot.mouseClick(buttons["Save pipeline for branch..."], Qt.MouseButton.LeftButton)
-
-    assert emitted == {
-        "details": [5],
-        "history": [5],
-        "export": [5],
-        "create": [5],
-        "save": [5],
-    }
-
-
-def test_show_history_for_dataset_uses_dataset_or_branch_scope(view, tmp_path):
-    """MainWindow passes the correct history scope for root and derived datasets."""
+def test_show_history_for_dataset_opens_pipeline_dialog(view, tmp_path):
+    """show_history_for_dataset opens the Pipeline dialog with history tab."""
     fs = 256
     signal = np.zeros(30 * fs)
     path = tmp_path / "sample.edf"
     Edf([EdfSignal(signal, sampling_frequency=fs, label="EEG")]).write(path)
 
     view.model.load(path)
-    root_index = view.model.index
     view.model.filter(lower=1.0)
     branch_index = view.model.index
 
-    with patch("mnelab.mainwindow.HistoryDialog") as MockHistoryDialog:
-        view.show_history_for_dataset(root_index)
-        root_args = MockHistoryDialog.call_args.args
-        assert root_args[4] == "dataset"
+    fixed_pipeline = view.model.get_pipeline(branch_index)
+    fixed_history = view.model.get_history(branch_index)
 
+    with (
+        patch.object(view.model, "get_pipeline", return_value=fixed_pipeline),
+        patch.object(view.model, "get_history", return_value=fixed_history),
+        patch("mnelab.dialogs.pipeline_builder.PipelineBuilderDialog") as MockBuilder,
+    ):
+        MockBuilder.return_value.exec.return_value = False
         view.show_history_for_dataset(branch_index)
-        branch_args = MockHistoryDialog.call_args.args
-        assert branch_args[4] == "branch"
+
+    MockBuilder.assert_called_once_with(view, fixed_pipeline, fixed_history)
 
 
 def test_apply_pipeline_uses_progress_dialog(view, tmp_path):
@@ -442,9 +222,6 @@ def test_apply_pipeline_uses_progress_dialog(view, tmp_path):
         patch("mnelab.mainwindow.QApplication.processEvents"),
     ):
         MockApplyDialog.return_value.exec.return_value = True
-        MockApplyDialog.return_value.selected_dataset_indices.return_value = [
-            view.model.index
-        ]
         MockProgressDialog.return_value.wasCanceled.return_value = False
 
         view._confirm_and_apply_pipeline(pipeline)
@@ -460,43 +237,6 @@ def test_apply_pipeline_uses_progress_dialog(view, tmp_path):
         2, pipeline["steps"][1]
     )
     MockProgressDialog.return_value.close.assert_called_once()
-
-
-def test_confirm_and_apply_pipeline_runs_selected_root_datasets(view, tmp_path):
-    """Pipeline apply can target more than one loaded root dataset."""
-    fs = 256
-    signal = np.zeros(30 * fs)
-    first = tmp_path / "first.edf"
-    second = tmp_path / "second.edf"
-    Edf([EdfSignal(signal, sampling_frequency=fs, label="EEG")]).write(first)
-    Edf([EdfSignal(signal, sampling_frequency=fs, label="EEG")]).write(second)
-    view.model.load(first)
-    first_index = view.model.index
-    view.model.load(second)
-    second_index = view.model.index
-
-    pipeline = {
-        "pipeline_format": 1,
-        "steps": [{"operation": "set_events", "params": {"events": [[5, 0, 11]]}}],
-    }
-
-    with (
-        patch("mnelab.dialogs.pipeline.ApplyPipelineDialog") as MockApplyDialog,
-        patch("mnelab.mainwindow.PipelineProgressDialog") as MockProgressDialog,
-        patch.object(view.model, "apply_pipeline") as apply_pipeline,
-        patch("mnelab.mainwindow.QApplication.processEvents"),
-    ):
-        MockApplyDialog.return_value.exec.return_value = True
-        MockApplyDialog.return_value.selected_dataset_indices.return_value = [
-            first_index,
-            second_index,
-        ]
-        MockProgressDialog.return_value.wasCanceled.return_value = False
-
-        view._confirm_and_apply_pipeline(pipeline)
-
-    assert apply_pipeline.call_count == 2
-    MockProgressDialog.assert_called_once_with(view, 2)
 
 
 def test_dataset_details_dialog_can_jump_to_parent_dataset(view, qtbot, tmp_path):
@@ -546,32 +286,8 @@ def test_show_dataset_details_signal_opens_dialog(view, tmp_path):
     MockDialog.return_value.exec.assert_called_once()
 
 
-def test_sidebar_history_signal_opens_branch_history(view, tmp_path):
-    """Sidebar branch-history requests open the history for the targeted dataset."""
-    fs = 256
-    signal = np.zeros(30 * fs)
-    path = tmp_path / "sample.edf"
-    Edf([EdfSignal(signal, sampling_frequency=fs, label="EEG")]).write(path)
-
-    view.model.load(path)
-    parent_index = view.model.index
-    view.model.filter(lower=1.0)
-
-    with patch("mnelab.mainwindow.HistoryDialog") as MockHistoryDialog:
-        view.sidebar.showHistoryRequested.emit(parent_index)
-
-    args = MockHistoryDialog.call_args.args
-    assert args[0] is view
-    assert args[1] == view.model.get_history(parent_index)
-    assert args[2] == view.model.log
-    assert args[3]["pipeline_format"] == 1
-    assert args[3]["hints"] == view.model.get_pipeline(parent_index)["hints"]
-    assert args[3]["steps"] == view.model.get_pipeline(parent_index)["steps"]
-    MockHistoryDialog.return_value.exec.assert_called_once()
-
-
-def test_sidebar_create_pipeline_signal_opens_branch_builder(view, tmp_path):
-    """Sidebar branch-pipeline requests open the builder for the targeted dataset."""
+def test_sidebar_history_signal_opens_pipeline_dialog(view, tmp_path):
+    """Sidebar branch-history requests open the Pipeline dialog with history."""
     fs = 256
     signal = np.zeros(30 * fs)
     path = tmp_path / "sample.edf"
@@ -580,26 +296,20 @@ def test_sidebar_create_pipeline_signal_opens_branch_builder(view, tmp_path):
     view.model.load(path)
     view.model.filter(lower=1.0)
     branch_index = view.model.index
-    edited_pipeline = {
-        "pipeline_format": 1,
-        "steps": [{"operation": "crop", "params": {"start": 0.0, "stop": 1.0}}],
-    }
+
+    fixed_pipeline = view.model.get_pipeline(branch_index)
+    fixed_history = view.model.get_history(branch_index)
 
     with (
+        patch.object(view.model, "get_pipeline", return_value=fixed_pipeline),
+        patch.object(view.model, "get_history", return_value=fixed_history),
         patch("mnelab.dialogs.pipeline_builder.PipelineBuilderDialog") as MockBuilder,
-        patch.object(view, "_confirm_and_apply_pipeline") as confirm,
     ):
-        MockBuilder.return_value.exec.return_value = True
-        MockBuilder.return_value.get_pipeline.return_value = edited_pipeline
+        MockBuilder.return_value.exec.return_value = False
+        view.sidebar.showHistoryRequested.emit(branch_index)
 
-        view.sidebar.createPipelineRequested.emit(branch_index)
-
-    builder_args = MockBuilder.call_args.args
-    assert builder_args[0] is view
-    assert builder_args[1]["pipeline_format"] == 1
-    assert builder_args[1]["hints"] == view.model.get_pipeline(branch_index)["hints"]
-    assert builder_args[1]["steps"] == view.model.get_pipeline(branch_index)["steps"]
-    confirm.assert_called_once_with(edited_pipeline)
+    MockBuilder.assert_called_once_with(view, fixed_pipeline, fixed_history)
+    MockBuilder.return_value.exec.assert_called_once()
 
 
 def test_sidebar_save_pipeline_signal_saves_branch_pipeline(view, tmp_path):
@@ -641,9 +351,8 @@ def test_save_pipeline_is_disabled_for_unreplayable_branches(view, tmp_path):
     view.model.index = 0
     view.model.append_data([1])
     branch_index = view.model.index
+    assert not view.model.has_replayable_pipeline(branch_index)
     view.data_changed()
-
-    assert not view.all_actions["save_pipeline"].isEnabled()
     with (
         patch("mnelab.mainwindow.QMessageBox.information") as information,
         patch("mnelab.mainwindow.QFileDialog.getSaveFileName") as get_save_name,
@@ -677,7 +386,7 @@ def test_sidebar_export_history_signal_exports_branch_history(view, tmp_path):
 
 
 def test_sidebar_context_menu_hides_pipeline_actions_for_root(view, tmp_path):
-    """Roots without replayable steps omit branch pipeline actions entirely."""
+    """Roots without replayable steps show Apply but not Save pipeline."""
     fs = 256
     signal = np.zeros(30 * fs)
     path = tmp_path / "sample.edf"
@@ -694,11 +403,11 @@ def test_sidebar_context_menu_hides_pipeline_actions_for_root(view, tmp_path):
         "Dataset details...",
         "Show dataset history...",
         "Export dataset history...",
+        "Apply pipeline...",
     ]
-    assert "Create pipeline from branch..." not in root_labels
-    assert "Save pipeline for branch..." not in root_labels
-    assert "create_pipeline" not in root_actions
+    assert "Save pipeline..." not in root_labels
     assert "save_pipeline" not in root_actions
+    assert "apply_pipeline" in root_actions
     assert root_actions["show_details"].isEnabled()
     assert root_actions["export_history"].isEnabled()
 
@@ -714,9 +423,8 @@ def test_sidebar_context_menu_hides_pipeline_actions_for_root(view, tmp_path):
         "Dataset details...",
         "Show branch history...",
         "Export branch history...",
-        "Create pipeline from branch...",
-        "Save pipeline for branch...",
+        "Apply pipeline...",
+        "Save pipeline...",
     ]
     assert any(action.isSeparator() for action in branch_menu.actions())
-    assert branch_actions["create_pipeline"].isEnabled()
     assert branch_actions["save_pipeline"].isEnabled()

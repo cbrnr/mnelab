@@ -180,16 +180,6 @@ class MainWindow(QMainWindow):
             QIcon.fromTheme("close-all"), "Close All", self.close_all
         )
         file_menu.addSeparator()
-        self.all_actions["save_pipeline"] = file_menu.addAction(
-            "Save Pipeline...", self.save_pipeline
-        )
-        self.all_actions["apply_pipeline"] = file_menu.addAction(
-            "Apply Pipeline...", self.apply_pipeline_from_file
-        )
-        self.all_actions["edit_pipeline"] = file_menu.addAction(
-            "Edit Pipeline...", self.edit_pipeline
-        )
-        file_menu.addSeparator()
         self.export_menu = file_menu.addMenu(QIcon.fromTheme("export"), "Export")
         for ext, description in writers.items():
             action = "export_data" + ext.replace(".", "_")
@@ -415,8 +405,10 @@ class MainWindow(QMainWindow):
             lambda: self.export_file(model.export_ica, "Export ICA", "*.fif *.fif.gz"),
         )
         process_menu.addSeparator()
-        self.all_actions["pipeline_builder"] = process_menu.addAction(
-            "Pipeline &Builder...", self.open_pipeline_builder
+        self.all_actions["pipeline_editor"] = process_menu.addAction(
+            QIcon.fromTheme("pipeline-editor"),
+            "Pipeline...",
+            self.open_pipeline_editor,
         )
 
         epochs_menu = self.menuBar().addMenu("Ep&ochs")
@@ -437,8 +429,8 @@ class MainWindow(QMainWindow):
         view_menu = self.menuBar().addMenu("&View")
         self.all_actions["history"] = view_menu.addAction(
             QIcon.fromTheme("history"),
-            "&History",
-            self.show_history,
+            "&Log...",
+            self.show_log,
             QKeySequence(Qt.Modifier.CTRL | Qt.Key.Key_Y),
         )
         self.all_actions["toolbar"] = view_menu.addAction(
@@ -497,9 +489,6 @@ class MainWindow(QMainWindow):
             "documentation",
             "history",
             "annotation_colors",
-            "pipeline_builder",
-            "edit_pipeline",
-            "apply_pipeline",
         ]
 
         # set up toolbar
@@ -517,6 +506,8 @@ class MainWindow(QMainWindow):
         self.toolbar.addAction(self.all_actions["find_events"])
         self.toolbar.addAction(self.all_actions["epoch_data"])
         self.toolbar.addAction(self.all_actions["run_ica"])
+        self.toolbar.addSeparator()
+        self.toolbar.addAction(self.all_actions["pipeline_editor"])
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.all_actions["settings"])
         self.toolbar.setMovable(False)
@@ -571,10 +562,10 @@ class MainWindow(QMainWindow):
         self.sidebar.datasetSelected.connect(self._update_data)
         self.sidebar.datasetRenamed.connect(self._sidebar_edit_event)
         self.sidebar.showHistoryRequested.connect(self.show_history_for_dataset)
-        self.sidebar.createPipelineRequested.connect(self.create_pipeline_from_dataset)
         self.sidebar.savePipelineRequested.connect(self.save_pipeline_for_dataset)
         self.sidebar.exportHistoryRequested.connect(self.export_history_for_dataset)
         self.sidebar.showDetailsRequested.connect(self.show_dataset_details)
+        self.sidebar.applyPipelineRequested.connect(self.apply_pipeline_for_dataset)
 
         self.splitter = QSplitter()
         self.splitter.setObjectName("main_splitter")
@@ -582,12 +573,6 @@ class MainWindow(QMainWindow):
 
         self.infowidget = QStackedWidget()
         info_widget = InfoWidget()
-        info_widget.datasetSelected.connect(self._update_data)
-        info_widget.showHistoryRequested.connect(self.show_history_for_dataset)
-        info_widget.createPipelineRequested.connect(self.create_pipeline_from_dataset)
-        info_widget.savePipelineRequested.connect(self.save_pipeline_for_dataset)
-        info_widget.exportHistoryRequested.connect(self.export_history_for_dataset)
-        info_widget.showDetailsRequested.connect(self.show_dataset_details)
         self.infowidget.addWidget(info_widget)
         emptywidget = EmptyWidget(
             itemgetter("open_file", "history", "settings")(self.all_actions)
@@ -704,15 +689,6 @@ class MainWindow(QMainWindow):
             )
             self.all_actions["plot_erds_topomaps"].setEnabled(
                 enabled and locations and self.model.current["dtype"] == "epochs"
-            )
-            self.all_actions["save_pipeline"].setEnabled(
-                enabled and self.model.has_replayable_pipeline()
-            )
-            self.all_actions["apply_pipeline"].setEnabled(
-                enabled and self.model.current.get("parent_index") is None
-            )
-            self.all_actions["edit_pipeline"].setEnabled(
-                enabled and self.model.current.get("parent_index") is None
             )
             self.all_actions["plot_evoked"].setEnabled(
                 enabled and self.model.current["dtype"] == "epochs"
@@ -1635,15 +1611,23 @@ class MainWindow(QMainWindow):
                 )
                 msgbox.show()
 
-    def show_history(self):
-        """Show history."""
-        self.show_history_for_dataset(self.model.index)
+    def show_log(self):
+        """Show MNE log."""
+        from mnelab.dialogs.history import LogDialog
 
-    def _open_pipeline_builder(self, pipeline):
-        """Open the pipeline builder and optionally apply the edited pipeline."""
+        LogDialog(self, self.model.log).exec()
+
+    def show_history(self):
+        """Show history (deprecated alias for show_log)."""
+        self.show_log()
+
+    def _open_pipeline_builder(self, pipeline, history=None, show_history=False):
+        """Open the pipeline builder; apply the result if the user clicks Apply."""
         from mnelab.dialogs.pipeline_builder import PipelineBuilderDialog
 
-        dialog = PipelineBuilderDialog(self, pipeline)
+        dialog = PipelineBuilderDialog(self, pipeline, history)
+        if show_history:
+            dialog.show_history_tab()
         if dialog.exec():
             self._confirm_and_apply_pipeline(dialog.get_pipeline())
 
@@ -1659,29 +1643,10 @@ class MainWindow(QMainWindow):
 
     @Slot(int)
     def show_history_for_dataset(self, dataset_index):
-        """Show history for a specific dataset in the lineage tree."""
-        scope = (
-            "dataset"
-            if self.model.data[dataset_index].get("parent_index") is None
-            else "branch"
-        )
-        HistoryDialog(
-            self,
-            self.model.get_history(dataset_index),
-            self.model.log,
-            self.model.get_pipeline(dataset_index),
-            scope,
-        ).exec()
-
-    @Slot(int)
-    def create_pipeline_from_dataset(self, dataset_index):
-        """Open the pipeline builder for a specific branch in the lineage tree."""
-        if not self.model.has_replayable_pipeline(dataset_index):
-            return
+        """Open the Pipeline dialog for a dataset with the History tab active."""
         pipeline = self.model.get_pipeline(dataset_index)
-        if pipeline is None:
-            return
-        self._open_pipeline_builder(pipeline)
+        history = self.model.get_history(dataset_index)
+        self._open_pipeline_builder(pipeline, history, show_history=True)
 
     def show_channel_stats(self):
         """Show channel stats."""
@@ -1799,11 +1764,6 @@ class MainWindow(QMainWindow):
                 'The "Menu icons" setting will take effect after restarting MNELAB.',
             )
 
-    def save_pipeline(self):
-        """Save pipeline to a .mnepipe file."""
-        self.save_pipeline_for_dataset(self.model.index)
-
-    @Slot(int)
     def save_pipeline_for_dataset(self, dataset_index):
         """Save the pipeline for a specific branch in the lineage tree."""
         if not self.model.has_replayable_pipeline(dataset_index):
@@ -1852,41 +1812,53 @@ class MainWindow(QMainWindow):
                 f.write(format_code("\n".join(self.model.get_history(dataset_index))))
                 f.write("\n")
 
-    def open_pipeline_builder(self):
-        """Open Pipeline Builder with the current dataset's pipeline or an empty one."""
-        pipeline = None
-        if self.model.data:
-            pipeline = self.model.get_pipeline(self.model.index)
-        self._open_pipeline_builder(pipeline)
+    def open_pipeline_editor(self):
+        """Open the Pipeline dialog pre-populated with the current dataset's pipeline."""
+        pipeline = self.model.get_pipeline(self.model.index) if self.model.data else None
+        history = self.model.get_history(self.model.index) if self.model.data else None
+        self._open_pipeline_builder(pipeline, history)
 
-    def edit_pipeline(self):
-        """Open a .mnepipe file in the Pipeline Builder for inspection and editing."""
-        from mnelab.dialogs.pipeline import load_pipeline
-
+    @Slot(int)
+    def apply_pipeline_for_dataset(self, dataset_index):
+        """Open a .mnepipe file and apply it to a specific dataset."""
         fname, _ = QFileDialog.getOpenFileName(
             self, "Open Pipeline", filter="MNELAB pipeline (*.mnepipe)"
         )
         if fname:
-            try:
-                pipeline = load_pipeline(fname)
-            except (ValueError, KeyError) as e:
-                QMessageBox.critical(self, "Invalid pipeline file", str(e))
-                return
-            self._open_pipeline_builder(pipeline)
+            self._apply_pipeline_from_path(fname, dataset_index)
 
-    def apply_pipeline_from_file(self):
-        """Apply a saved pipeline from a .mnepipe file to the current dataset."""
+    def _apply_pipeline_from_path(self, path, dataset_index=None):
+        """Load a .mnepipe file and apply it to a dataset.
+
+        Parameters
+        ----------
+        path :
+            Path to the .mnepipe file.
+        dataset_index :
+            Model index of the target dataset. If None, uses the current dataset.
+        """
         from mnelab.dialogs.pipeline import load_pipeline
 
-        fname, _ = QFileDialog.getOpenFileName(
-            self, "Open Pipeline", filter="MNELAB pipeline (*.mnepipe)"
-        )
-        if fname:
-            try:
-                pipeline = load_pipeline(fname)
-            except (ValueError, KeyError) as e:
-                QMessageBox.critical(self, "Invalid pipeline file", str(e))
-                return
+        if not self.model.data:
+            QMessageBox.information(
+                self,
+                "No dataset open",
+                "Open a dataset first before applying a pipeline.",
+            )
+            return
+        try:
+            pipeline = load_pipeline(path)
+        except (ValueError, KeyError) as e:
+            QMessageBox.critical(self, "Invalid pipeline file", str(e))
+            return
+        if dataset_index is not None and dataset_index != self.model.index:
+            old_index = self.model.index
+            self.model.index = dataset_index
+            self._confirm_and_apply_pipeline(pipeline)
+            if self.model.index == dataset_index:
+                self.model.index = old_index
+            self.data_changed()
+        else:
             self._confirm_and_apply_pipeline(pipeline)
 
     def _confirm_and_apply_pipeline(self, pipeline):
@@ -1894,43 +1866,16 @@ class MainWindow(QMainWindow):
         from mnelab.dialogs.pipeline import ApplyPipelineDialog
         from mnelab.widgets.pipeline_tree import _operation_label
 
-        dataset_options = [
-            {
-                "index": index,
-                "name": dataset["name"],
-                "dtype": dataset.get("dtype", ""),
-                "checked": index == self.model.index,
-            }
-            for index, dataset in enumerate(self.model.data)
-            if dataset.get("parent_index") is None
-        ]
         dialog = ApplyPipelineDialog(
             self,
             pipeline,
             self.model.current,
-            dataset_options=dataset_options,
         )
         if dialog.exec():
             steps = pipeline.get("steps", [])
-            selected_dataset_indices = [self.model.index]
-            selected_indices_getter = getattr(dialog, "selected_dataset_indices", None)
-            if callable(selected_indices_getter):
-                selected = selected_indices_getter()
-                if isinstance(selected, (list, tuple, set)):
-                    selected_dataset_indices = list(selected)
-            selected_dataset_refs = [
-                self.model.data[index]
-                for index in selected_dataset_indices
-                if 0 <= index < len(self.model.data)
-            ]
-            if not selected_dataset_refs:
-                return
-
             progress_dialog = None
             if steps:
-                progress_dialog = PipelineProgressDialog(
-                    self, len(steps) * len(selected_dataset_refs)
-                )
+                progress_dialog = PipelineProgressDialog(self, len(steps))
                 progress_dialog.show()
                 QApplication.processEvents()
 
@@ -1949,35 +1894,23 @@ class MainWindow(QMainWindow):
                 )
                 return reply == QMessageBox.StandardButton.Yes
 
-            def _index_for_dataset_ref(dataset_ref):
-                for index, dataset in enumerate(self.model.data):
-                    if dataset is dataset_ref:
-                        return index
-                return None
-
-            def _update_progress(offset, step_index, step):
+            def _update_progress(step_index, step):
                 if progress_dialog is None:
                     return
-                progress_dialog.update_progress(offset + step_index, step)
+                progress_dialog.update_progress(step_index, step)
                 QApplication.processEvents()
 
             try:
-                for dataset_number, dataset_ref in enumerate(selected_dataset_refs):
-                    dataset_index = _index_for_dataset_ref(dataset_ref)
-                    if dataset_index is None:
-                        continue
-                    self.model.index = dataset_index
-                    offset = dataset_number * len(steps)
-                    self.model.apply_pipeline(
-                        pipeline,
-                        progress_callback=partial(_update_progress, offset),
-                        is_cancelled=(
-                            progress_dialog.wasCanceled
-                            if progress_dialog is not None
-                            else None
-                        ),
-                        review_callback=_review_step,
-                    )
+                self.model.apply_pipeline(
+                    pipeline,
+                    progress_callback=_update_progress,
+                    is_cancelled=(
+                        progress_dialog.wasCanceled
+                        if progress_dialog is not None
+                        else None
+                    ),
+                    review_callback=_review_step,
+                )
             except PipelineCancelledError:
                 return
             except (ValueError, AttributeError) as e:
@@ -2101,9 +2034,21 @@ class MainWindow(QMainWindow):
             mime = event.mimeData()
             if mime.hasUrls():
                 urls = mime.urls()
+                pipeline_files = [
+                    u.toLocalFile()
+                    for u in urls
+                    if u.toLocalFile().endswith(".mnepipe")
+                ]
+                data_files = [
+                    u.toLocalFile()
+                    for u in urls
+                    if not u.toLocalFile().endswith(".mnepipe")
+                ]
+                for path in pipeline_files:
+                    self._apply_pipeline_from_path(path)
                 try:
-                    for url in urls:
-                        self.open_data(url.toLocalFile())
+                    for path in data_files:
+                        self.open_data(path)
                 except FileNotFoundError as e:
                     QMessageBox.critical(self, "File not found", str(e))
             event.acceptProposedAction()

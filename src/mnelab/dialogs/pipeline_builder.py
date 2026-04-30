@@ -4,8 +4,8 @@
 
 """Pipeline Builder dialog.
 
-Lets users view, edit, reorder and save a .mnepipe pipeline, and export it
-as a Python script.
+Lets users view, edit, reorder and save a .mnepipe pipeline, and
+optionally inspect the dataset's Python history.
 """
 
 from __future__ import annotations
@@ -15,7 +15,8 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-from PySide6.QtGui import QFont
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QFont, QFontMetrics, QGuiApplication
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QComboBox,
@@ -25,20 +26,21 @@ from PySide6.QtWidgets import (
     QFormLayout,
     QGroupBox,
     QHBoxLayout,
-    QLabel,
     QLineEdit,
     QListWidget,
     QListWidgetItem,
     QMessageBox,
     QPushButton,
+    QPlainTextEdit,
     QSizePolicy,
+    QTabWidget,
     QTextEdit,
     QVBoxLayout,
     QWidget,
 )
 
-from mnelab.dialogs.pipeline import load_pipeline
 from mnelab.model import PIPELINE_EXECUTION_MODES
+from mnelab.utils import PythonHighlighter, format_code
 from mnelab.widgets.pipeline_tree import _OP_LABELS, _operation_label
 
 # ---------------------------------------------------------------------------
@@ -124,29 +126,6 @@ class _StepEditorDialog(QDialog):
 
 
 # ---------------------------------------------------------------------------
-# Step row widget (displayed inside the QListWidget)
-# ---------------------------------------------------------------------------
-
-
-class _StepRowWidget(QWidget):
-    def __init__(self, step: dict, parent=None):
-        super().__init__(parent)
-        self.step = step
-        row = QHBoxLayout(self)
-        row.setContentsMargins(4, 2, 4, 2)
-
-        op = step.get("operation", "")
-        params = step.get("params")
-        label = _operation_label(op, params)
-        row.addWidget(QLabel(label), stretch=1)
-        execution_mode = step.get("execution_mode", "automatic")
-        if execution_mode != "automatic":
-            mode_label = QLabel(execution_mode.title())
-            mode_label.setStyleSheet("color: #6b7280;")
-            row.addWidget(mode_label)
-
-
-# ---------------------------------------------------------------------------
 # Main Pipeline Builder dialog
 # ---------------------------------------------------------------------------
 
@@ -164,9 +143,14 @@ class PipelineBuilderDialog(QDialog):
 
     _last_directory: str | None = None
 
-    def __init__(self, parent=None, pipeline_dict: dict | None = None):
+    def __init__(
+        self,
+        parent=None,
+        pipeline_dict: dict | None = None,
+        history: list[str] | None = None,
+    ):
         super().__init__(parent)
-        self.setWindowTitle("Pipeline Builder")
+        self.setWindowTitle("Pipeline")
         self.setMinimumSize(560, 440)
         self._pipeline = pipeline_dict or {
             "pipeline_format": 1,
@@ -178,14 +162,19 @@ class PipelineBuilderDialog(QDialog):
 
         layout = QVBoxLayout(self)
 
-        # step list
+        self._tabs = QTabWidget()
+
+        # --- Pipeline tab ---
+        pipeline_tab = QWidget()
+        pipeline_layout = QVBoxLayout(pipeline_tab)
+        pipeline_layout.setContentsMargins(0, 0, 0, 0)
+
         self._list = QListWidget()
         self._list.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
         self._list.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self._list.setSpacing(2)
-        layout.addWidget(self._list)
+        pipeline_layout.addWidget(self._list)
 
-        # step action buttons
         step_btn_row = QHBoxLayout()
         self._add_btn = QPushButton("Add step…")
         self._edit_btn = QPushButton("Edit…")
@@ -202,36 +191,74 @@ class PipelineBuilderDialog(QDialog):
             btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             step_btn_row.addWidget(btn)
         step_btn_row.addStretch()
-        layout.addLayout(step_btn_row)
+        pipeline_layout.addLayout(step_btn_row)
+
+        self._tabs.addTab(pipeline_tab, "Pipeline")
+
+        # --- History tab (optional) ---
+        if history is not None:
+            history_tab = QWidget()
+            history_layout = QVBoxLayout(history_tab)
+            history_layout.setContentsMargins(0, 0, 0, 0)
+
+            self._history_text = QPlainTextEdit()
+            font = QFont()
+            font.setFamily("Menlo" if sys.platform == "darwin" else
+                           "Consolas" if sys.platform == "win32" else "Monospace")
+            font.setStyleHint(QFont.StyleHint.Monospace)
+            self._history_text.setFont(font)
+            fm = QFontMetrics(font)
+            min_w = fm.horizontalAdvance("x") * 90 + 60  # 60 for margins + scrollbar
+            if min_w > self.minimumWidth():
+                self.setMinimumWidth(min_w)
+            self._history_text.setReadOnly(True)
+            self._history_text.setPlainText(format_code("\n".join(history)))
+            PythonHighlighter(self._history_text.document())
+
+            copy_btn = QPushButton("Copy to clipboard")
+            copy_btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+            copy_btn.clicked.connect(self._copy_history)
+
+            history_layout.addWidget(self._history_text)
+            history_layout.addWidget(copy_btn)
+            self._tabs.addTab(history_tab, "History")
+        else:
+            self._history_text = None
+
+        layout.addWidget(self._tabs)
 
         self._add_btn.clicked.connect(self._add_step)
         self._edit_btn.clicked.connect(self._edit_step)
         self._del_btn.clicked.connect(self._remove_step)
         self._up_btn.clicked.connect(self._move_up)
         self._down_btn.clicked.connect(self._move_down)
+        self._list.currentRowChanged.connect(self._update_step_buttons)
+        self._list.model().rowsInserted.connect(self._update_step_buttons)
+        self._list.model().rowsRemoved.connect(self._update_step_buttons)
 
         # bottom buttons
         bb = QDialogButtonBox()
+        self._open_btn = bb.addButton(
+            "Open…", QDialogButtonBox.ButtonRole.ActionRole
+        )
         self._save_btn = bb.addButton(
-            "Save pipeline…", QDialogButtonBox.ButtonRole.ActionRole
+            "Save…", QDialogButtonBox.ButtonRole.ActionRole
         )
-        self._load_btn = bb.addButton(
-            "Load pipeline…", QDialogButtonBox.ButtonRole.ActionRole
+        self._apply_btn = bb.addButton(
+            "Apply…", QDialogButtonBox.ButtonRole.ActionRole
         )
-        self._export_btn = bb.addButton(
-            "Export Python script…", QDialogButtonBox.ButtonRole.ActionRole
-        )
-        self._apply_btn = bb.addButton("Apply", QDialogButtonBox.ButtonRole.AcceptRole)
         close_btn = bb.addButton(QDialogButtonBox.StandardButton.Close)
 
-        self._save_btn.clicked.connect(self._save_pipeline)
-        self._load_btn.clicked.connect(self._load_pipeline)
-        self._export_btn.clicked.connect(self._export_python)
+        self._open_btn.clicked.connect(self._load_pipeline)
         self._apply_btn.clicked.connect(self.accept)
+        self._save_btn.clicked.connect(self._save_pipeline)
         close_btn.clicked.connect(self.reject)
         layout.addWidget(bb)
 
         self._rebuild_list()
+        if self._list.count() > 0:
+            self._list.setCurrentRow(0)
+        self._update_step_buttons()
 
     # ------------------------------------------------------------------
     # list helpers
@@ -240,22 +267,38 @@ class PipelineBuilderDialog(QDialog):
     def _rebuild_list(self):
         self._list.clear()
         for step in self._pipeline.get("steps", []):
-            item = QListWidgetItem(self._list)
-            widget = _StepRowWidget(step)
-            item.setSizeHint(widget.sizeHint())
+            op = step.get("operation", "")
+            params = step.get("params")
+            label = _operation_label(op, params)
+            execution_mode = step.get("execution_mode", "automatic")
+            if execution_mode != "automatic":
+                label = f"{label}  [{execution_mode.title()}]"
+            item = QListWidgetItem(label)
+            item.setData(Qt.ItemDataRole.UserRole, step)
             self._list.addItem(item)
-            self._list.setItemWidget(item, widget)
 
     def _current_row(self) -> int:
         return self._list.currentRow()
 
     def _sync_order(self):
         """Sync steps list order to the current list widget order."""
-        steps = []
-        for i in range(self._list.count()):
-            widget = self._list.itemWidget(self._list.item(i))
-            steps.append(widget.step)
+        steps = [
+            self._list.item(i).data(Qt.ItemDataRole.UserRole)
+            for i in range(self._list.count())
+        ]
         self._pipeline["steps"] = steps
+
+    def _update_step_buttons(self, *_):
+        """Enable/disable step action buttons based on current selection."""
+        row = self._current_row()
+        count = self._list.count()
+        has_selection = row >= 0
+        self._edit_btn.setEnabled(has_selection)
+        self._del_btn.setEnabled(has_selection)
+        self._up_btn.setEnabled(has_selection and row > 0)
+        self._down_btn.setEnabled(has_selection and row < count - 1)
+        self._save_btn.setEnabled(count > 0)
+        self._apply_btn.setEnabled(count > 0)
 
     # ------------------------------------------------------------------
     # step CRUD
@@ -268,13 +311,14 @@ class PipelineBuilderDialog(QDialog):
             self._pipeline.setdefault("steps", []).append(step)
             self._rebuild_list()
             self._list.setCurrentRow(self._list.count() - 1)
+            self._update_step_buttons()
 
     def _edit_step(self):
         row = self._current_row()
         if row < 0:
             return
-        widget = self._list.itemWidget(self._list.item(row))
-        dlg = _StepEditorDialog(widget.step, self)
+        step = self._list.item(row).data(Qt.ItemDataRole.UserRole)
+        dlg = _StepEditorDialog(step, self)
         if dlg.exec():
             new_step = dlg.get_step()
             self._pipeline["steps"][row] = new_step
@@ -289,6 +333,7 @@ class PipelineBuilderDialog(QDialog):
         del self._pipeline["steps"][row]
         self._rebuild_list()
         self._list.setCurrentRow(min(row, self._list.count() - 1))
+        self._update_step_buttons()
 
     def _move_up(self):
         row = self._current_row()
@@ -299,6 +344,7 @@ class PipelineBuilderDialog(QDialog):
         steps.insert(row - 1, steps.pop(row))
         self._rebuild_list()
         self._list.setCurrentRow(row - 1)
+        self._update_step_buttons()
 
     def _move_down(self):
         row = self._current_row()
@@ -309,10 +355,32 @@ class PipelineBuilderDialog(QDialog):
         steps.insert(row + 1, steps.pop(row))
         self._rebuild_list()
         self._list.setCurrentRow(row + 1)
+        self._update_step_buttons()
 
     # ------------------------------------------------------------------
     # file I/O
     # ------------------------------------------------------------------
+
+    def _load_pipeline(self):
+        from mnelab.dialogs.pipeline import load_pipeline
+
+        start = PipelineBuilderDialog._last_directory or str(Path.home())
+        fname, _ = QFileDialog.getOpenFileName(
+            self,
+            "Open pipeline",
+            start,
+            "Pipeline files (*.mnepipe);;All files (*)",
+        )
+        if fname:
+            try:
+                pipeline = load_pipeline(fname)
+            except (ValueError, KeyError) as e:
+                QMessageBox.critical(self, "Invalid pipeline file", str(e))
+                return
+            self._pipeline = pipeline
+            self._rebuild_list()
+            self._update_step_buttons()
+            PipelineBuilderDialog._last_directory = str(Path(fname).parent)
 
     def _save_pipeline(self):
         start = PipelineBuilderDialog._last_directory or str(Path.home())
@@ -331,81 +399,10 @@ class PipelineBuilderDialog(QDialog):
             )
             PipelineBuilderDialog._last_directory = str(Path(fname).parent)
 
-    def _load_pipeline(self):
-        start = PipelineBuilderDialog._last_directory or str(Path.home())
-        fname, _ = QFileDialog.getOpenFileName(
-            self,
-            "Load pipeline",
-            start,
-            "Pipeline files (*.mnepipe);;All files (*)",
-        )
-        if fname:
-            try:
-                self._pipeline = load_pipeline(fname)
-            except Exception as exc:
-                QMessageBox.critical(self, "Could not load pipeline", str(exc))
-                return
-            self._rebuild_list()
-            PipelineBuilderDialog._last_directory = str(Path(fname).parent)
-
-    def _export_python(self):
-        start = PipelineBuilderDialog._last_directory or str(Path.home())
-        fname, _ = QFileDialog.getSaveFileName(
-            self,
-            "Export Python script",
-            start,
-            "Python files (*.py);;All files (*)",
-        )
-        if fname:
-            if not fname.endswith(".py"):
-                fname += ".py"
-            self._sync_order()
-            Path(fname).write_text(self._to_python_script(), encoding="utf-8")
-            PipelineBuilderDialog._last_directory = str(Path(fname).parent)
-
-    def _to_python_script(self) -> str:
-        lines = [
-            "import mne",
-            "",
-            "# Load your data here",
-            "# raw = mne.io.read_raw_fif('your_file.fif', preload=True)",
-            "",
-        ]
-        for step in self._pipeline.get("steps", []):
-            op = step.get("operation", "")
-            params = step.get("params") or {}
-            execution_mode = step.get("execution_mode", "automatic")
-            label = _operation_label(op, params)
-            if execution_mode == "skip":
-                lines.append(f"# Skipped: {label}")
-                continue
-            if execution_mode in {"prompt", "review"}:
-                lines.append(f"# {execution_mode.title()} checkpoint: {label}")
-            if op == "filter":
-                lower = params.get("lower")
-                upper = params.get("upper")
-                notch = params.get("notch")
-                if notch:
-                    lines.append(f"raw.notch_filter({notch!r})")
-                else:
-                    lines.append(f"raw.filter({lower!r}, {upper!r})")
-            elif op == "crop":
-                lines.append(
-                    f"raw.crop({params.get('start')!r}, {params.get('stop')!r})"
-                )
-            elif op == "pick_channels":
-                lines.append(f"raw.pick({params.get('picks')!r})")
-            elif op == "set_montage":
-                montage = params.get("montage")
-                if isinstance(montage, dict):
-                    montage = montage.get("name")
-                if montage:
-                    lines.append(f"raw.set_montage({montage!r})")
-            elif op == "change_reference":
-                lines.append(f"raw.set_eeg_reference({params.get('ref')!r})")
-            else:
-                lines.append(f"# {op}({params!r})")
-        return "\n".join(lines) + "\n"
+    def _copy_history(self):
+        """Copy the history text to the clipboard."""
+        if self._history_text is not None:
+            QGuiApplication.clipboard().setText(self._history_text.toPlainText())
 
     # ------------------------------------------------------------------
     # public API
@@ -415,3 +412,11 @@ class PipelineBuilderDialog(QDialog):
         """Return the current (possibly modified) pipeline dict."""
         self._sync_order()
         return self._pipeline
+
+    def show_history_tab(self):
+        """Switch to the History tab (if present)."""
+        history_index = self._tabs.indexOf(
+            self._history_text.parent() if self._history_text is not None else None
+        )
+        if history_index >= 0:
+            self._tabs.setCurrentIndex(history_index)

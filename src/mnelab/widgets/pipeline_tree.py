@@ -128,8 +128,8 @@ class PipelineTreeWidget(QTreeWidget):
     datasetSelected = Signal(int)  # emits the model.data index of the selected item
     datasetRenamed = Signal(int, str)  # emits (index, new_name) when renamed
     showHistoryRequested = Signal(int)
-    createPipelineRequested = Signal(int)
     savePipelineRequested = Signal(int)
+    applyPipelineRequested = Signal(int)
     exportHistoryRequested = Signal(int)
     showDetailsRequested = Signal(int)
 
@@ -168,6 +168,10 @@ class PipelineTreeWidget(QTreeWidget):
         self.itemChanged.connect(self._on_item_changed)
 
         self.setAccessibleName("Pipeline tree")
+
+        self._drag_pre_item = None  # selection before a drag started
+        self._drag_drop_item = None  # item currently under drag cursor
+        self.setAcceptDrops(True)
 
     def _apply_base_stylesheet(self):
         app = QApplication.instance()
@@ -387,6 +391,71 @@ class PipelineTreeWidget(QTreeWidget):
             return False
         return model.has_replayable_pipeline(dataset_index)
 
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls() and any(
+            u.toLocalFile().endswith(".mnepipe") for u in event.mimeData().urls()
+        ):
+            self._drag_pre_item = self.currentItem()
+            event.acceptProposedAction()
+        else:
+            event.ignore()  # let non-pipeline files propagate to MainWindow
+
+    def dragMoveEvent(self, event):
+        if not (
+            event.mimeData().hasUrls()
+            and any(
+                u.toLocalFile().endswith(".mnepipe") for u in event.mimeData().urls()
+            )
+        ):
+            event.ignore()
+            return
+        item = self.itemAt(event.pos())
+        if item is not None and item is not self._drag_drop_item:
+            self._drag_drop_item = item
+            self.blockSignals(True)
+            self.setCurrentItem(item)
+            self.blockSignals(False)
+        elif item is None:
+            self._drag_drop_item = None
+            self.blockSignals(True)
+            self.clearSelection()
+            self.blockSignals(False)
+        event.acceptProposedAction() if item is not None else event.ignore()
+
+    def dragLeaveEvent(self, event):
+        self._drag_drop_item = None
+        self.blockSignals(True)
+        if self._drag_pre_item is not None:
+            self.setCurrentItem(self._drag_pre_item)
+        else:
+            self.clearSelection()
+        self.blockSignals(False)
+        self._drag_pre_item = None
+        super().dragLeaveEvent(event)
+
+    def dropEvent(self, event):
+        pipeline_paths = [
+            u.toLocalFile()
+            for u in event.mimeData().urls()
+            if u.toLocalFile().endswith(".mnepipe")
+        ]
+        if not pipeline_paths:
+            event.ignore()
+            return
+        item = self.itemAt(event.pos())
+        idx = self._dataset_index_for_item(item)
+        # restore selection before applying (avoid side-effects)
+        self._drag_drop_item = None
+        self.blockSignals(True)
+        if self._drag_pre_item is not None:
+            self.setCurrentItem(self._drag_pre_item)
+        self.blockSignals(False)
+        self._drag_pre_item = None
+        if idx >= 0:
+            for path in pipeline_paths:
+                self._parent._apply_pipeline_from_path(path, idx)
+        event.acceptProposedAction()
+
     def _is_root_dataset(self, dataset_index):
         """Return whether the given dataset index points to a root dataset."""
         model = getattr(self._parent, "model", None)
@@ -409,6 +478,8 @@ class PipelineTreeWidget(QTreeWidget):
         menu.addSeparator()
         show_history_action = menu.addAction(show_history_label)
         export_history_action = menu.addAction(export_history_label)
+        menu.addSeparator()
+        apply_pipeline_action = menu.addAction("Apply pipeline...")
 
         has_steps = self._branch_has_replayable_steps(dataset_index)
 
@@ -416,14 +487,12 @@ class PipelineTreeWidget(QTreeWidget):
             "show_details": show_details_action,
             "show_history": show_history_action,
             "export_history": export_history_action,
+            "apply_pipeline": apply_pipeline_action,
         }
 
-        if has_steps:
+        if has_steps and not is_root:
             menu.addSeparator()
-            actions["create_pipeline"] = menu.addAction(
-                "Create pipeline from branch..."
-            )
-            actions["save_pipeline"] = menu.addAction("Save pipeline for branch...")
+            actions["save_pipeline"] = menu.addAction("Save pipeline...")
 
         return menu, actions
 
@@ -446,11 +515,11 @@ class PipelineTreeWidget(QTreeWidget):
             self.showHistoryRequested.emit(idx)
             event.accept()
             return
-        if selected_action == actions.get("create_pipeline"):
-            self.createPipelineRequested.emit(idx)
+        if selected_action == actions["apply_pipeline"]:
+            self.applyPipelineRequested.emit(idx)
             event.accept()
             return
-        if selected_action == actions.get("save_pipeline"):
+        if "save_pipeline" in actions and selected_action == actions["save_pipeline"]:
             self.savePipelineRequested.emit(idx)
             event.accept()
             return

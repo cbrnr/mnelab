@@ -710,10 +710,6 @@ def test_get_info_marks_unreplayable_branches(edf_files):
     model.index = 0
     model.append_data([1])
 
-    info = model.get_info()
-
-    assert info["_history_scope"] == "branch"
-    assert not info["_has_replayable_steps"]
     assert not model.has_replayable_pipeline()
     with pytest.raises(ValueError, match="append_data"):
         model.save_pipeline(path="unreplayable.mnepipe")

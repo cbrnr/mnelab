@@ -4,7 +4,7 @@
 
 from pathlib import Path
 
-from PySide6.QtCore import QEvent, Qt, QTimer, Signal
+from PySide6.QtCore import QEvent, Qt, QTimer
 from PySide6.QtGui import QGuiApplication, QIcon, QKeySequence
 from PySide6.QtWidgets import (
     QGridLayout,
@@ -64,13 +64,6 @@ class InfoWidget(QWidget):
     values : dict
         Each key/value pair in this dict is displayed in a row separated by a colon.
     """
-
-    datasetSelected = Signal(int)
-    showHistoryRequested = Signal(int)
-    createPipelineRequested = Signal(int)
-    savePipelineRequested = Signal(int)
-    exportHistoryRequested = Signal(int)
-    showDetailsRequested = Signal(int)
 
     def __init__(self, values=None):
         from mnelab import IS_DEV_VERSION
@@ -160,66 +153,6 @@ class InfoWidget(QWidget):
                     self.grid.addWidget(btn, row, 2)
 
                 row += 1
-
-            self._add_action_row(row, values)
-
-    def _add_action_row(self, row, values):
-        """Add context-aware history/pipeline actions below the info grid."""
-        dataset_index = values.get("_dataset_index")
-        if dataset_index is None:
-            return
-
-        scope = values.get("_history_scope", "branch")
-        has_replayable_steps = bool(values.get("_has_replayable_steps"))
-
-        action_specs = [("Dataset details...", self.showDetailsRequested)]
-
-        if scope == "dataset":
-            action_specs.extend(
-                [
-                    ("Dataset history...", self.showHistoryRequested),
-                    ("Export dataset history...", self.exportHistoryRequested),
-                ]
-            )
-        else:
-            action_specs.extend(
-                [
-                    ("Branch history...", self.showHistoryRequested),
-                    ("Export branch history...", self.exportHistoryRequested),
-                ]
-            )
-            if has_replayable_steps:
-                action_specs.extend(
-                    [
-                        (
-                            "Create pipeline from branch...",
-                            self.createPipelineRequested,
-                        ),
-                        ("Save pipeline for branch...", self.savePipelineRequested),
-                    ]
-                )
-
-        if not action_specs:
-            return
-
-        action_label = QLabel("Actions:")
-        action_widget = QWidget()
-        action_layout = QVBoxLayout(action_widget)
-        action_layout.setContentsMargins(0, 0, 0, 0)
-        action_layout.setSpacing(4)
-
-        for text, signal in action_specs:
-            button = QToolButton()
-            button.setText(text)
-            button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
-            button.setAutoRaise(True)
-            button.clicked.connect(
-                lambda checked=False, idx=dataset_index, sig=signal: sig.emit(idx)
-            )
-            action_layout.addWidget(button, 0, Qt.AlignmentFlag.AlignLeft)
-
-        self.grid.addWidget(action_label, row, 0)
-        self.grid.addWidget(action_widget, row, 1, 1, 2)
 
     def _on_copy(self, path):
         QGuiApplication.clipboard().setText(path)

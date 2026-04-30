@@ -608,9 +608,6 @@ class Model:
         else:
             annots = "-"
 
-        parent_index = self.current.get("parent_index")
-        history_scope = "dataset" if parent_index is None else "branch"
-
         return {
             "File name": fname if fname else "-",
             "File type": ftype if ftype else "-",
@@ -626,9 +623,6 @@ class Model:
             "Reference": reference if reference else "-",
             "Montage": montage_text,
             "ICA": ica,
-            "_dataset_index": self.index,
-            "_history_scope": history_scope,
-            "_has_replayable_steps": self.has_replayable_pipeline(),
         }
 
     def get_dataset_details(self, idx=None):

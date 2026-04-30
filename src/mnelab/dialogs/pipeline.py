@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
+
 from mnelab.model import PIPELINE_EXECUTION_MODES, UNREPLAYABLE_PIPELINE_OPS
 from mnelab.widgets.pipeline_tree import _operation_label
 
@@ -73,11 +74,10 @@ def validate_pipeline(pipeline_dict):
 class ApplyPipelineDialog(QDialog):
     """Show pipeline summary and compatibility hints before applying."""
 
-    def __init__(self, parent, pipeline_dict, current_dataset, dataset_options=None):
+    def __init__(self, parent, pipeline_dict, current_dataset):
         super().__init__(parent=parent)
         self.setWindowTitle("Apply Pipeline")
         self.resize(480, 400)
-        self._dataset_list = None
 
         layout = QVBoxLayout()
 
@@ -141,23 +141,6 @@ class ApplyPipelineDialog(QDialog):
                 warn_label.setStyleSheet("color: #b45309;")  # amber
                 layout.addWidget(warn_label)
 
-        if dataset_options:
-            layout.addWidget(QLabel("<b>Datasets</b>"))
-            self._dataset_list = QListWidget()
-            self._dataset_list.setFrameStyle(QFrame.Shape.StyledPanel)
-            for option in dataset_options:
-                name = option.get("name") or "Unnamed dataset"
-                dtype = option.get("dtype") or "data"
-                item = QListWidgetItem(f"{name} ({dtype})")
-                item.setData(Qt.ItemDataRole.UserRole, option["index"])
-                item.setCheckState(
-                    Qt.CheckState.Checked
-                    if option.get("checked")
-                    else Qt.CheckState.Unchecked
-                )
-                self._dataset_list.addItem(item)
-            layout.addWidget(self._dataset_list)
-
         # step list
         layout.addWidget(QLabel(f"<b>Steps ({len(steps)})</b>"))
         step_list = QListWidget()
@@ -184,16 +167,6 @@ class ApplyPipelineDialog(QDialog):
         layout.addWidget(buttonbox)
 
         self.setLayout(layout)
-
-    def selected_dataset_indices(self):
-        """Return checked root dataset indices selected for pipeline apply."""
-        if self._dataset_list is None:
-            return []
-        return [
-            self._dataset_list.item(row).data(Qt.ItemDataRole.UserRole)
-            for row in range(self._dataset_list.count())
-            if self._dataset_list.item(row).checkState() == Qt.CheckState.Checked
-        ]
 
 
 def load_pipeline(path):

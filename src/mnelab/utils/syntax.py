@@ -86,18 +86,14 @@ def _remove_unused_imports(code):
     try:
         tree = ast.parse(code)
 
-        # track import nodes for reconstruction
-        import_nodes = {}  # {line_number: node}
-
-        # collect all import statements from top-level
+        # collect all top-level import nodes with their full line span
+        import_nodes = {}  # {start_lineno: (node, end_lineno)}
         for node in tree.body:
             if isinstance(node, (ast.Import, ast.ImportFrom)):
-                import_nodes[node.lineno] = node
+                import_nodes[node.lineno] = (node, node.end_lineno)
 
-        # track which imported names are used
+        # track which imported names are used outside import statements
         used_names = set()
-
-        # check all name references in the code
         for node in ast.walk(tree):
             if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load):
                 used_names.add(node.id)
@@ -106,21 +102,18 @@ def _remove_unused_imports(code):
                 if isinstance(node.value, ast.Name):
                     used_names.add(node.value.id)
 
-        # reconstruct or remove import lines
+        # determine which lines to keep/replace/remove
         lines = code.splitlines(keepends=True)
-        result_lines = []
-        lines_to_modify = {}  # {line_number: new_import_statement}
+        lines_to_modify = {}  # {line_number: new_str or None}
 
-        for lineno, node in import_nodes.items():
+        for lineno, (node, end_lineno) in import_nodes.items():
             if isinstance(node, ast.Import):
-                # handle "import module" statements
                 used_aliases = [
                     alias
                     for alias in node.names
                     if (alias.asname if alias.asname else alias.name) in used_names
                 ]
                 if used_aliases:
-                    # reconstruct import statement with only used imports
                     imports_str = ", ".join(
                         f"{alias.name} as {alias.asname}"
                         if alias.asname
@@ -129,18 +122,18 @@ def _remove_unused_imports(code):
                     )
                     lines_to_modify[lineno] = f"import {imports_str}\n"
                 else:
-                    # remove entire line
                     lines_to_modify[lineno] = None
+                # remove continuation lines (multi-line import x, \\ y)
+                for lno in range(lineno + 1, end_lineno + 1):
+                    lines_to_modify[lno] = None
 
             elif isinstance(node, ast.ImportFrom):
-                # handle "from module import ..." statements
                 used_aliases = [
                     alias
                     for alias in node.names
                     if (alias.asname if alias.asname else alias.name) in used_names
                 ]
                 if used_aliases:
-                    # reconstruct import statement with only used imports
                     imports_str = ", ".join(
                         f"{alias.name} as {alias.asname}"
                         if alias.asname
@@ -149,16 +142,18 @@ def _remove_unused_imports(code):
                     )
                     module = node.module if node.module else ""
                     level = "." * node.level
-                    from_str = f"from {level}{module} import {imports_str}\n"
-                    lines_to_modify[lineno] = from_str
+                    lines_to_modify[lineno] = f"from {level}{module} import {imports_str}\n"
                 else:
-                    # remove entire line
                     lines_to_modify[lineno] = None
+                # remove continuation lines for multi-line `from x import (a, b)`
+                for lno in range(lineno + 1, end_lineno + 1):
+                    lines_to_modify[lno] = None
 
         if not lines_to_modify:
             return code
 
         # rebuild code with modified/removed import lines
+        result_lines = []
         for i, line in enumerate(lines, start=1):
             if i in lines_to_modify:
                 if lines_to_modify[i] is not None:
