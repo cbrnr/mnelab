@@ -268,6 +268,7 @@ def test_pipeline_step_parent_index_consistency(edf_files):
     # add a step to Dataset 1 (navigate back, then operate)
     model.index = 0
     import warnings
+
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", RuntimeWarning)
         model.find_events(stim_channel=model.current["data"].info["ch_names"][0])
