@@ -17,7 +17,6 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-
 from mnelab.model import PIPELINE_EXECUTION_MODES, UNREPLAYABLE_PIPELINE_OPS
 from mnelab.widgets.pipeline_tree import _operation_label
 

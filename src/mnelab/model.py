@@ -1026,7 +1026,7 @@ class Model:
         return [
             step
             for step in self.get_pipeline_steps(idx)[1:]
-            if step["operation"] in self._UNREPLAYABLE_OPS
+            if step["operation"] in UNREPLAYABLE_PIPELINE_OPS
         ]
 
     def has_replayable_pipeline(self, idx=None):
@@ -1518,9 +1518,6 @@ class Model:
         }
         return pipeline
 
-    # operations that cannot be applied generically to a new dataset
-    _UNREPLAYABLE_OPS = UNREPLAYABLE_PIPELINE_OPS
-
     def apply_pipeline(
         self,
         pipeline_dict,
@@ -1563,7 +1560,7 @@ class Model:
                 "execution_mode": execution_mode,
                 "status": "running",
             }
-            if operation in self._UNREPLAYABLE_OPS:
+            if operation in UNREPLAYABLE_PIPELINE_OPS:
                 report_entry["status"] = "failed"
                 report_entry["message"] = "Operation cannot be replayed automatically."
                 self.pipeline_run_report.append(report_entry)

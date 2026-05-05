@@ -142,7 +142,9 @@ def _remove_unused_imports(code):
                     )
                     module = node.module if node.module else ""
                     level = "." * node.level
-                    lines_to_modify[lineno] = f"from {level}{module} import {imports_str}\n"
+                    lines_to_modify[lineno] = (
+                        f"from {level}{module} import {imports_str}\n"
+                    )
                 else:
                     lines_to_modify[lineno] = None
                 # remove continuation lines for multi-line `from x import (a, b)`

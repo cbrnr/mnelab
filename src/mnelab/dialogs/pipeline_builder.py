@@ -30,8 +30,8 @@ from PySide6.QtWidgets import (
     QListWidget,
     QListWidgetItem,
     QMessageBox,
-    QPushButton,
     QPlainTextEdit,
+    QPushButton,
     QSizePolicy,
     QTabWidget,
     QTextEdit,
@@ -203,8 +203,13 @@ class PipelineBuilderDialog(QDialog):
 
             self._history_text = QPlainTextEdit()
             font = QFont()
-            font.setFamily("Menlo" if sys.platform == "darwin" else
-                           "Consolas" if sys.platform == "win32" else "Monospace")
+            font.setFamily(
+                "Menlo"
+                if sys.platform == "darwin"
+                else "Consolas"
+                if sys.platform == "win32"
+                else "Monospace"
+            )
             font.setStyleHint(QFont.StyleHint.Monospace)
             self._history_text.setFont(font)
             fm = QFontMetrics(font)
@@ -238,15 +243,9 @@ class PipelineBuilderDialog(QDialog):
 
         # bottom buttons
         bb = QDialogButtonBox()
-        self._open_btn = bb.addButton(
-            "Open…", QDialogButtonBox.ButtonRole.ActionRole
-        )
-        self._save_btn = bb.addButton(
-            "Save…", QDialogButtonBox.ButtonRole.ActionRole
-        )
-        self._apply_btn = bb.addButton(
-            "Apply…", QDialogButtonBox.ButtonRole.ActionRole
-        )
+        self._open_btn = bb.addButton("Open…", QDialogButtonBox.ButtonRole.ActionRole)
+        self._save_btn = bb.addButton("Save…", QDialogButtonBox.ButtonRole.ActionRole)
+        self._apply_btn = bb.addButton("Apply…", QDialogButtonBox.ButtonRole.ActionRole)
         close_btn = bb.addButton(QDialogButtonBox.StandardButton.Close)
 
         self._open_btn.clicked.connect(self._load_pipeline)

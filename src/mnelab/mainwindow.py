@@ -748,7 +748,7 @@ class MainWindow(QMainWindow):
                     else:
                         self.all_actions[action].setEnabled(False)
         # add to recent files
-        if len(self.model) > 0:
+        if len(self.model) > 0 and self.model.current["fname"] is not None:
             self._add_recent(self.model.current["fname"])
 
     def open_data(self, fname=None):
@@ -1617,10 +1617,6 @@ class MainWindow(QMainWindow):
 
         LogDialog(self, self.model.log).exec()
 
-    def show_history(self):
-        """Show history (deprecated alias for show_log)."""
-        self.show_log()
-
     def _open_pipeline_builder(self, pipeline, history=None, show_history=False):
         """Open the pipeline builder; apply the result if the user clicks Apply."""
         from mnelab.dialogs.pipeline_builder import PipelineBuilderDialog
@@ -1813,8 +1809,10 @@ class MainWindow(QMainWindow):
                 f.write("\n")
 
     def open_pipeline_editor(self):
-        """Open the Pipeline dialog pre-populated with the current dataset's pipeline."""
-        pipeline = self.model.get_pipeline(self.model.index) if self.model.data else None
+        """Open the Pipeline dialog for the current dataset pipeline."""
+        pipeline = (
+            self.model.get_pipeline(self.model.index) if self.model.data else None
+        )
         history = self.model.get_history(self.model.index) if self.model.data else None
         self._open_pipeline_builder(pipeline, history)
 

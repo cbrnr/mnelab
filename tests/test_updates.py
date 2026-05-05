@@ -428,3 +428,113 @@ def test_sidebar_context_menu_hides_pipeline_actions_for_root(view, tmp_path):
     ]
     assert any(action.isSeparator() for action in branch_menu.actions())
     assert branch_actions["save_pipeline"].isEnabled()
+
+
+def test_sidebar_shows_nested_pipeline_branches(view, tmp_path):
+    """Branching from a non-leaf dataset is shown as nested tree structure."""
+    _load_sample_edf(view, tmp_path)
+
+    view.model.set_events(np.array([[10, 0, 1]]))
+    branch_point = view.model.index
+    view.model.set_annotations([1.0], [0.5], ["first"])
+    view.model.index = branch_point
+    view.model.set_annotations([2.0], [0.25], ["second"])
+
+    root_item = view.sidebar.topLevelItem(0)
+    branch_item = root_item.child(0)
+    expected_children = {
+        idx
+        for idx, dataset in enumerate(view.model.data)
+        if dataset.get("parent_index") == branch_point
+    }
+    shown_children = {
+        branch_item.child(i).data(0, Qt.ItemDataRole.UserRole)
+        for i in range(branch_item.childCount())
+    }
+
+    assert root_item.childCount() == 1
+    assert branch_item.data(0, Qt.ItemDataRole.UserRole) == branch_point
+    assert branch_item.childCount() == 2
+    assert shown_children == expected_children
+
+
+def test_sidebar_dtype_badges_only_mark_type_changes(view):
+    """Dtype badges are shown for the first row and dtype transitions only."""
+    tree = [
+        {
+            "index": 0,
+            "name": "raw-a",
+            "dtype": "raw",
+            "operation": None,
+            "operation_params": None,
+            "children": [
+                {
+                    "index": 1,
+                    "name": "raw-a filtered",
+                    "dtype": "raw",
+                    "operation": "filter",
+                    "operation_params": {"lower": 1.0},
+                    "children": [
+                        {
+                            "index": 2,
+                            "name": "raw-a epochs",
+                            "dtype": "epochs",
+                            "operation": "epoch_data",
+                            "operation_params": {"tmin": -0.2, "tmax": 0.5},
+                            "children": [
+                                {
+                                    "index": 3,
+                                    "name": "raw-a clean epochs",
+                                    "dtype": "epochs",
+                                    "operation": "drop_bad_epochs",
+                                    "operation_params": {},
+                                    "children": [],
+                                }
+                            ],
+                        }
+                    ],
+                }
+            ],
+        },
+        {
+            "index": 4,
+            "name": "raw-b",
+            "dtype": "raw",
+            "operation": None,
+            "operation_params": None,
+            "children": [],
+        },
+        {
+            "index": 5,
+            "name": "raw-c",
+            "dtype": "raw",
+            "operation": None,
+            "operation_params": None,
+            "children": [],
+        },
+    ]
+
+    view.sidebar.populate(tree, active_index=-1)
+
+    root = view.sidebar.topLevelItem(0)
+    filtered = root.child(0)
+    epoched = filtered.child(0)
+    clean_epochs = epoched.child(0)
+    second_root = view.sidebar.topLevelItem(1)
+    third_root = view.sidebar.topLevelItem(2)
+
+    assert root.text(1) == "raw"
+    assert filtered.text(1) == ""
+    assert epoched.text(1) == "epochs"
+    assert clean_epochs.text(1) == ""
+    assert second_root.text(1) == "raw"
+    assert third_root.text(1) == ""
+
+
+def test_derived_datasets_are_not_added_to_recent_files(view, tmp_path):
+    """Recent files only tracks file-backed root datasets."""
+    path = _load_sample_edf(view, tmp_path)
+
+    view.model.set_events(np.array([[10, 0, 1]]))
+
+    assert view.recent == [str(path.resolve().as_posix())]

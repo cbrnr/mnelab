@@ -121,8 +121,8 @@ class PipelineTreeWidget(QTreeWidget):
     """Sidebar tree widget that shows datasets organised by pipeline lineage.
 
     Each root dataset (no parent in the model) appears as a bold top-level item.
-    All descendant operation steps are shown as flat children of the root - one
-    indentation level only - regardless of how deep the model's pipeline chain is.
+    Descendant operation steps are shown as nested children so branches can split off
+    at any point in a dataset tree.
     """
 
     datasetSelected = Signal(int)  # emits the model.data index of the selected item
@@ -221,8 +221,21 @@ class PipelineTreeWidget(QTreeWidget):
 
         active_item = None
 
-        def _add_steps_flat(root_item, node):
-            """DFS: add all descendants as direct children of root_item."""
+        previous_dtype = None
+
+        def _set_dtype_badge(item, dtype):
+            """Show dtype only for the first item and dtype transitions."""
+            nonlocal previous_dtype
+            dtype_key = dtype.lower() if dtype else None
+            if dtype and (previous_dtype is None or dtype_key != previous_dtype):
+                item.setText(1, dtype)
+                item.setTextAlignment(1, Qt.AlignmentFlag.AlignCenter)
+                item.setToolTip(1, f"Data type: {dtype.capitalize()}")
+            if dtype_key is not None:
+                previous_dtype = dtype_key
+
+        def _add_children(parent_item, node):
+            """DFS: add descendants as nested children of parent_item."""
             nonlocal active_item
             for child in node.get("children", []):
                 idx = child["index"]
@@ -231,23 +244,20 @@ class PipelineTreeWidget(QTreeWidget):
                 dtype = child.get("dtype") or ""
                 label = _operation_label(operation, params)
 
-                item = QTreeWidgetItem(root_item)
+                item = QTreeWidgetItem(parent_item)
                 item.setText(0, label)
                 item.setToolTip(0, child["name"])
                 item.setData(0, Qt.ItemDataRole.UserRole, idx)
                 # step items are selectable but not user-editable
                 item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
                 item.setSizeHint(0, QSize(0, ROW_HEIGHT))
-
-                if dtype:
-                    item.setText(1, dtype)
-                    item.setTextAlignment(1, Qt.AlignmentFlag.AlignCenter)
+                _set_dtype_badge(item, dtype)
 
                 if idx == active_index:
                     active_item = item
 
-                # recurse, keeping items flat under root_item
-                _add_steps_flat(root_item, child)
+                _add_children(item, child)
+                item.setExpanded(True)
 
         for root_node in tree:
             idx = root_node["index"]
@@ -268,14 +278,12 @@ class PipelineTreeWidget(QTreeWidget):
             )
             root_item.setSizeHint(0, QSize(0, ROW_HEIGHT))
 
-            if dtype:
-                root_item.setText(1, dtype)
-                root_item.setTextAlignment(1, Qt.AlignmentFlag.AlignCenter)
+            _set_dtype_badge(root_item, dtype)
 
             if idx == active_index:
                 active_item = root_item
 
-            _add_steps_flat(root_item, root_node)
+            _add_children(root_item, root_node)
             root_item.setExpanded(True)
 
         self.blockSignals(False)
@@ -490,7 +498,7 @@ class PipelineTreeWidget(QTreeWidget):
             "apply_pipeline": apply_pipeline_action,
         }
 
-        if has_steps and not is_root:
+        if has_steps:
             menu.addSeparator()
             actions["save_pipeline"] = menu.addAction("Save pipeline...")
 

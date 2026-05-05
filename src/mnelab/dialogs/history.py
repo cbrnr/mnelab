@@ -86,7 +86,3 @@ class LogDialog(QDialog):
                 f.write(self.log)
                 f.write("\n")
             LogDialog._last_directory = str(Path(filename).parent)
-
-
-# backward-compatibility alias
-HistoryDialog = LogDialog
