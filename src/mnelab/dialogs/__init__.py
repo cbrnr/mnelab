@@ -15,6 +15,7 @@ from mnelab.dialogs.bvrf import BVRFDialog
 from mnelab.dialogs.calc import CalcDialog
 from mnelab.dialogs.channel_properties import ChannelPropertiesDialog
 from mnelab.dialogs.crop import CropDialog
+from mnelab.dialogs.dataset_details import DatasetDetailsDialog
 from mnelab.dialogs.drop_bad_epochs import DropBadEpochsDialog
 from mnelab.dialogs.epoch import EpochDialog
 from mnelab.dialogs.erds import ERDSDialog, ERDSTopomapsDialog
@@ -22,12 +23,14 @@ from mnelab.dialogs.error_message import ErrorMessageBox
 from mnelab.dialogs.events import EventsDialog
 from mnelab.dialogs.filter import FilterDialog
 from mnelab.dialogs.find_events import FindEventsDialog
-from mnelab.dialogs.history import HistoryDialog
+from mnelab.dialogs.history import LogDialog
 from mnelab.dialogs.iclabel import ICLabelDialog
 from mnelab.dialogs.mat import MatDialog
 from mnelab.dialogs.montage import MontageDialog
 from mnelab.dialogs.npy import NpyDialog
 from mnelab.dialogs.pick_channels import PickChannelsDialog
+from mnelab.dialogs.pipeline import ApplyPipelineDialog, PipelineProgressDialog
+from mnelab.dialogs.pipeline_builder import PipelineBuilderDialog
 from mnelab.dialogs.plot_evoked import (
     PlotEvokedComparisonDialog,
     PlotEvokedDialog,

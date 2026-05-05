@@ -262,6 +262,92 @@ def merge_annotations(onsets, durations, descriptions):
     return merged_onsets, merged_durations, merged_descriptions
 
 
+def read_annotations_from_file(
+    fname,
+    sfreq,
+    types=None,
+    description=None,
+    unit="seconds",
+    orig_time=None,
+    max_time=None,
+):
+    """Read annotations from a CSV file.
+
+    Parameters
+    ----------
+    fname : str
+        Path to a CSV annotation file with header `type,onset,duration` or
+        `onset,duration`.
+    sfreq : float
+        Sampling frequency in Hz, used when `unit` is `"samples"`.
+    types : list of str | None
+        Annotation types to import. `None` imports all types.
+    description : str | None
+        Label assigned to every annotation when the file has no type column. Ignored
+        when the type column is present.
+    unit : str
+        `"seconds"` (default) or `"samples"`. When `"samples"`, onset and duration
+        values are divided by `sfreq` to convert them to seconds.
+    orig_time : datetime | None
+        The orig_time to assign to the returned Annotations object.
+    max_time : float | None
+        Maximum valid annotation onset in seconds. If provided, onsets beyond this
+        value raise an error.
+
+    Returns
+    -------
+    mne.Annotations
+        The annotations read from `fname`.
+    """
+    descs, onsets, durations = [], [], []
+    try:
+        with open(fname) as f:
+            header = f.readline().strip()
+            has_type_col = header == "type,onset,duration"
+            no_type_col = header == "onset,duration"
+            if not has_type_col and not no_type_col:
+                raise ValueError(
+                    "Invalid annotations file (expected header: "
+                    "'type,onset,duration' or 'onset,duration')."
+                )
+            for line in f:
+                annot = line.split(",")
+                if has_type_col:
+                    if len(annot) < 3:
+                        continue
+                    desc = annot[0].strip()
+                    onset_str = annot[1].strip()
+                    duration_str = annot[2].strip()
+                else:
+                    if len(annot) < 2:
+                        continue
+                    desc = description if description is not None else "annotation"
+                    onset_str = annot[0].strip()
+                    duration_str = annot[1].strip()
+                if types is not None and desc not in types:
+                    continue
+                try:
+                    onset = float(onset_str)
+                    duration = float(duration_str)
+                except ValueError:
+                    raise ValueError(
+                        "One or more annotations have invalid onset or duration values."
+                    ) from None
+                if unit == "samples":
+                    onset /= sfreq
+                    duration /= sfreq
+                if max_time is not None and onset > max_time:
+                    raise ValueError(
+                        "One or more annotations are outside the data range."
+                    )
+                descs.append(desc)
+                onsets.append(onset)
+                durations.append(duration)
+    except UnicodeDecodeError:
+        raise ValueError("The file contains binary data and cannot be read as CSV.")
+    return mne.Annotations(onsets, durations, descs, orig_time=orig_time)
+
+
 def get_annotation_types_from_file(fname):
     """Return annotation types and whether all numeric values are integers.
 

@@ -21,7 +21,6 @@ from pybvrf import read_bvrf_header
 from PySide6.QtCore import (
     QEvent,
     QMetaObject,
-    QModelIndex,
     Qt,
     QTimer,
     QUrl,
@@ -41,7 +40,6 @@ from PySide6.QtWidgets import (
     QSplitter,
     QStackedWidget,
     QStyle,
-    QTableWidgetItem,
     QToolButton,
     QWidget,
 )
@@ -55,7 +53,12 @@ from mnelab.io.mat import parse_mat
 from mnelab.io.npy import parse_npy
 from mnelab.io.readers import read_raw, split_name_ext
 from mnelab.io.xdf import get_xml, list_chunks
-from mnelab.model import InvalidAnnotationsError, LabelsNotFoundError, Model
+from mnelab.model import (
+    InvalidAnnotationsError,
+    LabelsNotFoundError,
+    Model,
+    PipelineCancelledError,
+)
 from mnelab.settings import SettingsDialog, read_settings, write_settings
 from mnelab.utils import (
     annotations_between_events,
@@ -74,7 +77,7 @@ from mnelab.viz import (
     plot_evoked_comparison,
     plot_evoked_topomaps,
 )
-from mnelab.widgets import EmptyWidget, InfoWidget, SidebarTableWidget
+from mnelab.widgets import EmptyWidget, InfoWidget, PipelineTreeWidget
 
 
 class MenuPaddingStyle(QProxyStyle):
@@ -141,8 +144,6 @@ class MainWindow(QMainWindow):
         if plot_backend not in self.plot_backends:
             plot_backend = "Matplotlib"
         mne.viz.set_browser_backend(plot_backend)
-        self.model.history.append(f'mne.viz.set_browser_backend("{plot_backend}")')
-        self.model.history.append("")
 
         # trigger theme setting
         QIcon.setThemeSearchPaths(
@@ -403,6 +404,12 @@ class MainWindow(QMainWindow):
             "Export ICA...",
             lambda: self.export_file(model.export_ica, "Export ICA", "*.fif *.fif.gz"),
         )
+        process_menu.addSeparator()
+        self.all_actions["pipeline_editor"] = process_menu.addAction(
+            QIcon.fromTheme("pipeline-editor"),
+            "Pipeline...",
+            self.open_pipeline_editor,
+        )
 
         epochs_menu = self.menuBar().addMenu("Ep&ochs")
         self.all_actions["epoch_data"] = epochs_menu.addAction(
@@ -422,8 +429,8 @@ class MainWindow(QMainWindow):
         view_menu = self.menuBar().addMenu("&View")
         self.all_actions["history"] = view_menu.addAction(
             QIcon.fromTheme("history"),
-            "&History",
-            self.show_history,
+            "&Log...",
+            self.show_log,
             QKeySequence(Qt.Modifier.CTRL | Qt.Key.Key_Y),
         )
         self.all_actions["toolbar"] = view_menu.addAction(
@@ -500,6 +507,8 @@ class MainWindow(QMainWindow):
         self.toolbar.addAction(self.all_actions["epoch_data"])
         self.toolbar.addAction(self.all_actions["run_ica"])
         self.toolbar.addSeparator()
+        self.toolbar.addAction(self.all_actions["pipeline_editor"])
+        self.toolbar.addSeparator()
         self.toolbar.addAction(self.all_actions["settings"])
         self.toolbar.setMovable(False)
         # hamburger menu button (Windows/Linux only)
@@ -547,21 +556,24 @@ class MainWindow(QMainWindow):
             self.toolbar.hide()
             self.all_actions["toolbar"].setChecked(False)
 
-        # set up data model for sidebar (list of open files)
-        self.sidebar = SidebarTableWidget(self)
+        # set up data model for sidebar (pipeline tree)
+        self.sidebar = PipelineTreeWidget(self)
         self.sidebar.hide()
-        self.sidebar.rowsMoved.connect(self._sidebar_move_event)
-        self.sidebar.itemDelegate().commitData.connect(self._sidebar_edit_event)
-        self.sidebar.currentCellChanged.connect(
-            lambda row, col, *_: self._update_data(row, col)
-        )
+        self.sidebar.datasetSelected.connect(self._update_data)
+        self.sidebar.datasetRenamed.connect(self._sidebar_edit_event)
+        self.sidebar.showHistoryRequested.connect(self.show_history_for_dataset)
+        self.sidebar.savePipelineRequested.connect(self.save_pipeline_for_dataset)
+        self.sidebar.exportHistoryRequested.connect(self.export_history_for_dataset)
+        self.sidebar.showDetailsRequested.connect(self.show_dataset_details)
+        self.sidebar.applyPipelineRequested.connect(self.apply_pipeline_for_dataset)
 
         self.splitter = QSplitter()
         self.splitter.setObjectName("main_splitter")
         self.splitter.addWidget(self.sidebar)
 
         self.infowidget = QStackedWidget()
-        self.infowidget.addWidget(InfoWidget())
+        info_widget = InfoWidget()
+        self.infowidget.addWidget(info_widget)
         emptywidget = EmptyWidget(
             itemgetter("open_file", "history", "settings")(self.all_actions)
         )
@@ -593,35 +605,19 @@ class MainWindow(QMainWindow):
         print(traceback_text, file=sys.stderr)
         ErrorMessageBox(self, exception_text, "", traceback_text).show()
 
-    def _sidebar_edit_event(self, edit):
+    def _sidebar_edit_event(self, dataset_index, new_name):
         """
         Triggered when a data set in the sidebar is renamed.
 
         Parameters
         ----------
-        edit : PySide6.QtWidgets.QLineEdit
-            The text editor.
+        dataset_index : int
+            Index of the renamed dataset in model.data.
+        new_name : str
+            The new name entered by the user.
         """
-        self.model.current["name"] = edit.text()
-
-    def _sidebar_move_event(self, from_row, to_row):
-        """
-        Triggered when an item in the sidebar is moved.
-
-        Parameters
-        ----------
-        parent : PySide6.QtCore.QModelIndex
-            Unused.
-        start : int
-            The source index of the item.
-        end : int
-            Unused (equals start as the sidebar only allows single selection).
-        destination : PySide6.QtCore.QModelIndex
-            Unused.
-        row : int
-            The target index.
-        """
-        self.model.move_data(from_row, to_row)
+        if 0 <= dataset_index < len(self.model.data):
+            self.model.data[dataset_index]["name"] = new_name
 
     @contextmanager
     def _wait_cursor(self):
@@ -637,32 +633,11 @@ class MainWindow(QMainWindow):
                 self.setCursor(default_cursor)
 
     def data_changed(self):
-        # update sidebar
+        # update sidebar (pipeline tree)
         if len(self.model.data) > 0:
             self.sidebar.show()
-            # block signals during rebuild: setRowCount(0) would otherwise
-            # emit currentCellChanged with row=-1, corrupting model.index
-            self.sidebar.blockSignals(True)
-            self.sidebar.setRowCount(0)
-            self.sidebar.setRowCount(len(self.model.names))
-            self.sidebar.setColumnCount(4)
-
-            for row_index, name in enumerate(self.model.names):
-                item_index = QTableWidgetItem(str(row_index + 1))
-                self.sidebar.setItem(row_index, 0, item_index)
-
-                item_name = QTableWidgetItem(name)
-                item_name.setFlags(item_name.flags() | Qt.ItemFlag.ItemIsEditable)
-                self.sidebar.setItem(row_index, 1, item_name)
-
-                dtype = self.model.data[row_index]["dtype"] or ""
-                self.sidebar.set_dtype(row_index, dtype)
-
-            self.sidebar.style_rows()
+            self.sidebar.populate(self.model.get_pipeline_tree(), self.model.index)
             self.sidebar.set_badges_visible(read_settings("dtype_badges"))
-            self.sidebar.selectRow(self.model.index)
-            self.sidebar.blockSignals(False)
-            self.sidebar.setFocus()
         else:
             self.sidebar.hide()
 
@@ -773,7 +748,7 @@ class MainWindow(QMainWindow):
                     else:
                         self.all_actions[action].setEnabled(False)
         # add to recent files
-        if len(self.model) > 0:
+        if len(self.model) > 0 and self.model.current["fname"] is not None:
             self._add_recent(self.model.current["fname"])
 
     def open_data(self, fname=None):
@@ -1061,7 +1036,6 @@ class MainWindow(QMainWindow):
                 picks = [item.text() for item in dialog.types.selectedItems()]
                 if set(types) == set(picks):
                     return
-            self.auto_duplicate()
             self.model.pick_channels(picks)
 
     def channel_properties(self):
@@ -1175,7 +1149,6 @@ class MainWindow(QMainWindow):
         stop = self.model.current["data"].times[-1]
         dialog = CropDialog(self, 0, stop)
         if dialog.exec():
-            self.auto_duplicate()
             self.model.crop(max(dialog.start, 0), min(dialog.stop, stop))
 
     def append_data(self):
@@ -1183,12 +1156,7 @@ class MainWindow(QMainWindow):
         compatibles = self.model.get_compatibles()
         dialog = AppendDialog(self, compatibles)
         if dialog.exec():
-            idx_list = dialog.selected_idx
-            if self.auto_duplicate():  # adjust for index change if duplicated
-                idx_list = [
-                    idx + 1 if idx >= self.model.index else idx for idx in idx_list
-                ]
-            self.model.append_data(idx_list)
+            self.model.append_data(dialog.selected_idx)
 
     def plot_data(self):
         """Plot data."""
@@ -1210,11 +1178,6 @@ class MainWindow(QMainWindow):
             annotation_colors=annotation_colors,
             show=False,
         )
-        if events is not None:
-            hist = f"data.plot(events=events, n_channels={nchan}, duration={duration})"
-        else:
-            hist = f"data.plot(n_channels={nchan}, duration={duration})"
-        self.model.history.append(hist)
         if mne.viz.get_browser_backend() == "matplotlib":
             win = fig.canvas.manager.window
             win.setWindowTitle(self.model.current["name"])
@@ -1249,8 +1212,6 @@ class MainWindow(QMainWindow):
             plot_kwds = ", ".join(
                 f"{key}={value!r}" for key, value in plot_kwds.items()
             )
-            hist = f"data.compute_psd({psd_kwds}).plot({plot_kwds})"
-            self.model.history.append(hist)
             win = fig.canvas.manager.window
             win.setWindowTitle("Power spectral density")
             fig.show()
@@ -1420,7 +1381,8 @@ class MainWindow(QMainWindow):
             calc = CalcDialog(self, "Calculating ICA", "Calculating ICA...")
 
             method = dialog.method.currentText().lower()
-            exclude_bad_segments = dialog.exclude_bad_segments.isChecked()
+            reject_by_annotation = dialog.exclude_bad_segments.isChecked()
+            n_components = dialog.n_components.value() or None
 
             fit_params = {}
             if dialog.extended.isEnabled():
@@ -1428,13 +1390,12 @@ class MainWindow(QMainWindow):
             if dialog.ortho.isEnabled():
                 fit_params["ortho"] = dialog.ortho.isChecked()
 
-            ica = mne.preprocessing.ICA(method=method, fit_params=fit_params)
-            history = f"ica = mne.preprocessing.ICA(method='{method}'"
-            if fit_params:
-                history += f", fit_params={fit_params})"
-            else:
-                history += ")"
-            self.model.history.append(history)
+            ica = mne.preprocessing.ICA(
+                method=method,
+                n_components=n_components,
+                fit_params=fit_params,
+                random_state=97,
+            )
 
             pool = mp.Pool(processes=1)
 
@@ -1446,7 +1407,7 @@ class MainWindow(QMainWindow):
             res = pool.apply_async(
                 func=ica.fit,
                 args=(self.model.current["data"],),
-                kwds={"reject_by_annotation": exclude_bad_segments},
+                kwds={"reject_by_annotation": reject_by_annotation},
                 callback=callback,
             )
             pool.close()
@@ -1455,16 +1416,17 @@ class MainWindow(QMainWindow):
                 pool.terminate()
                 print("ICA calculation aborted...")
             else:
-                self.model.current["ica"] = res.get(timeout=1)
-                self.model.current["iclabel"] = None
-                self.model.history.append(
-                    f"ica.fit(inst=raw, reject_by_annotation={exclude_bad_segments})"
+                self.model.run_ica(
+                    method=method,
+                    n_components=n_components,
+                    reject_by_annotation=reject_by_annotation,
+                    fit_params=fit_params,
+                    random_state=97,
+                    _fitted_ica=res.get(timeout=1),
                 )
-                self.data_changed()
 
     def apply_ica(self):
         """Apply current fitted ICA."""
-        self.auto_duplicate()
         self.model.apply_ica()
 
     def label_ica(self):
@@ -1476,21 +1438,15 @@ class MainWindow(QMainWindow):
         dialog = ICLabelDialog(self, data, ica, probs, exclude=ica.exclude)
         if dialog.exec():
             exclude_indices = dialog.get_excluded_indices()
-
-            ica.exclude = sorted([int(x) for x in exclude_indices])
-            self.model.history.append(f"ica.exclude = {ica.exclude}")
-            self.data_changed()
+            exclude_indices = sorted(int(x) for x in exclude_indices)
+            if exclude_indices != sorted(int(x) for x in ica.exclude):
+                self.model.set_ica_exclude(exclude_indices)
 
     def interpolate_bads(self):
         """Interpolate bad channels."""
-        duplicated = self.auto_duplicate()
         try:
             self.model.interpolate_bads()
         except ValueError as e:
-            if duplicated:  # undo
-                self.model.remove_data()
-                self.model.index -= 1
-                self.data_changed()
             msgbox = ErrorMessageBox(
                 self,
                 "Could not interpolate bad channels",
@@ -1503,7 +1459,6 @@ class MainWindow(QMainWindow):
         """Filter data."""
         dialog = FilterDialog(self)
         if dialog.exec():
-            self.auto_duplicate()
             self.model.filter(dialog.lower, dialog.upper, dialog.notch)
 
     def find_events(self):
@@ -1565,23 +1520,6 @@ class MainWindow(QMainWindow):
                     )
                     self.model.current["data"].set_annotations(existing + new)
                     self.data_changed()
-
-                    self.model.history.append(
-                        f"annotations = annotations_between_events(\n"
-                        f"    events=events,\n"
-                        f'    sfreq=data.info["sfreq"],\n'
-                        f"    start_events={interval_data['start_events']},\n"
-                        f"    end_events={interval_data['end_events']},\n"
-                        f'    annotation="{interval_data["annotation"]}",\n'
-                        f"    max_time=data.times[-1],\n"
-                        f"    start_offset={interval_data['start_offset']},\n"
-                        f"    end_offset={interval_data['end_offset']},\n"
-                        f"    extend_start={interval_data['extend_start']},\n"
-                        f"    extend_end={interval_data['extend_end']},\n"
-                        f"    orig_time=data.annotations.orig_time,\n"
-                        f")\n"
-                        f"data.set_annotations(data.annotations + annotations)"
-                    )
                 except Exception as e:
                     msgbox = ErrorMessageBox(
                         self,
@@ -1604,15 +1542,9 @@ class MainWindow(QMainWindow):
             else:
                 baseline = None
 
-            duplicated = self.auto_duplicate()
-
             try:
                 self.model.epoch_data(dialog.selected_events, tmin, tmax, baseline)
             except ValueError as e:
-                if duplicated:  # undo
-                    self.model.remove_data()
-                    self.model.index -= 1
-                    self.data_changed()
                 msgbox = ErrorMessageBox(
                     self, "Could not create epochs", str(e), traceback.format_exc()
                 )
@@ -1639,7 +1571,6 @@ class MainWindow(QMainWindow):
                 flat = fields_to_dict(dialog.flat_fields)
             if reject is None and flat is None:
                 return
-            self.auto_duplicate()
             self.model.drop_bad_epochs(reject, flat)
 
     def artifact_detection(self):
@@ -1652,10 +1583,7 @@ class MainWindow(QMainWindow):
             if not bad_epochs:
                 return
 
-            self.auto_duplicate()
             self.model.drop_detected_artifacts(bad_epochs)
-            self.data_changed()
-            self.model.history.append(dialog.get_history_code())
 
     def change_reference(self):
         """Change reference."""
@@ -1672,14 +1600,9 @@ class MainWindow(QMainWindow):
                     ref = [c.text() for c in dialog.reref_channellist.selectedItems()]
             else:
                 ref = None
-            duplicated = self.auto_duplicate()
             try:
                 self.model.change_reference(add, ref)
             except ValueError as e:
-                if duplicated:  # undo
-                    self.model.remove_data()
-                    # self.model.index -= 1
-                    self.data_changed()
                 msgbox = ErrorMessageBox(
                     self,
                     "Error while changing references:",
@@ -1688,10 +1611,38 @@ class MainWindow(QMainWindow):
                 )
                 msgbox.show()
 
-    def show_history(self):
-        """Show history."""
-        dialog = HistoryDialog(self, self.model.history, self.model.log)
+    def show_log(self):
+        """Show MNE log."""
+        from mnelab.dialogs.history import LogDialog
+
+        LogDialog(self, self.model.log).exec()
+
+    def _open_pipeline_builder(self, pipeline, history=None, show_history=False):
+        """Open the pipeline builder; apply the result if the user clicks Apply."""
+        from mnelab.dialogs.pipeline_builder import PipelineBuilderDialog
+
+        dialog = PipelineBuilderDialog(self, pipeline, history)
+        if show_history:
+            dialog.show_history_tab()
+        if dialog.exec():
+            self._confirm_and_apply_pipeline(dialog.get_pipeline())
+
+    @Slot(int)
+    def show_dataset_details(self, dataset_index):
+        """Show details for a specific dataset in the lineage tree."""
+        dialog = DatasetDetailsDialog(
+            self,
+            self.model.get_dataset_details(dataset_index),
+        )
+        dialog.datasetSelected.connect(self._update_data)
         dialog.exec()
+
+    @Slot(int)
+    def show_history_for_dataset(self, dataset_index):
+        """Open the Pipeline dialog for a dataset with the History tab active."""
+        pipeline = self.model.get_pipeline(dataset_index)
+        history = self.model.get_history(dataset_index)
+        self._open_pipeline_builder(pipeline, history, show_history=True)
 
     def show_channel_stats(self):
         """Show channel stats."""
@@ -1800,7 +1751,6 @@ class MainWindow(QMainWindow):
         new_menu_icons = read_settings("menu_icons")
         if old_backend != new_backend:
             mne.viz.set_browser_backend(new_backend)
-            self.model.history.append(f'mne.viz.set_browser_backend("{new_backend}")')
         if old_badges != new_badges:
             self.sidebar.set_badges_visible(new_badges)
         if old_menu_icons != new_menu_icons:
@@ -1810,49 +1760,162 @@ class MainWindow(QMainWindow):
                 'The "Menu icons" setting will take effect after restarting MNELAB.',
             )
 
-    def auto_duplicate(self):
-        """Automatically duplicate current data set.
+    def save_pipeline_for_dataset(self, dataset_index):
+        """Save the pipeline for a specific branch in the lineage tree."""
+        if not self.model.has_replayable_pipeline(dataset_index):
+            QMessageBox.information(
+                self,
+                "No replayable pipeline",
+                "This branch has no replayable pipeline steps to save.",
+            )
+            return
 
-        If the current data set is stored in a file (i.e. was loaded directly from a
-        file), a new data set is automatically created. If the current data set is not
-        stored in a file (i.e. was created by operations in MNELAB), a dialog box asks
-        the user if the current data set should be overwritten or duplicated.
+        pipeline = self.model.get_pipeline(dataset_index)
+        if pipeline is None or not pipeline.get("steps"):
+            QMessageBox.information(
+                self,
+                "No pipeline steps",
+                "This branch has no replayable pipeline steps to save.",
+            )
+            return
 
-        Returns
-        -------
-        duplicated : bool
-            True if the current data set was automatically duplicated, False if the
-            current data set was overwritten.
+        fname, _ = QFileDialog.getSaveFileName(
+            self, "Save Pipeline", filter="MNELAB pipeline (*.mnepipe)"
+        )
+        if fname:
+            if not fname.endswith(".mnepipe"):
+                fname += ".mnepipe"
+            try:
+                self.model.save_pipeline(idx=dataset_index, path=fname)
+            except ValueError as exc:
+                QMessageBox.critical(self, "Pipeline error", str(exc))
+
+    @Slot(int)
+    def export_history_for_dataset(self, dataset_index):
+        """Export Python history for a specific branch in the lineage tree."""
+        dataset = self.model.data[dataset_index]
+        default_name = f"{Path(dataset['name']).name or 'history'}-history.py"
+        fname, _ = QFileDialog.getSaveFileName(
+            self,
+            "Export Branch History",
+            default_name,
+            "Python Files (*.py);;All Files (*)",
+        )
+        if fname:
+            if not fname.endswith(".py"):
+                fname += ".py"
+            with open(fname, "w", encoding="utf-8") as f:
+                f.write(format_code("\n".join(self.model.get_history(dataset_index))))
+                f.write("\n")
+
+    def open_pipeline_editor(self):
+        """Open the Pipeline dialog for the current dataset pipeline."""
+        pipeline = (
+            self.model.get_pipeline(self.model.index) if self.model.data else None
+        )
+        history = self.model.get_history(self.model.index) if self.model.data else None
+        self._open_pipeline_builder(pipeline, history)
+
+    @Slot(int)
+    def apply_pipeline_for_dataset(self, dataset_index):
+        """Open a .mnepipe file and apply it to a specific dataset."""
+        fname, _ = QFileDialog.getOpenFileName(
+            self, "Open Pipeline", filter="MNELAB pipeline (*.mnepipe)"
+        )
+        if fname:
+            self._apply_pipeline_from_path(fname, dataset_index)
+
+    def _apply_pipeline_from_path(self, path, dataset_index=None):
+        """Load a .mnepipe file and apply it to a dataset.
+
+        Parameters
+        ----------
+        path :
+            Path to the .mnepipe file.
+        dataset_index :
+            Model index of the target dataset. If None, uses the current dataset.
         """
-        # if current data is stored in a file create a new data set
-        if self.model.current["fname"]:
-            self.model.duplicate_data()
-            return True
-        # otherwise ask the user
-        msg = QMessageBox(self)
-        msg.setWindowFlags(
-            Qt.WindowType.Dialog
-            | Qt.WindowType.WindowTitleHint
-            | Qt.WindowType.CustomizeWindowHint
-        )
-        msg.setWindowTitle("Modify data set")
-        msg.setText(
-            "You are about to modify the current data set. How do you want to proceed?"
-        )
-        create_button = msg.addButton(
-            "Create new data set", QMessageBox.ButtonRole.AcceptRole
-        )
-        overwrite_button = msg.addButton(
-            "Overwrite current data set", QMessageBox.ButtonRole.RejectRole
-        )
-        msg.setDefaultButton(create_button)
-        msg.setEscapeButton(create_button)
-        msg.exec()
-        if msg.clickedButton() == overwrite_button:
-            return False
+        from mnelab.dialogs.pipeline import load_pipeline
+
+        if not self.model.data:
+            QMessageBox.information(
+                self,
+                "No dataset open",
+                "Open a dataset first before applying a pipeline.",
+            )
+            return
+        try:
+            pipeline = load_pipeline(path)
+        except (ValueError, KeyError) as e:
+            QMessageBox.critical(self, "Invalid pipeline file", str(e))
+            return
+        if dataset_index is not None and dataset_index != self.model.index:
+            old_index = self.model.index
+            self.model.index = dataset_index
+            self._confirm_and_apply_pipeline(pipeline)
+            if self.model.index == dataset_index:
+                self.model.index = old_index
+            self.data_changed()
         else:
-            self.model.duplicate_data()
-            return True
+            self._confirm_and_apply_pipeline(pipeline)
+
+    def _confirm_and_apply_pipeline(self, pipeline):
+        """Show the pipeline compatibility dialog before applying a pipeline."""
+        from mnelab.dialogs.pipeline import ApplyPipelineDialog
+        from mnelab.widgets.pipeline_tree import _operation_label
+
+        dialog = ApplyPipelineDialog(
+            self,
+            pipeline,
+            self.model.current,
+        )
+        if dialog.exec():
+            steps = pipeline.get("steps", [])
+            progress_dialog = None
+            if steps:
+                progress_dialog = PipelineProgressDialog(self, len(steps))
+                progress_dialog.show()
+                QApplication.processEvents()
+
+            def _review_step(step_index, step, execution_mode):
+                label = _operation_label(step.get("operation"), step.get("params"))
+                title = (
+                    "Review checkpoint"
+                    if execution_mode == "review"
+                    else "Pipeline prompt"
+                )
+                reply = QMessageBox.question(
+                    self,
+                    title,
+                    f"Pipeline step {step_index} requests a "
+                    f"{execution_mode} checkpoint:\n\n{label}\n\nContinue?",
+                )
+                return reply == QMessageBox.StandardButton.Yes
+
+            def _update_progress(step_index, step):
+                if progress_dialog is None:
+                    return
+                progress_dialog.update_progress(step_index, step)
+                QApplication.processEvents()
+
+            try:
+                self.model.apply_pipeline(
+                    pipeline,
+                    progress_callback=_update_progress,
+                    is_cancelled=(
+                        progress_dialog.wasCanceled
+                        if progress_dialog is not None
+                        else None
+                    ),
+                    review_callback=_review_step,
+                )
+            except PipelineCancelledError:
+                return
+            except (ValueError, AttributeError) as e:
+                QMessageBox.critical(self, "Pipeline error", str(e))
+            finally:
+                if progress_dialog is not None:
+                    progress_dialog.close()
 
     def _add_recent(self, fname):
         """Add a file to recent file list.
@@ -1884,19 +1947,18 @@ class MainWindow(QMainWindow):
             if not self.recent:
                 self.recent_menu.setEnabled(False)
 
-    @Slot(QModelIndex)
-    def _update_data(self, row, column):
-        """Update index and information based on the state of the sidebar.
+    @Slot(int)
+    def _update_data(self, dataset_index):
+        """Update active dataset from pipeline tree selection.
 
         Parameters
         ----------
-        selected : QModelIndex
-            Index of the selected row.
+        dataset_index : int
+            Index of the selected dataset in model.data.
         """
-        if row != self.model.index:
-            self.model.index = row
+        if dataset_index != self.model.index:
+            self.model.index = dataset_index
             self.data_changed()
-            self.model.history.append(f"data = datasets[{self.model.index}]")
 
     @Slot()
     def _update_recent_menu(self):
@@ -1942,9 +2004,6 @@ class MainWindow(QMainWindow):
 
     def _plot_closed(self, event=None):
         self.data_changed()
-        bads = self.model.current["data"].info["bads"]
-        if self.bads != bads:
-            self.model.history.append(f'data.info["bads"] = {bads}')
 
     def event(self, event):
         if event.type() == QEvent.Type.Close:
@@ -1954,9 +2013,9 @@ class MainWindow(QMainWindow):
             if self.sidebar.isVisible() and total > 0:
                 kwargs["splitter"] = sizes[0] / total
             write_settings(**kwargs)
-            if self.model.history:
-                print("\n# Command History\n")
-                print(format_code("\n".join(self.model.history)))
+            if len(self.model) > 0:
+                print("\n# Pipeline History\n")
+                print(format_code("\n".join(self.model.get_history())))
             event.accept()
         elif event.type() == QEvent.Type.PaletteChange:
             color_scheme = QApplication.styleHints().colorScheme()
@@ -1973,9 +2032,21 @@ class MainWindow(QMainWindow):
             mime = event.mimeData()
             if mime.hasUrls():
                 urls = mime.urls()
+                pipeline_files = [
+                    u.toLocalFile()
+                    for u in urls
+                    if u.toLocalFile().endswith(".mnepipe")
+                ]
+                data_files = [
+                    u.toLocalFile()
+                    for u in urls
+                    if not u.toLocalFile().endswith(".mnepipe")
+                ]
+                for path in pipeline_files:
+                    self._apply_pipeline_from_path(path)
                 try:
-                    for url in urls:
-                        self.open_data(url.toLocalFile())
+                    for path in data_files:
+                        self.open_data(path)
                 except FileNotFoundError as e:
                     QMessageBox.critical(self, "File not found", str(e))
             event.acceptProposedAction()
