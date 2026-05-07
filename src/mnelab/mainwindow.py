@@ -26,7 +26,14 @@ from PySide6.QtCore import (
     QUrl,
     Slot,
 )
-from PySide6.QtGui import QAction, QDesktopServices, QIcon, QKeySequence
+from PySide6.QtGui import (
+    QAction,
+    QColor,
+    QDesktopServices,
+    QIcon,
+    QKeySequence,
+    QPalette,
+)
 from PySide6.QtWidgets import (
     QApplication,
     QFileDialog,
@@ -150,8 +157,8 @@ class MainWindow(QMainWindow):
             [f"{Path(__file__).parent}/icons"] + QIcon.themeSearchPaths()
         )
         QIcon.setFallbackThemeName("light")
-        # some styles do not emit PaletteChange on startup
-        QApplication.sendEvent(self, QEvent(QEvent.Type.PaletteChange))
+        self._theme_setting = settings["theme"]
+        self._apply_theme(self._theme_setting)
 
         self.all_actions = {}  # contains all actions
 
@@ -441,6 +448,11 @@ class MainWindow(QMainWindow):
             "&Statusbar", self._toggle_statusbar
         )
         self.all_actions["statusbar"].setCheckable(True)
+        self.all_actions["theme"] = view_menu.addAction(
+            QIcon.fromTheme("theme"), "Dark Theme", self._toggle_theme
+        )
+        self.all_actions["theme"].setCheckable(True)
+        self._sync_theme_action()
         if sys.platform != "darwin":
             self.all_actions["menubar"] = view_menu.addAction(
                 QIcon.fromTheme("placeholder"),
@@ -484,6 +496,7 @@ class MainWindow(QMainWindow):
             "xdf_chunks",
             "toolbar",
             "statusbar",
+            "theme",
             "menubar",
             "settings",
             "documentation",
@@ -509,6 +522,7 @@ class MainWindow(QMainWindow):
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.all_actions["pipeline_editor"])
         self.toolbar.addSeparator()
+        self.toolbar.addAction(self.all_actions["theme"])
         self.toolbar.addAction(self.all_actions["settings"])
         self.toolbar.setMovable(False)
         # hamburger menu button (Windows/Linux only)
@@ -631,6 +645,105 @@ class MainWindow(QMainWindow):
                 yield
             finally:
                 self.setCursor(default_cursor)
+
+    def _theme_palette(self, theme):
+        """Build an application palette for the requested theme."""
+        palette = QPalette()
+        if theme == "dark":
+            colors = {
+                QPalette.ColorRole.Window: "#2b2b2b",
+                QPalette.ColorRole.WindowText: "#f0f0f0",
+                QPalette.ColorRole.Base: "#1f1f1f",
+                QPalette.ColorRole.AlternateBase: "#303030",
+                QPalette.ColorRole.ToolTipBase: "#303030",
+                QPalette.ColorRole.ToolTipText: "#f0f0f0",
+                QPalette.ColorRole.Text: "#f0f0f0",
+                QPalette.ColorRole.Button: "#333333",
+                QPalette.ColorRole.ButtonText: "#f0f0f0",
+                QPalette.ColorRole.BrightText: "#ffffff",
+                QPalette.ColorRole.Link: "#66aaff",
+                QPalette.ColorRole.Highlight: "#3d6fb6",
+                QPalette.ColorRole.HighlightedText: "#ffffff",
+                QPalette.ColorRole.PlaceholderText: "#a0a0a0",
+            }
+            disabled = "#8a8a8a"
+        else:
+            colors = {
+                QPalette.ColorRole.Window: "#f0f0f0",
+                QPalette.ColorRole.WindowText: "#202020",
+                QPalette.ColorRole.Base: "#ffffff",
+                QPalette.ColorRole.AlternateBase: "#f7f7f7",
+                QPalette.ColorRole.ToolTipBase: "#ffffff",
+                QPalette.ColorRole.ToolTipText: "#202020",
+                QPalette.ColorRole.Text: "#202020",
+                QPalette.ColorRole.Button: "#f0f0f0",
+                QPalette.ColorRole.ButtonText: "#202020",
+                QPalette.ColorRole.BrightText: "#ffffff",
+                QPalette.ColorRole.Link: "#0057b8",
+                QPalette.ColorRole.Highlight: "#2d6cdf",
+                QPalette.ColorRole.HighlightedText: "#ffffff",
+                QPalette.ColorRole.PlaceholderText: "#707070",
+            }
+            disabled = "#808080"
+
+        for role, color in colors.items():
+            palette.setColor(role, QColor(color))
+        for role in (
+            QPalette.ColorRole.WindowText,
+            QPalette.ColorRole.Text,
+            QPalette.ColorRole.ButtonText,
+        ):
+            palette.setColor(QPalette.ColorGroup.Disabled, role, QColor(disabled))
+        return palette
+
+    def _effective_theme(self, theme=None):
+        """Resolve `system` to the currently active light/dark theme."""
+        theme = theme or getattr(self, "_theme_setting", "system")
+        if theme == "system":
+            color_scheme = QApplication.styleHints().colorScheme()
+            if color_scheme == Qt.ColorScheme.Dark:
+                return "dark"
+            return "light"
+        return theme if theme in {"light", "dark"} else "light"
+
+    def _sync_theme_action(self):
+        """Keep the theme action checked state in sync with the effective theme."""
+        if not hasattr(self, "all_actions") or "theme" not in self.all_actions:
+            return
+        is_dark = self._effective_theme() == "dark"
+        self.all_actions["theme"].setChecked(is_dark)
+        tooltip = "Switch to light theme" if is_dark else "Switch to dark theme"
+        self.all_actions["theme"].setToolTip(tooltip)
+        self.all_actions["theme"].setStatusTip(tooltip)
+
+    def _apply_theme(self, theme=None):
+        """Apply a persisted light/dark/system theme choice immediately."""
+        self._theme_setting = theme or read_settings("theme")
+        effective = self._effective_theme(self._theme_setting)
+        app = QApplication.instance()
+        if app is not None:
+            app.setPalette(self._theme_palette(effective))
+        QIcon.setThemeName(effective)
+        self._sync_theme_action()
+        if hasattr(self, "sidebar"):
+            self.sidebar.refresh_theme()
+
+    @Slot()
+    @Slot(bool)
+    def _toggle_theme(self, checked=None):
+        """Toggle between explicit light and dark themes."""
+        if checked is None:
+            action = (
+                self.all_actions.get("theme") if hasattr(self, "all_actions") else None
+            )
+            checked = (
+                action.isChecked()
+                if action is not None
+                else self._effective_theme() != "dark"
+            )
+        theme = "dark" if checked else "light"
+        write_settings(theme=theme)
+        self._apply_theme(theme)
 
     def data_changed(self):
         # update sidebar (pipeline tree)
@@ -1745,14 +1858,18 @@ class MainWindow(QMainWindow):
         old_backend = read_settings("plot_backend")
         old_badges = read_settings("dtype_badges")
         old_menu_icons = read_settings("menu_icons")
+        old_theme = read_settings("theme")
         SettingsDialog(self, self.plot_backends).exec()
         new_backend = read_settings("plot_backend")
         new_badges = read_settings("dtype_badges")
         new_menu_icons = read_settings("menu_icons")
+        new_theme = read_settings("theme")
         if old_backend != new_backend:
             mne.viz.set_browser_backend(new_backend)
         if old_badges != new_badges:
             self.sidebar.set_badges_visible(new_badges)
+        if old_theme != new_theme:
+            self._apply_theme(new_theme)
         if old_menu_icons != new_menu_icons:
             QMessageBox.information(
                 self,
@@ -2018,11 +2135,8 @@ class MainWindow(QMainWindow):
                 print(format_code("\n".join(self.model.get_history())))
             event.accept()
         elif event.type() == QEvent.Type.PaletteChange:
-            color_scheme = QApplication.styleHints().colorScheme()
-            if color_scheme != Qt.ColorScheme.Unknown:
-                QIcon.setThemeName(color_scheme.name.lower())
-            else:
-                QIcon.setThemeName("light")  # fallback
+            QIcon.setThemeName(self._effective_theme())
+            self._sync_theme_action()
             if hasattr(self, "sidebar"):
                 self.sidebar.refresh_theme()
         elif event.type() == QEvent.Type.DragEnter:

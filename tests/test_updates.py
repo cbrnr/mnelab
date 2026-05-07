@@ -9,13 +9,15 @@ import numpy as np
 import pytest
 from edfio import Edf, EdfSignal
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QDialogButtonBox, QListWidget, QPushButton
+from PySide6.QtGui import QIcon, QPalette
+from PySide6.QtWidgets import QApplication, QDialogButtonBox, QListWidget, QPushButton
 
 from mnelab.dialogs.dataset_details import DatasetDetailsDialog
 from mnelab.dialogs.history import LogDialog
 from mnelab.dialogs.pipeline import ApplyPipelineDialog, load_pipeline
 from mnelab.mainwindow import MainWindow
 from mnelab.model import Model
+from mnelab.settings import read_settings
 
 
 @pytest.fixture
@@ -237,6 +239,35 @@ def test_apply_pipeline_uses_progress_dialog(view, tmp_path):
         2, pipeline["steps"][1]
     )
     MockProgressDialog.return_value.close.assert_called_once()
+
+
+def test_theme_toggle_switches_palette_and_persists(view):
+    """The toolbar/menu theme switch stores and applies light/dark themes."""
+    view._toggle_theme(True)
+
+    dark_base = QApplication.palette().color(QPalette.ColorRole.Base).value()
+    assert read_settings("theme") == "dark"
+    assert QIcon.themeName() == "dark"
+    assert view.all_actions["theme"].isChecked()
+
+    view._toggle_theme(False)
+
+    light_base = QApplication.palette().color(QPalette.ColorRole.Base).value()
+    assert read_settings("theme") == "light"
+    assert QIcon.themeName() == "light"
+    assert not view.all_actions["theme"].isChecked()
+    assert light_base > dark_base
+
+
+def test_theme_action_trigger_toggles_without_checked_argument(view):
+    """The View menu/toolbar theme action works with parameterless triggers."""
+    view._apply_theme("light")
+
+    view.all_actions["theme"].trigger()
+
+    assert read_settings("theme") == "dark"
+    assert QIcon.themeName() == "dark"
+    assert view.all_actions["theme"].isChecked()
 
 
 def test_dataset_details_dialog_can_jump_to_parent_dataset(view, qtbot, tmp_path):
