@@ -728,6 +728,247 @@ def test_get_history_does_not_import_missing_artifact_helpers(model_with_data):
     compile(history, "<mnelab-history>", "exec")
 
 
+def test_nbytes_skips_unloaded_datasets(model_with_data):
+    """nbytes does not count evicted (None-data) datasets."""
+    full_nbytes = model_with_data.nbytes
+    assert full_nbytes > 0
+
+    model_with_data.filter(lower=1.0)
+    model_with_data.unload_dataset(model_with_data.index)
+
+    assert model_with_data.nbytes == full_nbytes
+
+
+def test_memory_lru_eviction_and_reload(tmp_path):
+    """Root eviction keeps the first loaded root and unloads later roots."""
+    fs = 256
+    n_ch = 64
+    signals = [
+        EdfSignal(np.zeros(30 * fs), sampling_frequency=fs, label=f"EEG{i}")
+        for i in range(n_ch)
+    ]
+    path_a = tmp_path / "a.edf"
+    path_b = tmp_path / "b.edf"
+    for path in (path_a, path_b):
+        Edf(signals).write(path)
+
+    model = Model()
+    model.load(path_a)
+    model.load(path_b)
+
+    single_mb = model.loaded_memory_mb() / 2
+    limit_mb = int(single_mb) + 1
+    model.set_memory_limit_mb(limit_mb)
+
+    assert model.is_loaded(0)
+    assert not model.is_loaded(1)
+
+    model.ensure_loaded(1)
+    assert model.is_loaded(0)
+    assert not model.is_loaded(1)
+
+
+def test_remove_data_reloads_unloaded_new_current(tmp_path):
+    """Closing the active dataset reloads the next active one if it was evicted."""
+    fs = 256
+    n_ch = 64
+    signals = [
+        EdfSignal(np.zeros(30 * fs), sampling_frequency=fs, label=f"EEG{i}")
+        for i in range(n_ch)
+    ]
+    path_a = tmp_path / "a.edf"
+    path_b = tmp_path / "b.edf"
+    for path in (path_a, path_b):
+        Edf(signals).write(path)
+
+    model = Model()
+    model.load(path_a)
+    model.load(path_b)
+    limit_mb = int(model.loaded_memory_mb() / 2) + 1
+    model.set_memory_limit_mb(limit_mb)
+
+    assert model.is_loaded(0)
+    assert not model.is_loaded(1)
+    assert model.index == 0
+
+    model.remove_data(1)
+
+    assert model.index == 0
+    assert model.is_loaded(0)
+
+
+def test_memory_usage_reports_available_and_unloaded(tmp_path):
+    """Memory usage reports semantic free MB while overload is active."""
+    fs = 256
+    n_ch = 64
+    signals = [
+        EdfSignal(np.zeros(30 * fs), sampling_frequency=fs, label=f"EEG{i}")
+        for i in range(n_ch)
+    ]
+    path_a = tmp_path / "a.edf"
+    path_b = tmp_path / "b.edf"
+    for path in (path_a, path_b):
+        Edf(signals).write(path)
+
+    model = Model()
+    model.load(path_a)
+    model.load(path_b)
+    limit_mb = int(model.loaded_memory_mb() / 2) + 1
+    model.set_memory_limit_mb(limit_mb)
+
+    usage = model.memory_usage()
+
+    assert usage["unloaded_count"] == 1
+    assert usage["available_mb"] == 0.0
+    assert usage["over_limit_mb"] > 0
+    assert usage["overload_active"]
+
+
+def test_loading_past_limit_keeps_existing_root_loaded(tmp_path):
+    """A later root is inserted unloaded when the existing loaded data fills memory."""
+    fs = 256
+    n_ch = 64
+    signals = [
+        EdfSignal(np.zeros(30 * fs), sampling_frequency=fs, label=f"EEG{i}")
+        for i in range(n_ch)
+    ]
+    path_a = tmp_path / "a.edf"
+    path_b = tmp_path / "b.edf"
+    for path in (path_a, path_b):
+        Edf(signals).write(path)
+
+    model = Model()
+    model.load(path_a)
+    limit_mb = int(model.loaded_memory_mb()) + 1
+    model.set_memory_limit_mb(limit_mb)
+    loaded_before = model.loaded_memory_mb()
+
+    model.load(path_b)
+
+    assert model.is_loaded(0)
+    assert not model.is_loaded(1)
+    assert model.loaded_memory_mb() == pytest.approx(loaded_before)
+    assert model.memory_usage()["available_mb"] == 0.0
+    assert model.memory_usage()["overload_active"]
+
+
+def test_memory_limit_keeps_only_first_root_after_overload(tmp_path):
+    """After a root overload, only the first root remains loaded."""
+    fs = 256
+    n_ch = 64
+    signals = [
+        EdfSignal(np.zeros(30 * fs), sampling_frequency=fs, label=f"EEG{i}")
+        for i in range(n_ch)
+    ]
+    paths = [tmp_path / f"{idx}.edf" for idx in range(4)]
+    for path in paths:
+        Edf(signals).write(path)
+
+    model = Model()
+    for path in paths:
+        model.load(path)
+
+    single_mb = model.loaded_memory_mb() / 4
+    limit_mb = int(single_mb * 3) + 1
+    model.set_memory_limit_mb(limit_mb)
+
+    assert [model.is_loaded(idx) for idx in range(4)] == [
+        True,
+        False,
+        False,
+        False,
+    ]
+    assert model.memory_usage()["unloaded_count"] == 3
+
+
+def test_overload_locks_to_first_root_until_resolved(tmp_path):
+    """Subject 2 is usable before subject 3 causes overload, then unlocks again."""
+    fs = 256
+    n_ch = 64
+    signals = [
+        EdfSignal(np.zeros(30 * fs), sampling_frequency=fs, label=f"EEG{i}")
+        for i in range(n_ch)
+    ]
+    paths = [tmp_path / f"subject-{idx}.edf" for idx in range(3)]
+    for path in paths:
+        Edf(signals).write(path)
+
+    model = Model()
+    model.load(paths[0])
+    single_mb = model.loaded_memory_mb()
+    model.set_memory_limit_mb(int(single_mb * 2) + 1)
+
+    model.load(paths[1])
+    assert model.index == 1
+    assert [model.is_loaded(idx) for idx in range(2)] == [True, True]
+    assert not model.is_overload_active()
+
+    model.load(paths[2])
+    assert model.index == 0
+    assert [model.is_loaded(idx) for idx in range(3)] == [True, False, False]
+    assert model.is_overload_active()
+
+    model.remove_data(2)
+    assert model.index == 1
+    assert [model.is_loaded(idx) for idx in range(2)] == [True, True]
+    assert not model.is_overload_active()
+
+
+def test_any_overload_keeps_only_first_root_loaded(tmp_path):
+    """An overload caused by a derived node unloads every node except root 0."""
+    fs = 256
+    n_ch = 64
+    signals = [
+        EdfSignal(np.zeros(30 * fs), sampling_frequency=fs, label=f"EEG{i}")
+        for i in range(n_ch)
+    ]
+    path = tmp_path / "root.edf"
+    Edf(signals).write(path)
+
+    model = Model()
+    model.load(path)
+    limit_mb = int(model.loaded_memory_mb()) + 1
+    model.set_memory_limit_mb(limit_mb)
+
+    model.filter(lower=1.0)
+
+    assert [model.is_loaded(idx) for idx in range(len(model.data))] == [True, False]
+    assert model.index == 0
+    assert model.memory_usage()["unloaded_count"] == 1
+
+
+def test_get_compatibles_skips_unloaded_datasets(tmp_path):
+    """Compatibility checks do not reload or dereference evicted datasets."""
+    fs = 256
+    signal = np.zeros(30 * fs)
+    path_a = tmp_path / "a.edf"
+    path_b = tmp_path / "b.edf"
+    for path in (path_a, path_b):
+        Edf([EdfSignal(signal, sampling_frequency=fs, label="EEG")]).write(path)
+
+    model = Model()
+    model.load(path_a)
+    model.load(path_b)
+    model.unload_dataset(0)
+
+    assert model.index == 1
+    assert model.get_compatibles() == []
+    assert not model.is_loaded(0)
+
+
+def test_reload_dataset_replays_derived_pipeline(model_with_data, tmp_path):
+    """Unloading a derived dataset is transparent via ensure_loaded."""
+    model_with_data.filter(lower=1.0)
+    derived_index = model_with_data.index
+
+    model_with_data.unload_dataset(derived_index)
+    assert not model_with_data.is_loaded(derived_index)
+
+    model_with_data.ensure_loaded(derived_index)
+    assert model_with_data.is_loaded(derived_index)
+    assert model_with_data.data[derived_index]["data"] is not None
+
+
 def test_move_data_remaps_parent_indices():
     """Moving rows keeps lineage references pointing at the same datasets."""
     root_a = {

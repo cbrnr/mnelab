@@ -239,6 +239,193 @@ def test_apply_pipeline_uses_progress_dialog(view, tmp_path):
     MockProgressDialog.return_value.close.assert_called_once()
 
 
+def test_data_changed_handles_unloaded_compatible_datasets(view, tmp_path):
+    """Evicted sibling roots do not crash status/action updates."""
+    fs = 256
+    n_ch = 64
+    signals = [
+        EdfSignal(np.zeros(30 * fs), sampling_frequency=fs, label=f"EEG{i}")
+        for i in range(n_ch)
+    ]
+    path_a = tmp_path / "a.edf"
+    path_b = tmp_path / "b.edf"
+    for path in (path_a, path_b):
+        Edf(signals).write(path)
+
+    view.model.load(path_a)
+    view.model.load(path_b)
+    limit_mb = int(view.model.loaded_memory_mb() / 2) + 1
+    view.model.set_memory_limit_mb(limit_mb)
+
+    assert view.model.is_loaded(0)
+    assert not view.model.is_loaded(1)
+
+    view.data_changed()
+
+    assert "MB free" in view.status_label.text()
+    assert "unloaded" in view.status_label.text()
+
+
+def test_status_reports_later_roots_unloaded_after_overload(view, tmp_path):
+    """The status text reflects the current number of unloaded datasets."""
+    fs = 256
+    n_ch = 64
+    signals = [
+        EdfSignal(np.zeros(30 * fs), sampling_frequency=fs, label=f"EEG{i}")
+        for i in range(n_ch)
+    ]
+    paths = [tmp_path / f"{idx}.edf" for idx in range(4)]
+    for path in paths:
+        Edf(signals).write(path)
+
+    for path in paths:
+        view.model.load(path)
+
+    single_mb = view.model.loaded_memory_mb() / 4
+    limit_mb = int(single_mb * 3) + 1
+    view.model.set_memory_limit_mb(limit_mb)
+    view.data_changed()
+
+    assert [view.model.is_loaded(idx) for idx in range(4)] == [
+        True,
+        False,
+        False,
+        False,
+    ]
+    assert "3 unloaded" in view.status_label.text()
+
+
+def test_derived_overload_leaves_only_first_root_active(view, tmp_path):
+    """Overload from a derived node disables operations on that unloaded node."""
+    fs = 256
+    n_ch = 64
+    signals = [
+        EdfSignal(np.zeros(30 * fs), sampling_frequency=fs, label=f"EEG{i}")
+        for i in range(n_ch)
+    ]
+    path = tmp_path / "root.edf"
+    Edf(signals).write(path)
+
+    view.model.load(path)
+    limit_mb = int(view.model.loaded_memory_mb()) + 1
+    view.model.set_memory_limit_mb(limit_mb)
+
+    view.model.filter(lower=1.0)
+
+    assert view.model.index == 0
+    assert [view.model.is_loaded(idx) for idx in range(len(view.model.data))] == [
+        True,
+        False,
+    ]
+    assert "1 unloaded" in view.status_label.text()
+    assert view.all_actions["filter"].isEnabled()
+
+    view._update_data(1)
+
+    assert not view.all_actions["filter"].isEnabled()
+
+    view._update_data(0)
+
+    assert view.model.is_loaded(0)
+    assert view.all_actions["filter"].isEnabled()
+
+
+def test_selecting_unloaded_dataset_keeps_memory_and_actions_passive(view, tmp_path):
+    """Selecting an unloaded root does not reload it or enable data operations."""
+    fs = 256
+    n_ch = 64
+    signals = [
+        EdfSignal(np.zeros(30 * fs), sampling_frequency=fs, label=f"EEG{i}")
+        for i in range(n_ch)
+    ]
+    path_a = tmp_path / "a.edf"
+    path_b = tmp_path / "b.edf"
+    for path in (path_a, path_b):
+        Edf(signals).write(path)
+
+    view.model.load(path_a)
+    limit_mb = int(view.model.loaded_memory_mb()) + 1
+    view.model.set_memory_limit_mb(limit_mb)
+    loaded_before = view.model.loaded_memory_mb()
+
+    view.model.load(path_b)
+
+    assert view.model.is_loaded(0)
+    assert not view.model.is_loaded(1)
+    assert view.model.index == 0
+    assert view.all_actions["filter"].isEnabled()
+
+    status_before = view.status_label.text()
+
+    view._update_data(1)
+
+    assert not view.model.is_loaded(1)
+    assert view.model.loaded_memory_mb() == pytest.approx(loaded_before)
+    assert view.status_label.text() == status_before
+    assert not view.all_actions["filter"].isEnabled()
+
+
+def test_overload_locks_ui_to_first_root_until_resolved(view, tmp_path):
+    """Subject 2 is editable before subject 3 overloads, then unlocks after close."""
+    fs = 256
+    n_ch = 64
+    signals = [
+        EdfSignal(np.zeros(30 * fs), sampling_frequency=fs, label=f"EEG{i}")
+        for i in range(n_ch)
+    ]
+    paths = [tmp_path / f"subject-{idx}.edf" for idx in range(3)]
+    for path in paths:
+        Edf(signals).write(path)
+
+    view.model.load(paths[0])
+    single_mb = view.model.loaded_memory_mb()
+    view.model.set_memory_limit_mb(int(single_mb * 2) + 1)
+
+    view.model.load(paths[1])
+    assert view.model.index == 1
+    assert view.all_actions["filter"].isEnabled()
+    assert [view.model.is_loaded(idx) for idx in range(2)] == [True, True]
+
+    view.model.load(paths[2])
+    assert view.model.index == 0
+    assert view.all_actions["filter"].isEnabled()
+    assert [view.model.is_loaded(idx) for idx in range(3)] == [True, False, False]
+
+    view._update_data(1)
+    assert not view.all_actions["filter"].isEnabled()
+    assert not view.model.is_loaded(1)
+
+    view.model.remove_data(2)
+    assert view.model.index == 1
+    assert view.all_actions["filter"].isEnabled()
+    assert [view.model.is_loaded(idx) for idx in range(2)] == [True, True]
+
+
+def test_close_reloads_unloaded_new_current_dataset(view, tmp_path):
+    """Closing the active root can fall back to an evicted root without an error."""
+    fs = 256
+    n_ch = 64
+    signals = [
+        EdfSignal(np.zeros(30 * fs), sampling_frequency=fs, label=f"EEG{i}")
+        for i in range(n_ch)
+    ]
+    path_a = tmp_path / "a.edf"
+    path_b = tmp_path / "b.edf"
+    for path in (path_a, path_b):
+        Edf(signals).write(path)
+
+    view.model.load(path_a)
+    view.model.load(path_b)
+    limit_mb = int(view.model.loaded_memory_mb() / 2) + 1
+    view.model.set_memory_limit_mb(limit_mb)
+
+    view.model.remove_data(view.model.index)
+
+    assert view.model.index == 0
+    assert view.model.is_loaded(0)
+    assert "MB free" in view.status_label.text()
+
+
 def test_dataset_details_dialog_can_jump_to_parent_dataset(view, qtbot, tmp_path):
     """The details dialog can navigate back to the parent dataset."""
     fs = 256

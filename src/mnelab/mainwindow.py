@@ -129,6 +129,7 @@ class MainWindow(QMainWindow):
 
         # restore settings
         settings = read_settings()
+        self.model.set_memory_limit_mb(settings["dataset_memory_limit_mb"])
         self.recent = settings["recent"]  # list of recent files
         self.resize(settings["size"])
         self.move(settings["pos"])
@@ -650,94 +651,107 @@ class MainWindow(QMainWindow):
 
         # update status bar
         if self.model.data:
-            mb = self.model.nbytes / 1024**2
-            self.status_label.setText(f"Total Memory: {mb:.2f} MB")
+            memory = self.model.memory_usage()
+            loaded_mb = memory["loaded_mb"]
+            limit_mb = memory["limit_mb"]
+            unloaded = memory["unloaded_count"]
+            if limit_mb > 0:
+                status = (
+                    f"Memory: {loaded_mb:.1f} / {limit_mb} MB "
+                    f"({memory['available_mb']:.1f} MB free"
+                )
+                if memory["over_limit_mb"]:
+                    status += f", {memory['over_limit_mb']:.1f} MB over limit"
+                if unloaded:
+                    status += f", {unloaded} unloaded"
+                status += ")"
+                self.status_label.setText(status)
+            else:
+                status = f"Memory: {loaded_mb:.1f} MB"
+                if unloaded:
+                    status += f" ({unloaded} unloaded)"
+                self.status_label.setText(status)
         else:
             self.status_label.clear()
 
         # toggle actions
-        if len(self.model) == 0:  # disable if no data sets are currently open
-            enabled = False
-        else:
-            enabled = True
+        has_data = len(self.model) > 0
+        current_loaded = has_data and self.model.is_loaded(self.model.index)
 
         for name, action in self.all_actions.items():  # toggle
             if name not in self.always_enabled:
-                action.setEnabled(enabled)
+                action.setEnabled(current_loaded)
 
-        if self.model.data:  # toggle if specific conditions are met
+        if has_data:
+            self.all_actions["close_file"].setEnabled(True)
+            self.all_actions["close_all"].setEnabled(True)
+            self.all_actions["pipeline_editor"].setEnabled(True)
+
+        if current_loaded:  # toggle if specific conditions are met
             bads = bool(self.model.current["data"].info["bads"])
-            self.all_actions["export_bads"].setEnabled(enabled and bads)
+            self.all_actions["export_bads"].setEnabled(bads)
             events = len(self.model.current["events"]) > 0
-            self.all_actions["export_events"].setEnabled(enabled and events)
+            self.all_actions["export_events"].setEnabled(events)
             if self.model.current["dtype"] == "raw":
                 annot = bool(self.model.current["data"].annotations)
             else:
                 annot = False
-            self.all_actions["export_annotations"].setEnabled(enabled and annot)
-            self.all_actions["annotations"].setEnabled(enabled)
+            self.all_actions["export_annotations"].setEnabled(annot)
+            self.all_actions["annotations"].setEnabled(True)
             locations = count_locations(self.model.current["data"].info)
-            self.all_actions["plot_locations"].setEnabled(enabled and locations)
+            self.all_actions["plot_locations"].setEnabled(bool(locations))
             ica = bool(self.model.current["ica"])
             self.all_actions["label_ica"].setEnabled(
-                enabled and ica and self.model.current["montage"] is not None
+                ica and self.model.current["montage"] is not None
             )
-            self.all_actions["apply_ica"].setEnabled(enabled and ica)
-            self.all_actions["export_ica"].setEnabled(enabled and ica)
+            self.all_actions["apply_ica"].setEnabled(ica)
+            self.all_actions["export_ica"].setEnabled(ica)
             self.all_actions["plot_erds"].setEnabled(
-                enabled and self.model.current["dtype"] == "epochs"
+                self.model.current["dtype"] == "epochs"
             )
             self.all_actions["plot_erds_topomaps"].setEnabled(
-                enabled and locations and self.model.current["dtype"] == "epochs"
+                bool(locations) and self.model.current["dtype"] == "epochs"
             )
             self.all_actions["plot_evoked"].setEnabled(
-                enabled and self.model.current["dtype"] == "epochs"
+                self.model.current["dtype"] == "epochs"
             )
             self.all_actions["plot_evoked_comparison"].setEnabled(
-                enabled and self.model.current["dtype"] == "epochs"
+                self.model.current["dtype"] == "epochs"
             )
             self.all_actions["plot_evoked_topomaps"].setEnabled(
-                enabled and locations and self.model.current["dtype"] == "epochs"
+                bool(locations) and self.model.current["dtype"] == "epochs"
             )
-            self.all_actions["plot_ica_components"].setEnabled(
-                enabled and ica and locations
-            )
-            self.all_actions["plot_ica_sources"].setEnabled(enabled and ica)
-            self.all_actions["interpolate_bads"].setEnabled(
-                enabled and locations and bads
-            )
-            self.all_actions["events"].setEnabled(enabled)
-            self.all_actions["events_from_annotations"].setEnabled(enabled and annot)
-            self.all_actions["annotations_from_events"].setEnabled(enabled and events)
+            self.all_actions["plot_ica_components"].setEnabled(ica and bool(locations))
+            self.all_actions["plot_ica_sources"].setEnabled(ica)
+            self.all_actions["interpolate_bads"].setEnabled(bool(locations) and bads)
+            self.all_actions["events"].setEnabled(True)
+            self.all_actions["events_from_annotations"].setEnabled(annot)
+            self.all_actions["annotations_from_events"].setEnabled(events)
             self.all_actions["find_events"].setEnabled(
-                enabled and self.model.current["dtype"] == "raw"
+                self.model.current["dtype"] == "raw"
             )
             self.all_actions["epoch_data"].setEnabled(
-                enabled and events and self.model.current["dtype"] == "raw"
+                events and self.model.current["dtype"] == "raw"
             )
             self.all_actions["channel_stats"].setEnabled(
-                enabled and self.model.current["dtype"] == "raw"
+                self.model.current["dtype"] == "raw"
             )
             self.all_actions["drop_bad_epochs"].setEnabled(
-                enabled and events and self.model.current["dtype"] == "epochs"
+                events and self.model.current["dtype"] == "epochs"
             )
             self.all_actions["artifact_detection"].setEnabled(
-                enabled and events and self.model.current["dtype"] == "epochs"
+                events and self.model.current["dtype"] == "epochs"
             )
             self.all_actions["clear_montage"].setEnabled(
-                enabled and self.model.current["montage"] is not None
+                self.model.current["montage"] is not None
             )
-            self.all_actions["crop"].setEnabled(
-                enabled and self.model.current["dtype"] == "raw"
-            )
+            self.all_actions["crop"].setEnabled(self.model.current["dtype"] == "raw")
             append = bool(self.model.get_compatibles())
             self.all_actions["append_data"].setEnabled(
-                enabled
-                and append
-                and (self.model.current["dtype"] in ("raw", "epochs"))
+                append and (self.model.current["dtype"] in ("raw", "epochs"))
             )
             self.all_actions["xdf_metadata"].setEnabled(
-                enabled and self.model.current["ftype"] in ["XDF", "XDFZ", "XDF.GZ"]
+                self.model.current["ftype"] in ["XDF", "XDFZ", "XDF.GZ"]
             )
             # disable unsupported exporters for epochs (all must support raw)
             if self.model.current["dtype"] == "epochs":
@@ -748,7 +762,7 @@ class MainWindow(QMainWindow):
                     else:
                         self.all_actions[action].setEnabled(False)
         # add to recent files
-        if len(self.model) > 0 and self.model.current["fname"] is not None:
+        if has_data and self.model.current["fname"] is not None:
             self._add_recent(self.model.current["fname"])
 
     def open_data(self, fname=None):
@@ -1749,6 +1763,7 @@ class MainWindow(QMainWindow):
         new_backend = read_settings("plot_backend")
         new_badges = read_settings("dtype_badges")
         new_menu_icons = read_settings("menu_icons")
+        new_memory_limit = read_settings("dataset_memory_limit_mb")
         if old_backend != new_backend:
             mne.viz.set_browser_backend(new_backend)
         if old_badges != new_badges:
@@ -1759,6 +1774,7 @@ class MainWindow(QMainWindow):
                 "Restart required",
                 'The "Menu icons" setting will take effect after restarting MNELAB.',
             )
+            self.model.set_memory_limit_mb(new_memory_limit)
 
     def save_pipeline_for_dataset(self, dataset_index):
         """Save the pipeline for a specific branch in the lineage tree."""
@@ -1957,6 +1973,12 @@ class MainWindow(QMainWindow):
             Index of the selected dataset in model.data.
         """
         if dataset_index != self.model.index:
+            if (
+                not self.model.is_overload_active()
+                and not self.model.is_loaded(dataset_index)
+                and self.model.can_reload(dataset_index)
+            ):
+                self.model.ensure_loaded(dataset_index)
             self.model.index = dataset_index
             self.data_changed()
 

@@ -126,6 +126,8 @@ def pipeline_step(op_name, copy_data=True):
                                 ds["parent_index"] = pi - 1
                         self.index = parent_index
                         raise
+                    self.touch_dataset(self.index)
+                    self.enforce_memory_limit()
                     self.view.data_changed()
             else:
                 try:
@@ -138,6 +140,8 @@ def pipeline_step(op_name, copy_data=True):
                             ds["parent_index"] = pi - 1
                     self.index = parent_index
                     raise
+                self.touch_dataset(self.index)
+                self.enforce_memory_limit()
             return result
 
         return wrapper
@@ -154,12 +158,17 @@ class Model:
         self.index = -1  # index of currently active data set
         self.log = []  # captured MNE log messages
         self.pipeline_run_report = []  # last pipeline apply status report
+        self._memory_limit_mb = 0  # 0 = no limit
+        self._lru = []  # dataset indices in LRU order (oldest first)
+        self._overload_active = False
 
     @data_changed
     def insert_data(self, dataset):
         """Insert data set after current index."""
         self.index += 1
         self._insert_at(self.index, dataset)
+        self.touch_dataset(self.index)
+        self.enforce_memory_limit()
 
     @data_changed
     def update_data(self, dataset):
@@ -178,6 +187,12 @@ class Model:
         for idx in to_remove:
             self.data.pop(idx)
 
+        self._lru = [
+            idx - sum(1 for removed in to_remove if removed < idx)
+            for idx in self._lru
+            if idx not in to_remove
+        ]
+
         # update stored parent_index values in remaining datasets
         for ds in self.data:
             pi = ds.get("parent_index")
@@ -189,6 +204,8 @@ class Model:
         else:
             new_pos = index - sum(1 for r in to_remove if r <= index)
             self.index = max(0, min(new_pos, len(self.data) - 1))
+            if self.is_loaded(self.index) or self.can_reload(self.index):
+                self.ensure_loaded(self.index)
 
     @data_changed
     def duplicate_data(self):
@@ -205,6 +222,8 @@ class Model:
         new_dataset["fsize"] = None
         self.index += 1
         self._insert_at(self.index, new_dataset)
+        self.touch_dataset(self.index)
+        self.enforce_memory_limit()
 
     @property
     def names(self):
@@ -222,7 +241,9 @@ class Model:
         seen = set()
         total = 0
         for item in self.data:
-            obj = item["data"]
+            obj = item.get("data")
+            if obj is None:
+                continue
             obj_id = id(obj)
             if obj_id not in seen:
                 seen.add(obj_id)
@@ -271,6 +292,7 @@ class Model:
                 ftype=ext.upper()[1:],
                 fsize=fsize,
                 data=raw,
+                memory_nbytes=raw.get_data().nbytes,
                 dtype="raw",
                 created_at=datetime.now(UTC).isoformat(),
                 data_mode="root",
@@ -526,6 +548,24 @@ class Model:
         ftype = self.current["ftype"]
         fsize = self.current["fsize"]
         dtype = self.current["dtype"].capitalize()
+        size_disk = f"{fsize:.2f}\u2009MB" if fname else "-"
+        if data is None:
+            return {
+                "File name": fname if fname else "-",
+                "File type": ftype if ftype else "-",
+                "Data type": dtype,
+                "Size on disk": size_disk,
+                "Size in memory": "0.00\u2009MB (unloaded)",
+                "Channels": "-",
+                "Samples": "-",
+                "Sampling frequency": "-",
+                "Length": "-",
+                "Events": "-",
+                "Annotations": "-",
+                "Reference": "-",
+                "Montage": "-",
+                "ICA": "-",
+            }
         reference = self.current["reference"]
         events = self.current["events"]
         montage = self.current["montage"]
@@ -598,8 +638,6 @@ class Model:
             ica = f"{method} ({n_active}/{ica.n_components_} components)"
         else:
             ica = "-"
-
-        size_disk = f"{fsize:.2f}\u2009MB" if fname else "-"
 
         if hasattr(data, "annotations") and data.annotations is not None:
             annots = len(data.annotations.description)
@@ -798,8 +836,12 @@ class Model:
         """
         compatibles = []
         data = self.current["data"]
+        if data is None:
+            return compatibles
         for idx, d in enumerate(self.data):
             if idx == self.index:  # skip current data set
+                continue
+            if d.get("data") is None:
                 continue
             if d["dtype"] not in ("raw", "epochs"):
                 continue
@@ -958,6 +1000,8 @@ class Model:
             if parent_index is not None:
                 dataset["parent_index"] = new_index_for_old[parent_index]
 
+        self._lru = [new_index_for_old[idx] for idx in self._lru]
+
         self.index = new_index_for_old[moved_old_index]
 
     def _insert_at(self, at_index, dataset):
@@ -970,6 +1014,7 @@ class Model:
         insertion.
         """
         self.data.insert(at_index, dataset)
+        self._lru = [idx + 1 if idx >= at_index else idx for idx in self._lru]
         for ds in self.data:
             if ds is dataset:
                 continue
@@ -988,6 +1033,212 @@ class Model:
                     descendants.append(i)
                     to_visit.append(i)
         return descendants
+
+    # --- dataset memory management ---
+
+    def set_memory_limit_mb(self, mb):
+        """Set the dataset memory limit in MB. 0 disables the limit."""
+        self._memory_limit_mb = int(mb)
+        if self._memory_limit_mb <= 0:
+            self._overload_active = False
+        self.enforce_memory_limit()
+
+    def is_overload_active(self):
+        """Return True while open datasets do not fit in the memory limit."""
+        return self._overload_active
+
+    def is_loaded(self, index):
+        """Return True if the dataset at index has its data object loaded."""
+        if index < 0 or index >= len(self.data):
+            return False
+        return self.data[index].get("data") is not None
+
+    def can_reload(self, index):
+        """Return True if the dataset at index can be automatically reloaded."""
+        if index < 0 or index >= len(self.data):
+            return False
+        ds = self.data[index]
+        if ds.get("parent_index") is None:
+            fname = ds.get("fname")
+            return bool(fname) and Path(fname).exists()
+        root = self._root_dataset(index)
+        return bool(
+            root and root.get("fname") and Path(root["fname"]).exists()
+        ) and self.has_replayable_pipeline(index)
+
+    def touch_dataset(self, index):
+        """Mark dataset as recently used (update LRU position)."""
+        if self.is_loaded(index):
+            self.data[index]["memory_nbytes"] = (
+                self.data[index]["data"].get_data().nbytes
+            )
+        if index in self._lru:
+            self._lru.remove(index)
+        self._lru.append(index)
+
+    def unload_dataset(self, index):
+        """Drop the data object for dataset at index to free memory."""
+        if index < 0 or index >= len(self.data):
+            return
+        self.data[index]["data"] = None
+        if index in self._lru:
+            self._lru.remove(index)
+
+    def loaded_memory_mb(self):
+        """Return total loaded dataset memory in MB, counting shared objects once."""
+        seen = set()
+        total = 0
+        for item in self.data:
+            obj = item.get("data")
+            if obj is None:
+                continue
+            obj_id = id(obj)
+            if obj_id not in seen:
+                seen.add(obj_id)
+                total += obj.get_data().nbytes
+        return total / (1024 * 1024)
+
+    def unloaded_count(self):
+        """Return the number of datasets whose data object is currently unloaded."""
+        return sum(1 for index in range(len(self.data)) if not self.is_loaded(index))
+
+    def memory_usage(self):
+        """Return loaded, available, and unloaded dataset-memory state."""
+        loaded_mb = self.loaded_memory_mb()
+        limit_mb = self._memory_limit_mb
+        estimated_open_mb = self._estimated_open_memory_mb()
+        if limit_mb > 0:
+            if self._overload_active:
+                available_mb = 0.0
+                over_limit_mb = max(0.0, estimated_open_mb - limit_mb)
+            else:
+                available_mb = max(0.0, limit_mb - loaded_mb)
+                over_limit_mb = max(0.0, loaded_mb - limit_mb)
+        else:
+            available_mb = None
+            over_limit_mb = 0.0
+        return {
+            "loaded_mb": loaded_mb,
+            "estimated_open_mb": estimated_open_mb,
+            "limit_mb": limit_mb,
+            "available_mb": available_mb,
+            "over_limit_mb": over_limit_mb,
+            "unloaded_count": self.unloaded_count(),
+            "overload_active": self._overload_active,
+        }
+
+    def _first_root_index(self):
+        """Return the index of the first root dataset, or None."""
+        return next(
+            (
+                idx
+                for idx, dataset in enumerate(self.data)
+                if dataset.get("parent_index") is None
+            ),
+            None,
+        )
+
+    def _estimated_dataset_nbytes(self, index):
+        """Return estimated memory for a dataset, including unloaded datasets."""
+        dataset = self.data[index]
+        if self.is_loaded(index):
+            dataset["memory_nbytes"] = dataset["data"].get_data().nbytes
+        if dataset.get("data_mode") == "shared":
+            return 0
+        return dataset.get("memory_nbytes") or 0
+
+    def _estimated_open_memory_mb(self):
+        """Return estimated memory if all open datasets were loaded."""
+        total = sum(
+            self._estimated_dataset_nbytes(index) for index in range(len(self.data))
+        )
+        return total / (1024 * 1024)
+
+    def _refresh_overload_state(self):
+        """Update whether the open dataset set exceeds the configured limit."""
+        if self._memory_limit_mb <= 0:
+            self._overload_active = False
+            return
+        if self.loaded_memory_mb() > self._memory_limit_mb:
+            self._overload_active = True
+        elif (
+            self._overload_active
+            and self._estimated_open_memory_mb() <= self._memory_limit_mb
+        ):
+            self._overload_active = False
+
+    def _enforce_overload_memory_limit(self):
+        """When memory is over limit, keep only the first root loaded."""
+        if not self._overload_active:
+            return
+        first_root = self._first_root_index()
+        if first_root is None:
+            return
+        for candidate in range(len(self.data)):
+            if candidate == first_root or not self.is_loaded(candidate):
+                continue
+            self.unload_dataset(candidate)
+        self.index = first_root
+
+    def enforce_memory_limit(self, protected_index=None):
+        """Evict least-recently-used reloadable datasets until under the limit."""
+        if self._memory_limit_mb <= 0 or len(self.data) <= 1:
+            self._refresh_overload_state()
+            return
+        self._refresh_overload_state()
+        self._enforce_overload_memory_limit()
+        first_root = self._first_root_index()
+        for candidate in list(self._lru):
+            if self.loaded_memory_mb() <= self._memory_limit_mb:
+                break
+            if candidate in {self.index, protected_index, first_root}:
+                continue
+            if self.is_loaded(candidate) and self.can_reload(candidate):
+                self.unload_dataset(candidate)
+
+    def ensure_loaded(self, index):
+        """Reload the dataset at index if it was evicted, then mark as recently used."""
+        if not self.is_loaded(index):
+            self._reload_dataset(index)
+        self.touch_dataset(index)
+        self.enforce_memory_limit(protected_index=index)
+
+    def ensure_current_loaded(self):
+        """Ensure the active dataset has a loaded data object."""
+        if self.index >= 0:
+            self.ensure_loaded(self.index)
+
+    def _reload_dataset(self, index):
+        """Reload an evicted dataset: file read for roots, branch replay for derived."""
+        ds = self.data[index]
+        parent_index = ds.get("parent_index")
+
+        if parent_index is None:
+            fname = ds.get("fname")
+            if not fname:
+                raise ValueError(f"Dataset at {index} has no file source for reload")
+            ds["data"] = read_raw(fname, preload=True)
+            ds["memory_nbytes"] = ds["data"].get_data().nbytes
+            return
+
+        steps = self.get_pipeline_steps(index)
+        root_ds = self.data[steps[0]["index"]]
+        root_fname = root_ds.get("fname")
+        if not root_fname:
+            raise ValueError(
+                f"Cannot reload dataset at {index}: root has no file source"
+            )
+
+        pipeline = self.get_pipeline(index)
+        if pipeline is None or not pipeline.get("steps"):
+            raise ValueError(f"Cannot build pipeline for dataset at {index}")
+
+        temp = Model()
+        fresh_root = read_raw(root_fname, preload=True)
+        temp.load_raw(fresh_root, root_fname, name=root_ds["name"])
+        temp.apply_pipeline(pipeline)
+        ds["data"] = temp.current["data"]
+        ds["memory_nbytes"] = ds["data"].get_data().nbytes
 
     def get_pipeline_steps(self, idx=None):
         """Return ordered list of datasets from root ancestor to dataset[idx].
