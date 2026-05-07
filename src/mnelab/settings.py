@@ -53,6 +53,7 @@ _DEFAULTS = {
     "menu_icons": True,
     "show_menubar": True,
     "annotation_colors": {},
+    "theme": "system",
 }
 
 _JSON_KEYS = {"annotation_colors"}
@@ -126,6 +127,14 @@ class SettingsDialog(QDialog):
         self.plot_backend.addItems(backends)
         self.plot_backend.setCurrentIndex(backends.index(backend))
         form.addRow("Plot backend:", self.plot_backend)
+
+        self.theme = QComboBox()
+        self.theme.addItems(["System", "Light", "Dark"])
+        theme = read_settings("theme").title()
+        if theme not in {"System", "Light", "Dark"}:
+            theme = "System"
+        self.theme.setCurrentText(theme)
+        form.addRow("Theme:", self.theme)
 
         self.max_recent = FlatSpinBox()
         self.max_recent.setRange(5, 25)
@@ -204,6 +213,7 @@ class SettingsDialog(QDialog):
             duration=self.duration.value(),
             recent=self.parent().recent,
             plot_backend=self.plot_backend.currentText(),
+            theme=self.theme.currentText().lower(),
             dtype_badges=self.dtype_badges.isChecked(),
             menu_icons=self.menu_icons.isChecked(),
         )
@@ -215,6 +225,7 @@ class SettingsDialog(QDialog):
         self.max_recent.setValue(_DEFAULTS["max_recent"])
         self.max_channels.setValue(_DEFAULTS["max_channels"])
         self.duration.setValue(_DEFAULTS["duration"])
+        self.theme.setCurrentText(_DEFAULTS["theme"].title())
         self.dtype_badges.setChecked(_DEFAULTS["dtype_badges"])
         self.menu_icons.setChecked(_DEFAULTS["menu_icons"])
         self.plot_backend.setCurrentIndex(
