@@ -4,7 +4,7 @@
 
 from pathlib import Path
 
-from PySide6.QtCore import QEvent, QTimer
+from PySide6.QtCore import QEvent, Qt, QTimer
 from PySide6.QtGui import QGuiApplication, QIcon, QKeySequence
 from PySide6.QtWidgets import (
     QGridLayout,
@@ -101,14 +101,28 @@ class InfoWidget(QWidget):
         """
         self.clear()
         if values:
-            for row, (key, value) in enumerate(values.items()):
+            row = 0
+            for key, value in values.items():
+                if str(key).startswith("_"):
+                    continue
                 left = QLabel(str(key) + ":")
                 right = QLabel(str(value))
-                right.setSizePolicy(
-                    QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed
+                right.setTextInteractionFlags(
+                    Qt.TextInteractionFlag.TextSelectableByMouse
                 )
+                right_text = str(value)
+                if "\n" in right_text or len(right_text) > 72:
+                    right.setWordWrap(True)
+                    right.setSizePolicy(
+                        QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred
+                    )
+                else:
+                    right.setSizePolicy(
+                        QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed
+                    )
                 self.grid.addWidget(left, row, 0)
                 self.grid.addWidget(right, row, 1)
+
                 if key == "File name" and value != "-":
                     right.setText(Path(str(value)).name)  # filename only, not full path
                     btn = QToolButton()
@@ -137,6 +151,8 @@ class InfoWidget(QWidget):
                     btn.installEventFilter(self)
                     self._copy_btn = btn
                     self.grid.addWidget(btn, row, 2)
+
+                row += 1
 
     def _on_copy(self, path):
         QGuiApplication.clipboard().setText(path)
@@ -169,7 +185,10 @@ class InfoWidget(QWidget):
         self._copy_btn = None
         item = self.grid.takeAt(0)
         while item:
-            item.widget().deleteLater()
+            widget = item.widget()
+            if widget is not None:
+                widget.setParent(None)
+                widget.deleteLater()
             del item
             item = self.grid.takeAt(0)
 

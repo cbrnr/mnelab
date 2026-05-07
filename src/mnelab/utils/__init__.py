@@ -20,4 +20,5 @@ from mnelab.utils.utils import (
     image_path,
     merge_annotations,
     natural_sort,
+    read_annotations_from_file,
 )

@@ -1,4 +1,7 @@
 ## [UNRELEASED] · YYYY-MM-DD
+### ✨ Added
+- Add pipeline editor with save, load, apply, and history support ([#625](https://github.com/cbrnr/mnelab/pull/625) by [Dennis Wambacher](https://github.com/D3njo/) and [Clemens Brunner](https://github.com/cbrnr))
+
 ### 🔧 Fixed
 - Fix the sidebar background color on Windows and Linux ([#622](https://github.com/cbrnr/mnelab/pull/622) and [#623](https://github.com/cbrnr/mnelab/pull/623) by [Clemens Brunner](https://github.com/cbrnr))
 

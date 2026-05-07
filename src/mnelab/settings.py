@@ -4,6 +4,7 @@
 
 import json
 from pathlib import Path
+from sys import platform
 
 from mne import get_config_path
 from PySide6.QtCore import (
@@ -37,6 +38,47 @@ SETTINGS_PATH = str(
 )
 
 
+def _default_memory_limit_mb():
+    """Return default dataset memory limit: min(25% RAM, 8192) MB, fallback 4096."""
+    try:
+        if platform == "win32":
+            import ctypes
+
+            class _MEMORYSTATUSEX(ctypes.Structure):
+                _fields_ = [
+                    ("dwLength", ctypes.c_ulong),
+                    ("dwMemoryLoad", ctypes.c_ulong),
+                    ("ullTotalPhys", ctypes.c_ulonglong),
+                    ("ullAvailPhys", ctypes.c_ulonglong),
+                    ("ullTotalPageFile", ctypes.c_ulonglong),
+                    ("ullAvailPageFile", ctypes.c_ulonglong),
+                    ("ullTotalVirtual", ctypes.c_ulonglong),
+                    ("ullAvailVirtual", ctypes.c_ulonglong),
+                    ("sullAvailExtendedVirtual", ctypes.c_ulonglong),
+                ]
+
+            stat = _MEMORYSTATUSEX()
+            stat.dwLength = ctypes.sizeof(stat)
+            ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat))
+            total_mb = stat.ullTotalPhys // (1024 * 1024)
+        elif platform == "darwin":
+            import subprocess
+
+            out = subprocess.check_output(["sysctl", "-n", "hw.memsize"], text=True)
+            total_mb = int(out.strip()) // (1024 * 1024)
+        else:
+            with open("/proc/meminfo") as f:
+                for line in f:
+                    if line.startswith("MemTotal:"):
+                        total_mb = int(line.split()[1]) // 1024
+                        break
+                else:
+                    return 4096
+        return min(total_mb // 4, 8192)
+    except Exception:
+        return 4096
+
+
 _DEFAULTS = {
     "max_recent": 6,
     "max_channels": 20,
@@ -53,6 +95,7 @@ _DEFAULTS = {
     "menu_icons": True,
     "show_menubar": True,
     "annotation_colors": {},
+    "dataset_memory_limit_mb": _default_memory_limit_mb(),
 }
 
 _JSON_KEYS = {"annotation_colors"}
@@ -149,6 +192,17 @@ class SettingsDialog(QDialog):
         self.duration.setFixedWidth(100)
         form.addRow("Displayed duration:", self.duration)
 
+        self.dataset_memory_limit_mb = FlatSpinBox()
+        self.dataset_memory_limit_mb.setRange(0, 1024 * 1024)
+        self.dataset_memory_limit_mb.setValue(read_settings("dataset_memory_limit_mb"))
+        self.dataset_memory_limit_mb.setSuffix(" MB")
+        self.dataset_memory_limit_mb.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.dataset_memory_limit_mb.setFixedWidth(100)
+        self.dataset_memory_limit_mb.setToolTip(
+            "Maximum total loaded dataset memory. 0 = no limit."
+        )
+        form.addRow("Dataset memory limit:", self.dataset_memory_limit_mb)
+
         self.dtype_badges = QCheckBox()
         self.dtype_badges.setChecked(read_settings("dtype_badges"))
         form.addRow("Data type badges:", self.dtype_badges)
@@ -204,6 +258,7 @@ class SettingsDialog(QDialog):
             duration=self.duration.value(),
             recent=self.parent().recent,
             plot_backend=self.plot_backend.currentText(),
+            dataset_memory_limit_mb=self.dataset_memory_limit_mb.value(),
             dtype_badges=self.dtype_badges.isChecked(),
             menu_icons=self.menu_icons.isChecked(),
         )
@@ -215,6 +270,7 @@ class SettingsDialog(QDialog):
         self.max_recent.setValue(_DEFAULTS["max_recent"])
         self.max_channels.setValue(_DEFAULTS["max_channels"])
         self.duration.setValue(_DEFAULTS["duration"])
+        self.dataset_memory_limit_mb.setValue(_default_memory_limit_mb())
         self.dtype_badges.setChecked(_DEFAULTS["dtype_badges"])
         self.menu_icons.setChecked(_DEFAULTS["menu_icons"])
         self.plot_backend.setCurrentIndex(
