@@ -17,7 +17,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from mnelab.utils import PythonHighlighter, format_code
+from mnelab.utils import CodeEditor, PythonHighlighter, format_code
 
 
 class HistoryDialog(QDialog):
@@ -39,7 +39,7 @@ class HistoryDialog(QDialog):
         font.setFamily(fontname)
         font.setStyleHint(QFont.StyleHint.Monospace)
 
-        history_text = QPlainTextEdit()
+        history_text = CodeEditor()
         history_text.setFont(font)
         highlighter = PythonHighlighter(history_text.document())  # noqa: F841
         history_text.setReadOnly(True)

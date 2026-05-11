@@ -10,7 +10,7 @@ from mnelab.utils.artifact_detection import (
 )
 from mnelab.utils.dependencies import have
 from mnelab.utils.iclabel import run_iclabel
-from mnelab.utils.syntax import PythonHighlighter, format_code
+from mnelab.utils.syntax import CodeEditor, PythonHighlighter, format_code
 from mnelab.utils.utils import (
     Montage,
     annotations_between_events,
