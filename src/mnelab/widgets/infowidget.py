@@ -24,7 +24,7 @@ dev_label = (
 def _make_shortcuts_table(actions):
     dark = QGuiApplication.styleHints().colorScheme() == Qt.ColorScheme.Dark
     text_color = "#999" if dark else "#777"
-    kbd_bg = "#2a2a2a" if dark else "#e2e2e2"
+    kbd_bg = "#3a3a3a" if dark else "#e2e2e2"
     kbd_font = '"Cascadia Mono", ' if sys.platform.startswith("win32") else ""
     html = f"""<!DOCTYPE html>
     <html>
