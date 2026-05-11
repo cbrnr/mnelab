@@ -13,6 +13,10 @@ from mnelab.io.npy import read_raw_npy
 from mnelab.io.xdf import read_raw_xdf
 
 
+class UnsupportedFileTypeError(ValueError):
+    pass
+
+
 def _read_unsupported(fname, **kwargs):
     ext = "".join(Path(fname).suffixes)
     msg = f"Unsupported file type ({ext})."
@@ -98,7 +102,7 @@ def read_raw(fname, *args, **kwargs):
     else:
         ext = "".join(Path(fname).suffixes)
         msg = f"Unsupported file type ({ext})." if ext else "Unsupported file type."
-        raise ValueError(msg)
+        raise UnsupportedFileTypeError(msg)
 
 
 def read_epochs(fname, *args, **kwargs):
@@ -126,4 +130,4 @@ def read_epochs(fname, *args, **kwargs):
     else:
         ext = "".join(Path(fname).suffixes)
         msg = f"Unsupported file type ({ext})." if ext else "Unsupported file type."
-        raise ValueError(msg)
+        raise UnsupportedFileTypeError(msg)

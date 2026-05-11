@@ -11,8 +11,8 @@ from pathlib import Path
 import mne
 import numpy as np
 
-from mnelab.io import read_epochs, read_raw, write_raw
-from mnelab.io.readers import epoch_readers, split_name_ext
+from mnelab.io import UnsupportedFileTypeError, read_epochs, read_raw, write_raw
+from mnelab.io.readers import split_name_ext
 from mnelab.utils import count_locations, run_iclabel
 
 
@@ -173,31 +173,30 @@ class Model:
     def load(self, fname, *args, **kwargs):
         """Load data set from file."""
         fname = str(Path(fname).resolve().as_posix())
-        _, ext = split_name_ext(fname)
         try:
             data = read_raw(fname, *args, **kwargs, preload=True)
-        except ValueError:
-            if ext in epoch_readers:
+        except ValueError as e:
+            try:
                 data = read_epochs(fname, *args, **kwargs, preload=True)
-                self.history.append(
-                    f'data = read_epochs("{fname}", preload=True)'.replace("'", '"')
-                )
-                name, _ = split_name_ext(fname)
-                self.load_data(data, fname, name=name)
-                return
-            raise
-        argstr = ", " + f"{', '.join(f'{v}' for v in args)}" if args else ""
-        if kwargs:
-            kwargstr = (
-                ", " + f"{', '.join(f'{k}={repr(v)}' for k, v in kwargs.items())}"
+            except UnsupportedFileTypeError:
+                raise e
+            self.history.append(
+                f'data = read_epochs("{fname}", preload=True)'.replace("'", '"')
             )
         else:
-            kwargstr = ""
-        self.history.append(
-            f'data = read_raw("{fname}"{argstr}{kwargstr}, preload=True)'.replace(
-                "'", '"'
+            argstr = ", " + f"{', '.join(f'{v}' for v in args)}" if args else ""
+            if kwargs:
+                kwargstr = (
+                    ", "
+                    + f"{', '.join(f'{k}={repr(v)}' for k, v in kwargs.items())}"
+                )
+            else:
+                kwargstr = ""
+            self.history.append(
+                f'data = read_raw("{fname}"{argstr}{kwargstr}, preload=True)'.replace(
+                    "'", '"'
+                )
             )
-        )
         name, _ = split_name_ext(fname)
         self.load_data(data, fname, name=name)
 
