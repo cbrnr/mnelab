@@ -7,6 +7,7 @@
 - Fix the sidebar background color on Windows and Linux ([#622](https://github.com/cbrnr/mnelab/pull/622) and [#623](https://github.com/cbrnr/mnelab/pull/623) by [Clemens Brunner](https://github.com/cbrnr))
 - Improve history syntax highlighting in dark mode ([#631](https://github.com/cbrnr/mnelab/pull/631) by [Clemens Brunner](https://github.com/cbrnr))
 - Fix "Menubar" checkbox icon ([#634](https://github.com/cbrnr/mnelab/pull/634) by [Clemens Brunner](https://github.com/cbrnr))
+- Fix hamburger menu style ([#635](https://github.com/cbrnr/mnelab/pull/635) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🗑️ Removed
 - Remove manual Light/Dark theme options as this did not work reliably; the app now always follows the system theme ([#623](https://github.com/cbrnr/mnelab/pull/623) by [Clemens Brunner](https://github.com/cbrnr))
