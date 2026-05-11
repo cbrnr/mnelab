@@ -1,4 +1,7 @@
 ## [UNRELEASED] · YYYY-MM-DD
+### ✨ Added
+- Add support for opening FIFF files containing epochs (in addition to continuous raw data) ([#629](https://github.com/cbrnr/mnelab/pull/629) by [Clemens Brunner](https://github.com/cbrnr))
+
 ### 🔧 Fixed
 - Fix the sidebar background color on Windows and Linux ([#622](https://github.com/cbrnr/mnelab/pull/622) and [#623](https://github.com/cbrnr/mnelab/pull/623) by [Clemens Brunner](https://github.com/cbrnr))
 

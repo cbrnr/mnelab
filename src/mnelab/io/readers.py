@@ -13,6 +13,10 @@ from mnelab.io.npy import read_raw_npy
 from mnelab.io.xdf import read_raw_xdf
 
 
+class UnsupportedFileTypeError(ValueError):
+    pass
+
+
 def _read_unsupported(fname, **kwargs):
     ext = "".join(Path(fname).suffixes)
     msg = f"Unsupported file type ({ext})."
@@ -22,7 +26,7 @@ def _read_unsupported(fname, **kwargs):
     raise ValueError(msg)
 
 
-# supported read file formats
+# supported read file formats for raw (continuous) data
 supported = {
     ".edf": mne.io.read_raw_edf,
     ".bdf": mne.io.read_raw_bdf,
@@ -45,6 +49,12 @@ supported = {
     ".bvrd": read_raw_bvrf,
     ".bvrm": read_raw_bvrf,
     ".bvri": read_raw_bvrf,
+}
+
+# supported read file formats for epochs
+epoch_readers = {
+    ".fif": mne.read_epochs,
+    ".fif.gz": mne.read_epochs,
 }
 
 # known but unsupported file formats
@@ -92,6 +102,32 @@ def read_raw(fname, *args, **kwargs):
     else:
         ext = "".join(Path(fname).suffixes)
         msg = f"Unsupported file type ({ext})." if ext else "Unsupported file type."
-        raise ValueError(msg)
-    # here we could inspect the file signature to determine its type, which would allow
-    # us to read file independently of their extensions
+        raise UnsupportedFileTypeError(msg)
+
+
+def read_epochs(fname, *args, **kwargs):
+    """Read epochs file.
+
+    Parameters
+    ----------
+    fname : str
+        File name to load.
+
+    Returns
+    -------
+    epochs : mne.Epochs
+        Epochs object.
+
+    Notes
+    -----
+    This function supports reading epochs from different file formats. It uses the
+    `epoch_readers` dict to dispatch the appropriate read function for a supported file
+    type.
+    """
+    _, ext = split_name_ext(fname)
+    if ext is not None and ext in epoch_readers:
+        return epoch_readers[ext](fname, *args, **kwargs)
+    else:
+        ext = "".join(Path(fname).suffixes)
+        msg = f"Unsupported file type ({ext})." if ext else "Unsupported file type."
+        raise UnsupportedFileTypeError(msg)

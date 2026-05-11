@@ -865,7 +865,7 @@ class MainWindow(QMainWindow):
                                 )
                                 for pid, raw in data_dict.items():
                                     name, _ = split_name_ext(fname)
-                                    self.model.load_raw(
+                                    self.model.load_data(
                                         raw, fname, name=f"{name} ({pid})"
                                     )
                             else:
