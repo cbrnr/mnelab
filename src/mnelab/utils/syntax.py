@@ -8,32 +8,43 @@ import keyword
 import black
 import isort
 from PySide6.QtCore import QRegularExpression, Qt
-from PySide6.QtGui import QFont, QSyntaxHighlighter, QTextCharFormat
+from PySide6.QtGui import QColor, QFont, QSyntaxHighlighter, QTextCharFormat
+from PySide6.QtWidgets import QApplication
 
 
 class PythonHighlighter(QSyntaxHighlighter):
     def __init__(self, document):
         super().__init__(document)
+        self._build_rules()
+        QApplication.styleHints().colorSchemeChanged.connect(
+            self._on_color_scheme_changed
+        )
 
+    def _build_rules(self):
+        dark = QApplication.styleHints().colorScheme() == Qt.ColorScheme.Dark
         self.rules = []
 
         # keywords
         f = QTextCharFormat()
         f.setFontWeight(QFont.Weight.Bold)
-        f.setForeground(Qt.GlobalColor.darkBlue)
+        f.setForeground(QColor("#569CD6") if dark else QColor("#0000FF"))
         for kw in keyword.kwlist:
             self.rules.append((QRegularExpression(rf"\b{kw}\b"), f))
 
         # numerals
         f = QTextCharFormat()
-        f.setForeground(Qt.GlobalColor.blue)
+        f.setForeground(QColor("#B5CEA8") if dark else QColor("#098658"))
         self.rules.append((QRegularExpression("[0-9]+"), f))
 
         # strings
         f = QTextCharFormat()
-        f.setForeground(Qt.GlobalColor.darkCyan)
+        f.setForeground(QColor("#CE9178") if dark else QColor("#A31515"))
         self.rules.append((QRegularExpression('"[^"]*"'), f))
         self.rules.append((QRegularExpression("'[^']*'"), f))
+
+    def _on_color_scheme_changed(self):
+        self._build_rules()
+        self.rehighlight()
 
     def highlightBlock(self, text):
         for rule in self.rules:
