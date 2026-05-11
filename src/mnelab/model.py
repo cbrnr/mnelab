@@ -11,8 +11,8 @@ from pathlib import Path
 import mne
 import numpy as np
 
-from mnelab.io import read_raw, write_raw
-from mnelab.io.readers import split_name_ext
+from mnelab.io import read_epochs, read_raw, write_raw
+from mnelab.io.readers import epoch_readers, split_name_ext
 from mnelab.utils import count_locations, run_iclabel
 
 
@@ -127,24 +127,33 @@ class Model:
         return len(self.data)
 
     @data_changed
-    def load_raw(self, raw, fname, name=None):
-        """Load a Raw object as a new dataset.
+    def load_data(self, data, fname, name=None):
+        """Load a Raw or Epochs object as a new dataset.
 
         Parameters
         ----------
-        raw : mne.io.Raw
-            The raw data object to load.
+        data : mne.io.Raw | mne.Epochs
+            The data object to load.
         fname : str
             The file path.
         name : str, optional
             Custom name for the dataset. If None, uses the filename.
         """
         fname = str(Path(fname).resolve().as_posix())
-        fsize = getsize(raw.filenames[0]) / 1024**2  # convert to MB
+        fsize = getsize(fname) / 1024**2  # convert to MB
         if name is None:
             name, ext = split_name_ext(fname)
         else:
             _, ext = split_name_ext(fname)
+        if isinstance(data, mne.BaseEpochs):
+            dtype = "epochs"
+            events = data.events
+            # invert event_id from {label: id} to {id: label} for event_mapping
+            event_mapping = defaultdict(str, {v: k for k, v in data.event_id.items()})
+        else:
+            dtype = "raw"
+            events = np.empty((0, 3), dtype=int)
+            event_mapping = defaultdict(str)
         self.insert_data(
             defaultdict(
                 lambda: None,
@@ -152,11 +161,11 @@ class Model:
                 fname=fname,
                 ftype=ext.upper()[1:],
                 fsize=fsize,
-                data=raw,
-                dtype="raw",
+                data=data,
+                dtype=dtype,
                 montage=None,
-                events=np.empty((0, 3), dtype=int),
-                event_mapping=defaultdict(str),
+                events=events,
+                event_mapping=event_mapping,
             )
         )
 
@@ -164,7 +173,19 @@ class Model:
     def load(self, fname, *args, **kwargs):
         """Load data set from file."""
         fname = str(Path(fname).resolve().as_posix())
-        data = read_raw(fname, *args, **kwargs, preload=True)
+        _, ext = split_name_ext(fname)
+        try:
+            data = read_raw(fname, *args, **kwargs, preload=True)
+        except ValueError:
+            if ext in epoch_readers:
+                data = read_epochs(fname, *args, **kwargs, preload=True)
+                self.history.append(
+                    f'data = read_epochs("{fname}", preload=True)'.replace("'", '"')
+                )
+                name, _ = split_name_ext(fname)
+                self.load_data(data, fname, name=name)
+                return
+            raise
         argstr = ", " + f"{', '.join(f'{v}' for v in args)}" if args else ""
         if kwargs:
             kwargstr = (
@@ -178,7 +199,7 @@ class Model:
             )
         )
         name, _ = split_name_ext(fname)
-        self.load_raw(data, fname, name=name)
+        self.load_data(data, fname, name=name)
 
     @data_changed
     def find_events(
