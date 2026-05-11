@@ -7,9 +7,9 @@ import keyword
 
 import black
 import isort
-from PySide6.QtCore import QRegularExpression, Qt
-from PySide6.QtGui import QColor, QFont, QSyntaxHighlighter, QTextCharFormat
-from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import QRect, QRegularExpression, QSize, Qt
+from PySide6.QtGui import QColor, QFont, QPainter, QSyntaxHighlighter, QTextCharFormat
+from PySide6.QtWidgets import QApplication, QPlainTextEdit, QWidget
 
 
 class PythonHighlighter(QSyntaxHighlighter):
@@ -53,6 +53,80 @@ class PythonHighlighter(QSyntaxHighlighter):
                 match = matches.next()
                 start, length = match.capturedStart(), match.capturedLength()
                 self.setFormat(start, length, rule[1])
+
+
+class _LineNumberArea(QWidget):
+    def __init__(self, editor):
+        super().__init__(editor)
+        self._editor = editor
+
+    def sizeHint(self):
+        return QSize(self._editor._line_number_area_width(), 0)
+
+    def paintEvent(self, event):
+        self._editor._paint_line_numbers(event)
+
+
+class CodeEditor(QPlainTextEdit):
+    """Read-only plain-text editor with a line number gutter."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._line_number_area = _LineNumberArea(self)
+        self.blockCountChanged.connect(self._update_line_number_area_width)
+        self.updateRequest.connect(self._update_line_number_area)
+        self._update_line_number_area_width(0)
+
+    def _line_number_area_width(self):
+        digits = len(str(max(1, self.blockCount())))
+        char_width = self.fontMetrics().horizontalAdvance("9")
+        return 8 + char_width * digits  # 4 px padding on each side
+
+    def _update_line_number_area_width(self, _):
+        self.setViewportMargins(self._line_number_area_width(), 0, 0, 0)
+
+    def _update_line_number_area(self, rect, dy):
+        if dy:
+            self._line_number_area.scroll(0, dy)
+        else:
+            self._line_number_area.update(
+                0, rect.y(), self._line_number_area.width(), rect.height()
+            )
+        if rect.contains(self.viewport().rect()):
+            self._update_line_number_area_width(0)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        cr = self.contentsRect()
+        self._line_number_area.setGeometry(
+            QRect(cr.left(), cr.top(), self._line_number_area_width(), cr.height())
+        )
+
+    def _paint_line_numbers(self, event):
+        painter = QPainter(self._line_number_area)
+        painter.setPen(QColor("#808080"))
+        painter.setFont(self.font())
+
+        block = self.firstVisibleBlock()
+        block_number = block.blockNumber()
+        top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
+        bottom = top + self.blockBoundingRect(block).height()
+        width = self._line_number_area.width() - 4  # right padding
+
+        while block.isValid() and top <= event.rect().bottom():
+            if block.isVisible() and bottom >= event.rect().top():
+                painter.drawText(
+                    0,
+                    int(top),
+                    width,
+                    self.fontMetrics().height(),
+                    Qt.AlignmentFlag.AlignRight,
+                    str(block_number + 1),
+                )
+            block = block.next()
+            top = bottom
+            bottom = top + self.blockBoundingRect(block).height()
+            block_number += 1
 
 
 def format_code(code):
