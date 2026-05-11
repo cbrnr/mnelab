@@ -29,7 +29,7 @@ Key features include:
 
 ## Documentation
 
-Instructions for installing and using MNELAB as well as step-by-step examples for different use cases are available in the [documentation](https://mnelab.readthedocs.io/). Check out the [changelog](https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md) to learn what we added, changed, or fixed.
+The [documentation](https://mnelab.readthedocs.io/) contains hands-on examples and tutorials for different use cases. Check out the [changelog](https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md) to learn what we added, changed, or fixed.
 
 
 ## Quick start
@@ -47,10 +47,19 @@ Alternatively, you can use [uv](https://docs.astral.sh/uv/) to run MNELAB on all
 uvx mnelab
 ```
 
+
+## Advanced usage
+
 If you want to run the latest development version, you can use the following command:
 
 ```
 uvx --from https://github.com/cbrnr/mnelab/archive/refs/heads/main.zip mnelab
+```
+
+On Linux, running MNELAB via `uvx mnelab` uses the [Fusion](https://doc.qt.io/qt-6/gallery.html) style shipped with PySide6, which may not fit well with the rest of the system. However, if you use KDE, you can set the `QT_PLUGIN_PATH` environment variable to force the use of the native KDE theme instead, for example:
+
+```
+QT_PLUGIN_PATH=/usr/lib/qt/plugins/platforms uvx mnelab
 ```
 
 
