@@ -436,7 +436,6 @@ class MainWindow(QMainWindow):
         self.all_actions["statusbar"].setCheckable(True)
         if sys.platform != "darwin":
             self.all_actions["menubar"] = view_menu.addAction(
-                QIcon.fromTheme("placeholder"),
                 "&Menubar",
                 self._toggle_menubar,
                 QKeySequence(Qt.Modifier.CTRL | Qt.Key.Key_M),
