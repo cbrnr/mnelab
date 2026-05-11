@@ -2,11 +2,10 @@
 #
 # License: BSD (3-clause)
 
-import sys
 from datetime import datetime
 from pathlib import Path
 
-from PySide6.QtGui import QFont, QGuiApplication
+from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
@@ -17,7 +16,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from mnelab.utils import CodeEditor, PythonHighlighter, format_code
+from mnelab.utils import CodeEditor, PythonHighlighter, format_code, monospace_font
 
 
 class HistoryDialog(QDialog):
@@ -29,15 +28,7 @@ class HistoryDialog(QDialog):
         self.history = format_code("\n".join(history))
         self.log = "\n".join(log)
 
-        font = QFont()
-        if sys.platform.startswith("darwin"):
-            fontname = "menlo"
-        elif sys.platform.startswith("win32"):
-            fontname = "Cascadia Mono"
-        else:
-            fontname = "monospace"
-        font.setFamily(fontname)
-        font.setStyleHint(QFont.StyleHint.Monospace)
+        font = monospace_font()
 
         history_text = CodeEditor()
         history_text.setFont(font)

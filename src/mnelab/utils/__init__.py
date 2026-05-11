@@ -19,5 +19,6 @@ from mnelab.utils.utils import (
     get_annotation_types_from_file,
     image_path,
     merge_annotations,
+    monospace_font,
     natural_sort,
 )

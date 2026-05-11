@@ -2,7 +2,6 @@
 #
 # License: BSD (3-clause)
 
-import sys
 from pathlib import Path
 
 from PySide6.QtCore import QEvent, Qt, QTimer
@@ -16,6 +15,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from mnelab.utils import monospace_font
+
 dev_label = (
     '<p align="right"><font color="red"><small>Development Version</small></font></p>'
 )
@@ -25,7 +26,8 @@ def _make_shortcuts_table(actions):
     dark = QGuiApplication.styleHints().colorScheme() == Qt.ColorScheme.Dark
     text_color = "#999" if dark else "#777"
     kbd_bg = "#3a3a3a" if dark else "#e2e2e2"
-    kbd_font = '"Cascadia Mono", ' if sys.platform.startswith("win32") else ""
+    font_family = monospace_font().family()
+    kbd_font = f'"{font_family}", ' if font_family != "monospace" else ""
     html = f"""<!DOCTYPE html>
     <html>
       <head>
