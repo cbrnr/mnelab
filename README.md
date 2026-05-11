@@ -59,7 +59,7 @@ uvx --from https://github.com/cbrnr/mnelab/archive/refs/heads/main.zip mnelab
 On Linux, running MNELAB via `uvx mnelab` uses the [Fusion](https://doc.qt.io/qt-6/gallery.html) style shipped with PySide6, which may not fit well with the rest of the system. However, if you use KDE, you can set the `QT_PLUGIN_PATH` environment variable to force the use of the native KDE theme instead, for example:
 
 ```
-QT_PLUGIN_PATH=/usr/lib/qt/plugins/platforms uvx mnelab
+QT_PLUGIN_PATH=/usr/lib/qt6/plugins uvx mnelab
 ```
 
 
