@@ -33,7 +33,7 @@ class HistoryDialog(QDialog):
         if sys.platform.startswith("darwin"):
             fontname = "menlo"
         elif sys.platform.startswith("win32"):
-            fontname = "consolas"
+            fontname = "Cascadia Mono"
         else:
             fontname = "monospace"
         font.setFamily(fontname)
