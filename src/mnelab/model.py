@@ -187,8 +187,7 @@ class Model:
             argstr = ", " + f"{', '.join(f'{v}' for v in args)}" if args else ""
             if kwargs:
                 kwargstr = (
-                    ", "
-                    + f"{', '.join(f'{k}={repr(v)}' for k, v in kwargs.items())}"
+                    ", " + f"{', '.join(f'{k}={repr(v)}' for k, v in kwargs.items())}"
                 )
             else:
                 kwargstr = ""
