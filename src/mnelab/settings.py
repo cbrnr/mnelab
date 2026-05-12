@@ -136,8 +136,6 @@ class SettingsDialog(QDialog):
         self._sidebar.addItems(["General", "Plotting"])
         self._sidebar.setIconSize(QSize(16, 16))
         self._sidebar.setCurrentRow(0)
-        self._update_sidebar_style()
-        self._update_sidebar_icons()
         hbox.addWidget(self._sidebar)
 
         self._stack = QStackedWidget()
@@ -227,21 +225,15 @@ class SettingsDialog(QDialog):
 
         self._sidebar.currentRowChanged.connect(self._stack.setCurrentIndex)
 
-        mnelab_label = QLabel(
-            f'<i>Settings are stored in <a href="{SETTINGS_PATH}">'
-            f"{SETTINGS_PATH}</a>.</i>"
-        )
-        mnelab_label.linkActivated.connect(self.open_path)
+        self._mnelab_label = QLabel()
+        self._mnelab_label.linkActivated.connect(self.open_path)
         vbox.addSpacing(8)
-        vbox.addWidget(mnelab_label)
+        vbox.addWidget(self._mnelab_label)
 
-        mne_config_path = get_config_path()
-        mne_label = QLabel(
-            f'<i>MNE-Python settings are stored in <a href="{mne_config_path}">'
-            f"{mne_config_path}</a>.</i>"
-        )
-        mne_label.linkActivated.connect(self.open_path)
-        vbox.addWidget(mne_label)
+        self._mne_config_path = str(get_config_path())
+        self._mne_label = QLabel()
+        self._mne_label.linkActivated.connect(self.open_path)
+        vbox.addWidget(self._mne_label)
 
         self.buttonbox = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
@@ -257,9 +249,10 @@ class SettingsDialog(QDialog):
 
         self.setMinimumSize(420, 260)
 
+        self._update_theme()
         self.setFocus()
 
-    def _update_sidebar_style(self):
+    def _update_theme(self):
         p = QApplication.instance().palette()
         base = p.color(QPalette.ColorRole.Base).name()
         highlight = p.color(QPalette.ColorRole.Highlight).name()
@@ -285,15 +278,23 @@ class SettingsDialog(QDialog):
                 background: {midlight};
             }}
         """)
-
-    def _update_sidebar_icons(self):
         self._sidebar.item(0).setIcon(QIcon.fromTheme("settings-general"))
         self._sidebar.item(1).setIcon(QIcon.fromTheme("settings-plotting"))
+        link = p.color(QPalette.ColorRole.Link).name()
+        self._mnelab_label.setText(
+            f"<i>Settings are stored in"
+            f' <a href="{SETTINGS_PATH}" style="color: {link};">'
+            f"{SETTINGS_PATH}</a>.</i>"
+        )
+        self._mne_label.setText(
+            f"<i>MNE-Python settings are stored in"
+            f' <a href="{self._mne_config_path}" style="color: {link};">'
+            f"{self._mne_config_path}</a>.</i>"
+        )
 
     def changeEvent(self, event):
         if event.type() == QEvent.Type.PaletteChange:
-            self._update_sidebar_style()
-            self._update_sidebar_icons()
+            self._update_theme()
         super().changeEvent(event)
 
     @Slot(str)
@@ -304,8 +305,8 @@ class SettingsDialog(QDialog):
     @Slot()
     def on_ok_clicked(self):
         write_settings(
-            max_recent=int(self.max_recent.text()),
-            max_channels=int(self.max_channels.text()),
+            max_recent=self.max_recent.value(),
+            max_channels=self.max_channels.value(),
             duration=self.duration.value(),
             epochs=self.epochs.value(),
             recent=self.parent().recent,
