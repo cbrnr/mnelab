@@ -190,6 +190,7 @@ class MainWindow(QMainWindow):
             QKeySequence(Qt.Modifier.CTRL | Qt.Key.Key_Comma),
             self.settings,
         )
+        self.addAction(self.all_actions["settings"])
         file_menu.addSeparator()
         self.all_actions["quit"] = file_menu.addAction(
             QIcon.fromTheme("quit"),
@@ -504,12 +505,7 @@ class MainWindow(QMainWindow):
                 if (submenu := menu_action.menu()) is not None:
                     hamburger_popup.addMenu(submenu)
             hamburger_popup.addSeparator()
-            _hamburger_settings = hamburger_popup.addAction(
-                QIcon.fromTheme("settings"), "Settings...", self.settings
-            )
-            _hamburger_settings.setShortcut(
-                QKeySequence(Qt.Modifier.CTRL | Qt.Key.Key_Comma)
-            )
+            hamburger_popup.addAction(self.all_actions["settings"])
             self._hamburger_button.setMenu(hamburger_popup)
             self._hamburger_button.setPopupMode(
                 QToolButton.ToolButtonPopupMode.InstantPopup
@@ -520,7 +516,6 @@ class MainWindow(QMainWindow):
             self._hamburger_action.setVisible(hamburger_enabled)
             self.menuBar().setVisible(not hamburger_enabled)
             self.all_actions["menubar"].setChecked(not hamburger_enabled)
-            self.all_actions["settings"].setVisible(not hamburger_enabled)
         self.setUnifiedTitleAndToolBarOnMac(True)
         if sys.platform == "darwin":
             self.toolbar.setStyleSheet("""
@@ -1923,7 +1918,6 @@ class MainWindow(QMainWindow):
         self._hamburger_spacer_action.setVisible(hamburger_enabled)
         self._hamburger_action.setVisible(hamburger_enabled)
         self.all_actions["menubar"].setChecked(not menubar_visible)
-        self.all_actions["settings"].setVisible(not hamburger_enabled)
         write_settings(show_menubar=not hamburger_enabled)
 
     @Slot()
