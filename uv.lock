@@ -923,7 +923,7 @@ wheels = [
 
 [[package]]
 name = "mnelab"
-version = "1.4.6"
+version = "1.5.0.dev0"
 source = { editable = "." }
 dependencies = [
     { name = "black" },
