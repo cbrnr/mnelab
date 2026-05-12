@@ -1,4 +1,4 @@
-## [UNRELEASED] · YYYY-MM-DD
+## [1.4.6] · 2026-05-12
 ### ✨ Added
 - Reorganize the Settings dialog with a sidebar layout and add a new "Displayed epochs" option ([#639](https://github.com/cbrnr/mnelab/pull/639) by [Clemens Brunner](https://github.com/cbrnr))
 
