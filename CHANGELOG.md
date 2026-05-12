@@ -1,4 +1,4 @@
-## [UNRELEASED] · YYYY-MM-DD
+## [1.4.5] · 2026-05-12
 ### ✨ Added
 - Add support for opening FIFF files containing epochs (in addition to continuous raw data) ([#629](https://github.com/cbrnr/mnelab/pull/629) by [Clemens Brunner](https://github.com/cbrnr))
 - Add line numbers in the history dialog ([#632](https://github.com/cbrnr/mnelab/pull/632) by [Clemens Brunner](https://github.com/cbrnr))
