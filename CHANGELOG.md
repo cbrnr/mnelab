@@ -1,4 +1,9 @@
 ## [UNRELEASED] · YYYY-MM-DD
+### ✨ Added
+- Reorganize the Settings dialog with a sidebar layout and add a new "Displayed epochs" option
+
+### 🔧 Fixed
+- Fix epochs plot not working 
 
 ## [1.4.5] · 2026-05-12
 ### ✨ Added

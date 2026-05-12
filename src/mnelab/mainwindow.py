@@ -1180,29 +1180,43 @@ class MainWindow(QMainWindow):
 
     def plot_data(self):
         """Plot data."""
-        # self.bad is needed to update history if bad channels are selected in the
+        # self.bads is needed to update history if bad channels are selected in the
         # interactive plot window (see also self.eventFilter)
         self.bads = self.model.current["data"].info["bads"]
-        events = self.model.current["events"]
-        nchan = self.model.current["data"].info["nchan"]
-        nchan = min(nchan, read_settings("max_channels"))
-        duration = read_settings("duration")
-        annotation_colors = read_settings("annotation_colors") or None
-
-        fig = self.model.current["data"].plot(
-            events=events,
-            n_channels=nchan,
-            duration=duration,
-            title=self.model.current["name"],
-            clipping=None,
-            annotation_colors=annotation_colors,
-            show=False,
+        nchan = min(
+            self.model.current["data"].info["nchan"], read_settings("max_channels")
         )
-        if events is not None:
-            hist = f"data.plot(events=events, n_channels={nchan}, duration={duration})"
+        events = self.model.current["events"]
+        annotation_colors = read_settings("annotation_colors") or None
+        if annotation_colors is not None and hasattr(
+            self.model.current["data"], "annotations"
+        ):
+            descriptions = set(self.model.current["data"].annotations.description)
+            annotation_colors = {
+                k: v for k, v in annotation_colors.items() if k in descriptions
+            } or None
+
+        kwargs = {
+            "n_channels": nchan,
+            "title": self.model.current["name"],
+            "events": events,
+            "annotation_colors": annotation_colors,
+            "show": False,
+        }
+
+        if self.model.current["dtype"] == "epochs":
+            n_epochs = read_settings("epochs")
+            kwargs["n_epochs"] = n_epochs
+            hist_parts = [f"n_epochs={n_epochs}", f"n_channels={nchan}"]
         else:
-            hist = f"data.plot(n_channels={nchan}, duration={duration})"
-        self.model.history.append(hist)
+            duration = read_settings("duration")
+            kwargs.update(duration=duration, clipping=None)
+            hist_parts = [f"n_channels={nchan}", f"duration={duration}"]
+        if events is not None and len(events):
+            hist_parts.append("events=events")
+
+        fig = self.model.current["data"].plot(**kwargs)
+        self.model.history.append(f"data.plot({', '.join(hist_parts)})")
         if mne.viz.get_browser_backend() == "matplotlib":
             win = fig.canvas.manager.window
             win.setWindowTitle(self.model.current["name"])
