@@ -3,6 +3,7 @@
 # License: BSD (3-clause)
 
 import re
+import sys
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
@@ -12,6 +13,7 @@ import numpy as np
 from mne import channel_type
 from mne.channels import DigMontage
 from mne.defaults import _handle_default
+from PySide6.QtGui import QFont
 
 
 def count_locations(info):
@@ -24,6 +26,23 @@ def image_path(fname):
     """Return absolute path to image fname."""
     root = Path(__file__).parent.parent
     return str((root / "images" / Path(fname)).resolve())
+
+
+def monospace_font():
+    """Return a QFont configured for monospace display.
+
+    Selects the preferred platform monospace font with a `Monospace` style hint as
+    fallback.
+    """
+    font = QFont()
+    if sys.platform.startswith("darwin"):
+        font.setFamily("Menlo")
+    elif sys.platform.startswith("win32"):
+        font.setFamily("Cascadia Mono")
+    else:
+        font.setFamily("monospace")
+    font.setStyleHint(QFont.StyleHint.Monospace)
+    return font
 
 
 def natural_sort(lst):

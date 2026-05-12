@@ -36,11 +36,9 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QMenu,
     QMessageBox,
-    QProxyStyle,
     QSizePolicy,
     QSplitter,
     QStackedWidget,
-    QStyle,
     QTableWidgetItem,
     QToolButton,
     QWidget,
@@ -75,16 +73,6 @@ from mnelab.viz import (
     plot_evoked_topomaps,
 )
 from mnelab.widgets import EmptyWidget, InfoWidget, SidebarTableWidget
-
-
-class MenuPaddingStyle(QProxyStyle):
-    def sizeFromContents(self, contents_type, option, size, widget=None):
-        base_size = super().sizeFromContents(contents_type, option, size, widget)
-
-        if contents_type == QStyle.ContentsType.CT_MenuItem:
-            base_size.setWidth(base_size.width() + 30)  # increase width
-
-        return base_size
 
 
 class _MNELogHandler(logging.Handler):
@@ -512,11 +500,16 @@ class MainWindow(QMainWindow):
             self._hamburger_button.setIcon(QIcon.fromTheme("hamburger-menu"))
             self._hamburger_button.setToolTip("Menu")
             hamburger_popup = QMenu(self)
-            self._menu_style = MenuPaddingStyle()
-            hamburger_popup.setStyle(self._menu_style)
             for menu_action in self.menuBar().actions():
                 if (submenu := menu_action.menu()) is not None:
                     hamburger_popup.addMenu(submenu)
+            hamburger_popup.addSeparator()
+            _hamburger_settings = hamburger_popup.addAction(
+                QIcon.fromTheme("settings"), "Settings...", self.settings
+            )
+            _hamburger_settings.setShortcut(
+                QKeySequence(Qt.Modifier.CTRL | Qt.Key.Key_Comma)
+            )
             self._hamburger_button.setMenu(hamburger_popup)
             self._hamburger_button.setPopupMode(
                 QToolButton.ToolButtonPopupMode.InstantPopup
@@ -527,6 +520,7 @@ class MainWindow(QMainWindow):
             self._hamburger_action.setVisible(hamburger_enabled)
             self.menuBar().setVisible(not hamburger_enabled)
             self.all_actions["menubar"].setChecked(not hamburger_enabled)
+            self.all_actions["settings"].setVisible(not hamburger_enabled)
         self.setUnifiedTitleAndToolBarOnMac(True)
         if sys.platform == "darwin":
             self.toolbar.setStyleSheet("""
@@ -1929,6 +1923,7 @@ class MainWindow(QMainWindow):
         self._hamburger_spacer_action.setVisible(hamburger_enabled)
         self._hamburger_action.setVisible(hamburger_enabled)
         self.all_actions["menubar"].setChecked(not menubar_visible)
+        self.all_actions["settings"].setVisible(not hamburger_enabled)
         write_settings(show_menubar=not hamburger_enabled)
 
     @Slot()

@@ -4,7 +4,7 @@
 
 from pathlib import Path
 
-from PySide6.QtCore import QEvent, QTimer
+from PySide6.QtCore import QEvent, Qt, QTimer
 from PySide6.QtGui import QGuiApplication, QIcon, QKeySequence
 from PySide6.QtWidgets import (
     QGridLayout,
@@ -15,21 +15,31 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from mnelab.utils import monospace_font
+
 dev_label = (
     '<p align="right"><font color="red"><small>Development Version</small></font></p>'
 )
 
 
 def _make_shortcuts_table(actions):
-    text_color = "#777"
+    dark = QGuiApplication.styleHints().colorScheme() == Qt.ColorScheme.Dark
+    text_color = "#999" if dark else "#777"
+    kbd_bg = "#3a3a3a" if dark else "#e2e2e2"
+    font_family = monospace_font().family()
+    kbd_font = f'"{font_family}", ' if font_family != "monospace" else ""
     html = f"""<!DOCTYPE html>
     <html>
       <head>
         <style>
           html {{ font-size: 16px; }}
-          kbd {{
+          body {{ margin-left: 8px; margin-right: 8px; }}
+          span {{
+            font-family: {kbd_font}monospace;
+            font-size: 0.8em;
             font-weight: 600;
             color: {text_color};
+            background-color: {kbd_bg};
           }}
           table {{ color: {text_color}; }}
         </style>
@@ -45,10 +55,10 @@ def _make_shortcuts_table(actions):
         modifier, key = shortcut[:-1].strip(), shortcut[-1]
         html += f'\n            <tr><td align="right" width="50%">{name} </td>'
         if modifier[-1] == "+":
-            html += f"<td><kbd>{modifier[:-1]}</kbd>+"
+            html += f"<td><span>&nbsp;{modifier[:-1]}&nbsp;</span>+"
         else:
-            html += f"<td><kbd>{modifier}</kbd> "
-        html += f"<kbd>{key}</kbd></td></tr>"
+            html += f"<td><span>&nbsp;{modifier}&nbsp;</span> "
+        html += f"<span>&nbsp;{key}&nbsp;</span></td></tr>"
     html += """\n          </tbody>
         </table>
       </body>
@@ -179,10 +189,16 @@ class EmptyWidget(QWidget):
         from mnelab import IS_DEV_VERSION
 
         super().__init__()
-        text = QLabel(_make_shortcuts_table(actions))
+        self._actions = actions
+        self._label = QLabel(_make_shortcuts_table(actions))
         vbox = QVBoxLayout(self)
         vbox.addStretch()
-        vbox.addWidget(text)
+        vbox.addWidget(self._label)
         vbox.addStretch()
         if IS_DEV_VERSION:
             vbox.addWidget(QLabel(dev_label))
+
+    def changeEvent(self, event):
+        if event.type() == QEvent.Type.PaletteChange:
+            self._label.setText(_make_shortcuts_table(self._actions))
+        super().changeEvent(event)
