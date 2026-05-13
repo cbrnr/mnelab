@@ -24,7 +24,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from mnelab.dialogs.utils import IntTableWidgetItem, select_all
+from mnelab.dialogs.utils import IntTableWidgetItem, select_all, set_header_alignments
 
 _HEX_PARTIAL = re.compile(r"#[0-9A-Fa-f]{0,6}$")
 _HEX_FULL = re.compile(r"#[0-9A-Fa-f]{6}$")
@@ -54,6 +54,7 @@ class AnnotationsDialog(QDialog):
             self.table.setItem(row, 2, QTableWidgetItem(annotation[2]))
 
         self.table.setHorizontalHeaderLabels(["Onset", "Duration", "Type"])
+        set_header_alignments(self.table, "rrl")
         self.table.horizontalHeader().setStretchLastSection(True)
         self.table.verticalHeader().setVisible(False)
         self.table.setShowGrid(False)
@@ -65,7 +66,7 @@ class AnnotationsDialog(QDialog):
         vbox.addWidget(self.table)
         hbox = QHBoxLayout()
         self.add_button = QPushButton("+")
-        self.remove_button = QPushButton("-")
+        self.remove_button = QPushButton("–")
         self.counts_button = QPushButton("Counts...")
         buttonbox = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
@@ -144,6 +145,7 @@ class EventCountsDialog(QDialog):
 
         self.counts_table = QTableWidget(0, 2)
         self.counts_table.setHorizontalHeaderLabels(["Description", "Count"])
+        set_header_alignments(self.counts_table, "lr")
         self.counts_table.horizontalHeader().setStretchLastSection(True)
         self.counts_table.verticalHeader().setVisible(False)
         self.counts_table.setShowGrid(False)
@@ -164,11 +166,11 @@ class EventCountsDialog(QDialog):
     def fill_counts_table(self):
         self.counts_table.setRowCount(0)
         for row, (id_, count) in enumerate(sorted(self.unique_annotations.items())):
-            id_item = IntTableWidgetItem(id_)
+            id_item = QTableWidgetItem(id_)
             id_item.setFlags(id_item.flags() ^ Qt.ItemFlag.ItemIsEditable)
             self.counts_table.insertRow(row)
             self.counts_table.setItem(row, 0, id_item)
-            self.counts_table.setItem(row, 1, QTableWidgetItem(str(count)))
+            self.counts_table.setItem(row, 1, IntTableWidgetItem(count))
 
 
 class AnnotationTypesDialog(QDialog):
@@ -218,6 +220,7 @@ class AnnotationColorsDialog(QDialog):
 
         self.table = QTableWidget(0, 2)
         self.table.setHorizontalHeaderLabels(["Description", "Color"])
+        set_header_alignments(self.table, "ll")
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
@@ -235,7 +238,7 @@ class AnnotationColorsDialog(QDialog):
 
         hbox = QHBoxLayout()
         self.add_button = QPushButton("+")
-        self.remove_button = QPushButton("-")
+        self.remove_button = QPushButton("–")
         buttonbox = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )

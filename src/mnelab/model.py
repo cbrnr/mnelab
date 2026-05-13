@@ -515,7 +515,7 @@ class Model:
                 events += f"{first}, ..., {last}"
             events += ")"
         else:
-            events = "-"
+            events = "–"
 
         if isinstance(reference, list):
             reference = ",".join(reference)
@@ -523,7 +523,7 @@ class Model:
         locations = count_locations(self.current["data"].info)
 
         if montage is None and not locations:
-            montage_text = "-"
+            montage_text = "–"
         elif montage is None and locations:
             montage_text = f"custom ({locations}/{data.info['nchan']} locations)"
         else:
@@ -537,19 +537,19 @@ class Model:
             n_active = ica.n_components_ - len(ica.exclude)
             ica = f"{method} ({n_active}/{ica.n_components_} components)"
         else:
-            ica = "-"
+            ica = "–"
 
-        size_disk = f"{fsize:.2f}\u2009MB" if fname else "-"
+        size_disk = f"{fsize:.2f}\u2009MB" if fname else "–"
 
         if hasattr(data, "annotations") and data.annotations is not None:
             annots = len(data.annotations.description)
             if annots == 0:
-                annots = "-"
+                annots = "–"
         else:
-            annots = "-"
+            annots = "–"
         return {
-            "File name": fname if fname else "-",
-            "File type": ftype if ftype else "-",
+            "File name": fname if fname else "–",
+            "File type": ftype if ftype else "–",
             "Data type": dtype,
             "Size on disk": size_disk,
             "Size in memory": f"{data.get_data().nbytes / 1024**2:.2f}\u2009MB",
@@ -559,7 +559,7 @@ class Model:
             "Length": length,
             "Events": events,
             "Annotations": annots,
-            "Reference": reference if reference else "-",
+            "Reference": reference if reference else "–",
             "Montage": montage_text,
             "ICA": ica,
         }
