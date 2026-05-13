@@ -1,4 +1,9 @@
 ## [UNRELEASED] · YYYY-MM-DD
+### 🔧 Fixed
+- Fix sorting in the "Channel Statistics" dialog ([#640](https://github.com/cbrnr/mnelab/pull/640) by [Clemens Brunner](https://github.com/cbrnr))
+
+### 🌀 Changed
+- Improve table header alignment across various dialogs ([#640](https://github.com/cbrnr/mnelab/pull/640) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.4.6] · 2026-05-12
 ### ✨ Added
