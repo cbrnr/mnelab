@@ -28,19 +28,19 @@ class FindEventsDialog(QDialog):
         vbox = QVBoxLayout(self)
         grid = QGridLayout()
 
-        grid.addWidget(QLabel("Stim channel:"), 0, 0)
+        grid.addWidget(QLabel("Stim Channel:"), 0, 0)
         self.stimchan = QComboBox()
         self.stimchan.addItems(channels)
         self.stimchan.setCurrentIndex(default_stim)
         grid.addWidget(self.stimchan, 0, 1)
 
-        grid.addWidget(QLabel("Consecutive"), 1, 0)
+        grid.addWidget(QLabel("Consecutive:"), 1, 0)
         self.consecutive = QComboBox()
         self.consecutive.addItems(["Increasing", "True", "False"])
         self.consecutive.setCurrentIndex(0)
         grid.addWidget(self.consecutive, 1, 1)
 
-        grid.addWidget(QLabel("Initial event"), 2, 0)
+        grid.addWidget(QLabel("Initial Event:"), 2, 0)
         self.initial_event = QCheckBox()
         self.initial_event.setChecked(False)
         grid.addWidget(self.initial_event, 2, 1)
@@ -69,13 +69,13 @@ class FindEventsDialog(QDialog):
         self.mask_enabled.toggled.connect(self._on_mask_toggled)
         self.mask_value.valueChanged.connect(self._update_mask_bits_label)
 
-        grid.addWidget(QLabel("Minimum duration:"), 4, 0)
+        grid.addWidget(QLabel("Minimum Duration:"), 4, 0)
         self.minduredit = FlatSpinBox()
         self.minduredit.setMaximum(MAX_INT)
         self.minduredit.setAlignment(Qt.AlignmentFlag.AlignRight)
         grid.addWidget(self.minduredit, 4, 1)
 
-        grid.addWidget(QLabel("Shortest event:"), 5, 0)
+        grid.addWidget(QLabel("Shortest Event:"), 5, 0)
         self.shortesteventedit = FlatSpinBox()
         self.shortesteventedit.setValue(2)
         self.shortesteventedit.setMaximum(MAX_INT)

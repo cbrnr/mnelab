@@ -18,13 +18,13 @@ class NpyDialog(QDialog):
     def __init__(self, parent, shape):
         super().__init__(parent)
 
-        self.setWindowTitle("Import NumPy array")
+        self.setWindowTitle("Import NumPy Array")
 
         vbox = QVBoxLayout(self)
         grid = QGridLayout()
-        grid.addWidget(QLabel("Array shape:"), 0, 0)
+        grid.addWidget(QLabel("Array Shape:"), 0, 0)
         grid.addWidget(QLabel(f"{' × '.join(map(str, shape))}"), 0, 1)
-        grid.addWidget(QLabel("Sampling frequency:"), 1, 0)
+        grid.addWidget(QLabel("Sampling Frequency:"), 1, 0)
 
         self._fs = FlatDoubleSpinBox()
         self._fs.setRange(0, 20e3)

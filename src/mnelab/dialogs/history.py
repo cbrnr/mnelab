@@ -49,8 +49,8 @@ class HistoryDialog(QDialog):
         layout.addWidget(self.tabs)
 
         buttonbox = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
-        self.clipboardbutton = QPushButton("Copy to clipboard")
-        self.savebutton = QPushButton("Save to file...")
+        self.clipboardbutton = QPushButton("Copy to Clipboard")
+        self.savebutton = QPushButton("Save to File...")
         buttonbox.addButton(
             self.clipboardbutton, QDialogButtonBox.ButtonRole.ActionRole
         )

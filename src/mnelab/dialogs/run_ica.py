@@ -46,14 +46,14 @@ class RunICADialog(QDialog):
             self.ortho_label.hide()
             self.ortho.hide()
 
-        grid.addWidget(QLabel("Number of components:"), 3, 0)
+        grid.addWidget(QLabel("Number of Components:"), 3, 0)
         self.n_components = FlatSpinBox()
         self.n_components.setRange(0, nchan)
         self.n_components.setValue(nchan)
         self.n_components.setAlignment(Qt.AlignmentFlag.AlignRight)
         grid.addWidget(self.n_components, 3, 1)
 
-        grid.addWidget(QLabel("Exclude bad segments:"), 4, 0)
+        grid.addWidget(QLabel("Exclude Bad Segments:"), 4, 0)
         self.exclude_bad_segments = QCheckBox()
         self.exclude_bad_segments.setChecked(True)
         grid.addWidget(self.exclude_bad_segments, 4, 1)

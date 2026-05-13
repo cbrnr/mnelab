@@ -23,7 +23,7 @@ class PSDDialog(QDialog):
         vbox = QVBoxLayout(self)
         grid = QGridLayout()
 
-        fmin_label = QLabel("Lower frequency (Hz):")
+        fmin_label = QLabel("Lower Frequency (Hz):")
         self.fmin_input = FlatDoubleSpinBox()
         self.fmin_input.setMinimum(0)
         self.fmin_input.setDecimals(1)
@@ -34,7 +34,7 @@ class PSDDialog(QDialog):
         grid.addWidget(fmin_label, 0, 0)
         grid.addWidget(self.fmin_input, 0, 1)
 
-        fmax_label = QLabel("Upper frequency (Hz):")
+        fmax_label = QLabel("Upper Frequency (Hz):")
         self.fmax_input = FlatDoubleSpinBox()
         self.fmax_input.setMinimum(0)
         self.fmax_input.setDecimals(1)
@@ -45,13 +45,13 @@ class PSDDialog(QDialog):
         grid.addWidget(fmax_label, 1, 0)
         grid.addWidget(self.fmax_input, 1, 1)
 
-        bad_label = QLabel("Include bad channels:")
+        bad_label = QLabel("Include Bad Channels:")
         self.bad_checkbox = QCheckBox()
         self.bad_checkbox.setChecked(True)
         grid.addWidget(bad_label, 2, 0)
         grid.addWidget(self.bad_checkbox, 2, 1)
 
-        color_label = QLabel("Use spatial colors:")
+        color_label = QLabel("Use Spatial Colors:")
         self.color_checkbox = QCheckBox()
         self.color_checkbox.setChecked(True)
         grid.addWidget(color_label, 3, 0)

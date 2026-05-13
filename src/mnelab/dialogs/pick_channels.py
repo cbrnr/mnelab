@@ -17,11 +17,11 @@ from mnelab.dialogs.utils import select_all
 class PickChannelsDialog(QDialog):
     def __init__(self, parent, channels, types):
         super().__init__(parent)
-        self.setWindowTitle("Pick channels")
+        self.setWindowTitle("Pick Channels")
 
         grid = QGridLayout(self)
 
-        self.by_name = QRadioButton("By name:")
+        self.by_name = QRadioButton("By Name:")
         grid.addWidget(self.by_name, 0, 0, Qt.AlignmentFlag.AlignTop)
         self.names = QListWidget()
         self.names.insertItems(0, channels)
@@ -30,7 +30,7 @@ class PickChannelsDialog(QDialog):
         grid.addWidget(self.names, 0, 1)
         self.by_name.setChecked(True)
 
-        self.by_type = QRadioButton("By type:")
+        self.by_type = QRadioButton("By Type:")
         grid.addWidget(self.by_type, 1, 0, Qt.AlignmentFlag.AlignTop)
         self.types = QListWidget()
         self.types.insertItems(0, types)

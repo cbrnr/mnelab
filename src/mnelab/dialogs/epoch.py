@@ -30,7 +30,7 @@ class EpochDialog(QDialog):
         self.events.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
         grid.addWidget(self.events, 0, 1, 1, 2)
 
-        grid.addWidget(QLabel("Interval around events:"), 1, 0, 1, 1)
+        grid.addWidget(QLabel("Interval Around Events:"), 1, 0, 1, 1)
         self.tmin = FlatDoubleSpinBox()
         self.tmin.setMinimum(-10000)
         self.tmin.setValue(-0.2)

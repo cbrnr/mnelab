@@ -51,7 +51,7 @@ class MontageItem(QListWidgetItem):
 class MontageDialog(QDialog):
     def __init__(self, parent, montages):
         super().__init__(parent)
-        self.setWindowTitle("Set montage")
+        self.setWindowTitle("Set Montage")
         self.resize(760, 500)
 
         vbox = QVBoxLayout()
@@ -64,9 +64,9 @@ class MontageDialog(QDialog):
         vbox.addWidget(self.montages)
 
         self.montages.itemSelectionChanged.connect(self.view_montage)
-        self.match_case = QCheckBox("Match case-sensitive", self)
-        self.match_alias = QCheckBox("Match aliases", self)
-        self.ignore_missing = QCheckBox("Ignore missing", self)
+        self.match_case = QCheckBox("Match Case-Sensitive", self)
+        self.match_alias = QCheckBox("Match Aliases", self)
+        self.ignore_missing = QCheckBox("Ignore Missing", self)
         self.ignore_missing.setChecked(True)
         vbox.addWidget(self.match_case)
         vbox.addWidget(self.match_alias)
@@ -87,7 +87,7 @@ class MontageDialog(QDialog):
         hbox.addWidget(self.canvas_container, stretch=2)
 
         button_layout = QHBoxLayout()
-        self.open_file_button = QPushButton("Load custom montage...", self)
+        self.open_file_button = QPushButton("Load Custom Montage...", self)
         self.open_file_button.clicked.connect(self.load_custom_montage)
         button_layout.addWidget(self.open_file_button)
         button_layout.addStretch()

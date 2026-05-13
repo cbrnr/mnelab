@@ -30,11 +30,11 @@ def _label(channel_type):
 class DropBadEpochsDialog(QDialog):
     def __init__(self, parent, types):
         super().__init__(parent)
-        self.setWindowTitle("Drop bad epochs")
+        self.setWindowTitle("Drop Bad Epochs")
 
         vbox = QVBoxLayout(self)
 
-        self.reject_box = QGroupBox("Reject (maximum PTP amplitude)")
+        self.reject_box = QGroupBox("Reject (Maximum PTP Amplitude)")
         self.reject_box.setCheckable(True)
         self.reject_box.setChecked(False)
         self.reject_fields = {}
@@ -52,7 +52,7 @@ class DropBadEpochsDialog(QDialog):
         self.reject_box.setLayout(reject_grid)
         vbox.addWidget(self.reject_box)
 
-        self.flat_box = QGroupBox("Flat (minimum PTP amplitude)")
+        self.flat_box = QGroupBox("Flat (Minimum PTP Amplitude)")
         self.flat_box.setCheckable(True)
         self.flat_box.setChecked(False)
         self.flat_fields = {}

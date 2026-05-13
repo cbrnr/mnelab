@@ -42,13 +42,13 @@ class ArtifactDetectionDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Artifact Detection")
         self.detection_methods = {
-            "Extreme values": {
+            "Extreme Values": {
                 "parameters": [
                     ("threshold", None, 100.0, "µV", "±")
                 ],  # (param_name, display_name, default, unit, prefix)
                 "function": find_bad_epochs_amplitude,
             },
-            "Peak-to-peak": {
+            "Peak-to-Peak": {
                 "parameters": [("threshold", None, 150.0, "µV", "")],
                 "function": find_bad_epochs_ptp,
             },

@@ -21,11 +21,11 @@ from mnelab.widgets import FlatDoubleSpinBox
 class FilterDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Filter data")
+        self.setWindowTitle("Filter Data")
         vbox = QVBoxLayout(self)
 
         # filter type
-        filter_type_groupbox = QGroupBox("Filter type")
+        filter_type_groupbox = QGroupBox("Filter Type")
         filter_type_layout = QHBoxLayout()
 
         # radio buttons
@@ -52,21 +52,21 @@ class FilterDialog(QDialog):
         vbox.addWidget(filter_type_groupbox)
 
         # filter settings
-        filter_settings_groupbox = QGroupBox("Filter settings")
+        filter_settings_groupbox = QGroupBox("Filter Settings")
         self.grid = QGridLayout()
-        self.lower_label = QLabel("Lower cutoff frequency (Hz):")
+        self.lower_label = QLabel("Lower Cutoff Frequency (Hz):")
         self.lower_edit = FlatDoubleSpinBox()
         self.lower_edit.setMinimum(0)
         self.lower_edit.setDecimals(2)
         self.lower_edit.setValue(1)
         self.lower_edit.setAlignment(Qt.AlignmentFlag.AlignRight)
-        self.upper_label = QLabel("Upper cutoff frequency (Hz):")
+        self.upper_label = QLabel("Upper Cutoff Frequency (Hz):")
         self.upper_edit = FlatDoubleSpinBox()
         self.upper_edit.setMinimum(0)
         self.upper_edit.setDecimals(2)
         self.upper_edit.setValue(30)
         self.upper_edit.setAlignment(Qt.AlignmentFlag.AlignRight)
-        self.notch_label = QLabel("Notch frequency (Hz):")
+        self.notch_label = QLabel("Notch Frequency (Hz):")
         self.notch_edit = FlatDoubleSpinBox()
         self.notch_edit.setMinimum(0)
         self.notch_edit.setDecimals(2)

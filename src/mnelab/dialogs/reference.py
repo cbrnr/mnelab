@@ -19,11 +19,11 @@ from PySide6.QtWidgets import (
 class ReferenceDialog(QDialog):
     def __init__(self, parent, available_channels):
         super().__init__(parent)
-        self.setWindowTitle("Change reference")
+        self.setWindowTitle("Change Reference")
         vbox = QVBoxLayout(self)
 
-        self.add_group = QGroupBox("Add reference (all zero)")
-        self.reref_group = QGroupBox("Re-reference to existing channel(s)")
+        self.add_group = QGroupBox("Add Reference (All Zero)")
+        self.reref_group = QGroupBox("Re-reference to Existing Channel(s)")
 
         vbox.addWidget(self.add_group)
         vbox.addWidget(self.reref_group)
