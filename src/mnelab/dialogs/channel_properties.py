@@ -4,21 +4,20 @@
 
 from mne import channel_type
 from mne.io import get_channel_type_constants
-from PySide6.QtCore import QEvent, QRect, QSortFilterProxyModel, Qt, Slot
+from PySide6.QtCore import QSortFilterProxyModel, Qt, Slot
 from PySide6.QtGui import QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import (
     QAbstractItemView,
-    QApplication,
     QComboBox,
     QDialog,
     QDialogButtonBox,
     QHeaderView,
-    QStyle,
     QStyledItemDelegate,
-    QStyleOptionButton,
     QTableView,
     QVBoxLayout,
 )
+
+from mnelab.dialogs.utils import CheckBoxDelegate, set_header_alignments
 
 channel_types = [k.upper() for k in get_channel_type_constants().keys()]
 
@@ -30,18 +29,7 @@ class ChannelPropertiesDialog(QDialog):
 
         self.model = QStandardItemModel(info["nchan"], 4)
         self.model.setHorizontalHeaderLabels(["#", "Label", "Type", "Bad"])
-        self.model.horizontalHeaderItem(0).setTextAlignment(
-            Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
-        )
-        self.model.horizontalHeaderItem(1).setTextAlignment(
-            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
-        )
-        self.model.horizontalHeaderItem(2).setTextAlignment(
-            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
-        )
-        self.model.horizontalHeaderItem(3).setTextAlignment(
-            Qt.AlignmentFlag.AlignCenter
-        )
+        set_header_alignments(self.model, "rllc")
         for index, ch in enumerate(info["chs"]):
             item = QStandardItem()
             item.setData(index, Qt.ItemDataRole.DisplayRole)
@@ -116,36 +104,6 @@ class MySortFilterProxyModel(QSortFilterProxyModel):
             right_data = self.sourceModel().data(right, Qt.ItemDataRole.UserRole)
 
         return left_data < right_data
-
-
-class CheckBoxDelegate(QStyledItemDelegate):
-    def paint(self, painter, option, index):
-        checked = index.data(Qt.ItemDataRole.CheckStateRole) == Qt.CheckState.Checked
-        opt = QStyleOptionButton()
-        opt.state = QStyle.StateFlag.State_Enabled
-        opt.state |= (
-            QStyle.StateFlag.State_On if checked else QStyle.StateFlag.State_Off
-        )
-        style = QApplication.style()
-        indicator_size = style.subElementRect(
-            QStyle.SubElement.SE_CheckBoxIndicator, opt, None
-        )
-        x = option.rect.x() + (option.rect.width() - indicator_size.width()) // 2
-        y = option.rect.y() + (option.rect.height() - indicator_size.height()) // 2
-        opt.rect = QRect(x, y, indicator_size.width(), indicator_size.height())
-        style.drawControl(QStyle.ControlElement.CE_CheckBox, opt, painter)
-
-    def editorEvent(self, event, model, option, index):
-        if event.type() == QEvent.Type.MouseButtonRelease:
-            current = index.data(Qt.ItemDataRole.CheckStateRole)
-            new_state = (
-                Qt.CheckState.Unchecked
-                if current == Qt.CheckState.Checked
-                else Qt.CheckState.Checked
-            )
-            model.setData(index, new_state, Qt.ItemDataRole.CheckStateRole)
-            return True
-        return super().editorEvent(event, model, option, index)
 
 
 class ComboBoxDelegate(QStyledItemDelegate):

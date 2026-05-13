@@ -24,6 +24,7 @@ from mnelab.dialogs.utils import (
     CheckBoxDelegate,
     NumberSortProxyModel,
     get_detailed_ica_properties,
+    set_header_alignments,
 )
 from mnelab.widgets import FlatDoubleSpinBox
 
@@ -139,6 +140,7 @@ class ICLabelDialog(QDialog):
 
         self.model = QStandardItemModel(len(self.probs), len(headers))
         self.model.setHorizontalHeaderLabels(headers)
+        set_header_alignments(self.model, "r" * (1 + len(self.labels)) + "c")
 
         row_labels = [str(i + 1) for i in range(len(self.probs))]
         self.model.setVerticalHeaderLabels(row_labels)
@@ -149,7 +151,9 @@ class ICLabelDialog(QDialog):
             item.setData(row_id, Qt.ItemDataRole.UserRole)
             item.setData(row_id, Qt.ItemDataRole.DisplayRole)
             item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
-            item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            item.setTextAlignment(
+                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+            )
             self.model.setItem(row_id, 0, item)
 
             for col_id, prob in enumerate(self.probs[row_id]):
@@ -159,7 +163,9 @@ class ICLabelDialog(QDialog):
                 prob_item.setFlags(
                     Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
                 )
-                prob_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                prob_item.setTextAlignment(
+                    Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+                )
 
                 alpha = int(prob * 200)
                 color = QColor(34, 139, 34, alpha)

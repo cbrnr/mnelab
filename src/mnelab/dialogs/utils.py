@@ -20,6 +20,31 @@ def select_all(list_widget):
         list_widget.item(i).setSelected(True)
 
 
+def set_header_alignments(model, alignments):
+    """Set text alignment for each horizontal header item.
+
+    `Qt.AlignmentFlag.AlignVCenter` is always applied automatically.
+
+    Parameters
+    ----------
+    model
+        A `QStandardItemModel` or `QTableWidget` whose horizontal header items will be
+        updated.
+    alignments
+        String of alignment characters, one per column. Use `"l"` for left, `"c"` for
+        center, and `"r"` for right alignment.
+    """
+    _map = {
+        "l": Qt.AlignmentFlag.AlignLeft,
+        "c": Qt.AlignmentFlag.AlignCenter,
+        "r": Qt.AlignmentFlag.AlignRight,
+    }
+    for col, char in enumerate(alignments):
+        item = model.horizontalHeaderItem(col)
+        if item is not None:
+            item.setTextAlignment(_map[char] | Qt.AlignmentFlag.AlignVCenter)
+
+
 def get_detailed_ica_properties(ica, data, comp_id, ic_probs, labels):
     """Initialize the ICA properties plot."""
     # TODO: workaround until https://github.com/mne-tools/mne-python/pull/13746 is
@@ -97,6 +122,9 @@ def get_detailed_ica_properties(ica, data, comp_id, ic_probs, labels):
 class IntTableWidgetItem(QTableWidgetItem):
     def __init__(self, value):
         super().__init__(str(value))
+        self.setTextAlignment(
+            Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+        )
 
     def __lt__(self, other):
         return int(self.data(Qt.ItemDataRole.EditRole)) < int(
@@ -104,9 +132,12 @@ class IntTableWidgetItem(QTableWidgetItem):
         )
 
     def setData(self, role, value):
+        if role not in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
+            super().setData(role, value)
+            return
         try:
             value = int(value)
-        except ValueError:
+        except (TypeError, ValueError):
             return
         else:
             if value >= 0:  # event position and type must not be negative
@@ -119,6 +150,9 @@ class IntTableWidgetItem(QTableWidgetItem):
 class FloatTableWidgetItem(QTableWidgetItem):
     def __init__(self, value):
         super().__init__(str(value))
+        self.setTextAlignment(
+            Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+        )
 
     def __lt__(self, other):
         return float(self.data(Qt.ItemDataRole.EditRole)) < float(
@@ -126,9 +160,12 @@ class FloatTableWidgetItem(QTableWidgetItem):
         )
 
     def setData(self, role, value):
+        if role not in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
+            super().setData(role, value)
+            return
         try:
             value = float(value)
-        except ValueError:
+        except (TypeError, ValueError):
             return
         else:
             if value >= 0:  # event position and type must not be negative
@@ -142,12 +179,12 @@ class NumberSortProxyModel(QSortFilterProxyModel):
     """Helper class to sort columns with numerical data."""
 
     def lessThan(self, left, right):
-        left_data = self.sourceModel().data(
-            left, Qt.ItemDataRole.UserRole
-        ) or self.sourceModel().data(left, Qt.ItemDataRole.CheckStateRole)
-        right_data = self.sourceModel().data(
-            right, Qt.ItemDataRole.UserRole
-        ) or self.sourceModel().data(right, Qt.ItemDataRole.CheckStateRole)
+        left_data = self.sourceModel().data(left, Qt.ItemDataRole.UserRole)
+        if left_data is None:
+            left_data = self.sourceModel().data(left, Qt.ItemDataRole.CheckStateRole)
+        right_data = self.sourceModel().data(right, Qt.ItemDataRole.UserRole)
+        if right_data is None:
+            right_data = self.sourceModel().data(right, Qt.ItemDataRole.CheckStateRole)
 
         if left_data is None:
             return True

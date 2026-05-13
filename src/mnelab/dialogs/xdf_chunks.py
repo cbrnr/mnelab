@@ -11,15 +11,20 @@ from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QHBoxLayout,
+    QHeaderView,
     QPlainTextEdit,
     QTableView,
     QVBoxLayout,
 )
 
+from mnelab.dialogs.utils import set_header_alignments
 
-def _add_item(item):
+
+def _add_item(item, alignment=None):
     tmp = QStandardItem()
     tmp.setData(item, Qt.ItemDataRole.DisplayRole)
+    if alignment is not None:
+        tmp.setTextAlignment(alignment)
     return tmp
 
 
@@ -41,19 +46,23 @@ class XDFChunksDialog(QDialog):
 
         self.model = QStandardItemModel()
         self.model.setHorizontalHeaderLabels(["#", "Bytes", "Tag", "Stream ID"])
+        set_header_alignments(self.model, "rrlr")
 
+        right = Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
         for i, chunk in enumerate(chunks, start=1):
             row = []
-            row.append(_add_item(i))
-            row.append(_add_item(chunk["nbytes"]))
+            row.append(_add_item(i, right))
+            row.append(_add_item(chunk["nbytes"], right))
             row.append(_add_item(f"{chunk['tag']} ({TAGS[chunk['tag']]})"))
-            row.append(_add_item(chunk.get("stream_id", "")))
+            row.append(_add_item(chunk.get("stream_id", ""), right))
             self.model.appendRow(row)
 
         self.view = QTableView()
         self.view.setModel(self.model)
         self.view.verticalHeader().setVisible(False)
-        self.view.horizontalHeader().setStretchLastSection(True)
+        header = self.view.horizontalHeader()
+        header.setStretchLastSection(False)
+        header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
         self.view.setShowGrid(False)
         self.view.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.view.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
@@ -85,10 +94,10 @@ class XDFChunksDialog(QDialog):
         self._update_details()
 
         self.setMinimumSize(980, 650)
-        self.view.setColumnWidth(0, 70)
+        self.view.setColumnWidth(0, 50)
         self.view.setColumnWidth(1, 80)
-        self.view.setColumnWidth(2, 150)
-        self.view.setColumnWidth(3, 70)
+        self.view.setColumnWidth(2, 140)
+        self.view.setColumnWidth(3, 100)
         self.setFocus()
 
     @Slot()

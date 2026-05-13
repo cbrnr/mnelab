@@ -22,7 +22,11 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from mnelab.dialogs.utils import CheckBoxDelegate, NumberSortProxyModel
+from mnelab.dialogs.utils import (
+    CheckBoxDelegate,
+    NumberSortProxyModel,
+    set_header_alignments,
+)
 from mnelab.utils import (
     find_bad_epochs_amplitude,
     find_bad_epochs_autoreject,
@@ -396,6 +400,7 @@ class ArtifactPreviewTable(QDialog):
         ]
         header_labels = ["Epoch"] + method_cols + ["Reject"]
         self.model.setHorizontalHeaderLabels(header_labels)
+        set_header_alignments(self.model, "r" + "c" * (len(method_cols) + 1))
 
         self.reject_col_idx = len(header_labels) - 1
 
@@ -407,7 +412,9 @@ class ArtifactPreviewTable(QDialog):
             item.setData(epoch_idx, Qt.ItemDataRole.DisplayRole)
             item.setData(epoch_idx, Qt.ItemDataRole.UserRole)
             item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
-            item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            item.setTextAlignment(
+                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+            )
             row_items.append(item)
 
             # method columns

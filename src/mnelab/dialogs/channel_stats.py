@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from mnelab.dialogs.utils import NumberSortProxyModel
+from mnelab.dialogs.utils import NumberSortProxyModel, set_header_alignments
 from mnelab.utils import calculate_channel_stats
 
 
@@ -91,6 +91,7 @@ class ChannelStats(QDialog):
 
         self.model = QStandardItemModel(nchan, len(headers))
         self.model.setHorizontalHeaderLabels(headers)
+        set_header_alignments(self.model, "rlll" + "r" * 6)
 
         for i in range(nchan):
             # Channel
@@ -111,13 +112,11 @@ class ChannelStats(QDialog):
             # Type
             item = QStandardItem(cols["type"][i].upper())
             item.setFlags(Qt.ItemFlag.ItemIsEnabled)
-            item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
             self.model.setItem(i, 2, item)
 
             # Unit
             item = QStandardItem(cols["unit"][i])
             item.setFlags(Qt.ItemFlag.ItemIsEnabled)
-            item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
             self.model.setItem(i, 3, item)
 
             # Numeric columns (Min, Q1, Mean, Median, Q3, Max)

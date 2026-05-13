@@ -10,13 +10,14 @@ from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QHBoxLayout,
+    QHeaderView,
     QPushButton,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
 )
 
-from mnelab.dialogs.utils import IntTableWidgetItem
+from mnelab.dialogs.utils import IntTableWidgetItem, set_header_alignments
 
 
 class EventsDialog(QDialog):
@@ -31,7 +32,10 @@ class EventsDialog(QDialog):
             self.event_table.setItem(row, 1, IntTableWidgetItem(d))
 
         self.event_table.setHorizontalHeaderLabels(["Position", "Type"])
-        self.event_table.horizontalHeader().setStretchLastSection(True)
+        set_header_alignments(self.event_table, "rr")
+        header = self.event_table.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Interactive)
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         self.event_table.verticalHeader().setVisible(False)
         self.event_table.setShowGrid(False)
         self.event_table.setSelectionBehavior(
@@ -46,7 +50,7 @@ class EventsDialog(QDialog):
         vbox.addWidget(self.event_table)
         hbox = QHBoxLayout()
         self.add_button = QPushButton("+")
-        self.remove_button = QPushButton("-")
+        self.remove_button = QPushButton("–")
         self.counts_button = QPushButton("Counts...")
         self.mapping_button = QPushButton("Mapping...")
         buttonbox = QDialogButtonBox(
@@ -71,6 +75,11 @@ class EventsDialog(QDialog):
         self.toggle_buttons()
         self.setMinimumSize(600, 500)
         self.setFocus()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        width = self.event_table.horizontalHeader().width()
+        self.event_table.setColumnWidth(0, int(width * 0.3))
 
     @property
     def unique_events(self):
@@ -142,6 +151,7 @@ class EventCountsDialog(QDialog):
 
         self.counts_table = QTableWidget(0, 2)
         self.counts_table.setHorizontalHeaderLabels(["Type", "Count"])
+        set_header_alignments(self.counts_table, "rr")
         self.counts_table.horizontalHeader().setStretchLastSection(True)
         self.counts_table.verticalHeader().setVisible(False)
         self.counts_table.setShowGrid(False)
@@ -165,7 +175,7 @@ class EventCountsDialog(QDialog):
             id_item.setFlags(id_item.flags() ^ Qt.ItemFlag.ItemIsEditable)
             self.counts_table.insertRow(row)
             self.counts_table.setItem(row, 0, id_item)
-            self.counts_table.setItem(row, 1, QTableWidgetItem(str(count)))
+            self.counts_table.setItem(row, 1, IntTableWidgetItem(count))
 
 
 class EventMappingDialog(QDialog):
@@ -178,6 +188,7 @@ class EventMappingDialog(QDialog):
 
         self.mapping_table = QTableWidget(0, 2)
         self.mapping_table.setHorizontalHeaderLabels(["Type", "Label"])
+        set_header_alignments(self.mapping_table, "rl")
         self.mapping_table.horizontalHeader().setStretchLastSection(True)
         self.mapping_table.verticalHeader().setVisible(False)
         self.mapping_table.setShowGrid(False)
@@ -185,7 +196,7 @@ class EventMappingDialog(QDialog):
             QAbstractItemView.SelectionBehavior.SelectRows
         )
         self.fill_mapping_table()
-        self.clear_button = QPushButton("Clear mapping")
+        self.clear_button = QPushButton("Clear Mapping")
 
         vbox = QVBoxLayout(self)
         vbox.addWidget(self.mapping_table)

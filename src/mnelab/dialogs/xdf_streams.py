@@ -17,7 +17,11 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from mnelab.dialogs.utils import FloatTableWidgetItem, IntTableWidgetItem
+from mnelab.dialogs.utils import (
+    FloatTableWidgetItem,
+    IntTableWidgetItem,
+    set_header_alignments,
+)
 from mnelab.widgets import FlatDoubleSpinBox
 
 
@@ -46,6 +50,7 @@ class XDFStreamsDialog(QDialog):
                 "Sampling Rate",
             ]
         )
+        set_header_alignments(self.view, "rllrlr")
 
         self.view.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.view.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
@@ -115,8 +120,8 @@ class XDFStreamsDialog(QDialog):
         self.toggle_buttons()
         self.resize(775, 650)
         self.view.setColumnWidth(0, 90)
-        self.view.setColumnWidth(1, 200)
-        self.view.setColumnWidth(2, 140)
+        self.view.setColumnWidth(1, 220)
+        self.view.setColumnWidth(2, 120)
         self.setFocus()
 
     @property

@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
+from mnelab.dialogs.utils import set_header_alignments
 from mnelab.widgets import FlatDoubleSpinBox
 
 
@@ -48,6 +49,7 @@ class RenameChannelsDialog(QDialog):
 
         self.preview = QTableWidget(len(channels), 2)
         self.preview.setHorizontalHeaderLabels(["Before", "After"])
+        set_header_alignments(self.preview, "ll")
         self.preview.horizontalHeader().setStretchLastSection(True)
         self.preview.verticalHeader().setVisible(False)
         self.preview.setShowGrid(False)
