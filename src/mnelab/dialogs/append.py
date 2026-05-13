@@ -127,7 +127,7 @@ class DragDropTableWidget(QTableWidget):
 
 
 class AppendDialog(QDialog):
-    def __init__(self, parent, compatibles, title="Append data"):
+    def __init__(self, parent, compatibles, title="Append Data"):
         super().__init__(parent)
         self.setWindowTitle(title)
 

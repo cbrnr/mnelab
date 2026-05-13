@@ -25,7 +25,7 @@ def populate_tree(parent, node):
 class XDFMetadataDialog(QDialog):
     def __init__(self, parent, xml):
         super().__init__(parent)
-        self.setWindowTitle("XDF metadata")
+        self.setWindowTitle("XDF Metadata")
 
         tree = QTreeWidget()
         tree.setColumnCount(2)

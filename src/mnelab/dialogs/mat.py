@@ -52,7 +52,7 @@ def populate_tree(parent, nodes):
 class MatDialog(QDialog):
     def __init__(self, parent, fname, nodes):
         super().__init__(parent)
-        self.setWindowTitle("Select variable")
+        self.setWindowTitle("Select Variable")
 
         self.tree = QTreeWidget()
         self.tree.setColumnCount(4)
@@ -77,7 +77,7 @@ class MatDialog(QDialog):
         self._fs.setValue(250)
         self._fs.setDecimals(2)
         self._fs.setSuffix(" Hz")
-        hbox.addWidget(QLabel("Sampling frequency:"))
+        hbox.addWidget(QLabel("Sampling Frequency:"))
         hbox.addWidget(self._fs)
         hbox.addStretch()
         self._transpose = QCheckBox("Transpose")

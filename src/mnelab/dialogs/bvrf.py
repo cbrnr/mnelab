@@ -17,7 +17,7 @@ class BVRFDialog(QDialog):
     def __init__(self, parent, participants):
         super().__init__(parent)
 
-        self.setWindowTitle("Import BVRF data")
+        self.setWindowTitle("Import BVRF Data")
 
         vbox = QVBoxLayout(self)
 
@@ -35,7 +35,7 @@ class BVRFDialog(QDialog):
         vbox.addWidget(self._participant_list)
 
         # checkbox for creating separate datasets
-        self._create_separate = QCheckBox("Create separate data sets")
+        self._create_separate = QCheckBox("Create Separate Datasets")
         self._create_separate.setChecked(True)  # Checked by default
         vbox.addWidget(self._create_separate)
 

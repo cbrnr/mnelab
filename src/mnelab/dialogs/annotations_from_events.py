@@ -23,17 +23,17 @@ from mnelab.widgets import FlatDoubleSpinBox
 class AnnotationsIntervalDialog(QDialog):
     def __init__(self, parent, event_counts, annotations):
         super().__init__(parent)
-        self.setWindowTitle("Create annotations from events")
+        self.setWindowTitle("Create Annotations from Events")
         vbox = QVBoxLayout(self)
         self.event_counts = event_counts
         self.event_names = [str(e) for e in event_counts.keys()]
 
         # radio buttons
-        self.annotations_events_button = QRadioButton("Copy events to annotations")
+        self.annotations_events_button = QRadioButton("Copy Events to Annotations")
         vbox.addWidget(self.annotations_events_button)
         self.annotations_events_button.setChecked(True)
 
-        self.event_event_button = QRadioButton("Define intervals between events")
+        self.event_event_button = QRadioButton("Create Intervals between Events")
         vbox.addWidget(self.event_event_button)
 
         self.annotation_type_group = QButtonGroup(self)
@@ -47,7 +47,7 @@ class AnnotationsIntervalDialog(QDialog):
         self.grid.setColumnStretch(1, 1)
 
         # start event
-        self.grid.addWidget(QLabel("Start event(s):"), 0, 0, Qt.AlignmentFlag.AlignTop)
+        self.grid.addWidget(QLabel("Start Event(s):"), 0, 0, Qt.AlignmentFlag.AlignTop)
         self.start_event_list = QListWidget()
         self.start_event_list.setSelectionMode(
             QListWidget.SelectionMode.ExtendedSelection
@@ -57,7 +57,7 @@ class AnnotationsIntervalDialog(QDialog):
         self.grid.addWidget(self.start_event_list, 0, 1)
 
         # start offset
-        self.grid.addWidget(QLabel("Start offset:"), 1, 0)
+        self.grid.addWidget(QLabel("Start Offset:"), 1, 0)
         self.start_offset_spin = FlatDoubleSpinBox()
         self.start_offset_spin.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.start_offset_spin.setSingleStep(0.5)
@@ -67,7 +67,7 @@ class AnnotationsIntervalDialog(QDialog):
         self.grid.addWidget(self.start_offset_spin, 1, 1)
 
         # end event
-        self.grid.addWidget(QLabel("End event(s):"), 2, 0, Qt.AlignmentFlag.AlignTop)
+        self.grid.addWidget(QLabel("End Event(s):"), 2, 0, Qt.AlignmentFlag.AlignTop)
         self.end_event_list = QListWidget()
         self.end_event_list.setSelectionMode(
             QListWidget.SelectionMode.ExtendedSelection
@@ -77,7 +77,7 @@ class AnnotationsIntervalDialog(QDialog):
         self.grid.addWidget(self.end_event_list, 2, 1)
 
         # end offset
-        self.grid.addWidget(QLabel("End offset:"), 3, 0)
+        self.grid.addWidget(QLabel("End Offset:"), 3, 0)
         self.end_offset_spin = FlatDoubleSpinBox()
         self.end_offset_spin.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.end_offset_spin.setSingleStep(0.5)
@@ -90,18 +90,18 @@ class AnnotationsIntervalDialog(QDialog):
         self.grid.addWidget(QLabel("Annotation:"), 4, 0)
         self.annotation_combo = QComboBox()
         self.annotation_combo.setEditable(True)
-        self.annotation_combo.lineEdit().setPlaceholderText("Create annotation...")
+        self.annotation_combo.lineEdit().setPlaceholderText("Create Annotation...")
         self.annotation_combo.addItems(annotations)
         self.annotation_combo.setCurrentIndex(-1)
         self.annotation_combo.setMinimumWidth(130)
         self.grid.addWidget(self.annotation_combo, 4, 1)
 
         # checkboxes
-        self.to_start_check = QCheckBox("Extend to start")
+        self.to_start_check = QCheckBox("Extend to Start of Recording")
         self.to_start_check.setChecked(True)
         self.grid.addWidget(self.to_start_check, 5, 0, 1, 2)
 
-        self.to_end_check = QCheckBox("Extend to end")
+        self.to_end_check = QCheckBox("Extend to End of Recording")
         self.to_end_check.setChecked(True)
         self.grid.addWidget(self.to_end_check, 6, 0, 1, 2)
 

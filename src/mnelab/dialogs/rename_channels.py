@@ -21,7 +21,7 @@ from mnelab.widgets import FlatDoubleSpinBox
 class RenameChannelsDialog(QDialog):
     def __init__(self, parent, channels):
         super().__init__(parent)
-        self.setWindowTitle("Rename channels")
+        self.setWindowTitle("Rename Channels")
 
         self.old_names = channels
 

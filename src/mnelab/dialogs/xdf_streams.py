@@ -73,7 +73,7 @@ class XDFStreamsDialog(QDialog):
         self.fs_new.setDecimals(1)
         self.fs_new.setSuffix(" Hz")
 
-        self.gap_threshold_label = QLabel("Detect gaps longer than")
+        self.gap_threshold_label = QLabel("Detect Gaps Longer than")
         self.gap_threshold_checkbox = QCheckBox()
         self.gap_threshold_checkbox.stateChanged.connect(
             self._toggle_gap_threshold_spinbox
@@ -86,7 +86,7 @@ class XDFStreamsDialog(QDialog):
         self.gap_threshold.setSuffix(" s")
         self.gap_threshold.setEnabled(False)
 
-        self._prefix_markers = QCheckBox("Prefix markers with stream ID")
+        self._prefix_markers = QCheckBox("Prefix Markers with Stream ID")
         self._prefix_markers.setChecked(False)
 
         hbox1 = QHBoxLayout()

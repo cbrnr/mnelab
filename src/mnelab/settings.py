@@ -163,15 +163,15 @@ class SettingsDialog(QDialog):
         self.max_recent.setValue(read_settings("max_recent"))
         self.max_recent.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.max_recent.setFixedWidth(100)
-        general_form.addRow("Recent files:", self.max_recent)
+        general_form.addRow("Recent Files:", self.max_recent)
 
         self.dtype_badges = QCheckBox()
         self.dtype_badges.setChecked(read_settings("dtype_badges"))
-        general_form.addRow("Data type badges:", self.dtype_badges)
+        general_form.addRow("Data Type Badges:", self.dtype_badges)
 
         self.menu_icons = QCheckBox()
         self.menu_icons.setChecked(read_settings("menu_icons"))
-        general_form.addRow("Menu icons:", self.menu_icons)
+        general_form.addRow("Menu Icons:", self.menu_icons)
 
         self._stack.addWidget(general_page)
 
@@ -194,14 +194,14 @@ class SettingsDialog(QDialog):
         self.plot_backend = QComboBox()
         self.plot_backend.addItems(backends)
         self.plot_backend.setCurrentIndex(backends.index(backend))
-        plotting_form.addRow("Plot backend:", self.plot_backend)
+        plotting_form.addRow("Plot Backend:", self.plot_backend)
 
         self.max_channels = FlatSpinBox()
         self.max_channels.setRange(1, 256)
         self.max_channels.setValue(read_settings("max_channels"))
         self.max_channels.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.max_channels.setFixedWidth(100)
-        plotting_form.addRow("Displayed channels:", self.max_channels)
+        plotting_form.addRow("Displayed Channels:", self.max_channels)
 
         self.duration = FlatSpinBox()
         self.duration.setRange(1, 3600)
@@ -209,14 +209,14 @@ class SettingsDialog(QDialog):
         self.duration.setSuffix(" s")
         self.duration.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.duration.setFixedWidth(100)
-        plotting_form.addRow("Displayed duration:", self.duration)
+        plotting_form.addRow("Displayed Duration:", self.duration)
 
         self.epochs = FlatSpinBox()
         self.epochs.setRange(1, 100)
         self.epochs.setValue(read_settings("epochs"))
         self.epochs.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.epochs.setFixedWidth(100)
-        plotting_form.addRow("Displayed epochs:", self.epochs)
+        plotting_form.addRow("Displayed Epochs:", self.epochs)
 
         self._stack.addWidget(plotting_page)
 
@@ -239,7 +239,7 @@ class SettingsDialog(QDialog):
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )
         self.reset_button = self.buttonbox.addButton(
-            "Reset to defaults", QDialogButtonBox.ButtonRole.ResetRole
+            "Reset to Defaults", QDialogButtonBox.ButtonRole.ResetRole
         )
         vbox.addWidget(self.buttonbox)
 

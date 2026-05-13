@@ -9,11 +9,11 @@ class BrainVisionDialog(QDialog):
     def __init__(self, parent):
         super().__init__(parent)
 
-        self.setWindowTitle("Import BrainVision data")
+        self.setWindowTitle("Import BrainVision Data")
 
         vbox = QVBoxLayout(self)
         self._ignore_marker_types = QCheckBox(
-            "Ignore marker types (only use description)"
+            "Ignore Marker Types (Use Description Only)"
         )
         self._ignore_marker_types.setChecked(False)
         vbox.addWidget(self._ignore_marker_types)

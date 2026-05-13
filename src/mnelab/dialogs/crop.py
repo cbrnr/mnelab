@@ -17,10 +17,10 @@ from mnelab.widgets import FlatDoubleSpinBox
 class CropDialog(QDialog):
     def __init__(self, parent, start, stop):
         super().__init__(parent)
-        self.setWindowTitle("Crop data")
+        self.setWindowTitle("Crop Data")
         vbox = QVBoxLayout(self)
         grid = QGridLayout()
-        self.start_checkbox = QCheckBox("Start time:")
+        self.start_checkbox = QCheckBox("Start Time:")
         self.start_checkbox.setChecked(True)
         self.start_checkbox.stateChanged.connect(self.toggle_start)
         grid.addWidget(self.start_checkbox, 0, 0)
@@ -33,7 +33,7 @@ class CropDialog(QDialog):
         self._start.setMinimumWidth(140)
         grid.addWidget(self._start, 0, 1)
 
-        self.stop_checkbox = QCheckBox("Stop time:")
+        self.stop_checkbox = QCheckBox("Stop Time:")
         self.stop_checkbox.setChecked(True)
         self.stop_checkbox.stateChanged.connect(self.toggle_stop)
         grid.addWidget(self.stop_checkbox, 1, 0)

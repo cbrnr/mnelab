@@ -548,14 +548,14 @@ class Model:
         else:
             annots = "–"
         return {
-            "File name": fname if fname else "–",
-            "File type": ftype if ftype else "–",
-            "Data type": dtype,
-            "Size on disk": size_disk,
-            "Size in memory": f"{data.get_data().nbytes / 1024**2:.2f}\u2009MB",
+            "File Name": fname if fname else "–",
+            "File Type": ftype if ftype else "–",
+            "Data Type": dtype,
+            "Size on Disk": size_disk,
+            "Size in Memory": f"{data.get_data().nbytes / 1024**2:.2f}\u2009MB",
             "Channels": f"{nchan} (" + chans + ")",
             "Samples": samples,
-            "Sampling frequency": f"{fs:.6g}\u2009Hz",
+            "Sampling Frequency": f"{fs:.6g}\u2009Hz",
             "Length": length,
             "Events": events,
             "Annotations": annots,
