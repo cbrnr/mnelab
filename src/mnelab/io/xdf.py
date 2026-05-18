@@ -64,6 +64,7 @@ class RawXDF(BaseRaw):
           the original timestamps are regular and does not account for any gaps.
         By default, gap detection is disabled.
         """
+
         if len(stream_ids) > 1 and fs_new is None:
             raise ValueError(
                 "Argument `fs_new` is required when reading multiple streams."
@@ -83,7 +84,7 @@ class RawXDF(BaseRaw):
         streams, header = load_xdf(fname)
         streams = {stream["info"]["stream_id"]: stream for stream in streams}
 
-        if all(_is_markerstream(streams[stream_id]) for stream_id in stream_ids):
+        if (not stream_ids) and marker_ids:
             raise RuntimeError(
                 "Loading only marker streams is not supported, at least one stream must"
                 " be a regular stream."
@@ -93,6 +94,23 @@ class RawXDF(BaseRaw):
         channel_types = get_channel_type_constants(True)
         for stream_id in stream_ids:
             stream = streams[stream_id]
+
+            # check if the dtype is valid, try convertion otherwise
+            dtype = stream["time_series"].dtype
+            if dtype not in [np.float64, np.complex128]:
+                try:
+                    stream["time_series"] = stream["time_series"].astype(np.float64)
+                except ValueError:
+                    try:
+                        stream["time_series"] = stream["time_series"].astype(
+                            np.complex128
+                        )
+                    except ValueError as e:
+                        raise RuntimeError(
+                            f"Stream {stream['info']['name']} has unsupported"
+                            " dtype {dtype}. "
+                            f"Conversion to float64 and complex128 failed."
+                        ) from e
 
             n_chans = int(stream["info"]["channel_count"][0])
             labels, types, units = [], [], []
@@ -153,17 +171,23 @@ class RawXDF(BaseRaw):
         super().__init__(preload=data, info=info, filenames=[fname], *args, **kwargs)
 
         # convert marker streams to annotations
-        for stream_id, stream in streams.items():
-            if marker_ids is not None and stream_id not in marker_ids:
-                continue
-            if not _is_markerstream(stream):
-                continue
+        for marker_id in marker_ids:
+            stream = streams[marker_id]
+            channel_count = int(stream["info"]["channel_count"][0])
             onsets = stream["time_stamps"] - first_time
-            prefix = f"{stream_id}-" if prefix_markers else ""
-            descriptions = [
-                f"{prefix}{item}" for sub in stream["time_series"] for item in sub
-            ]
-            self.annotations.append(onsets, [0] * len(onsets), descriptions)
+            prefix = f"{marker_id}-" if prefix_markers else ""
+
+            if channel_count == 1:
+                # handle single-channel markers
+                descriptions = [f"{prefix}{item[0]}" for item in stream["time_series"]]
+                self.annotations.append(onsets, [0] * len(onsets), descriptions)
+            else:
+                # handle multi-channel markers
+                for sample in stream["time_series"]:
+                    for _, description in enumerate(sample):
+                        self.annotations.append(
+                            onsets, [0] * len(onsets), str(description)
+                        )
 
         recording_datetime = header["info"].get("datetime", [None])[0]
         if recording_datetime is not None:
@@ -352,12 +376,6 @@ def read_raw_xdf(
         fs_new,
         gap_threshold,
     )
-
-
-def _is_markerstream(stream):
-    srate = float(stream["info"]["nominal_srate"][0])
-    n_chans = int(stream["info"]["channel_count"][0])
-    return srate == 0 and n_chans == 1
 
 
 def get_xml(fname):
