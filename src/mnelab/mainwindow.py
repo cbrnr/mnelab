@@ -74,6 +74,9 @@ from mnelab.viz import (
 )
 from mnelab.widgets import EmptyWidget, InfoWidget, SidebarTableWidget
 
+SIDEBAR_MIN_WIDTH = 150
+INFOWIDGET_MIN_WIDTH = 200
+
 
 class _MNELogHandler(logging.Handler):
     """Logging handler that silently captures MNE messages into a list."""
@@ -537,6 +540,7 @@ class MainWindow(QMainWindow):
 
         # set up data model for sidebar (list of open files)
         self.sidebar = SidebarTableWidget(self)
+        self.sidebar.setMinimumWidth(SIDEBAR_MIN_WIDTH)
         self.sidebar.hide()
         self.sidebar.rowsMoved.connect(self._sidebar_move_event)
         self.sidebar.itemDelegate().commitData.connect(self._sidebar_edit_event)
@@ -547,14 +551,17 @@ class MainWindow(QMainWindow):
         self.splitter = QSplitter()
         self.splitter.setObjectName("main_splitter")
         self.splitter.addWidget(self.sidebar)
+        self.splitter.setCollapsible(0, False)
 
         self.infowidget = QStackedWidget()
+        self.infowidget.setMinimumWidth(INFOWIDGET_MIN_WIDTH)
         self.infowidget.addWidget(InfoWidget())
         emptywidget = EmptyWidget(
             itemgetter("open_file", "history", "settings")(self.all_actions)
         )
         self.infowidget.addWidget(emptywidget)
         self.splitter.addWidget(self.infowidget)
+        self.splitter.setCollapsible(1, False)
         QTimer.singleShot(0, lambda: self._set_splitter_ratio(settings["splitter"]))
         self.setCentralWidget(self.splitter)
 
@@ -1010,7 +1017,8 @@ class MainWindow(QMainWindow):
 
     def _set_splitter_ratio(self, ratio):
         total = sum(self.splitter.sizes())
-        left = round(total * ratio)
+        left = max(round(total * ratio), SIDEBAR_MIN_WIDTH)
+        left = min(left, total - INFOWIDGET_MIN_WIDTH)
         self.splitter.setSizes([left, total - left])
 
     def _get_last_dir(self):
