@@ -4,17 +4,17 @@
 
 import sys
 
-from PySide6.QtCore import QEvent, QRect, QRectF, Qt, Signal
+from PySide6.QtCore import QEvent, QRectF, QSize, Qt
 from PySide6.QtGui import QColor, QCursor, QIcon, QPainter, QPalette
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QApplication,
-    QFrame,
     QHeaderView,
+    QMessageBox,
     QStyledItemDelegate,
-    QTableWidget,
-    QTableWidgetItem,
     QToolButton,
+    QTreeWidget,
+    QTreeWidgetItem,
 )
 
 ROW_HEIGHT = 30
@@ -30,6 +30,9 @@ class TypeBadgeDelegate(QStyledItemDelegate):
     """Renders a rounded-rectangle badge for the data type column."""
 
     def paint(self, painter, option, index):
+        # draw selection/hover background first (without the text to avoid flicker)
+        super().paint(painter, option, index)
+
         dtype = index.data(Qt.ItemDataRole.DisplayRole)
         if not dtype:
             return
@@ -66,76 +69,39 @@ class TypeBadgeDelegate(QStyledItemDelegate):
         hint.setWidth(56)
         return hint
 
-
-class SpanningHeaderView(QHeaderView):
-    """Horizontal header where a contiguous range of sections is painted as one."""
-
-    def __init__(self, orientation, span_start=0, span_count=1, parent=None):
-        super().__init__(orientation, parent)
-        self._span_start = span_start
-        self._span_count = span_count
-
-    def paintSection(self, painter, rect, logical_index):
-        span_cols = range(self._span_start, self._span_start + self._span_count)
-        if logical_index in span_cols and logical_index != self._span_start:
-            return
-        if logical_index == self._span_start:
-            total_width = sum(
-                self.sectionSize(self._span_start + i) for i in range(self._span_count)
-            )
-            rect = QRect(rect.x(), rect.y(), total_width, rect.height())
-        super().paintSection(painter, rect, logical_index)
+    def createEditor(self, parent, option, index):
+        return None  # badge column is not editable
 
 
-class SidebarTableWidget(QTableWidget):
-    rowsMoved = Signal(int, int)  # custom signal emitted when drag-and-dropping rows
-
+class SidebarTreeWidget(QTreeWidget):
     def __init__(self, parent):
         super().__init__(parent)
         self.parent = parent
-        self.setDragEnabled(True)
-        self.setAcceptDrops(True)
-        self.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
+        self.setColumnCount(3)
+        self.setHeaderHidden(True)
         self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
-        self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.setDefaultDropAction(Qt.DropAction.MoveAction)
-        self.setDropIndicatorShown(False)
-        self.setDragDropOverwriteMode(False)
-        self.setFrameStyle(QFrame.Shape.NoFrame)
         self.setEditTriggers(QAbstractItemView.EditTrigger.DoubleClicked)
+        self.setUniformRowHeights(True)
         self.setObjectName("sidebar")
-        self.setColumnCount(4)
-        self.setShowGrid(False)
-        if sys.platform != "darwin":
-            self._apply_base_stylesheet()
-        self.drop_row = -1
-
-        header = SpanningHeaderView(
-            Qt.Orientation.Horizontal, span_start=1, span_count=3, parent=self
-        )
-        self.setHorizontalHeader(header)
-        self.setHorizontalHeaderLabels(["#", "Dataset", "", ""])
-        self.horizontalHeaderItem(0).setTextAlignment(
-            Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
-        )
-        self.horizontalHeaderItem(1).setTextAlignment(
-            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
-        )
-        self.verticalHeader().hide()
-        self.horizontalHeader().setStretchLastSection(False)
-        self.horizontalHeader().setMinimumSectionSize(0)
-        self.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)
-        self.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
-        self.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
-        self.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)
-        self.setColumnWidth(2, 56)
-        self.setColumnWidth(3, 28)
-        self.resizeColumnToContents(0)
-        self.setItemDelegateForColumn(2, TypeBadgeDelegate(self))
-        self.horizontalHeader().hide()
-        self.setAccessibleName("Opened datasets")
         self.setMouseTracking(True)
         self.setTabKeyNavigation(False)
+        # prevent double-click from toggling expand/collapse so it can trigger editing
+        self.setExpandsOnDoubleClick(False)
+        self.setIndentation(16)
+        self.setDragEnabled(False)
+        self.setAcceptDrops(True)
+        self.header().setStretchLastSection(False)
+        self.header().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        self.header().setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
+        self.header().setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
+        self.header().setMinimumSectionSize(0)
+        self.setColumnWidth(1, 56)
+        self.setColumnWidth(2, 28)
+        self.setItemDelegateForColumn(1, TypeBadgeDelegate(self))
+        self.setAccessibleName("Opened datasets")
+        self._dragging = False
+        if sys.platform != "darwin":
+            self._apply_base_stylesheet()
         self.viewport().installEventFilter(self)
 
     def _apply_base_stylesheet(self):
@@ -151,20 +117,20 @@ class SidebarTableWidget(QTableWidget):
         self.viewport().setPalette(palette)
         self.viewport().setAutoFillBackground(True)
         self.setStyleSheet(f"""
-            QTableWidget#sidebar {{ outline: 0; background-color: {base_color}; }}
-            QTableWidget#sidebar::item {{
+            QTreeWidget#sidebar {{ outline: 0; background-color: {base_color}; }}
+            QTreeWidget#sidebar::item {{
                 background: {base_color};
                 color: {text_color};
             }}
-            QTableWidget#sidebar::item:hover {{
+            QTreeWidget#sidebar::item:hover {{
                 background: transparent;
                 color: {text_color};
             }}
-            QTableWidget#sidebar::item:selected {{
+            QTreeWidget#sidebar::item:selected {{
                 background: {highlight_color};
                 color: {highlighted_text_color};
             }}
-            QTableWidget#sidebar::item:focus {{
+            QTreeWidget#sidebar::item:focus {{
                 background: {highlight_color};
                 color: {highlighted_text_color};
             }}
@@ -176,159 +142,132 @@ class SidebarTableWidget(QTableWidget):
             self.viewport().update()
 
     def mousePressEvent(self, event):
+        self._dragging = False
         item = self.itemAt(event.pos())
         if item:
             super().mousePressEvent(event)
         else:
             event.ignore()
 
+    def mouseMoveEvent(self, event):
+        # suppress cursor-following selection while holding the mouse button
+        if event.buttons() & Qt.MouseButton.LeftButton:
+            self._dragging = True
+            return
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        if self._dragging:
+            self._dragging = False
+            return  # don't change selection when releasing after a drag
+        super().mouseReleaseEvent(event)
+
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls():
             event.accept()
-        elif event.source() == self:
-            event.accept()
-            super().dragEnterEvent(event)
         else:
             event.ignore()
 
     def dragMoveEvent(self, event):
         if event.mimeData().hasUrls():
             event.accept()
-        elif event.source() == self:
-            drop_row = self.indexAt(event.pos()).row()
-            if drop_row == -1:
-                drop_row = self.rowCount()
-            if drop_row != self.drop_row:
-                self.drop_row = drop_row
-            event.accept()
-            super().dragMoveEvent(event)
         else:
             event.ignore()
-
-    def dragLeaveEvent(self, event):
-        self.drop_row = -1
-        self.viewport().update()
-        super().dragLeaveEvent(event)
-
-    def paintEvent(self, event):
-        super().paintEvent(event)
-        if self.drop_row >= 0:
-            painter = QPainter(self.viewport())
-            if self.drop_row < self.rowCount():
-                y = self.visualRect(self.model().index(self.drop_row, 0)).top()
-            else:
-                y = self.visualRect(self.model().index(self.rowCount() - 1, 0)).bottom()
-            painter.drawLine(0, y, self.viewport().width(), y)
 
     def dropEvent(self, event):
         if event.mimeData().hasUrls():
             self.parent.event(event)
-        elif event.source() == self:
-            drop_row = self.indexAt(event.pos()).row()
-            if drop_row == -1:
-                drop_row = self.rowCount()
-            selected_rows = sorted(
-                index.row() for index in self.selectionModel().selectedRows()
-            )
-            if selected_rows and drop_row > selected_rows[-1]:
-                drop_row -= len(selected_rows)
-
-            self.drop_row = -1
-            self.viewport().update()
-            self.rowsMoved.emit(selected_rows[0], drop_row)
-            event.setDropAction(Qt.DropAction.IgnoreAction)
-            event.accept()
         else:
             event.ignore()
 
-    def set_dtype(self, row, dtype):
-        """Set the data type badge for the given row."""
-        item = QTableWidgetItem(dtype)
-        item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
-        item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-        item.setToolTip(f"Data type: {dtype.capitalize()}")
-        self.setItem(row, 2, item)
-
-    def style_rows(self):
-        self.resizeColumnToContents(0)
-        for i in range(self.rowCount()):
-            self.resizeRowToContents(i)
-            self.setRowHeight(i, ROW_HEIGHT)
-            self.item(i, 0).setTextAlignment(
-                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
-            )
-            self.item(i, 0).setForeground(QColor("gray"))
-            self.item(i, 0).setFlags(
-                self.item(i, 0).flags() & ~Qt.ItemFlag.ItemIsEditable
-            )
-            self.item(i, 1).setTextAlignment(
-                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
-            )
-            self.item(i, 1).setFlags(
-                self.item(i, 1).flags() | Qt.ItemFlag.ItemIsEditable
-            )
-            if self.item(i, 2) is not None:
-                self.item(i, 2).setFlags(
-                    Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
-                )
-        # after a rebuild (e.g. row removed), the cursor may already be hovering
-        # over a row without a MouseMove firing — update the close button immediately
-        pos = self.viewport().mapFromGlobal(QCursor.pos())
-        index = self.indexAt(pos)
-        self.showCloseButton(index.row() if index.isValid() else -1)
+    def set_dtype(self, item, dtype):
+        """Set the data type badge for the given tree item."""
+        item.setText(1, dtype)
+        item.setToolTip(1, f"Data type: {dtype.capitalize()}" if dtype else "")
 
     def set_badges_visible(self, visible):
         """Show or hide the data type badge column."""
-        self.setColumnHidden(2, not visible)
+        self.setColumnHidden(1, not visible)
 
-    def update_vertical_header(self):
-        row_count = self.rowCount()
-        self.setVerticalHeaderLabels([str(i) for i in range(row_count)])
+    def make_item(self, name, dataset_id):
+        """Create a styled tree item for a dataset."""
+        item = QTreeWidgetItem(["", "", ""])
+        item.setText(0, name)
+        item.setData(0, Qt.ItemDataRole.UserRole, dataset_id)
+        item.setSizeHint(0, QSize(0, ROW_HEIGHT))
+        item.setFlags(
+            Qt.ItemFlag.ItemIsEnabled
+            | Qt.ItemFlag.ItemIsSelectable
+            | Qt.ItemFlag.ItemIsEditable
+        )
+        return item
+
+    def style_items(self):
+        """Update the close button for the item currently under the cursor."""
+        pos = self.viewport().mapFromGlobal(QCursor.pos())
+        hovered = self.itemAt(pos)
+        self.showCloseButton(hovered)
+
+    def _all_items(self):
+        """Yield every tree item in the widget, depth-first."""
+
+        def _recurse(parent_item):
+            for i in range(parent_item.childCount()):
+                child = parent_item.child(i)
+                yield child
+                yield from _recurse(child)
+
+        for i in range(self.topLevelItemCount()):
+            top = self.topLevelItem(i)
+            yield top
+            yield from _recurse(top)
 
     def eventFilter(self, source, event):
         if source == self.viewport() and event.type() == QEvent.Type.MouseMove:
-            index = self.indexAt(event.pos())
-            if index.isValid():
-                self.showCloseButton(index.row())
-            else:
-                self.showCloseButton(-1)
+            item = self.itemAt(event.pos())
+            self.showCloseButton(item)
         elif source == self.viewport() and event.type() == QEvent.Type.Leave:
-            self.showCloseButton(-1)
+            self.showCloseButton(None)
         elif isinstance(source, QToolButton) and event.type() == QEvent.Type.Enter:
-            # guard against the spurious Enter fired by setCellWidget while the button
-            # is still at (0, 0) before the layout pass moves it to column 3
-            for row in range(self.rowCount()):
-                if self.cellWidget(row, 3) is source:
-                    btn_rect = self.visualRect(self.model().index(row, 3))
-                    cursor = self.viewport().mapFromGlobal(QCursor.pos())
-                    if btn_rect.contains(cursor):
-                        source.setStyleSheet("""
-                            QToolButton {
-                                background: rgba(128, 128, 128, 0.2);
-                                border-radius: 4px;
-                            }
-                            QToolButton:pressed {
-                                background: rgba(128, 128, 128, 0.35);
-                                border-radius: 4px;
-                            }
-                        """)
-                    break
+            source.setStyleSheet("""
+                QToolButton {
+                    background: rgba(128, 128, 128, 0.2);
+                    border-radius: 4px;
+                }
+                QToolButton:pressed {
+                    background: rgba(128, 128, 128, 0.35);
+                    border-radius: 4px;
+                }
+            """)
         elif isinstance(source, QToolButton) and event.type() == QEvent.Type.Leave:
-            source.setStyleSheet(
-                "QToolButton { background: transparent; border: none; }"
-            )
-
+            # reset hover style, then transfer button to whichever row the cursor is on
+            source.setStyleSheet("""
+                QToolButton {
+                    background: transparent;
+                    border: none;
+                }
+                QToolButton:pressed {
+                    background: rgba(128, 128, 128, 0.35);
+                    border-radius: 4px;
+                }
+            """)
+            pos = self.viewport().mapFromGlobal(QCursor.pos())
+            self.showCloseButton(self.itemAt(pos))
         return False
 
-    def showCloseButton(self, row_index):
-        for i in range(self.rowCount()):
-            if i == row_index:
-                delete_button = QToolButton()
-                delete_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-                delete_button.setFixedSize(24, ROW_HEIGHT)
-                delete_button.setIcon(QIcon.fromTheme("close-data"))
-                delete_button.setToolTip("Close dataset")
-                delete_button.setStyleSheet("""
+    def showCloseButton(self, hovered_item):
+        """Show the close button on the hovered item; remove it from all others."""
+        for item in self._all_items():
+            if item is hovered_item:
+                if self.itemWidget(item, 2) is not None:
+                    continue  # button already present, don't recreate
+                dataset_id = item.data(0, Qt.ItemDataRole.UserRole)
+                btn = QToolButton()
+                btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+                btn.setFixedSize(24, ROW_HEIGHT)
+                btn.setIcon(QIcon.fromTheme("close-data"))
+                btn.setToolTip("Close dataset")
+                btn.setStyleSheet("""
                     QToolButton {
                         background: transparent;
                         border: none;
@@ -338,9 +277,28 @@ class SidebarTableWidget(QTableWidget):
                         border-radius: 4px;
                     }
                 """)
-                delete_button.clicked.connect(
-                    lambda _, index=row_index: self.parent.model.remove_data(index)
-                )
-                self.setCellWidget(row_index, 3, delete_button)
+                btn.installEventFilter(self)
+                btn.clicked.connect(lambda _, did=dataset_id: self._close_dataset(did))
+                self.setItemWidget(item, 2, btn)
             else:
-                self.removeCellWidget(i, 3)
+                self.removeItemWidget(item, 2)
+
+    def _close_dataset(self, dataset_id):
+        """Close a dataset, cascading to descendants with a confirmation dialog."""
+        descendants = self.parent.model.find_descendants(dataset_id)
+        if descendants:
+            n = len(descendants)
+            msg = QMessageBox(self)
+            msg.setWindowTitle("Close Dataset")
+            msg.setIcon(QMessageBox.Icon.Warning)
+            msg.setText(
+                f"Closing this dataset will also close {n} child "
+                f"dataset{'s' if n != 1 else ''}."
+            )
+            msg.setStandardButtons(
+                QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel
+            )
+            msg.setDefaultButton(QMessageBox.StandardButton.Cancel)
+            if msg.exec() != QMessageBox.StandardButton.Ok:
+                return
+        self.parent.model.remove_data_cascade(dataset_id)

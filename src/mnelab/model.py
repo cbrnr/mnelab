@@ -51,6 +51,7 @@ class Model:
         self.view = None  # current view
         self.data = []  # list of data sets
         self.index = -1  # index of currently active data set
+        self._next_id = 1  # monotonically increasing dataset ID counter
         self.log = []  # captured MNE log messages
         self.history = [
             "from copy import deepcopy",
@@ -69,8 +70,11 @@ class Model:
         ]
 
     @data_changed
-    def insert_data(self, dataset):
+    def insert_data(self, dataset, parent_id=None):
         """Insert data set after current index."""
+        dataset["id"] = self._next_id
+        dataset["parent_id"] = parent_id
+        self._next_id += 1
         self.index += 1
         self.data.insert(self.index, dataset)
         self.history.append(f"datasets.insert({self.index}, data)")
@@ -95,7 +99,8 @@ class Model:
     @data_changed
     def duplicate_data(self):
         """Duplicate current data set."""
-        self.insert_data(deepcopy(self.current))
+        parent_id = self.current["id"]
+        self.insert_data(deepcopy(self.current), parent_id=parent_id)
         self.history[-1] = self.history[-1][:-5] + "deepcopy(data))"
         self.history.append(f"data = datasets[{self.index}]")
         self.current["fname"] = None
@@ -125,6 +130,45 @@ class Model:
     def __len__(self):
         """Return number of data sets."""
         return len(self.data)
+
+    def find_index_by_id(self, dataset_id):
+        """Return the list index of the dataset with the given stable ID."""
+        for i, dataset in enumerate(self.data):
+            if dataset["id"] == dataset_id:
+                return i
+        return -1
+
+    def find_descendants(self, dataset_id):
+        """Return all datasets that are direct or indirect children of dataset_id."""
+        descendants = []
+        queue = [dataset_id]
+        while queue:
+            cur = queue.pop(0)
+            for ds in self.data:
+                if ds["parent_id"] == cur:
+                    descendants.append(ds)
+                    queue.append(ds["id"])
+        return descendants
+
+    @data_changed
+    def remove_data_cascade(self, dataset_id):
+        """Remove a dataset and all its descendants."""
+        ids_to_remove = set()
+        queue = [dataset_id]
+        while queue:
+            cur = queue.pop(0)
+            ids_to_remove.add(cur)
+            queue.extend(ds["id"] for ds in self.data if ds["parent_id"] == cur)
+        # remove from highest index to lowest to keep earlier indices valid
+        indices = sorted(
+            [i for i, ds in enumerate(self.data) if ds["id"] in ids_to_remove],
+            reverse=True,
+        )
+        for i in indices:
+            self.data.pop(i)
+            self.history.append(f"datasets.pop({i})")
+        if self.index >= len(self.data):
+            self.index = len(self.data) - 1
 
     @data_changed
     def load_data(self, data, fname, name=None):

@@ -21,7 +21,6 @@ from pybvrf import read_bvrf_header
 from PySide6.QtCore import (
     QEvent,
     QMetaObject,
-    QModelIndex,
     Qt,
     QTimer,
     QUrl,
@@ -39,8 +38,8 @@ from PySide6.QtWidgets import (
     QSizePolicy,
     QSplitter,
     QStackedWidget,
-    QTableWidgetItem,
     QToolButton,
+    QTreeWidgetItem,
     QWidget,
 )
 from pyxdf import resolve_streams
@@ -72,7 +71,7 @@ from mnelab.viz import (
     plot_evoked_comparison,
     plot_evoked_topomaps,
 )
-from mnelab.widgets import EmptyWidget, InfoWidget, SidebarTableWidget
+from mnelab.widgets import EmptyWidget, InfoWidget, SidebarTreeWidget
 
 SIDEBAR_MIN_WIDTH = 150
 INFOWIDGET_MIN_WIDTH = 200
@@ -539,14 +538,11 @@ class MainWindow(QMainWindow):
             self.all_actions["toolbar"].setChecked(False)
 
         # set up data model for sidebar (list of open files)
-        self.sidebar = SidebarTableWidget(self)
+        self.sidebar = SidebarTreeWidget(self)
         self.sidebar.setMinimumWidth(SIDEBAR_MIN_WIDTH)
         self.sidebar.hide()
-        self.sidebar.rowsMoved.connect(self._sidebar_move_event)
-        self.sidebar.itemDelegate().commitData.connect(self._sidebar_edit_event)
-        self.sidebar.currentCellChanged.connect(
-            lambda row, col, *_: self._update_data(row, col)
-        )
+        self.sidebar.itemChanged.connect(self._sidebar_item_changed)
+        self.sidebar.currentItemChanged.connect(lambda cur, _: self._update_data(cur))
 
         self.splitter = QSplitter()
         self.splitter.setObjectName("main_splitter")
@@ -588,35 +584,22 @@ class MainWindow(QMainWindow):
         print(traceback_text, file=sys.stderr)
         ErrorMessageBox(self, exception_text, "", traceback_text).show()
 
-    def _sidebar_edit_event(self, edit):
+    def _sidebar_item_changed(self, item, column):
         """
-        Triggered when a data set in the sidebar is renamed.
+        Triggered when a tree item's data changes (e.g. after inline name editing).
 
         Parameters
         ----------
-        edit : PySide6.QtWidgets.QLineEdit
-            The text editor.
+        item : PySide6.QtWidgets.QTreeWidgetItem
+            The item that changed.
+        column : int
+            The column that changed.
         """
-        self.model.current["name"] = edit.text()
-
-    def _sidebar_move_event(self, from_row, to_row):
-        """
-        Triggered when an item in the sidebar is moved.
-
-        Parameters
-        ----------
-        parent : PySide6.QtCore.QModelIndex
-            Unused.
-        start : int
-            The source index of the item.
-        end : int
-            Unused (equals start as the sidebar only allows single selection).
-        destination : PySide6.QtCore.QModelIndex
-            Unused.
-        row : int
-            The target index.
-        """
-        self.model.move_data(from_row, to_row)
+        if column == 0:
+            dataset_id = item.data(0, Qt.ItemDataRole.UserRole)
+            index = self.model.find_index_by_id(dataset_id)
+            if index >= 0:
+                self.model.data[index]["name"] = item.text(0)
 
     @contextmanager
     def _wait_cursor(self):
@@ -635,28 +618,27 @@ class MainWindow(QMainWindow):
         # update sidebar
         if len(self.model.data) > 0:
             self.sidebar.show()
-            # block signals during rebuild: setRowCount(0) would otherwise
-            # emit currentCellChanged with row=-1, corrupting model.index
+            # block signals during rebuild to prevent spurious currentItemChanged /
+            # itemChanged callbacks that would corrupt model.index or dataset names
             self.sidebar.blockSignals(True)
-            self.sidebar.setRowCount(0)
-            self.sidebar.setRowCount(len(self.model.names))
-            self.sidebar.setColumnCount(4)
-
-            for row_index, name in enumerate(self.model.names):
-                item_index = QTableWidgetItem(str(row_index + 1))
-                self.sidebar.setItem(row_index, 0, item_index)
-
-                item_name = QTableWidgetItem(name)
-                item_name.setFlags(item_name.flags() | Qt.ItemFlag.ItemIsEditable)
-                self.sidebar.setItem(row_index, 1, item_name)
-
-                dtype = self.model.data[row_index]["dtype"] or ""
-                self.sidebar.set_dtype(row_index, dtype)
-
-            self.sidebar.style_rows()
+            self.sidebar.clear()
+            id_to_item = {}
+            for dataset in self.model.data:
+                item = self.sidebar.make_item(dataset["name"], dataset["id"])
+                self.sidebar.set_dtype(item, dataset["dtype"] or "")
+                parent_id = dataset["parent_id"]
+                if parent_id is not None and parent_id in id_to_item:
+                    id_to_item[parent_id].addChild(item)
+                else:
+                    self.sidebar.addTopLevelItem(item)
+                id_to_item[dataset["id"]] = item
+            self.sidebar.expandAll()
             self.sidebar.set_badges_visible(read_settings("dtype_badges"))
-            self.sidebar.selectRow(self.model.index)
+            current_id = self.model.data[self.model.index]["id"]
+            if current_id in id_to_item:
+                self.sidebar.setCurrentItem(id_to_item[current_id])
             self.sidebar.blockSignals(False)
+            self.sidebar.style_items()
             self.sidebar.setFocus()
         else:
             self.sidebar.hide()
@@ -1894,17 +1876,21 @@ class MainWindow(QMainWindow):
             if not self.recent:
                 self.recent_menu.setEnabled(False)
 
-    @Slot(QModelIndex)
-    def _update_data(self, row, column):
-        """Update index and information based on the state of the sidebar.
+    @Slot(QTreeWidgetItem)
+    def _update_data(self, item):
+        """Update index and information based on the selected sidebar item.
 
         Parameters
         ----------
-        selected : QModelIndex
-            Index of the selected row.
+        item : PySide6.QtWidgets.QTreeWidgetItem
+            The newly selected tree item.
         """
-        if row != self.model.index:
-            self.model.index = row
+        if item is None:
+            return
+        dataset_id = item.data(0, Qt.ItemDataRole.UserRole)
+        new_index = self.model.find_index_by_id(dataset_id)
+        if new_index != self.model.index:
+            self.model.index = new_index
             self.data_changed()
             self.model.history.append(f"data = datasets[{self.model.index}]")
 
