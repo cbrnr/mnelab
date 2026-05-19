@@ -158,9 +158,7 @@ class Model:
         while queue:
             cur = queue.pop(0)
             ids_to_remove.add(cur)
-            for ds in self.data:
-                if ds["parent_id"] == cur:
-                    queue.append(ds["id"])
+            queue.extend(ds["id"] for ds in self.data if ds["parent_id"] == cur)
         # remove from highest index to lowest to keep earlier indices valid
         indices = sorted(
             [i for i, ds in enumerate(self.data) if ds["id"] in ids_to_remove],
