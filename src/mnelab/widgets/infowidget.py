@@ -119,7 +119,7 @@ class InfoWidget(QWidget):
                 )
                 self.grid.addWidget(left, row, 0)
                 self.grid.addWidget(right, row, 1)
-                if key == "File name" and value != "–":
+                if key == "File Name" and value != "–":
                     right.setText(Path(str(value)).name)  # filename only, not full path
                     btn = QToolButton()
                     btn.setMaximumHeight(left.sizeHint().height())
