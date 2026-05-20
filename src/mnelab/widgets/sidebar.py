@@ -9,12 +9,16 @@ from PySide6.QtGui import QColor, QCursor, QIcon, QPainter, QPalette
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QApplication,
+    QFrame,
+    QHBoxLayout,
     QHeaderView,
     QMessageBox,
     QStyledItemDelegate,
     QToolButton,
     QTreeWidget,
     QTreeWidgetItem,
+    QVBoxLayout,
+    QWidget,
 )
 
 ROW_HEIGHT = 30
@@ -90,6 +94,7 @@ class SidebarTreeWidget(QTreeWidget):
         self.setIndentation(16)
         self.setDragEnabled(False)
         self.setAcceptDrops(True)
+        self.setFrameShape(QFrame.Shape.NoFrame)
         self.header().setStretchLastSection(False)
         self.header().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         self.header().setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
@@ -183,7 +188,7 @@ class SidebarTreeWidget(QTreeWidget):
     def set_dtype(self, item, dtype):
         """Set the data type badge for the given tree item."""
         item.setText(1, dtype)
-        item.setToolTip(1, f"Data type: {dtype.capitalize()}" if dtype else "")
+        item.setToolTip(1, f"Data Type: {dtype.capitalize()}" if dtype else "")
 
     def set_badges_visible(self, visible):
         """Show or hide the data type badge column."""
@@ -266,7 +271,7 @@ class SidebarTreeWidget(QTreeWidget):
                 btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
                 btn.setFixedSize(24, ROW_HEIGHT)
                 btn.setIcon(QIcon.fromTheme("close-data"))
-                btn.setToolTip("Close dataset")
+                btn.setToolTip("Close Dataset")
                 btn.setStyleSheet("""
                     QToolButton {
                         background: transparent;
@@ -302,3 +307,70 @@ class SidebarTreeWidget(QTreeWidget):
             if msg.exec() != QMessageBox.StandardButton.Ok:
                 return
         self.parent.model.remove_data_cascade(dataset_id)
+
+
+class SidebarWidget(QWidget):
+    """Container holding the sidebar tree and a bottom collapse-all toolbar."""
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+
+        self.tree = SidebarTreeWidget(self)
+        layout.addWidget(self.tree)
+
+        self._bottom_bar = QWidget()
+        self._bottom_bar.setAutoFillBackground(True)
+        bottom_layout = QHBoxLayout(self._bottom_bar)
+        bottom_layout.setContentsMargins(4, 2, 4, 2)
+
+        self._collapse_btn = QToolButton()
+        self._collapse_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self._collapse_btn.setIcon(QIcon.fromTheme("unfold-less"))
+        self._collapse_btn.setToolTip("Collapse All")
+        self._collapse_btn.setStyleSheet("""
+            QToolButton {
+                background: transparent;
+                border: none;
+            }
+            QToolButton:hover {
+                background: rgba(128, 128, 128, 0.2);
+                border-radius: 4px;
+            }
+            QToolButton:pressed {
+                background: rgba(128, 128, 128, 0.35);
+                border-radius: 4px;
+            }
+        """)
+        self._collapse_btn.clicked.connect(self.tree.collapseAll)
+        self._collapse_btn.hide()
+
+        bottom_layout.addStretch()
+        bottom_layout.addWidget(self._collapse_btn)
+        layout.addWidget(self._bottom_bar)
+
+        self._apply_bar_background()
+
+    def _apply_bar_background(self):
+        """Match the bottom bar background to the sidebar tree's base color."""
+        app = QApplication.instance()
+        palette = app.palette() if isinstance(app, QApplication) else self.palette()
+        base_color = palette.color(QPalette.ColorRole.Base)
+        bar_palette = self._bottom_bar.palette()
+        bar_palette.setColor(QPalette.ColorRole.Window, base_color)
+        self._bottom_bar.setPalette(bar_palette)
+
+    def refresh_theme(self):
+        """Propagate theme refresh to the tree and update the bar background."""
+        self.tree.refresh_theme()
+        self._apply_bar_background()
+
+    def enterEvent(self, event):
+        self._collapse_btn.show()
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        self._collapse_btn.hide()
+        super().leaveEvent(event)

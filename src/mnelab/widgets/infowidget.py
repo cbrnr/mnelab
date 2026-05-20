@@ -139,7 +139,7 @@ class InfoWidget(QWidget):
                             border-radius: 4px;
                         }
                     """)
-                    btn.setToolTip("Copy path to clipboard")
+                    btn.setToolTip("Copy Path to Clipboard")
                     btn.clicked.connect(
                         lambda checked=False, v=str(value): self._on_copy(v)
                     )
