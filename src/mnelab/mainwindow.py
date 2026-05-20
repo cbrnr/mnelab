@@ -71,7 +71,7 @@ from mnelab.viz import (
     plot_evoked_comparison,
     plot_evoked_topomaps,
 )
-from mnelab.widgets import EmptyWidget, InfoWidget, SidebarTreeWidget
+from mnelab.widgets import EmptyWidget, InfoWidget, SidebarWidget
 
 SIDEBAR_MIN_WIDTH = 150
 INFOWIDGET_MIN_WIDTH = 200
@@ -538,15 +538,16 @@ class MainWindow(QMainWindow):
             self.all_actions["toolbar"].setChecked(False)
 
         # set up data model for sidebar (list of open files)
-        self.sidebar = SidebarTreeWidget(self)
-        self.sidebar.setMinimumWidth(SIDEBAR_MIN_WIDTH)
-        self.sidebar.hide()
+        self.sidebar_container = SidebarWidget(self)
+        self.sidebar_container.setMinimumWidth(SIDEBAR_MIN_WIDTH)
+        self.sidebar_container.hide()
+        self.sidebar = self.sidebar_container.tree
         self.sidebar.itemChanged.connect(self._sidebar_item_changed)
         self.sidebar.currentItemChanged.connect(lambda cur, _: self._update_data(cur))
 
         self.splitter = QSplitter()
         self.splitter.setObjectName("main_splitter")
-        self.splitter.addWidget(self.sidebar)
+        self.splitter.addWidget(self.sidebar_container)
         self.splitter.setCollapsible(0, False)
 
         self.infowidget = QStackedWidget()
@@ -617,7 +618,7 @@ class MainWindow(QMainWindow):
     def data_changed(self):
         # update sidebar
         if len(self.model.data) > 0:
-            self.sidebar.show()
+            self.sidebar_container.show()
             # block signals during rebuild to prevent spurious currentItemChanged /
             # itemChanged callbacks that would corrupt model.index or dataset names
             self.sidebar.blockSignals(True)
@@ -641,7 +642,7 @@ class MainWindow(QMainWindow):
             self.sidebar.style_items()
             self.sidebar.setFocus()
         else:
-            self.sidebar.hide()
+            self.sidebar_container.hide()
 
         # update info widget
         if self.model.data:
@@ -1947,7 +1948,7 @@ class MainWindow(QMainWindow):
             sizes = self.splitter.sizes()
             total = sum(sizes)
             kwargs = {"size": self.size(), "pos": self.pos()}
-            if self.sidebar.isVisible() and total > 0:
+            if self.sidebar_container.isVisible() and total > 0:
                 kwargs["splitter"] = sizes[0] / total
             write_settings(**kwargs)
             if self.model.history:
@@ -1960,8 +1961,8 @@ class MainWindow(QMainWindow):
                 QIcon.setThemeName(color_scheme.name.lower())
             else:
                 QIcon.setThemeName("light")  # fallback
-            if hasattr(self, "sidebar"):
-                self.sidebar.refresh_theme()
+            if hasattr(self, "sidebar_container"):
+                self.sidebar_container.refresh_theme()
         elif event.type() == QEvent.Type.DragEnter:
             if event.mimeData().hasUrls():
                 event.acceptProposedAction()
