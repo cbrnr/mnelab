@@ -1823,7 +1823,10 @@ class MainWindow(QMainWindow):
         """
         # if current data is stored in a file create a new data set
         if self.model.current["fname"]:
+            parent_index = self.model.index
             self.model.duplicate_data()
+            if read_settings("memory_saving"):
+                self.model.evict_dataset(parent_index)
             return True
         # otherwise ask the user
         msg = QMessageBox(self)
@@ -1848,7 +1851,10 @@ class MainWindow(QMainWindow):
         if msg.clickedButton() == overwrite_button:
             return False
         else:
+            parent_index = self.model.index
             self.model.duplicate_data()
+            if read_settings("memory_saving"):
+                self.model.evict_dataset(parent_index)
             return True
 
     def _add_recent(self, fname):
