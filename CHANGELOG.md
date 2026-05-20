@@ -1,4 +1,7 @@
 ## [UNRELEASED] · YYYY-MM-DD
+### ✨ Added
+- Add a "Save Memory" setting that evicts inactive datasets from RAM and reloads them on demand ([#???](https://github.com/cbrnr/mnelab/pull/???) by [Clemens Brunner](https://github.com/cbrnr))
+
 ### 🔧 Fixed
 - Enforce minimum sidebar and info widget widths so they can no longer be hidden ([#642](https://github.com/cbrnr/mnelab/pull/642) by [Clemens Brunner](https://github.com/cbrnr))
 - Fix sorting in the "Channel Statistics" dialog ([#640](https://github.com/cbrnr/mnelab/pull/640) by [Clemens Brunner](https://github.com/cbrnr))

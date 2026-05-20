@@ -61,6 +61,7 @@ _DEFAULTS = {
     "menu_icons": True,
     "show_menubar": True,
     "annotation_colors": {},
+    "memory_saving": False,
 }
 
 _JSON_KEYS = {"annotation_colors"}
@@ -172,6 +173,10 @@ class SettingsDialog(QDialog):
         self.menu_icons = QCheckBox()
         self.menu_icons.setChecked(read_settings("menu_icons"))
         general_form.addRow("Menu Icons:", self.menu_icons)
+
+        self.memory_saving = QCheckBox()
+        self.memory_saving.setChecked(read_settings("memory_saving"))
+        general_form.addRow("Save Memory:", self.memory_saving)
 
         self._stack.addWidget(general_page)
 
@@ -313,6 +318,7 @@ class SettingsDialog(QDialog):
             plot_backend=self.plot_backend.currentText(),
             dtype_badges=self.dtype_badges.isChecked(),
             menu_icons=self.menu_icons.isChecked(),
+            memory_saving=self.memory_saving.isChecked(),
         )
         self.parent().recent = self.parent().recent[: read_settings("max_recent")]
         self.accept()
@@ -325,6 +331,7 @@ class SettingsDialog(QDialog):
         self.epochs.setValue(_DEFAULTS["epochs"])
         self.dtype_badges.setChecked(_DEFAULTS["dtype_badges"])
         self.menu_icons.setChecked(_DEFAULTS["menu_icons"])
+        self.memory_saving.setChecked(_DEFAULTS["memory_saving"])
         self.plot_backend.setCurrentIndex(
             self.plot_backend.findText(_DEFAULTS["plot_backend"])
         )

@@ -770,6 +770,10 @@ class MainWindow(QMainWindow):
                 )
                 return
 
+            if read_settings("memory_saving") and self.model.data:
+                with self._wait_cursor():
+                    self.model.evict_dataset(self.model.index)
+
             self._set_last_dir(fname)
             ext = "".join(Path(fname).suffixes)
 
@@ -1890,6 +1894,12 @@ class MainWindow(QMainWindow):
         dataset_id = item.data(0, Qt.ItemDataRole.UserRole)
         new_index = self.model.find_index_by_id(dataset_id)
         if new_index != self.model.index:
+            if read_settings("memory_saving"):
+                with self._wait_cursor():
+                    self.model.evict_dataset(self.model.index)
+            if self.model.data[new_index]["data"] is None:
+                with self._wait_cursor():
+                    self.model.reload_dataset(new_index)
             self.model.index = new_index
             self.data_changed()
             self.model.history.append(f"data = datasets[{self.model.index}]")
@@ -1953,6 +1963,7 @@ class MainWindow(QMainWindow):
             if self.model.history:
                 print("\n# Command History\n")
                 print(format_code("\n".join(self.model.history)))
+            self.model.cleanup()
             event.accept()
         elif event.type() == QEvent.Type.PaletteChange:
             color_scheme = QApplication.styleHints().colorScheme()
