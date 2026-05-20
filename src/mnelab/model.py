@@ -116,6 +116,7 @@ class Model:
         self.history.append(f"data = datasets[{self.index}]")
         self.current["fname"] = None
         self.current["ftype"] = None
+        self.current["_cache_path"] = None  # don't share the parent's cache file
 
     @property
     def names(self):

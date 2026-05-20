@@ -345,3 +345,34 @@ def test_nbytes_skips_evicted_datasets(model_two_datasets):
     # nbytes should equal only the in-memory dataset
     assert model.nbytes < full_bytes
     assert model.nbytes > 0
+
+
+def test_duplicate_does_not_share_parent_cache(model_two_datasets):
+    """Child dataset gets its own cache path, not the parent's."""
+    model = model_two_datasets
+    model.index = 0
+
+    # evict then reload so the parent has a valid _cache_path
+    model.evict_dataset(0)
+    model.reload_dataset(0)
+    parent_cache = model.data[0]["_cache_path"]
+    assert parent_cache is not None
+
+    # duplicate: child must not inherit the parent's cache path
+    model.duplicate_data()
+    child_index = model.index
+    assert model.data[child_index]["_cache_path"] is None
+
+    # deleting parent removes its cache file; child must still be evictable/reloadable
+    parent_index = child_index - 1
+    model._cleanup_dataset_cache(model.data[parent_index])
+    assert not Path(parent_cache).exists()
+
+    model.evict_dataset(child_index)
+    new_child_cache = model.data[child_index]["_cache_path"]
+    assert new_child_cache is not None
+    assert new_child_cache != parent_cache
+    assert Path(new_child_cache).exists()
+
+    model.reload_dataset(child_index)
+    assert model.data[child_index]["data"] is not None
