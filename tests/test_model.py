@@ -3,6 +3,7 @@
 # License: BSD (3-clause)
 
 import math
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -249,3 +250,129 @@ def test_import_annotations_in_samples_no_type_column(model_with_data, tmp_path)
     assert annots.description[0] == "STIM"
     np.testing.assert_allclose(annots.onset, [2.0], rtol=1e-6)
     np.testing.assert_allclose(annots.duration, [1.0], rtol=1e-6)
+
+
+@pytest.fixture
+def model_two_datasets(tmp_path):
+    """Model with two EDF files loaded (indices 0 and 1)."""
+    fs = 256
+    model = Model()
+    for i in range(2):
+        path = tmp_path / f"file_{i}.edf"
+        signal = np.zeros(30 * fs)
+        Edf([EdfSignal(signal, sampling_frequency=fs, label="EEG")]).write(path)
+        model.load(path)
+    model.index = 0
+    return model
+
+
+def test_evict_dataset(model_two_datasets):
+    """Evicting a dataset sets data to None and writes a temp cache file."""
+    model = model_two_datasets
+    model.evict_dataset(0)
+
+    assert model.data[0]["data"] is None
+    cache = model.data[0]["_cache_path"]
+    assert cache is not None
+    assert Path(cache).exists()
+
+
+def test_reload_dataset(model_two_datasets):
+    """Reloading a dataset restores its data and keeps the cache path."""
+    model = model_two_datasets
+    model.evict_dataset(0)
+    cache_before = model.data[0]["_cache_path"]
+
+    model.reload_dataset(0)
+
+    assert model.data[0]["data"] is not None
+    # cache path is preserved so a second eviction can skip the write
+    assert model.data[0]["_cache_path"] == cache_before
+
+
+def test_evict_twice_reuses_cache(model_two_datasets):
+    """A second eviction after a reload reuses the existing cache file."""
+    model = model_two_datasets
+    model.evict_dataset(0)
+    first_cache = model.data[0]["_cache_path"]
+
+    model.reload_dataset(0)
+    model.evict_dataset(0)
+
+    assert model.data[0]["_cache_path"] == first_cache
+
+
+def test_cache_invalidated_after_modify(model_two_datasets):
+    """Modifying a reloaded dataset invalidates the cache path."""
+    model = model_two_datasets
+    model.evict_dataset(0)
+    model.reload_dataset(0)
+    old_cache = model.data[0]["_cache_path"]
+
+    model.index = 0
+    model.crop(0, 5)  # modifying op — invalidates cache
+
+    assert model.current["_cache_path"] is None
+    # old temp file is kept on disk (MNE holds a reference to it); cleanup() removes it
+    assert Path(old_cache).exists()
+
+    # a fresh eviction now must write a new cache
+    model.evict_dataset(0)
+    new_cache = model.data[0]["_cache_path"]
+    assert new_cache is not None
+    assert new_cache != old_cache
+    assert Path(new_cache).exists()
+
+
+def test_cleanup_removes_temp_files(model_two_datasets):
+    """cleanup() deletes all temporary cache files."""
+    model = model_two_datasets
+    model.evict_dataset(0)
+    cache = model.data[0]["_cache_path"]
+    assert Path(cache).exists()
+
+    model.cleanup()
+
+    assert not Path(cache).exists()
+    assert len(model._temp_files) == 0
+
+
+def test_nbytes_skips_evicted_datasets(model_two_datasets):
+    """nbytes does not crash when some datasets are evicted."""
+    model = model_two_datasets
+    full_bytes = model.nbytes
+    model.evict_dataset(0)
+    # nbytes should equal only the in-memory dataset
+    assert model.nbytes < full_bytes
+    assert model.nbytes > 0
+
+
+def test_duplicate_does_not_share_parent_cache(model_two_datasets):
+    """Child dataset gets its own cache path, not the parent's."""
+    model = model_two_datasets
+    model.index = 0
+
+    # evict then reload so the parent has a valid _cache_path
+    model.evict_dataset(0)
+    model.reload_dataset(0)
+    parent_cache = model.data[0]["_cache_path"]
+    assert parent_cache is not None
+
+    # duplicate: child must not inherit the parent's cache path
+    model.duplicate_data()
+    child_index = model.index
+    assert model.data[child_index]["_cache_path"] is None
+
+    # deleting parent removes its cache file; child must still be evictable/reloadable
+    parent_index = child_index - 1
+    model._cleanup_dataset_cache(model.data[parent_index])
+    assert not Path(parent_cache).exists()
+
+    model.evict_dataset(child_index)
+    new_child_cache = model.data[child_index]["_cache_path"]
+    assert new_child_cache is not None
+    assert new_child_cache != parent_cache
+    assert Path(new_child_cache).exists()
+
+    model.reload_dataset(child_index)
+    assert model.data[child_index]["data"] is not None

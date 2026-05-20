@@ -2,6 +2,8 @@
 #
 # License: BSD (3-clause)
 
+import os
+import tempfile
 from collections import Counter, defaultdict
 from copy import deepcopy
 from functools import wraps
@@ -28,20 +30,27 @@ class AddReferenceError(Exception):
     pass
 
 
-def data_changed(f):
-    """Call self.view.data_changed method after function call."""
+def data_changed(_func=None, *, invalidate_cache=True):
+    """Decorator: call view.data_changed() after f(), optionally invalidating cache."""
 
-    @wraps(f)
-    def wrapper(self, *args, **kwargs):
-        if self.view is not None:
-            with self.view._wait_cursor():
+    def decorator(f):
+        @wraps(f)
+        def wrapper(self, *args, **kwargs):
+            if invalidate_cache and self.current is not None:
+                self._invalidate_cache()
+            if self.view is not None:
+                with self.view._wait_cursor():
+                    result = f(self, *args, **kwargs)
+                    self.view.data_changed()
+            else:
                 result = f(self, *args, **kwargs)
-                self.view.data_changed()
-        else:
-            result = f(self, *args, **kwargs)
-        return result
+            return result
 
-    return wrapper
+        return wrapper
+
+    if _func is not None:
+        return decorator(_func)
+    return decorator
 
 
 class Model:
@@ -52,6 +61,7 @@ class Model:
         self.data = []  # list of data sets
         self.index = -1  # index of currently active data set
         self._next_id = 1  # monotonically increasing dataset ID counter
+        self._temp_files = set()  # paths of temporary .fif cache files
         self.log = []  # captured MNE log messages
         self.history = [
             "from copy import deepcopy",
@@ -69,7 +79,7 @@ class Model:
             "datasets = []",
         ]
 
-    @data_changed
+    @data_changed(invalidate_cache=False)
     def insert_data(self, dataset, parent_id=None):
         """Insert data set after current index."""
         dataset["id"] = self._next_id
@@ -79,24 +89,25 @@ class Model:
         self.data.insert(self.index, dataset)
         self.history.append(f"datasets.insert({self.index}, data)")
 
-    @data_changed
+    @data_changed(invalidate_cache=False)
     def update_data(self, dataset):
         """Update/overwrite data set at current index."""
         self.current = dataset
 
-    @data_changed
+    @data_changed(invalidate_cache=False)
     def remove_data(self, index=-1):
         """Remove data set at current index."""
         if index == -1:
             index = self.index
 
+        self._cleanup_dataset_cache(self.data[index])
         self.data.pop(index)
         self.history.append(f"datasets.pop({index})")
 
         if self.index >= len(self.data):  # if last entry was removed
             self.index = len(self.data) - 1  # reset index to last entry
 
-    @data_changed
+    @data_changed(invalidate_cache=False)
     def duplicate_data(self):
         """Duplicate current data set."""
         parent_id = self.current["id"]
@@ -105,6 +116,7 @@ class Model:
         self.history.append(f"data = datasets[{self.index}]")
         self.current["fname"] = None
         self.current["ftype"] = None
+        self.current["_cache_path"] = None  # don't share the parent's cache file
 
     @property
     def names(self):
@@ -114,7 +126,11 @@ class Model:
     @property
     def nbytes(self):
         """Return size (in bytes) of all data sets."""
-        return sum([item["data"].get_data().nbytes for item in self.data])
+        return sum(
+            item["data"].get_data().nbytes
+            for item in self.data
+            if item["data"] is not None
+        )
 
     @property
     def current(self):
@@ -150,7 +166,7 @@ class Model:
                     queue.append(ds["id"])
         return descendants
 
-    @data_changed
+    @data_changed(invalidate_cache=False)
     def remove_data_cascade(self, dataset_id):
         """Remove a dataset and all its descendants."""
         ids_to_remove = set()
@@ -165,12 +181,13 @@ class Model:
             reverse=True,
         )
         for i in indices:
+            self._cleanup_dataset_cache(self.data[i])
             self.data.pop(i)
             self.history.append(f"datasets.pop({i})")
         if self.index >= len(self.data):
             self.index = len(self.data) - 1
 
-    @data_changed
+    @data_changed(invalidate_cache=False)
     def load_data(self, data, fname, name=None):
         """Load a Raw or Epochs object as a new dataset.
 
@@ -210,10 +227,11 @@ class Model:
                 montage=None,
                 events=events,
                 event_mapping=event_mapping,
+                _cache_path=None,
             )
         )
 
-    @data_changed
+    @data_changed(invalidate_cache=False)
     def load(self, fname, *args, **kwargs):
         """Load data set from file."""
         fname = str(Path(fname).resolve().as_posix())
@@ -694,44 +712,55 @@ class Model:
         self.history.append(f"data.crop({start}, {stop})")
 
     def get_compatibles(self):
-        """Return indices and names of data sets compatible with the current one.
+        """Return indices and names of datasets compatible with the current one.
 
-        This function checks which data sets can be appended to the current data set.
+        Checks which datasets can be appended to the current dataset.
 
         Returns
         -------
-        compatibles: List[Tuple[int, str]]
-            List of tuples (index, name) with compatible data sets.
+        list of tuple of (int, str)
+            Indices and names of compatible datasets.
         """
         compatibles = []
         data = self.current["data"]
         for idx, d in enumerate(self.data):
-            if idx == self.index:  # skip current data set
+            if idx == self.index:  # skip current dataset
                 continue
             if d["dtype"] not in ("raw", "epochs"):
                 continue
             if d["dtype"] != self.current["dtype"]:
                 continue
-            if d["data"].info["nchan"] != data.info["nchan"]:
+            d_info = d["data"].info if d["data"] is not None else d["_evict_info"]
+            if d_info["nchan"] != data.info["nchan"]:
                 continue
-            if set(d["data"].info["ch_names"]) != set(data.info["ch_names"]):
+            if set(d_info["ch_names"]) != set(data.info["ch_names"]):
                 continue
-            if d["data"].info["bads"] != data.info["bads"]:
+            if d_info["bads"] != data.info["bads"]:
                 continue
-            if not np.isclose(d["data"].info["sfreq"], data.info["sfreq"]):
+            if not np.isclose(d_info["sfreq"], data.info["sfreq"]):
                 continue
-            if not np.isclose(d["data"].info["highpass"], data.info["highpass"]):
+            if not np.isclose(d_info["highpass"], data.info["highpass"]):
                 continue
-            if not np.isclose(d["data"].info["lowpass"], data.info["lowpass"]):
+            if not np.isclose(d_info["lowpass"], data.info["lowpass"]):
                 continue
-            if d["dtype"] == "raw" and any(d["data"]._cals != data._cals):
-                continue
+            if d["dtype"] == "raw":
+                d_cals = d["data"]._cals if d["data"] is not None else d["_evict_cals"]
+                if any(d_cals != data._cals):
+                    continue
             if d["dtype"] == "epochs":
-                if d["data"].tmin != data.tmin:
+                if d["data"] is not None:
+                    d_tmin = d["data"].tmin
+                    d_tmax = d["data"].tmax
+                    d_baseline = d["data"].baseline
+                else:
+                    d_tmin = d["_evict_tmin"]
+                    d_tmax = d["_evict_tmax"]
+                    d_baseline = d["_evict_baseline"]
+                if d_tmin != data.tmin:
                     continue
-                if d["data"].tmax != data.tmax:
+                if d_tmax != data.tmax:
                     continue
-                if d["data"].baseline != data.baseline:
+                if d_baseline != data.baseline:
                     continue
             compatibles.append((idx, d["name"]))
         return compatibles
@@ -739,6 +768,8 @@ class Model:
     @data_changed
     def append_data(self, selected_idx):
         """Append the given raw data sets."""
+        for idx in selected_idx:  # ensure all source datasets are in memory
+            self.reload_dataset(idx)
         self.current["name"] += " (appended)"
         datasets = [self.current["data"]]
         indices = []
@@ -762,7 +793,7 @@ class Model:
         )
         self.current["name"] += " (ICA)"
 
-    @data_changed
+    @data_changed(invalidate_cache=False)
     def get_iclabels(self):
         """Get ICLabel classifications for current ICA solution."""
         if self.current["iclabel"] is None:
@@ -853,7 +884,7 @@ class Model:
             mne.Annotations(onset, duration, description)
         )
 
-    @data_changed
+    @data_changed(invalidate_cache=False)
     def move_data(self, source, target):
         """
         Change the position of a single data set in `self.data`.
@@ -877,3 +908,78 @@ class Model:
         # select
         self.index = target
         self.history.append(f"data = datasets[{target}]")
+
+    def _cleanup_dataset_cache(self, dataset):
+        """Delete the temp cache file for a dataset, if one exists."""
+        path = dataset["_cache_path"]
+        if path:
+            Path(path).unlink(missing_ok=True)
+            self._temp_files.discard(path)
+            dataset["_cache_path"] = None
+
+    def _invalidate_cache(self):
+        """Mark the current dataset's cache as stale.
+
+        The cache path is cleared so the next eviction will write a fresh file.
+        The old temp file (if any) is left on disk and collected by `cleanup()`.
+        """
+        self.current["_cache_path"] = None
+
+    def evict_dataset(self, index):
+        """Remove the in-memory data for the dataset at *index*.
+
+        If no cache file exists yet the data is saved to a temporary FIF file
+        first. If a valid cache already exists (e.g. from a previous eviction
+        cycle) the write is skipped.
+        """
+        dataset = self.data[index]
+        if dataset["data"] is None:
+            return  # already evicted
+        if dataset["_cache_path"] is None:
+            suffix = "_raw.fif" if dataset["dtype"] == "raw" else "_epo.fif"
+            fd, path = tempfile.mkstemp(suffix=suffix, prefix="mnelab_")
+            os.close(fd)
+            dataset["data"].save(path, overwrite=True)
+            dataset["_cache_path"] = path
+            self._temp_files.add(path)
+        # snapshot fields needed to check compatibility while evicted
+        dataset["_evict_info"] = dataset["data"].info
+        if dataset["dtype"] == "raw":
+            dataset["_evict_cals"] = dataset["data"]._cals.copy()
+        else:
+            dataset["_evict_tmin"] = dataset["data"].tmin
+            dataset["_evict_tmax"] = dataset["data"].tmax
+            dataset["_evict_baseline"] = dataset["data"].baseline
+        dataset["data"] = None
+
+    def reload_dataset(self, index):
+        """Restore in-memory data for the dataset at *index* from its cache.
+
+        Parameters
+        ----------
+        index : int
+            Index into `self.data`.
+
+        Raises
+        ------
+        RuntimeError
+            If no cache file exists for the dataset.
+        """
+        dataset = self.data[index]
+        if dataset["data"] is not None:
+            return  # already in memory
+        path = dataset["_cache_path"]
+        if path is None:
+            raise RuntimeError(
+                f"Dataset at index {index} has no cache file to reload from."
+            )
+        if dataset["dtype"] == "raw":
+            dataset["data"] = mne.io.read_raw_fif(path, preload=True)
+        else:
+            dataset["data"] = mne.read_epochs(path, preload=True)
+
+    def cleanup(self):
+        """Delete all temporary cache files created during this session."""
+        for path in list(self._temp_files):
+            Path(path).unlink(missing_ok=True)
+        self._temp_files.clear()
