@@ -71,7 +71,7 @@ from mnelab.viz import (
     plot_evoked_comparison,
     plot_evoked_topomaps,
 )
-from mnelab.widgets import EmptyWidget, InfoWidget, SidebarTreeWidget, SidebarWidget
+from mnelab.widgets import EmptyWidget, InfoWidget, SidebarWidget
 
 SIDEBAR_MIN_WIDTH = 150
 INFOWIDGET_MIN_WIDTH = 200
