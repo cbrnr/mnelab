@@ -226,7 +226,7 @@ class MainWindow(QMainWindow):
         )
         channels_menu.addSeparator()
         self.all_actions["change_ref"] = channels_menu.addAction(
-            QIcon.fromTheme("placeholder"),
+            QIcon.fromTheme("change-reference"),
             "Change &Reference...",
             self.change_reference,
         )
@@ -242,7 +242,7 @@ class MainWindow(QMainWindow):
             lambda: self.export_file(model.export_bads, "Export bad channels", "*.csv"),
         )
         self.all_actions["interpolate_bads"] = channels_menu.addAction(
-            QIcon.fromTheme("placeholder"),
+            QIcon.fromTheme("interpolate-bads"),
             "Interpolate Bad Channels",
             self.interpolate_bads,
         )
@@ -453,7 +453,7 @@ class MainWindow(QMainWindow):
             )
         help_menu.addSeparator()
         self.all_actions["documentation"] = help_menu.addAction(
-            QIcon.fromTheme("placeholder"),
+            QIcon.fromTheme("documentation"),
             "&Documentation",
             self.show_documentation,
         )

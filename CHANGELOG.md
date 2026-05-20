@@ -1,6 +1,7 @@
 ## [UNRELEASED] · YYYY-MM-DD
 ### ✨ Added
 - Add a "Save Memory" setting that evicts inactive datasets from RAM and reloads them on demand ([#647](https://github.com/cbrnr/mnelab/pull/647) by [Clemens Brunner](https://github.com/cbrnr))
+- Add icons for "Change Reference", "Interpolate Bad Channels", and "Documentation" actions ([#650](https://github.com/cbrnr/mnelab/pull/650) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🔧 Fixed
 - Enforce minimum sidebar and info widget widths so they can no longer be hidden ([#642](https://github.com/cbrnr/mnelab/pull/642) by [Clemens Brunner](https://github.com/cbrnr))
