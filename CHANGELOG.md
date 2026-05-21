@@ -1,3 +1,5 @@
+## [UNRELEASED] · YYYY-MM-DD
+
 ## [1.5.0] · 2026-05-21
 ### ✨ Added
 - Add a "Save Memory" setting that evicts inactive datasets from RAM and reloads them on demand ([#647](https://github.com/cbrnr/mnelab/pull/647) by [Clemens Brunner](https://github.com/cbrnr))
