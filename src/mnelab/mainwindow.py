@@ -103,6 +103,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.model = model  # data model
         self.setWindowTitle("MNELAB")
+        self.setMinimumSize(600, 500)
         sys.excepthook = self._excepthook
 
         # capture MNE logging output
@@ -219,11 +220,6 @@ class MainWindow(QMainWindow):
         self.all_actions["set_montage"] = channels_menu.addAction(
             QIcon.fromTheme("plot-locations"), "Set &Montage...", self.set_montage
         )
-        self.all_actions["clear_montage"] = channels_menu.addAction(
-            QIcon.fromTheme("clear-montage"),
-            "Clear Montage",
-            self.clear_montage,
-        )
         channels_menu.addSeparator()
         self.all_actions["change_ref"] = channels_menu.addAction(
             QIcon.fromTheme("change-reference"),
@@ -255,7 +251,7 @@ class MainWindow(QMainWindow):
 
         events_menu = self.menuBar().addMenu("&Markers")
         self.all_actions["annotations"] = events_menu.addAction(
-            QIcon.fromTheme("edit"),
+            QIcon.fromTheme("annotations"),
             "Edit &Annotations...",
             self.edit_annotations,
         )
@@ -276,7 +272,7 @@ class MainWindow(QMainWindow):
         )
         events_menu.addSeparator()
         self.all_actions["events"] = events_menu.addAction(
-            QIcon.fromTheme("edit"),
+            QIcon.fromTheme("events"),
             "Edit &Events...",
             self.edit_events,
         )
@@ -553,6 +549,11 @@ class MainWindow(QMainWindow):
         self.infowidget = QStackedWidget()
         self.infowidget.setMinimumWidth(INFOWIDGET_MIN_WIDTH)
         self.infowidget.addWidget(InfoWidget())
+        self.infowidget.widget(0).channels_clicked.connect(self.channel_properties)
+        self.infowidget.widget(0).events_clicked.connect(self.edit_events)
+        self.infowidget.widget(0).annotations_clicked.connect(self.edit_annotations)
+        self.infowidget.widget(0).montage_clicked.connect(self.set_montage)
+        self.infowidget.widget(0).reference_clicked.connect(self.change_reference)
         emptywidget = EmptyWidget(
             itemgetter("open_file", "history", "settings")(self.all_actions)
         )
@@ -726,9 +727,6 @@ class MainWindow(QMainWindow):
             )
             self.all_actions["artifact_detection"].setEnabled(
                 enabled and events and self.model.current["dtype"] == "epochs"
-            )
-            self.all_actions["clear_montage"].setEnabled(
-                enabled and self.model.current["montage"] is not None
             )
             self.all_actions["crop"].setEnabled(
                 enabled and self.model.current["dtype"] == "raw"
@@ -1079,9 +1077,14 @@ class MainWindow(QMainWindow):
     def set_montage(self):
         """Set montage."""
         montages = natural_sort(mne.channels.get_builtin_montages())
-        dialog = MontageDialog(self, montages)
+        dialog = MontageDialog(
+            self, montages, current_montage=self.model.current["montage"]
+        )
         if dialog.exec():
             montage = dialog.montage
+            if montage is None:
+                self.model.set_montage(None)
+                return
             ch_names = self.model.current["data"].info["ch_names"]
             # check if at least one channel name matches a name in the montage
             if set(ch_names) & set(montage.montage.ch_names):
@@ -1100,9 +1103,6 @@ class MainWindow(QMainWindow):
                     "Channel names defined in the montage do not match any channel name"
                     " in the data.",
                 )
-
-    def clear_montage(self):
-        self.model.set_montage(None)
 
     def edit_annotations(self):
         fs = self.model.current["data"].info["sfreq"]
