@@ -11,7 +11,7 @@
 - Switch to a tree-based sidebar ([#643](https://github.com/cbrnr/mnelab/pull/643) and [#649](https://github.com/cbrnr/mnelab/pull/649) by [Clemens Brunner](https://github.com/cbrnr))
 - Improve table header alignment across various dialogs ([#640](https://github.com/cbrnr/mnelab/pull/640) by [Clemens Brunner](https://github.com/cbrnr))
 - Title-case all dialog titles and labels ([#641](https://github.com/cbrnr/mnelab/pull/641) and [#644](https://github.com/cbrnr/mnelab/pull/644) by [Clemens Brunner](https://github.com/cbrnr))
-- Improved the info area by adding icons and clickable buttons for shortcuts to actions like channel properties, event editing, annotation editing, montage settings, and reference settings ([#646](https://github.com/cbrnr/mnelab/pull/646) by [Clemens Brunner](https://github.com/cbrnr))
+- Improved the info area by adding icons and clickable buttons for shortcuts to actions like channel properties, event editing, annotation editing, montage settings, and reference settings ([#651](https://github.com/cbrnr/mnelab/pull/651) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.4.6] · 2026-05-12
 ### ✨ Added
