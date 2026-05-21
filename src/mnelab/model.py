@@ -523,6 +523,8 @@ class Model:
         info : dict
             Dictionary with information on current data set.
         """
+        if self.current["data"] is None:
+            self.reload_dataset(self.index)
         data = self.current["data"]
         fname = self.current["fname"]
         ftype = self.current["ftype"]

@@ -290,7 +290,7 @@ class SidebarTreeWidget(QTreeWidget):
 
     def _close_dataset(self, dataset_id):
         """Close a dataset, cascading to descendants with a confirmation dialog."""
-        descendants = self.parent.model.find_descendants(dataset_id)
+        descendants = self.parent.window().model.find_descendants(dataset_id)
         if descendants:
             n = len(descendants)
             msg = QMessageBox(self)
@@ -306,7 +306,7 @@ class SidebarTreeWidget(QTreeWidget):
             msg.setDefaultButton(QMessageBox.StandardButton.Cancel)
             if msg.exec() != QMessageBox.StandardButton.Ok:
                 return
-        self.parent.model.remove_data_cascade(dataset_id)
+        self.parent.window().model.remove_data_cascade(dataset_id)
 
 
 class SidebarWidget(QWidget):
