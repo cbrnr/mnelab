@@ -1,4 +1,6 @@
 ## [UNRELEASED] · YYYY-MM-DD
+### 🔧 Fixed
+- Fix a bug where a dataset could not be closed in the sidebar ([#653](https://github.com/cbrnr/mnelab/pull/653) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.5.0] · 2026-05-21
 ### ✨ Added
