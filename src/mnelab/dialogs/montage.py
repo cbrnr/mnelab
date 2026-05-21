@@ -49,7 +49,7 @@ class MontageItem(QListWidgetItem):
 
 
 class MontageDialog(QDialog):
-    def __init__(self, parent, montages):
+    def __init__(self, parent, montages, current_montage=None):
         super().__init__(parent)
         self.setWindowTitle("Set Montage")
         self.resize(760, 500)
@@ -64,6 +64,7 @@ class MontageDialog(QDialog):
         vbox.addWidget(self.montages)
 
         self.montages.itemSelectionChanged.connect(self.view_montage)
+        self.montages.itemSelectionChanged.connect(self._update_clear_button)
         self.match_case = QCheckBox("Match Case-Sensitive", self)
         self.match_alias = QCheckBox("Match Aliases", self)
         self.ignore_missing = QCheckBox("Ignore Missing", self)
@@ -90,6 +91,10 @@ class MontageDialog(QDialog):
         self.open_file_button = QPushButton("Load Custom Montage...", self)
         self.open_file_button.clicked.connect(self.load_custom_montage)
         button_layout.addWidget(self.open_file_button)
+        self.clear_button = QPushButton("Clear Montage", self)
+        self.clear_button.clicked.connect(self._clear_montage)
+        self.clear_button.setEnabled(current_montage is not None)
+        button_layout.addWidget(self.clear_button)
         button_layout.addStretch()
         self.buttonbox = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
@@ -103,27 +108,59 @@ class MontageDialog(QDialog):
         main_layout.addLayout(button_layout)
         self.setLayout(main_layout)
 
-        if self.montages.count() > 0:
-            self.montages.setCurrentRow(0)
-            self.view_montage()
+        if current_montage is not None:
+            if current_montage.path is not None:
+                # custom montage: add it to the list and select it
+                self.montages.addItem(
+                    MontageItem(
+                        current_montage.montage,
+                        current_montage.name,
+                        current_montage.path,
+                    )
+                )
+                self.montages.setCurrentRow(self.montages.count() - 1)
+            else:
+                # standard montage: find and select by name
+                for i in range(self.montages.count()):
+                    if self.montages.item(i).name == current_montage.name:
+                        self.montages.setCurrentRow(i)
+                        break
+        self.view_montage()
         self.setFocus()
 
     def accept(self):
-        item = self.montages.selectedItems()[0]
-        self.montage = Montage(item.montage, item.name, item.path)
+        selected = self.montages.selectedItems()
+        if selected:
+            item = selected[0]
+            assert isinstance(item, MontageItem)
+            self.montage = Montage(item.montage, item.name, item.path)
+        else:
+            self.montage = None
         super().accept()
 
+    def _clear_montage(self):
+        self.montages.clearSelection()
+        self.figure.clear()
+        self.canvas.draw()
+
+    def _update_clear_button(self):
+        self.clear_button.setEnabled(bool(self.montages.selectedItems()))
+
     def view_montage(self):
-        item = self.montages.currentItem()
-        if item:
-            montage = item.montage
+        selected = self.montages.selectedItems()
+        if not selected:
             self.figure.clear()
-            ax = self.figure.add_subplot()
-            montage.plot(show_names=True, show=False, axes=ax)
-            ax.set_aspect("equal")
-            self.figure.tight_layout(pad=0.5)
-            ax.margins(0)
             self.canvas.draw()
+            return
+        item = selected[0]
+        assert isinstance(item, MontageItem)
+        self.figure.clear()
+        ax = self.figure.add_subplot()
+        item.montage.plot(show_names=True, show=False, axes=ax)
+        ax.set_aspect("equal")
+        self.figure.tight_layout(pad=0.5)
+        ax.margins(0)
+        self.canvas.draw()
 
     def load_custom_montage(self):
         file_filter = f"Supported Files ({' '.join(SUPPORTED_FILES)});;All Files (*)"
@@ -134,6 +171,7 @@ class MontageDialog(QDialog):
             except Exception as e:
                 QMessageBox.critical(self, "Unsupported montage file", str(e))
             else:
-                item = MontageItem(montage, Path(fpath).name, Path(fpath))
-                self.montages.addItem(item)
+                self.montages.addItem(
+                    MontageItem(montage, Path(fpath).name, Path(fpath))
+                )
                 self.montages.setCurrentRow(self.montages.count() - 1)
