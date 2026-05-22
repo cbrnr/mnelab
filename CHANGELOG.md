@@ -1,4 +1,6 @@
 ## [UNRELEASED] · YYYY-MM-DD
+### ✨ Added
+- Add a "Toolbar" page to the Settings dialog that allows users to customize the toolbar ([#654](https://github.com/cbrnr/mnelab/pull/654) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.5.1] · 2026-05-21
 ### 🔧 Fixed

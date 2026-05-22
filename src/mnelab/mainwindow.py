@@ -473,28 +473,15 @@ class MainWindow(QMainWindow):
         # set up toolbar
         self.toolbar = self.addToolBar("toolbar")
         self.toolbar.setObjectName("toolbar")
-        self.toolbar.addAction(self.all_actions["open_file"])
-        self.toolbar.addSeparator()
-        self.toolbar.addAction(self.all_actions["chan_props"])
-        self.toolbar.addSeparator()
-        self.toolbar.addAction(self.all_actions["plot_data"])
-        self.toolbar.addAction(self.all_actions["plot_psd"])
-        self.toolbar.addAction(self.all_actions["plot_locations"])
-        self.toolbar.addSeparator()
-        self.toolbar.addAction(self.all_actions["filter"])
-        self.toolbar.addAction(self.all_actions["find_events"])
-        self.toolbar.addAction(self.all_actions["epoch_data"])
-        self.toolbar.addAction(self.all_actions["run_ica"])
-        self.toolbar.addSeparator()
-        self.toolbar.addAction(self.all_actions["settings"])
         self.toolbar.setMovable(False)
+        self.toolbar.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.toolbar.customContextMenuRequested.connect(self._show_toolbar_context_menu)
         # hamburger menu button (Windows/Linux only)
         if sys.platform != "darwin":
-            hamburger_spacer = QWidget()
-            hamburger_spacer.setSizePolicy(
+            self._hamburger_spacer_widget = QWidget()
+            self._hamburger_spacer_widget.setSizePolicy(
                 QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
             )
-            self._hamburger_spacer_action = self.toolbar.addWidget(hamburger_spacer)
             self._hamburger_button = QToolButton()
             self._hamburger_button.setIcon(QIcon.fromTheme("hamburger-menu"))
             self._hamburger_button.setToolTip("Menu")
@@ -508,7 +495,8 @@ class MainWindow(QMainWindow):
             self._hamburger_button.setPopupMode(
                 QToolButton.ToolButtonPopupMode.InstantPopup
             )
-            self._hamburger_action = self.toolbar.addWidget(self._hamburger_button)
+        self._apply_toolbar(settings["toolbar_actions"])
+        if sys.platform != "darwin":
             hamburger_enabled = not settings["show_menubar"]
             self._hamburger_spacer_action.setVisible(hamburger_enabled)
             self._hamburger_action.setVisible(hamburger_enabled)
@@ -1787,11 +1775,11 @@ class MainWindow(QMainWindow):
         if not QDesktopServices.openUrl(url):
             QMessageBox.warning(self, "Open Url", "Could not open url")
 
-    def settings(self):
+    def settings(self, page=0):
         old_backend = read_settings("plot_backend")
         old_badges = read_settings("dtype_badges")
         old_menu_icons = read_settings("menu_icons")
-        SettingsDialog(self, self.plot_backends).exec()
+        SettingsDialog(self, self.plot_backends, initial_page=page).exec()
         new_backend = read_settings("plot_backend")
         new_badges = read_settings("dtype_badges")
         new_menu_icons = read_settings("menu_icons")
@@ -1928,6 +1916,30 @@ class MainWindow(QMainWindow):
         else:
             self.toolbar.hide()
         write_settings(toolbar=not self.toolbar.isHidden())
+
+    def _apply_toolbar(self, action_keys):
+        for action in list(self.toolbar.actions()):
+            self.toolbar.removeAction(action)
+        for key in action_keys:
+            if key == "---":
+                self.toolbar.addSeparator()
+            elif key in self.all_actions:
+                self.toolbar.addAction(self.all_actions[key])
+        if sys.platform != "darwin":
+            self._hamburger_spacer_action = self.toolbar.addWidget(
+                self._hamburger_spacer_widget
+            )
+            self._hamburger_action = self.toolbar.addWidget(self._hamburger_button)
+
+    @Slot()
+    def _show_toolbar_context_menu(self, pos):
+        menu = QMenu(self)
+        menu.addAction(
+            QIcon.fromTheme("settings-toolbar"),
+            "Customize Toolbar...",
+            lambda: self.settings(page=2),
+        )
+        menu.exec(self.toolbar.mapToGlobal(pos))
 
     def _apply_hamburger_menu_setting(self, enabled):
         self.menuBar().setVisible(not enabled)
