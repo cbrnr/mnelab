@@ -2,21 +2,21 @@
 #
 # License: BSD (3-clause)
 
+import bisect
 import json
 from pathlib import Path
 
-from mne import get_config_path
 from PySide6.QtCore import (
     QEvent,
     QPoint,
     QSettings,
     QSize,
     QStandardPaths,
-    QUrl,
     Slot,
 )
-from PySide6.QtGui import QDesktopServices, QIcon, QPalette, Qt
+from PySide6.QtGui import QFont, QIcon, QPalette, Qt
 from PySide6.QtWidgets import (
+    QAbstractItemView,
     QApplication,
     QCheckBox,
     QComboBox,
@@ -27,6 +27,8 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QListWidget,
+    QListWidgetItem,
+    QPushButton,
     QStackedWidget,
     QVBoxLayout,
     QWidget,
@@ -62,9 +64,25 @@ _DEFAULTS = {
     "show_menubar": True,
     "annotation_colors": {},
     "memory_saving": False,
+    "toolbar_actions": [
+        "open_file",
+        "---",
+        "chan_props",
+        "---",
+        "plot_data",
+        "plot_psd",
+        "plot_locations",
+        "---",
+        "filter",
+        "find_events",
+        "epoch_data",
+        "run_ica",
+        "---",
+        "settings",
+    ],
 }
 
-_JSON_KEYS = {"annotation_colors"}
+_JSON_KEYS = {"annotation_colors", "toolbar_actions"}
 
 
 def _get_value(key):
@@ -119,7 +137,7 @@ def clear_settings():
 
 
 class SettingsDialog(QDialog):
-    def __init__(self, parent, backends):
+    def __init__(self, parent, backends, initial_page=0):
         super().__init__(parent)
         self.setWindowTitle("Settings")
 
@@ -134,9 +152,9 @@ class SettingsDialog(QDialog):
         self._sidebar.setFrameShape(QFrame.Shape.NoFrame)
         self._sidebar.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self._sidebar.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self._sidebar.addItems(["General", "Plotting"])
+        self._sidebar.addItems(["General", "Plotting", "Toolbar"])
         self._sidebar.setIconSize(QSize(16, 16))
-        self._sidebar.setCurrentRow(0)
+        self._sidebar.setCurrentRow(initial_page)
         hbox.addWidget(self._sidebar)
 
         self._stack = QStackedWidget()
@@ -225,20 +243,80 @@ class SettingsDialog(QDialog):
 
         self._stack.addWidget(plotting_page)
 
+        # Toolbar page
+        toolbar_page = QWidget()
+        toolbar_vbox = QVBoxLayout(toolbar_page)
+        toolbar_vbox.setContentsMargins(*_form_margins)
+        toolbar_vbox.setSpacing(_form_vspacing)
+
+        toolbar_hbox = QHBoxLayout()
+        toolbar_hbox.setSpacing(8)
+
+        _header_font = QFont(QApplication.font())
+        _header_font.setPointSizeF(_header_font.pointSizeF() * 0.85)
+        _header_font.setBold(True)
+
+        left_vbox = QVBoxLayout()
+        _avail_header = QLabel("Available Actions")
+        _avail_header.setFont(_header_font)
+        left_vbox.addWidget(_avail_header)
+        self._available_list = QListWidget()
+        self._available_list.setIconSize(QSize(16, 16))
+        left_vbox.addWidget(self._available_list)
+        toolbar_hbox.addLayout(left_vbox)
+
+        center_vbox = QVBoxLayout()
+        center_vbox.addStretch()
+        self._add_btn = QPushButton("→")
+        self._remove_btn = QPushButton("←")
+        self._up_btn = QPushButton("↑")
+        self._down_btn = QPushButton("↓")
+        for btn in [self._add_btn, self._remove_btn]:
+            btn.setEnabled(False)
+            center_vbox.addWidget(btn)
+        center_vbox.addSpacing(8)
+        for btn in [self._up_btn, self._down_btn]:
+            btn.setEnabled(False)
+            center_vbox.addWidget(btn)
+        center_vbox.addStretch()
+        toolbar_hbox.addLayout(center_vbox)
+
+        right_vbox = QVBoxLayout()
+        _toolbar_header = QLabel("Toolbar")
+        _toolbar_header.setFont(_header_font)
+        right_vbox.addWidget(_toolbar_header)
+        self._toolbar_list = QListWidget()
+        self._toolbar_list.setIconSize(QSize(16, 16))
+        self._toolbar_list.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
+        right_vbox.addWidget(self._toolbar_list)
+        toolbar_hbox.addLayout(right_vbox)
+
+        toolbar_vbox.addLayout(toolbar_hbox)
+        reset_toolbar_btn = QPushButton("Reset Toolbar")
+        reset_toolbar_btn.clicked.connect(self._reset_toolbar_page)
+        toolbar_vbox.addWidget(reset_toolbar_btn, alignment=Qt.AlignmentFlag.AlignRight)
+        self._stack.addWidget(toolbar_page)
+
+        self._add_btn.clicked.connect(self._add_to_toolbar)
+        self._remove_btn.clicked.connect(self._remove_from_toolbar)
+        self._up_btn.clicked.connect(self._move_up)
+        self._down_btn.clicked.connect(self._move_down)
+        self._available_list.currentRowChanged.connect(self._update_toolbar_buttons)
+        self._toolbar_list.currentRowChanged.connect(self._update_toolbar_buttons)
+        self._toolbar_list.model().rowsMoved.connect(
+            lambda *_: self._update_toolbar_buttons()
+        )
+        self._toolbar_list.model().rowsInserted.connect(
+            lambda *_: self._update_toolbar_buttons()
+        )
+        self._populate_toolbar_page(read_settings("toolbar_actions"))
+        self._update_toolbar_buttons()
+
         hbox.addWidget(self._stack)
         vbox.addLayout(hbox)
 
         self._sidebar.currentRowChanged.connect(self._stack.setCurrentIndex)
-
-        self._mnelab_label = QLabel()
-        self._mnelab_label.linkActivated.connect(self.open_path)
-        vbox.addSpacing(8)
-        vbox.addWidget(self._mnelab_label)
-
-        self._mne_config_path = str(get_config_path())
-        self._mne_label = QLabel()
-        self._mne_label.linkActivated.connect(self.open_path)
-        vbox.addWidget(self._mne_label)
+        self._stack.setCurrentIndex(initial_page)
 
         self.buttonbox = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
@@ -252,7 +330,8 @@ class SettingsDialog(QDialog):
         self.buttonbox.accepted.connect(self.on_ok_clicked)
         self.buttonbox.rejected.connect(self.reject)
 
-        self.setMinimumSize(420, 260)
+        self.setMinimumSize(600, 380)
+        self.resize(650, 380)
 
         self._update_theme()
         self.setFocus()
@@ -285,30 +364,16 @@ class SettingsDialog(QDialog):
         """)
         self._sidebar.item(0).setIcon(QIcon.fromTheme("settings-general"))
         self._sidebar.item(1).setIcon(QIcon.fromTheme("settings-plotting"))
-        link = p.color(QPalette.ColorRole.Link).name()
-        self._mnelab_label.setText(
-            f"<i>Settings are stored in"
-            f' <a href="{SETTINGS_PATH}" style="color: {link};">'
-            f"{SETTINGS_PATH}</a>.</i>"
-        )
-        self._mne_label.setText(
-            f"<i>MNE-Python settings are stored in"
-            f' <a href="{self._mne_config_path}" style="color: {link};">'
-            f"{self._mne_config_path}</a>.</i>"
-        )
+        self._sidebar.item(2).setIcon(QIcon.fromTheme("settings-toolbar"))
 
     def changeEvent(self, event):
         if event.type() == QEvent.Type.PaletteChange:
             self._update_theme()
         super().changeEvent(event)
 
-    @Slot(str)
-    def open_path(self, path):
-        """Open a path in the default application."""
-        QDesktopServices.openUrl(QUrl.fromLocalFile(path))
-
     @Slot()
     def on_ok_clicked(self):
+        toolbar_keys = self._get_toolbar_action_keys()
         write_settings(
             max_recent=self.max_recent.value(),
             max_channels=self.max_channels.value(),
@@ -319,8 +384,10 @@ class SettingsDialog(QDialog):
             dtype_badges=self.dtype_badges.isChecked(),
             menu_icons=self.menu_icons.isChecked(),
             memory_saving=self.memory_saving.isChecked(),
+            toolbar_actions=toolbar_keys,
         )
         self.parent().recent = self.parent().recent[: read_settings("max_recent")]
+        self.parent()._apply_toolbar(toolbar_keys)
         self.accept()
 
     @Slot()
@@ -339,4 +406,120 @@ class SettingsDialog(QDialog):
         self.parent().move(_DEFAULTS["pos"])
         self.parent().recent = []
         self.parent()._set_splitter_ratio(_DEFAULTS["splitter"])
+        self._reset_toolbar_page()
+        self.parent()._apply_toolbar(_DEFAULTS["toolbar_actions"])
         clear_settings()
+
+    def _populate_toolbar_page(self, current_keys):
+        excluded = {"toolbar", "statusbar", "menubar"}
+        all_actions = self.parent().all_actions
+        in_toolbar = {k for k in current_keys if k != "---"}
+        for key in current_keys:
+            if key == "---":
+                item = QListWidgetItem("─── Separator ───")
+                item.setData(Qt.ItemDataRole.UserRole, "---")
+            elif key in all_actions:
+                action = all_actions[key]
+                text = action.text().replace("&", "")
+                item = QListWidgetItem(action.icon(), text)
+                item.setData(Qt.ItemDataRole.UserRole, key)
+            else:
+                continue
+            self._toolbar_list.addItem(item)
+        sep_item = QListWidgetItem("─── Separator ───")
+        sep_item.setData(Qt.ItemDataRole.UserRole, "---")
+        self._available_list.addItem(sep_item)
+        available = []
+        for key, action in all_actions.items():
+            if key in excluded or key in in_toolbar:
+                continue
+            if key.startswith("export_data"):
+                continue
+            text = action.text().replace("&", "")
+            available.append((text, key, action.icon()))
+        available.sort(key=lambda x: x[0])
+        for text, key, icon in available:
+            item = QListWidgetItem(icon, text)
+            item.setData(Qt.ItemDataRole.UserRole, key)
+            self._available_list.addItem(item)
+
+    def _get_toolbar_action_keys(self):
+        return [
+            self._toolbar_list.item(i).data(Qt.ItemDataRole.UserRole)
+            for i in range(self._toolbar_list.count())
+        ]
+
+    def _reset_toolbar_page(self):
+        self._toolbar_list.clear()
+        self._available_list.clear()
+        self._populate_toolbar_page(_DEFAULTS["toolbar_actions"])
+        self._update_toolbar_buttons()
+
+    @Slot()
+    def _add_to_toolbar(self):
+        row = self._available_list.currentRow()
+        if row < 0:
+            return
+        key = self._available_list.item(row).data(Qt.ItemDataRole.UserRole)
+        toolbar_row = self._toolbar_list.currentRow()
+        ins = toolbar_row + 1 if toolbar_row >= 0 else self._toolbar_list.count()
+        if key == "---":
+            # separator stays in the available list; clone a new one into toolbar
+            item = QListWidgetItem("─── Separator ───")
+            item.setData(Qt.ItemDataRole.UserRole, "---")
+            self._toolbar_list.insertItem(ins, item)
+            self._toolbar_list.setCurrentRow(ins)
+        else:
+            item = self._available_list.takeItem(row)
+            self._toolbar_list.insertItem(ins, item)
+            self._toolbar_list.setCurrentRow(ins)
+            new_row = min(row, self._available_list.count() - 1)
+            if new_row >= 0:
+                self._available_list.setCurrentRow(new_row)
+        self._update_toolbar_buttons()
+
+    @Slot()
+    def _remove_from_toolbar(self):
+        row = self._toolbar_list.currentRow()
+        if row < 0:
+            return
+        item = self._toolbar_list.takeItem(row)
+        key = item.data(Qt.ItemDataRole.UserRole)
+        if key != "---":
+            # skip the separator permanently at position 0
+            texts = [
+                self._available_list.item(i).text()
+                for i in range(1, self._available_list.count())
+            ]
+            pos = bisect.bisect_left(texts, item.text()) + 1
+            self._available_list.insertItem(pos, item)
+            self._available_list.setCurrentRow(pos)
+        self._update_toolbar_buttons()
+
+    @Slot()
+    def _move_up(self):
+        row = self._toolbar_list.currentRow()
+        if row <= 0:
+            return
+        item = self._toolbar_list.takeItem(row)
+        self._toolbar_list.insertItem(row - 1, item)
+        self._toolbar_list.setCurrentRow(row - 1)
+
+    @Slot()
+    def _move_down(self):
+        row = self._toolbar_list.currentRow()
+        if row < 0 or row >= self._toolbar_list.count() - 1:
+            return
+        item = self._toolbar_list.takeItem(row)
+        self._toolbar_list.insertItem(row + 1, item)
+        self._toolbar_list.setCurrentRow(row + 1)
+
+    @Slot()
+    def _update_toolbar_buttons(self):
+        avail_row = self._available_list.currentRow()
+        toolbar_row = self._toolbar_list.currentRow()
+        toolbar_count = self._toolbar_list.count()
+        self._add_btn.setEnabled(avail_row >= 0)
+        self._remove_btn.setEnabled(toolbar_row >= 0)
+        self._up_btn.setEnabled(toolbar_row > 0)
+        self._down_btn.setEnabled(0 <= toolbar_row < toolbar_count - 1)
