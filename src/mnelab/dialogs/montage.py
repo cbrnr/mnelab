@@ -41,11 +41,12 @@ SUPPORTED_FILES = [
 
 
 class MontageItem(QListWidgetItem):
-    def __init__(self, montage, name, path=None):
+    def __init__(self, montage, name, path=None, embedded=False):
         super().__init__(name)
         self.montage = montage
         self.name = name
         self.path = path
+        self.embedded = embedded
 
 
 class MontageDialog(QDialog):
@@ -109,13 +110,14 @@ class MontageDialog(QDialog):
         self.setLayout(main_layout)
 
         if current_montage is not None:
-            if current_montage.path is not None:
-                # custom montage: add it to the list and select it
+            if current_montage.path is not None or current_montage.embedded:
+                # custom or embedded montage: add it to the list and select it
                 self.montages.addItem(
                     MontageItem(
                         current_montage.montage,
                         current_montage.name,
                         current_montage.path,
+                        current_montage.embedded,
                     )
                 )
                 self.montages.setCurrentRow(self.montages.count() - 1)
@@ -133,7 +135,7 @@ class MontageDialog(QDialog):
         if selected:
             item = selected[0]
             assert isinstance(item, MontageItem)
-            self.montage = Montage(item.montage, item.name, item.path)
+            self.montage = Montage(item.montage, item.name, item.path, item.embedded)
         else:
             self.montage = None
         super().accept()

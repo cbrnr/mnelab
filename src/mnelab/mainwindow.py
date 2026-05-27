@@ -672,7 +672,7 @@ class MainWindow(QMainWindow):
             self.all_actions["plot_locations"].setEnabled(enabled and locations)
             ica = bool(self.model.current["ica"])
             self.all_actions["label_ica"].setEnabled(
-                enabled and ica and self.model.current["montage"] is not None
+                enabled and ica and bool(locations)
             )
             self.all_actions["apply_ica"].setEnabled(enabled and ica)
             self.all_actions["export_ica"].setEnabled(enabled and ica)
@@ -1071,11 +1071,13 @@ class MainWindow(QMainWindow):
         if dialog.exec():
             montage = dialog.montage
             if montage is None:
+                self.auto_duplicate()
                 self.model.set_montage(None)
                 return
             ch_names = self.model.current["data"].info["ch_names"]
             # check if at least one channel name matches a name in the montage
             if set(ch_names) & set(montage.montage.ch_names):
+                self.auto_duplicate()
                 self.model.set_montage(
                     montage,
                     match_case=dialog.match_case.isChecked(),
