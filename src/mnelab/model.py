@@ -216,7 +216,11 @@ class Model:
             events = np.empty((0, 3), dtype=int)
             event_mapping = defaultdict(str)
         dig_montage = data.get_montage()
-        montage = Montage(dig_montage, "Custom", embedded=True) if dig_montage is not None else None
+        montage = (
+            Montage(dig_montage, "Custom", embedded=True)
+            if dig_montage is not None
+            else None
+        )
         self.insert_data(
             defaultdict(
                 lambda: None,
