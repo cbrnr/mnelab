@@ -15,7 +15,7 @@ import numpy as np
 
 from mnelab.io import UnsupportedFileTypeError, read_epochs, read_raw, write_raw
 from mnelab.io.readers import split_name_ext
-from mnelab.utils import count_locations, run_iclabel
+from mnelab.utils import Montage, count_locations, run_iclabel
 
 
 class LabelsNotFoundError(Exception):
@@ -215,6 +215,12 @@ class Model:
             dtype = "raw"
             events = np.empty((0, 3), dtype=int)
             event_mapping = defaultdict(str)
+        dig_montage = data.get_montage()
+        montage = (
+            Montage(dig_montage, "Custom", embedded=True)
+            if dig_montage is not None
+            else None
+        )
         self.insert_data(
             defaultdict(
                 lambda: None,
@@ -224,7 +230,7 @@ class Model:
                 fsize=fsize,
                 data=data,
                 dtype=dtype,
-                montage=None,
+                montage=montage,
                 events=events,
                 event_mapping=event_mapping,
                 _cache_path=None,
@@ -672,7 +678,7 @@ class Model:
         )
         if montage is None:
             self.history.append("data.set_montage(None)")
-        else:
+        elif not montage.embedded:
             if montage.path is not None:
                 self.history.append(
                     f"montage = mne.read_custom_montage('{montage.path}')"

@@ -331,3 +331,4 @@ class Montage:
     montage: DigMontage
     name: str
     path: Path | None = None
+    embedded: bool = False
