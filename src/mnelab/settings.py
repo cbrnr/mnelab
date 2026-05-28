@@ -52,7 +52,6 @@ _DEFAULTS = {
     "duration": 20,
     "epochs": 10,
     "recent": [],
-    "toolbar": True,
     "statusbar": True,
     "size": QSize(700, 500),
     "pos": QPoint(100, 100),
@@ -411,7 +410,7 @@ class SettingsDialog(QDialog):
         clear_settings()
 
     def _populate_toolbar_page(self, current_keys):
-        excluded = {"toolbar", "statusbar", "menubar"}
+        excluded = {"statusbar", "menubar"}
         all_actions = self.parent().all_actions
         in_toolbar = {k for k in current_keys if k != "---"}
         for key in current_keys:
