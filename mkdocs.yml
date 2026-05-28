@@ -5,15 +5,15 @@ repo_url: https://github.com/cbrnr/mnelab
 copyright: © MNELAB Developers
 nav:
   - Home: index.md
-  - Quick Start: tutorial/index.md
+  - Quick Start: quickstart/index.md
   - Examples:
-    - Overview: examples/index.md
-    - Renaming Channels: examples/rename_channels.md
-    - ERDS Maps: examples/erds_maps.md
-    - ERPs: examples/erp.md
+    - Overview: documentation/index.md
+    - Renaming Channels: documentation/rename_channels.md
+    - ERDS Maps: documentation/erds_maps.md
+    - ERPs: documentation/erp.md
 theme:
   name: material
-  favicon: images/favicon.png
+  favicon: favicon.png
   palette:
     - media: "(prefers-color-scheme)"
       toggle:
