@@ -47,6 +47,25 @@ MNELAB bundles its icons in the `icons` folder, which contains two themes ("ligh
 If you want to add a new icon, download it from the Material Symbols website, rename it (use a suitable name reflecting its intended action), and place it in the `icons/light/actions` folder. Next, edit the SVG file in a text editor and add the `fill="black"` attribute to the `<svg>` tag. Finally, copy the SVG file to the `icons/dark/actions` folder and change the `fill` attribute to `fill="white"`.
 
 
+### Creating screenshots for the documentation
+
+Screenshots can be taken on any platform. On Linux with KDE, make sure the following settings are in place:
+
+- In *System Settings – Display & Monitor*, set the display scaling to 200%.
+- In *System Settings – Colors & Themes – Application Style*, select **Breeze** as the widget style.
+- In *System Settings – Colors & Themes – Window Decorations*, select **Breeze** as the decoration theme. Click the edit button (pencil icon) next to the theme and make sure that **Round bottom corners** is enabled and **Draw window outline** is enabled (both should be on by default).
+
+To take a screenshot of a specific window, use Spectacle and choose *Active Window* (<kbd>Meta</kbd><kbd>Print</kbd>) as the capture mode. Save the screenshot as a PNG file.
+
+Instructions for taking screenshots on macOS and Windows will follow soon.
+
+Because the display is set to 200% scaling, each screenshot will be twice as wide and tall in pixels as it appears on screen. In the documentation source, render the image at half its pixel size to match the original visual size using the `style` attribute:
+
+```markdown
+![Description](images/screenshot.png){ style="width: 50%" }
+```
+
+
 ### Adding a changelog entry
 
 Once you have an open pull request, add an entry to the top of `CHANGELOG.md` in the most suitable section: "Added" lists new features, "Fixed" lists bug fixes, and "Changed" lists changes to existing functionality. Finally, make sure to mention the pull request and your name.
