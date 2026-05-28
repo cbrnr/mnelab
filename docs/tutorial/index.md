@@ -1,45 +1,40 @@
-# Tutorial
+# Quick Start Guide
 
 ## Installing MNELAB
 
-We recommend our standalone installers currently available for macOS and Windows:
+We recommend using the standalone installers for macOS and Windows:
 
 - [MNELAB 1.5.1 (macOS)](https://github.com/cbrnr/mnelab/releases/download/v1.5.1/MNELAB-1.5.1.dmg)
 - [MNELAB 1.5.1 (Windows)](https://github.com/cbrnr/mnelab/releases/download/v1.5.1/MNELAB-1.5.1.exe)
 
+If you use [Arch Linux](https://archlinux.org/), you can install MNELAB from the [AUR](https://aur.archlinux.org/packages/python-mnelab) (e.g., `yay -S python-mnelab`).
+
 
 ## Running MNELAB
 
-If you have installed MNELAB using the standalone installer, you can start it just like any other app from your applications menu or by double-clicking the application icon.
+If you installed MNELAB using a standalone installer, launch it like any other desktop application – either from your applications menu or by double-clicking the application icon.
 
-Alternatively, you can use [uv](https://docs.astral.sh/uv/) to run MNELAB:
+Alternatively, you can use [uv](https://docs.astral.sh/uv/) to run MNELAB directly without installing it (this works on all platforms, but for the best experience we recommend using the standalone installers when available):
 
 ```
 uvx mnelab
 ```
 
-If you want to run the latest development version, you can use the following command:
+To run the latest development version:
 
 ```
 uvx --from https://github.com/cbrnr/mnelab/archive/refs/heads/main.zip mnelab
 ```
 
 
-## First steps
+## First Steps
 
-The main window of MNELAB consists of a menu bar (A), a toolbar (B), a sidebar (C), an info panel (D), and a status bar (E):
+The main MNELAB window is mostly empty when you first open it:
 
-![empty window](images/empty_window.png)
+![Empty MNELAB window](images/empty_window.png)
 
-The main window looks pretty empty initially. In fact, almost all commands are disabled until you load a data set:
+Most commands remain disabled until you load a data set. To load a data set, click the *Open* button in the toolbar or select *File – Open…* from the menu bar. The data set appears in the sidebar, and the info panel displays information about it (we use [S001R06.edf](https://www.physionet.org/files/eegmmidb/1.0.0/S001/S001R06.edf?download) from the [EEG Motor Movement/Imagery Dataset](https://www.physionet.org/content/eegmmidb/1.0.0/) in this example if you want to follow along):
 
-![menu disabled](images/menu_disabled.png)
+![MNELAB with a loaded file](images/file_loaded.png)
 
-Click on the "Open" icon in the toolbar or select _File – Open..._ and pick a file in the dialog window.
-The name of the loaded file appears in the sidebar, and the info panel shows information about the data set:
-
-![file loaded](images/file_loaded.png)
-
-Select _Plot – Plot data_ to visualize the time course of the individual channels:
-
-![plot menu](images/plot_menu.png)
+Now you can start exploring the data set, for example by visualizing the raw data with *Plot – Plot Data*, plotting the power spectral density with *Plot – Plot PSD*, or inspecting the annotations with *Markers – Edit Annotations…*.
