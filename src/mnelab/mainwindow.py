@@ -413,17 +413,13 @@ class MainWindow(QMainWindow):
             self.show_history,
             QKeySequence(Qt.Modifier.CTRL | Qt.Key.Key_Y),
         )
-        self.all_actions["toolbar"] = view_menu.addAction(
-            "&Toolbar", self._toggle_toolbar
-        )
-        self.all_actions["toolbar"].setCheckable(True)
         self.all_actions["statusbar"] = view_menu.addAction(
-            "&Statusbar", self._toggle_statusbar
+            "&Status Bar", self._toggle_statusbar
         )
         self.all_actions["statusbar"].setCheckable(True)
         if sys.platform != "darwin":
             self.all_actions["menubar"] = view_menu.addAction(
-                "&Menubar",
+                "&Menu Bar",
                 self._toggle_menubar,
                 QKeySequence(Qt.Modifier.CTRL | Qt.Key.Key_M),
             )
@@ -461,7 +457,6 @@ class MainWindow(QMainWindow):
             "check_updates",
             "quit",
             "xdf_chunks",
-            "toolbar",
             "statusbar",
             "menubar",
             "settings",
@@ -514,12 +509,7 @@ class MainWindow(QMainWindow):
                     border-radius: 4px;
                 }
             """)
-        if settings["toolbar"]:
-            self.toolbar.show()
-            self.all_actions["toolbar"].setChecked(True)
-        else:
-            self.toolbar.hide()
-            self.all_actions["toolbar"].setChecked(False)
+        self.toolbar.show()
 
         # set up data model for sidebar (list of open files)
         self.sidebar_container = SidebarWidget(self)
@@ -1910,14 +1900,6 @@ class MainWindow(QMainWindow):
     @Slot(QAction)
     def _load_recent(self, action):
         self.open_data(fname=action.text())
-
-    @Slot()
-    def _toggle_toolbar(self):
-        if self.toolbar.isHidden():
-            self.toolbar.show()
-        else:
-            self.toolbar.hide()
-        write_settings(toolbar=not self.toolbar.isHidden())
 
     def _apply_toolbar(self, action_keys):
         for action in list(self.toolbar.actions()):
