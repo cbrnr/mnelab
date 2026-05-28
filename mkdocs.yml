@@ -5,9 +5,10 @@ repo_url: https://github.com/cbrnr/mnelab
 copyright: © MNELAB Developers
 nav:
   - Home: index.md
-  - Tutorial: tutorial/index.md
+  - Quick Start: tutorial/index.md
   - Examples:
     - Overview: examples/index.md
+    - Renaming Channels: examples/rename_channels.md
     - ERDS Maps: examples/erds_maps.md
     - ERPs: examples/erp.md
 theme:
