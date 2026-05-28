@@ -33,8 +33,8 @@ The main MNELAB window is mostly empty when you first open it:
 
 ![Empty MNELAB window](images/empty_window.png)
 
-Most commands remain disabled until you load a data set. To load a data set, click the *Open* button in the toolbar or select *File – Open...* from the menu bar. The data set appears in the sidebar, and the info panel displays information about it (we use [S001R06.edf](https://www.physionet.org/files/eegmmidb/1.0.0/S001/S001R06.edf?download) from the [EEG Motor Movement/Imagery Dataset](https://www.physionet.org/content/eegmmidb/1.0.0/) in this example if you want to follow along):
+Most commands remain disabled until you load a data set. To load a data set, click the *Open* button in the toolbar or select *File – Open…* from the menu bar. The data set appears in the sidebar, and the info panel displays information about it (we use [S001R06.edf](https://www.physionet.org/files/eegmmidb/1.0.0/S001/S001R06.edf?download) from the [EEG Motor Movement/Imagery Dataset](https://www.physionet.org/content/eegmmidb/1.0.0/) in this example if you want to follow along):
 
 ![MNELAB with a loaded file](images/file_loaded.png)
 
-Now you can start exploring the data set, for example by visualizing the raw data with *Plot – Plot Data*, plotting the power spectral density with *Plot – Plot PSD*, or inspecting the annotations with *Markers – Edit Annotations...*.
+Now you can start exploring the data set, for example by visualizing the raw data with *Plot – Plot Data*, plotting the power spectral density with *Plot – Plot PSD*, or inspecting the annotations with *Markers – Edit Annotations…*.

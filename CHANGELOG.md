@@ -99,7 +99,7 @@
 - Improve dark mode theme for the Artifact Detection preview dialog ([#585](https://github.com/cbrnr/mnelab/pull/585) by [Fabian Schellander](https://github.com/SchellanderF))
 - Improve settings dialog layout and include the splitter position when resetting to defaults ([#590](https://github.com/cbrnr/mnelab/pull/590) by [Clemens Brunner](https://github.com/cbrnr))
 - Data traces are not clipped in the raw plot anymore ([#594](https://github.com/cbrnr/mnelab/pull/594) by [Clemens Brunner](https://github.com/cbrnr))
-- Work around an issue where "Plot IC properties..." (inside the "Label ICs..." dialog) would not work ([#596](https://github.com/cbrnr/mnelab/pull/596) by [Clemens Brunner](https://github.com/cbrnr))
+- Work around an issue where "Plot IC properties…" (inside the "Label ICs…" dialog) would not work ([#596](https://github.com/cbrnr/mnelab/pull/596) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🌀 Changed
 - Consistently focus the OK button in all dialogs ([#586](https://github.com/cbrnr/mnelab/pull/586) by [Clemens Brunner](https://github.com/cbrnr))
@@ -296,29 +296,29 @@
 ### ✨ Added
 - Add support to select and load multiple files at once ([#257](https://github.com/cbrnr/mnelab/pull/257) by [Florian Hofer](https://github.com/hofaflo))
 - Add drag and drop reordering to sidebar ([#261](https://github.com/cbrnr/mnelab/pull/261) by [Florian Hofer](https://github.com/hofaflo))
-- Add support for plotting evoked potentials averaged over channels (Plot – Evoked comparison...) ([#256](https://github.com/cbrnr/mnelab/pull/256) by [Florian Hofer](https://github.com/hofaflo))
+- Add support for plotting evoked potentials averaged over channels (Plot – Evoked comparison…) ([#256](https://github.com/cbrnr/mnelab/pull/256) by [Florian Hofer](https://github.com/hofaflo))
 - Exceptions are now shown in an error message box instead of being silently caught ([#268](https://github.com/cbrnr/mnelab/pull/268) by [Florian Hofer](https://github.com/hofaflo))
 - Add "Details" button to "Select XDF Stream" dialog ([#266](https://github.com/cbrnr/mnelab/pull/266) by [Florian Hofer](https://github.com/hofaflo))
-- Add support for plotting evoked potentials for individual channels including topomaps (Plot – Evoked...) ([#63](https://github.com/cbrnr/mnelab/pull/263) by [Florian Hofer](https://github.com/hofaflo))
-- Add support for plotting topomaps of evoked potentials (Plot – Evoked topomaps...) ([#277](https://github.com/cbrnr/mnelab/pull/277) by [Florian Hofer](https://github.com/hofaflo))
+- Add support for plotting evoked potentials for individual channels including topomaps (Plot – Evoked…) ([#63](https://github.com/cbrnr/mnelab/pull/263) by [Florian Hofer](https://github.com/hofaflo))
+- Add support for plotting topomaps of evoked potentials (Plot – Evoked topomaps…) ([#277](https://github.com/cbrnr/mnelab/pull/277) by [Florian Hofer](https://github.com/hofaflo))
 - Add montage name and location count to infowidget ([#271](https://github.com/cbrnr/mnelab/pull/271) by [Florian Hofer](https://github.com/hofaflo))
-- Add possibility to specify `match_case`, `match_alias`, and `on_missing` to "Set montage..." ([#271](https://github.com/cbrnr/mnelab/pull/271) by [Florian Hofer](https://github.com/hofaflo))
+- Add possibility to specify `match_case`, `match_alias`, and `on_missing` to "Set montage…" ([#271](https://github.com/cbrnr/mnelab/pull/271) by [Florian Hofer](https://github.com/hofaflo))
 - Add "Clear montage" to "Edit" menu ([#271](https://github.com/cbrnr/mnelab/pull/271) by [Florian Hofer](https://github.com/hofaflo))
 - Add ability to pick channels by channel type ([#285](https://github.com/cbrnr/mnelab/pull/285) by [Florian Hofer](https://github.com/hofaflo))
-- Add a settings menu (File – Settings...) ([#289](https://github.com/cbrnr/mnelab/pull/289) by [Florian Hofer](https://github.com/hofaflo))
+- Add a settings menu (File – Settings…) ([#289](https://github.com/cbrnr/mnelab/pull/289) by [Florian Hofer](https://github.com/hofaflo))
 - Add ability to import events from FIF files ([#284](https://github.com/cbrnr/mnelab/pull/284) by [Florian Hofer](https://github.com/hofaflo))
-- Add support for plotting ERDS topomaps (Plot – ERDS topomaps...) ([#278](https://github.com/cbrnr/mnelab/pull/278) by [Florian Hofer](https://github.com/hofaflo))
+- Add support for plotting ERDS topomaps (Plot – ERDS topomaps…) ([#278](https://github.com/cbrnr/mnelab/pull/278) by [Florian Hofer](https://github.com/hofaflo))
 - Add possibility to apply significance masks to ERDS plots ([#279](https://github.com/cbrnr/mnelab/pull/279) by [Florian Hofer](https://github.com/hofaflo))
-- Add basic batch renaming of channels "Edit – Rename channels...") ([#303](https://github.com/cbrnr/mnelab/pull/303) by [Florian Hofer](https://github.com/hofaflo))
+- Add basic batch renaming of channels "Edit – Rename channels…") ([#303](https://github.com/cbrnr/mnelab/pull/303) by [Florian Hofer](https://github.com/hofaflo))
 - Add support for loading data from .MAT files ([#314](https://github.com/cbrnr/mnelab/pull/314) by [Clemens Brunner](https://github.com/cbrnr))
 - Add support for reading multiple XDF streams (via resampling) ([#312](https://github.com/cbrnr/mnelab/pull/312) by [Florian Hofer](https://github.com/hofaflo))
 - Add app icon ([#319](https://github.com/cbrnr/mnelab/pull/319) by [Clemens Brunner](https://github.com/cbrnr))
-- Add dialog to modify mapping between event IDs and labels (Edit – Events...) ([#302](https://github.com/cbrnr/mnelab/pull/302) by [Florian Hofer](https://github.com/hofaflo) and [Clemens Brunner](https://github.com/cbrnr))
+- Add dialog to modify mapping between event IDs and labels (Edit – Events…) ([#302](https://github.com/cbrnr/mnelab/pull/302) by [Florian Hofer](https://github.com/hofaflo) and [Clemens Brunner](https://github.com/cbrnr))
 - Add complete history for Find Events dialog ([#333](https://github.com/cbrnr/mnelab/pull/333) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🌀 Changed
 - Simplify rereferencing workflow ([#258](https://github.com/cbrnr/mnelab/pull/258) by [Florian Hofer](https://github.com/hofaflo))
-- Move "Show information..." from toolbar to "File" menu and rename to "Show XDF metadata" ([#266](https://github.com/cbrnr/mnelab/pull/266) by [Florian Hofer](https://github.com/hofaflo) and [#318](https://github.com/cbrnr/mnelab/pull/318) by [Clemens Brunner](https://github.com/cbrnr))
+- Move "Show information…" from toolbar to "File" menu and rename to "Show XDF metadata" ([#266](https://github.com/cbrnr/mnelab/pull/266) by [Florian Hofer](https://github.com/hofaflo) and [#318](https://github.com/cbrnr/mnelab/pull/318) by [Clemens Brunner](https://github.com/cbrnr))
 - Replace `utils.has_location` with `utils.count_locations`, which returns the number of locations instead of a boolean ([#271](https://github.com/cbrnr/mnelab/pull/271) by [Florian Hofer](https://github.com/hofaflo))
 - Stop requiring existing annotations or events to enable editing them ([#283](https://github.com/cbrnr/mnelab/pull/283) by [Florian Hofer](https://github.com/hofaflo))
 - Replace "(channels dropped)" suffix with "(channels picked)" and use `pick_channels` instead of `drop_channels` ([#285](https://github.com/cbrnr/mnelab/pull/285) by [Florian Hofer](https://github.com/hofaflo))
@@ -337,7 +337,7 @@
 ### ✨ Added
 - Switch to [PySide6](https://www.qt.io/qt-for-python) ([#237](https://github.com/cbrnr/mnelab/pull/237) by [Clemens Brunner](https://github.com/cbrnr))
 - Add button in Append dialog that simplifies moving data between source and destination lists ([#242](https://github.com/cbrnr/mnelab/pull/242) by [Clemens Brunner](https://github.com/cbrnr))
-- Add dialog (File – Show XDF chunks...) which displays chunk information for (possibly corrupted) XDF files ([#245](https://github.com/cbrnr/mnelab/pull/245) by [Clemens Brunner](https://github.com/cbrnr))
+- Add dialog (File – Show XDF chunks…) which displays chunk information for (possibly corrupted) XDF files ([#245](https://github.com/cbrnr/mnelab/pull/245) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🔧 Fixed
 - Fix loading of XDF files that contained additional dots in their file names ([#244](https://github.com/cbrnr/mnelab/pull/244) and [#246](https://github.com/cbrnr/mnelab/pull/246) by [Clemens Brunner](https://github.com/cbrnr))
