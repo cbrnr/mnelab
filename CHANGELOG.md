@@ -5,6 +5,9 @@
 ### 🔧 Fixed
 - Properly import channel locations from EEGLAB files ([#655](https://github.com/cbrnr/mnelab/pull/655) by [Clemens Brunner](https://github.com/cbrnr))
 
+### 🌀 Changed
+- Always show the toolbar ([#659](https://github.com/cbrnr/mnelab/pull/659) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [1.5.1] · 2026-05-21
 ### 🔧 Fixed
 - Fix a bug where a dataset could not be closed in the sidebar ([#653](https://github.com/cbrnr/mnelab/pull/653) by [Clemens Brunner](https://github.com/cbrnr))
