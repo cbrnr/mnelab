@@ -6,7 +6,7 @@ copyright: © MNELAB Developers
 nav:
   - Home: index.md
   - Quick Start: quickstart/index.md
-  - Examples:
+  - Documentation:
     - Overview: documentation/index.md
     - Renaming Channels: documentation/rename_channels.md
     - ERDS Maps: documentation/erds_maps.md
