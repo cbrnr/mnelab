@@ -39,6 +39,7 @@ theme:
 plugins:
   - search
 markdown_extensions:
+  - attr_list
   - admonition
   - pymdownx.arithmatex:
       generic: true
