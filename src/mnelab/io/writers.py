@@ -52,12 +52,12 @@ def write_set(fname, raw):
 
 def write_bdf_edf(fname, raw):
     """Export raw to EDF file."""
-    raw.export(fname)
+    raw.export(fname, overwrite=True)
 
 
 def write_bv(fname, raw):
     """Export data to BrainVision EEG/VHDR/VMRK file (requires pybv)."""
-    raw.export(fname=Path(fname).with_suffix(".vhdr"))
+    raw.export(fname=Path(fname).with_suffix(".vhdr"), overwrite=True)
 
 
 # this dict contains each supported file extension as a key; the corresponding value is
