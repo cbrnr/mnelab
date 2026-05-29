@@ -714,6 +714,12 @@ class Model:
             self.history.append(f"data.notch_filter({notch})")
 
     @data_changed
+    def resample(self, sfreq):
+        self.current["data"].resample(sfreq)
+        self.current["name"] += f" ({sfreq}\u2009Hz)"
+        self.history.append(f"data.resample({sfreq})")
+
+    @data_changed
     def crop(self, start, stop):
         self.current["data"].crop(start, stop)
         self.current["name"] += " (cropped)"
