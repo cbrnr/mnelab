@@ -1925,6 +1925,9 @@ class MainWindow(QMainWindow):
                 self._hamburger_spacer_widget
             )
             self._hamburger_action = self.toolbar.addWidget(self._hamburger_button)
+            hamburger_enabled = not read_settings("show_menubar")
+            self._hamburger_spacer_action.setVisible(hamburger_enabled)
+            self._hamburger_action.setVisible(hamburger_enabled)
 
     @Slot()
     def _show_toolbar_context_menu(self, pos):

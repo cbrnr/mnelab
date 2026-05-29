@@ -1,6 +1,7 @@
 ## [UNRELEASED] · YYYY-MM-DD
 ### 🔧 Fixed
 - Show an overwrite confirmation dialog when an export target file already exists instead of raising an error ([#660](https://github.com/cbrnr/mnelab/pull/660) by [Clemens Brunner](https://github.com/cbrnr))
+- Fix a regression where the hamburger menu would not be shown after clicking "OK" in the Settings dialog ([#662](https://github.com/cbrnr/mnelab/pull/662) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.5.2] · 2026-05-28
 ### ✨ Added
