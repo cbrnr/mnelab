@@ -710,8 +710,7 @@ class MainWindow(QMainWindow):
                 enabled and events and self.model.current["dtype"] == "epochs"
             )
             self.all_actions["resample"].setEnabled(
-                enabled
-                and self.model.current["dtype"] in ("raw", "epochs")
+                enabled and self.model.current["dtype"] in ("raw", "epochs")
             )
             self.all_actions["crop"].setEnabled(
                 enabled and self.model.current["dtype"] == "raw"
