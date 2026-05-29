@@ -36,6 +36,7 @@ from mnelab.dialogs.plot_evoked import (
 from mnelab.dialogs.psd import PSDDialog
 from mnelab.dialogs.reference import ReferenceDialog
 from mnelab.dialogs.rename_channels import RenameChannelsDialog
+from mnelab.dialogs.resample import ResampleDialog
 from mnelab.dialogs.run_ica import RunICADialog
 from mnelab.dialogs.xdf_chunks import XDFChunksDialog
 from mnelab.dialogs.xdf_metadata import XDFMetadataDialog

@@ -363,6 +363,9 @@ class MainWindow(QMainWindow):
         self.all_actions["filter"] = process_menu.addAction(
             QIcon.fromTheme("filter-data"), "&Filter Data...", self.filter_data
         )
+        self.all_actions["resample"] = process_menu.addAction(
+            QIcon.fromTheme("resample"), "&Resample Data...", self.resample_data
+        )
         process_menu.addSeparator()
         self.all_actions["crop"] = process_menu.addAction(
             QIcon.fromTheme("crop"), "&Crop Data...", self.crop
@@ -705,6 +708,10 @@ class MainWindow(QMainWindow):
             )
             self.all_actions["artifact_detection"].setEnabled(
                 enabled and events and self.model.current["dtype"] == "epochs"
+            )
+            self.all_actions["resample"].setEnabled(
+                enabled
+                and self.model.current["dtype"] in ("raw", "epochs")
             )
             self.all_actions["crop"].setEnabled(
                 enabled and self.model.current["dtype"] == "raw"
@@ -1493,6 +1500,14 @@ class MainWindow(QMainWindow):
         if dialog.exec():
             self.auto_duplicate()
             self.model.filter(dialog.lower, dialog.upper, dialog.notch)
+
+    def resample_data(self):
+        """Resample data."""
+        current_sfreq = self.model.current["data"].info["sfreq"]
+        dialog = ResampleDialog(self, current_sfreq)
+        if dialog.exec():
+            self.auto_duplicate()
+            self.model.resample(dialog.new_sfreq)
 
     def find_events(self):
         info = self.model.current["data"].info
