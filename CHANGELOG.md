@@ -1,4 +1,4 @@
-## [UNRELEASED] · YYYY-MM-DD
+## [1.5.3] · 2026-05-29
 ### ✨ Added
 - Add a "Resample Data" action for resampling Raw and Epochs data ([#663](https://github.com/cbrnr/mnelab/pull/663) by [Clemens Brunner](https://github.com/cbrnr))
 
