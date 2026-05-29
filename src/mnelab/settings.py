@@ -262,7 +262,7 @@ class SettingsDialog(QDialog):
         self._available_list = QListWidget()
         self._available_list.setIconSize(QSize(16, 16))
         left_vbox.addWidget(self._available_list)
-        toolbar_hbox.addLayout(left_vbox)
+        toolbar_hbox.addLayout(left_vbox, 1)
 
         center_vbox = QVBoxLayout()
         center_vbox.addStretch()
@@ -272,13 +272,15 @@ class SettingsDialog(QDialog):
         self._down_btn = QPushButton("↓")
         for btn in [self._add_btn, self._remove_btn]:
             btn.setEnabled(False)
+            btn.setFixedWidth(36)
             center_vbox.addWidget(btn)
         center_vbox.addSpacing(8)
         for btn in [self._up_btn, self._down_btn]:
             btn.setEnabled(False)
+            btn.setFixedWidth(36)
             center_vbox.addWidget(btn)
         center_vbox.addStretch()
-        toolbar_hbox.addLayout(center_vbox)
+        toolbar_hbox.addLayout(center_vbox, 0)
 
         right_vbox = QVBoxLayout()
         _toolbar_header = QLabel("Toolbar")
@@ -288,7 +290,7 @@ class SettingsDialog(QDialog):
         self._toolbar_list.setIconSize(QSize(16, 16))
         self._toolbar_list.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
         right_vbox.addWidget(self._toolbar_list)
-        toolbar_hbox.addLayout(right_vbox)
+        toolbar_hbox.addLayout(right_vbox, 1)
 
         toolbar_vbox.addLayout(toolbar_hbox)
         reset_toolbar_btn = QPushButton("Reset Toolbar")
@@ -330,7 +332,7 @@ class SettingsDialog(QDialog):
         self.buttonbox.rejected.connect(self.reject)
 
         self.setMinimumSize(600, 380)
-        self.resize(650, 380)
+        self.resize(670, 380)
 
         self._update_theme()
         self.setFocus()
