@@ -388,7 +388,7 @@ class MainWindow(QMainWindow):
         self.all_actions["export_ica"] = process_menu.addAction(
             QIcon.fromTheme("export"),
             "Export ICA...",
-            lambda: self.export_file(model.export_ica, "Export ICA", "*.fif *.fif.gz"),
+            lambda: self.export_file(model.export_ica, "Export ICA", "*.fif.gz *.fif"),
         )
 
         epochs_menu = self.menuBar().addMenu("Ep&ochs")
@@ -872,7 +872,18 @@ class MainWindow(QMainWindow):
             for ext in exts:
                 if fname.endswith(ext):
                     return f(fname)
-            return f(fname + exts[0])
+            # extension was not included by the user, so append the default
+            final_fname = fname + exts[0]
+            if Path(final_fname).exists():
+                answer = QMessageBox.warning(
+                    self,
+                    "Overwrite File",
+                    f"{Path(final_fname).name} already exists.\n"
+                    "Do you want to replace it?",
+                )
+                if answer != QMessageBox.StandardButton.Yes:
+                    return
+            return f(final_fname)
 
     def import_file(self, f, text, ffilter="*"):
         """Import file."""
@@ -897,6 +908,8 @@ class MainWindow(QMainWindow):
         if not fname:
             return
         self._set_last_dir(fname)
+        if not fname.endswith(".csv"):
+            fname += ".csv"
         if len(all_types) > 1:
             dialog = AnnotationTypesDialog(
                 self,
@@ -909,8 +922,6 @@ class MainWindow(QMainWindow):
             types = dialog.selected_types
         else:
             types = all_types
-        if not fname.endswith(".csv"):
-            fname += ".csv"
         self.model.export_annotations(fname, types=types)
 
     def import_annotations(self):

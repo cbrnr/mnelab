@@ -401,9 +401,9 @@ class Model:
     def export_ica(self, fname):
         """Export ICA solution to file."""
         name, ext = splitext(split(fname)[-1])
-        ext = ext if ext else ".fif"  # automatically add extension
+        ext = ext if ext else ".fif.gz"  # automatically add extension
         fname = join(split(fname)[0], name + ext)
-        self.current["ica"].save(fname)
+        self.current["ica"].save(fname, overwrite=True)
 
     @data_changed
     def import_bads(self, fname):
