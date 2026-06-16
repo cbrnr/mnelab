@@ -181,7 +181,7 @@ class SidebarTreeWidget(QTreeWidget):
 
     def dropEvent(self, event):
         if event.mimeData().hasUrls():
-            self.parent.event(event)
+            self.window().event(event)
         else:
             event.ignore()
 
