@@ -5,6 +5,9 @@
 - Fix a bug where plotting fewer than 21 ICA components would display an error message ([#668](https://github.com/cbrnr/mnelab/issues/668) by [Clemens Brunner](https://github.com/cbrnr))
 - Gracefully handle closing a plot when the underlying dataset has already been closed ([#669](https://github.com/cbrnr/mnelab/issues/669) by [Clemens Brunner](https://github.com/cbrnr))
 
+### 🌀 Changed
+- The plus/minus buttons in the filter dialog now increase/decrease the cutoff frequencies by 0.5 Hz instead of 1 Hz ([#670](https://github.com/cbrnr/mnelab/pull/670) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [1.5.3] · 2026-05-29
 ### ✨ Added
 - Add a "Resample Data" action for resampling Raw and Epochs data ([#663](https://github.com/cbrnr/mnelab/pull/663) by [Clemens Brunner](https://github.com/cbrnr))
