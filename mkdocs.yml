@@ -7,7 +7,7 @@ nav:
   - Home: index.md
   - Quick Start: quickstart/index.md
   - Documentation:
-    - Overview: documentation/index.md
+    - documentation/index.md
     - Settings: documentation/settings.md
     - Renaming Channels: documentation/rename_channels.md
     - ERDS Maps: documentation/erds_maps.md
@@ -35,6 +35,7 @@ theme:
         icon: material/brightness-4
         name: Switch to dark theme
   features:
+    - navigation.indexes
     - toc.integrate
     - content.code.copy
 plugins:
