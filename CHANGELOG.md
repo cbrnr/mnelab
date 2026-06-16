@@ -1,3 +1,5 @@
+## [UNRELEASED] · YYYY-MM-DD
+
 ## [1.5.4] · 2026-06-16
 ### 🔧 Fixed
 - Fix bug where files could not be opened via drag and drop onto the sidebar ([#666](https://github.com/cbrnr/mnelab/pull/666) by [Clemens Brunner](https://github.com/cbrnr))
