@@ -38,7 +38,7 @@ The *Plotting* section contains options related to the appearance of plots in MN
 
 The *Plot Backend* option allows you to choose between two different plotting backends for the data browser: *Matplotlib* and *Qt*. Whereas the *Matplotlib* backend provides a more traditional user experience, the *Qt* backend offers a more modern and possibly also more responsive interface.
 
-The other options in this section allow you to customize the default appearance of the data browser, namely the number of display channels, the displayed signal duration on a single page, and if you are visualizing epochs, the number of epochs shown at once. Of course, these settings can be adjusted on a per-plot basis in the data browser itself, but they will be used as defaults when opening new plots.
+The other options in this section allow you to customize the default appearance of the data browser, namely the number of displayed channels, the displayed signal duration on a single page, and if you are visualizing epochs, the number of epochs shown at once. Of course, these settings can be adjusted on a per-plot basis in the data browser itself, but they will be used as defaults when opening new plots.
 
 
 ### Toolbar
