@@ -170,6 +170,7 @@ inkscape --export-filename=icon_48x48.png --export-width=48 --export-height=48 m
 inkscape --export-filename=icon_64x64.png --export-width=64 --export-height=64 mnelab-logo.svg
 inkscape --export-filename=icon_128x128.png --export-width=128 --export-height=128 mnelab-logo.svg
 inkscape --export-filename=icon_256x256.png --export-width=256 --export-height=256 mnelab-logo.svg
-magick icon_16x16.png icon_32x32.png icon_48x48.png icon_64x64.png icon_128x128.png icon_256x256.png mnelab-logo.ico
+magick icon_16x16.png icon_32x32.png icon_48x48.png \
+    icon_64x64.png icon_128x128.png icon_256x256.png mnelab-logo.ico
 rm icon_16x16.png icon_32x32.png icon_48x48.png icon_64x64.png icon_128x128.png icon_256x256.png
 ```
