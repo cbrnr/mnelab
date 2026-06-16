@@ -110,7 +110,7 @@ Commit the resulting `uv.lock` changes. This can be done at any time, independen
 
 ## Creating standalone packages
 
-To create standalone packages for Windows, macOS, and Linux, we use [PyInstaller](https://www.pyinstaller.org/). GitHub Actions take care of automatically building the standalone packages, but you can also build them manually. It is important that all optional dependencies are available in the current environment by installing the project with `uv sync --all-extras`. Additionally, the environment must be *activated* (which is typically not necessary when working with uv, but is required in this case). You can activate the environment by running `./.venv/bin/activate` on macOS or Linux, or `.\.venv\Scripts\activate` on Windows (from the root of the source tree). Once the environment is active, run the corresponding script for your platform as described below.
+To create standalone packages for Windows, macOS, and Linux, we use [PyInstaller](https://www.pyinstaller.org/). GitHub Actions take care of automatically building the standalone packages, but you can also build them manually. It is important that all optional dependencies are available in the current environment by installing the project with `uv sync --locked --all-extras`. Additionally, the environment must be *activated* (which is typically not necessary when working with uv, but is required in this case). You can activate the environment by running `./.venv/bin/activate` on macOS or Linux, or `.\.venv\Scripts\activate` on Windows (from the root of the source tree). Once the environment is active, run the corresponding script for your platform as described below.
 
 
 ### macOS
