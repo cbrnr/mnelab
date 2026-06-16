@@ -1980,6 +1980,8 @@ class MainWindow(QMainWindow):
         write_settings(statusbar=not self.statusBar().isHidden())
 
     def _plot_closed(self, event=None):
+        if self.model.current is None:
+            return
         self.data_changed()
         bads = self.model.current["data"].info["bads"]
         if self.bads != bads:
