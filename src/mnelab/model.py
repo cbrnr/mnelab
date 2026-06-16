@@ -676,6 +676,13 @@ class Model:
             match_alias=match_alias,
             on_missing=on_missing,
         )
+        if self.current["ica"] is not None:
+            self.current["ica"].info.set_montage(
+                montage=montage.montage if montage is not None else None,
+                match_case=match_case,
+                match_alias=match_alias,
+                on_missing="ignore",
+            )
         if montage is None:
             self.history.append("data.set_montage(None)")
         elif not montage.embedded:
