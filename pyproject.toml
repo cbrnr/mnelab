@@ -37,9 +37,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-docs = [
-    "mkdocs-material >= 9.7.6",
-]
 full = [
     "autoreject >= 0.4.3",  # automatic artifact rejection
     "mne-qt-browser >= 0.7.4",  # alternative browser backend
@@ -56,6 +53,9 @@ dev = [
     "pytest-qt >= 4.5.0",
     "pytest-xvfb >= 3.1.1; platform_system=='Linux'",
     "ruff >= 0.15.11",
+]
+docs = [
+    "mkdocs-material >= 9.7.6",
 ]
 
 [project.gui-scripts]
