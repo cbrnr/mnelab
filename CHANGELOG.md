@@ -3,6 +3,7 @@
 - Fix bug where files could not be opened via drag and drop onto the sidebar ([#666](https://github.com/cbrnr/mnelab/pull/666) by [Clemens Brunner](https://github.com/cbrnr))
 - Fix crash when plotting ICA components that were computed before a montage was set ([#667](https://github.com/cbrnr/mnelab/issues/667) by [Clemens Brunner](https://github.com/cbrnr))
 - Fix a bug where plotting fewer than 21 ICA components would display an error message ([#668](https://github.com/cbrnr/mnelab/issues/668) by [Clemens Brunner](https://github.com/cbrnr))
+- Gracefully handle closing a plot when the underlying dataset has already been closed ([#669](https://github.com/cbrnr/mnelab/issues/669) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.5.3] · 2026-05-29
 ### ✨ Added
