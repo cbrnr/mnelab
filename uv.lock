@@ -940,9 +940,6 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
-docs = [
-    { name = "mkdocs-material" },
-]
 full = [
     { name = "autoreject" },
     { name = "mne-qt-browser" },
@@ -960,6 +957,9 @@ dev = [
     { name = "pytest-xvfb", marker = "sys_platform == 'linux'" },
     { name = "ruff" },
 ]
+docs = [
+    { name = "mkdocs-material" },
+]
 
 [package.metadata]
 requires-dist = [
@@ -968,7 +968,6 @@ requires-dist = [
     { name = "edfio", specifier = ">=0.4.13" },
     { name = "isort", specifier = ">=8.0.1" },
     { name = "matplotlib", specifier = ">=3.10.8" },
-    { name = "mkdocs-material", marker = "extra == 'docs'", specifier = ">=9.7.6" },
     { name = "mne", specifier = ">=1.12.1" },
     { name = "mne-qt-browser", marker = "extra == 'full'", specifier = ">=0.7.4" },
     { name = "numpy", specifier = ">=2.4.4" },
@@ -981,7 +980,7 @@ requires-dist = [
     { name = "scikit-learn", marker = "extra == 'full'", specifier = ">=1.8.0" },
     { name = "scipy", specifier = ">=1.17.1" },
 ]
-provides-extras = ["docs", "full"]
+provides-extras = ["full"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -993,6 +992,7 @@ dev = [
     { name = "pytest-xvfb", marker = "sys_platform == 'linux'", specifier = ">=3.1.1" },
     { name = "ruff", specifier = ">=0.15.11" },
 ]
+docs = [{ name = "mkdocs-material", specifier = ">=9.7.6" }]
 
 [[package]]
 name = "mypy-extensions"

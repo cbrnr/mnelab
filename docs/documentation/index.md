@@ -1,4 +1,4 @@
-# Examples
+# Documentation
 
 This section provides practical examples to help you get started with MNELAB and understand its capabilities for various EEG/MEG analysis tasks.
 

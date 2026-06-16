@@ -12,8 +12,8 @@ mkdocs:
   configuration: mkdocs.yml
 
 python:
-  install:
-    - method: pip
-      path: .
-      extra_requirements:
-        - docs
+   install:
+      - method: uv
+        command: sync
+        groups:
+           - docs

@@ -1,4 +1,4 @@
-# Quick Start Guide
+# Quick Start
 
 ## Installing MNELAB
 
