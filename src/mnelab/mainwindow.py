@@ -1261,6 +1261,8 @@ class MainWindow(QMainWindow):
         figs = self.model.current["ica"].plot_components(
             inst=self.model.current["data"]
         )
+        if not isinstance(figs, list):
+            figs = [figs]
         # refresh UI after closing the plots to reflect changes in ICA exclusions
         for fig in figs:
             fig.canvas.mpl_connect("close_event", lambda _: self.data_changed())
