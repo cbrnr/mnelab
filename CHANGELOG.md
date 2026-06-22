@@ -1,7 +1,7 @@
 ## [UNRELEASED] · YYYY-MM-DD
 
 ### 🔧 Fixed
-- Add support for XDF string streams with more than one channel and/or regular sampling rates ([#???](https://github.com/cbrnr/mnelab/issues/???) by [Clemens Brunner](https://github.com/cbrnr))
+- Add support for XDF string streams with more than one channel and/or regular sampling rates ([#671](https://github.com/cbrnr/mnelab/issues/671) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.5.4] · 2026-06-16
 ### 🔧 Fixed
