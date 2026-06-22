@@ -192,8 +192,9 @@ class XDFStreamsDialog(QDialog):
         streams = []
         for row in self.view.selectionModel().selectedRows():
             type_ = self.view.item(row.row(), 2).text()
+            fmt = self.view.item(row.row(), 4).text()
             fs = self.view.item(row.row(), 5).value()
-            if type_ != "Markers" and fs != 0:
+            if type_ != "Markers" and fs != 0 and fmt != "string":
                 streams.append(self.view.item(row.row(), 0).value())
         return streams
 

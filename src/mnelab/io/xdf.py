@@ -83,7 +83,7 @@ class RawXDF(BaseRaw):
         streams, header = load_xdf(fname)
         streams = {stream["info"]["stream_id"]: stream for stream in streams}
 
-        if all(_is_markerstream(streams[stream_id]) for stream_id in stream_ids):
+        if all(_is_stringstream(streams[stream_id]) for stream_id in stream_ids):
             raise RuntimeError(
                 "Loading only marker streams is not supported, at least one stream must"
                 " be a regular stream."
@@ -152,18 +152,26 @@ class RawXDF(BaseRaw):
         data = (data * scale).T
         super().__init__(preload=data, info=info, filenames=[fname], *args, **kwargs)
 
-        # convert marker streams to annotations
+        # convert string streams to annotations
         for stream_id, stream in streams.items():
-            if marker_ids is not None and stream_id not in marker_ids:
+            if not _is_stringstream(stream):
                 continue
-            if not _is_markerstream(stream):
+            srate = float(stream["info"]["nominal_srate"][0])
+            # classic marker streams (srate=0) respect the user's marker selection;
+            # regular-rate string streams are always converted automatically
+            if srate == 0 and marker_ids is not None and stream_id not in marker_ids:
                 continue
-            onsets = stream["time_stamps"] - first_time
             prefix = f"{stream_id}-" if prefix_markers else ""
-            descriptions = [
-                f"{prefix}{item}" for sub in stream["time_series"] for item in sub
-            ]
-            self.annotations.append(onsets, [0] * len(onsets), descriptions)
+            onsets_list, descriptions_list = [], []
+            for ts, sub in zip(stream["time_stamps"], stream["time_series"]):
+                for item in sub:
+                    if item:  # skip empty strings
+                        onsets_list.append(ts - first_time)
+                        descriptions_list.append(f"{prefix}{item}")
+            if onsets_list:
+                self.annotations.append(
+                    onsets_list, [0] * len(onsets_list), descriptions_list
+                )
 
         recording_datetime = header["info"].get("datetime", [None])[0]
         if recording_datetime is not None:
@@ -354,10 +362,8 @@ def read_raw_xdf(
     )
 
 
-def _is_markerstream(stream):
-    srate = float(stream["info"]["nominal_srate"][0])
-    n_chans = int(stream["info"]["channel_count"][0])
-    return srate == 0 and n_chans == 1
+def _is_stringstream(stream):
+    return stream["info"]["channel_format"][0] == "string"
 
 
 def get_xml(fname):
