@@ -619,7 +619,7 @@ class Model:
             annots = "–"
         return {
             "File Name": fname if fname else "–",
-            "File Type": ftype if ftype else "–",
+            "File Type": ftype.removesuffix(".GZ") if ftype else "–",
             "Data Type": dtype,
             "Size on Disk": size_disk,
             "Size in Memory": f"{data.get_data().nbytes / 1024**2:.2f}\u2009MB",
