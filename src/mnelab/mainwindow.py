@@ -771,6 +771,7 @@ class MainWindow(QMainWindow):
                         s["nominal_srate"],
                     ]
                     for s in resolve_streams(fname)
+                    if s["channel_format"] != "string"
                 ]
                 dialog = XDFStreamsDialog(
                     self,
