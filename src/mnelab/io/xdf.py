@@ -144,6 +144,8 @@ class RawXDF(BaseRaw):
             fs = float(
                 np.array(streams[stream_ids[0]]["info"]["effective_srate"]).item()
             )
+            if fs == 0:  # fall back to nominal rate (e.g. when only one sample exists)
+                fs = float(streams[stream_ids[0]]["info"]["nominal_srate"][0])
 
         info = mne.create_info(ch_names=labels_all, sfreq=fs, ch_types=types_all)
 
