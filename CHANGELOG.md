@@ -3,6 +3,9 @@
 ### 🔧 Fixed
 - Add support for XDF string streams with more than one channel and/or regular sampling rates ([#671](https://github.com/cbrnr/mnelab/issues/671) by [Clemens Brunner](https://github.com/cbrnr))
 
+### 🌀 Changed
+- Do not show .GZ for XDF.GZ and FIF.GZ file types in the info widget (just show XDF and FIF) ([#672](https://github.com/cbrnr/mnelab/issues/672) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [1.5.4] · 2026-06-16
 ### 🔧 Fixed
 - Fix bug where files could not be opened via drag and drop onto the sidebar ([#666](https://github.com/cbrnr/mnelab/pull/666) by [Clemens Brunner](https://github.com/cbrnr))
