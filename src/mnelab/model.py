@@ -12,10 +12,17 @@ from pathlib import Path
 
 import mne
 import numpy as np
+from mnextend import (
+    read_epochs,
+    read_raw,
+    run_iclabel,
+    split_name_ext,
+    write_epochs,
+    write_raw,
+)
+from mnextend.io.readers import raw_readers
 
-from mnelab.io import UnsupportedFileTypeError, read_epochs, read_raw, write_raw
-from mnelab.io.readers import split_name_ext
-from mnelab.utils import Montage, count_locations, run_iclabel
+from mnelab.utils import Montage, count_locations
 
 
 class LabelsNotFoundError(Exception):
@@ -66,8 +73,8 @@ class Model:
         self.history = [
             "from copy import deepcopy",
             "import mne",
-            "from mnelab.io import read_raw",
-            "from mnelab.utils import annotations_between_events, run_iclabel",
+            "from mnextend import read_raw, run_iclabel",
+            "from mnelab.utils import annotations_between_events",
             "import numpy as np",
             "from mnelab.utils import ("
             "detect_extreme_values,"
@@ -203,9 +210,9 @@ class Model:
         fname = str(Path(fname).resolve().as_posix())
         fsize = getsize(fname) / 1024**2  # convert to MB
         if name is None:
-            name, ext = split_name_ext(fname)
+            name, ext = split_name_ext(fname, raw_readers)
         else:
-            _, ext = split_name_ext(fname)
+            _, ext = split_name_ext(fname, raw_readers)
         if isinstance(data, mne.BaseEpochs):
             dtype = "epochs"
             events = data.events
@@ -246,7 +253,7 @@ class Model:
         except ValueError as e:
             try:
                 data = read_epochs(fname, *args, **kwargs, preload=True)
-            except UnsupportedFileTypeError:
+            except ValueError:
                 raise e
             self.history.append(
                 f'data = read_epochs("{fname}", preload=True)'.replace("'", '"')
@@ -264,7 +271,7 @@ class Model:
                     "'", '"'
                 )
             )
-        name, _ = split_name_ext(fname)
+        name, _ = split_name_ext(fname, raw_readers)
         self.load_data(data, fname, name=name)
 
     @data_changed
@@ -349,8 +356,11 @@ class Model:
             self.history.append(hist)
 
     def export_data(self, fname):
-        """Export raw to file."""
-        write_raw(fname, self.current["data"])
+        """Export data to file."""
+        if isinstance(self.current["data"], mne.BaseEpochs):
+            write_epochs(fname, self.current["data"])
+        else:
+            write_raw(fname, self.current["data"])
 
     def export_bads(self, fname):
         """Export bad channels info to a CSV file."""

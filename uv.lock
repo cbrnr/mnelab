@@ -926,13 +926,11 @@ version = "1.6.0.dev0"
 source = { editable = "." }
 dependencies = [
     { name = "black" },
-    { name = "edfio" },
     { name = "isort" },
     { name = "matplotlib" },
     { name = "mne" },
+    { name = "mnextend" },
     { name = "numpy" },
-    { name = "onnx" },
-    { name = "pybv" },
     { name = "pybvrf" },
     { name = "pyside6" },
     { name = "pyxdf" },
@@ -965,14 +963,12 @@ docs = [
 requires-dist = [
     { name = "autoreject", marker = "extra == 'full'", specifier = ">=0.4.3" },
     { name = "black", specifier = ">=25.3.1" },
-    { name = "edfio", specifier = ">=0.4.13" },
     { name = "isort", specifier = ">=8.0.1" },
     { name = "matplotlib", specifier = ">=3.10.8" },
     { name = "mne", specifier = ">=1.12.1" },
     { name = "mne-qt-browser", marker = "extra == 'full'", specifier = ">=0.7.4" },
+    { name = "mnextend", specifier = ">=0.2.0" },
     { name = "numpy", specifier = ">=2.4.4" },
-    { name = "onnx", specifier = ">=1.21.0" },
-    { name = "pybv", specifier = ">=0.7.6" },
     { name = "pybvrf", specifier = ">=0.1.4" },
     { name = "pyside6", specifier = ">=6.11.0" },
     { name = "python-picard", marker = "extra == 'full'", specifier = ">=0.8.1" },
@@ -993,6 +989,26 @@ dev = [
     { name = "ruff", specifier = ">=0.15.11" },
 ]
 docs = [{ name = "mkdocs-material", specifier = ">=9.7.6" }]
+
+[[package]]
+name = "mnextend"
+version = "0.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "edfio" },
+    { name = "matplotlib" },
+    { name = "mne" },
+    { name = "numpy" },
+    { name = "onnx" },
+    { name = "pybv" },
+    { name = "pybvrf" },
+    { name = "pyxdf" },
+    { name = "scipy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/df/4e/618f9df51a8834c93bb432034d527fcb31d1b84a5f882c145f28910e87ed/mnextend-0.2.0.tar.gz", hash = "sha256:e6f73b22a7fa253217b39072c5207368a0487ae1cc2b4f0bd75a4c6bfb044916", size = 10793179, upload-time = "2026-06-25T13:26:05.187Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/dc/7a/cb2d9240ac026b3c14322e257cdf451cb1e906a710948358b7b94db0334f/mnextend-0.2.0-py3-none-any.whl", hash = "sha256:9b88215de2e0b531bb31f865f9458b4ccb9171fbcd150b363f97ea99804eaaef", size = 10797113, upload-time = "2026-06-25T13:26:02.879Z" },
+]
 
 [[package]]
 name = "mypy-extensions"
@@ -1248,14 +1264,14 @@ wheels = [
 
 [[package]]
 name = "pybv"
-version = "0.7.6"
+version = "0.8.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e7/35/6b61dcca1386b14d368b5f927e1babcf8f6c6171a04e4e21a344d159d857/pybv-0.7.6.tar.gz", hash = "sha256:518dac9bf151601c45787bf0ddcc5e37afd61033058eb734067825f8ae46d51b", size = 16002, upload-time = "2024-11-25T20:52:38.973Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/72/8b/1d6df7b4ee1d89735c2ce86922cfb1b642df9594e2fb58f8b3438768f6ab/pybv-0.8.1.tar.gz", hash = "sha256:31cd29612d8d35eda752b992e79da1db9d81bdf9e703743cd863ab2eeb446f22", size = 16287, upload-time = "2026-06-16T09:43:12.783Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7d/7e/0041e56e455d26d5fb644dde3976cffa135e658ac5572c2ca7ab40245af2/pybv-0.7.6-py3-none-any.whl", hash = "sha256:5b2816b3547035c8b806fcca7705c67f8be5c6ca5fee26486754bd492f180139", size = 16211, upload-time = "2024-11-25T20:52:37.684Z" },
+    { url = "https://files.pythonhosted.org/packages/f3/9b/ebd66809b5aa5ca0d5a9a25192c8fb68850bb4495b0514043a6641e790f6/pybv-0.8.1-py3-none-any.whl", hash = "sha256:950b864c0a53b4fc772624c04ba87632d4dd442c7504670674afedcf2c8d40e1", size = 16434, upload-time = "2026-06-16T09:43:11.428Z" },
 ]
 
 [[package]]
@@ -1536,14 +1552,14 @@ wheels = [
 
 [[package]]
 name = "pyxdf"
-version = "1.17.4"
+version = "1.17.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "numpy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/1c/26/91fcfff3085de235a12cbfab5b1b4c846265c6abe97a812e3c5d8ef5d79f/pyxdf-1.17.4.tar.gz", hash = "sha256:374e3e306a5277d0ee9e2482adcb2211e6e059758ff3afcf56f3919245dae2ac", size = 35479, upload-time = "2026-03-25T16:23:05.187Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f6/e9/0e34f94f443fa88d70ddce91d4f3fbce319165dee09309e6ba6029cb1eda/pyxdf-1.17.5.tar.gz", hash = "sha256:97ab76e066855ed2233ebd8a2b046ea01306c5846a9471194c6dbc7e3a6a7bf4", size = 35635, upload-time = "2026-06-15T15:25:56.416Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/14/2c/a4d013d70e71728b240a3e5b4e7f5c695df9096f3a154c1693f33bdb7cff/pyxdf-1.17.4-py3-none-any.whl", hash = "sha256:812118f590a87afe574171e901ddffd1304a5c1a27e2892cba420bef2f5803c1", size = 21602, upload-time = "2026-03-25T16:23:03.659Z" },
+    { url = "https://files.pythonhosted.org/packages/92/26/40408ec2d50b5a3794c1fbace10ca36882eb0d97bc2633d76e4edfb29efe/pyxdf-1.17.5-py3-none-any.whl", hash = "sha256:3162772dba88ed4516956f91ec05ea87b8c93387a403dacb7497ffcd0ee345af", size = 21577, upload-time = "2026-06-15T15:25:57.323Z" },
 ]
 
 [[package]]

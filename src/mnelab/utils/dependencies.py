@@ -6,17 +6,15 @@ from importlib import import_module, metadata
 
 required = [
     "mne",
+    "mnextend",
     "pyside6",
     "matplotlib",
     "numpy",
     "scipy",
-    "edfio",
     "pyxdf",
-    "pybv",
     "pybvrf",
     "black",
     "isort",
-    "onnx",
 ]
 optional = ["autoreject", "mne-qt-browser", "picard", "sklearn"]
 

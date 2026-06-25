@@ -8,8 +8,8 @@ from mnelab.utils import format_code
 from mnelab.utils.syntax import _remove_unused_imports
 
 expected_formatted_code = """import mne
+from mnextend import read_raw
 
-from mnelab.io import read_raw
 from mnelab.utils import annotations_between_events
 
 datasets = []
@@ -38,7 +38,7 @@ unformatted_code = """from deepcopy import copy
 import mne
 
 from mnelab.utils import annotations_between_events
-from mnelab.io import read_raw
+from mnextend import read_raw
 
 
 datasets = []
@@ -74,7 +74,7 @@ def test_remove_unused_imports_keeps_called_functions():
     code = dedent(
         """
         import mne
-        from mnelab.utils.iclabel import run_iclabel
+        from mnextend import run_iclabel
 
         data = mne.io.read_raw_fif("test.fif")
         probs = run_iclabel(data, None)
@@ -91,7 +91,7 @@ def test_remove_unused_imports_removes_unused():
         """
         import mne
         import numpy as np
-        from mnelab.utils.iclabel import run_iclabel
+        from mnextend import run_iclabel
 
         data = mne.io.read_raw_fif("test.fif")
         probs = run_iclabel(data, None)
@@ -108,7 +108,7 @@ def test_remove_unused_imports_mixed_line():
     code = dedent(
         """
         import mne
-        from mnelab.utils import annotations_between_events, run_iclabel
+        from mnextend import run_iclabel, write_raw
 
         data = mne.io.read_raw_fif("test.fif")
         probs = run_iclabel(data, None)
@@ -116,7 +116,7 @@ def test_remove_unused_imports_mixed_line():
     )
     result = _remove_unused_imports(code)
 
-    assert "annotations_between_events" not in result
+    assert "write_raw" not in result
     assert "run_iclabel" in result
-    assert "from mnelab.utils import run_iclabel" in result
+    assert "from mnextend import run_iclabel" in result
     assert "import mne" in result

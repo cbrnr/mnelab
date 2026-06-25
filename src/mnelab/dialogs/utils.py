@@ -2,8 +2,6 @@
 #
 # License: BSD (3-clause)
 
-import matplotlib.gridspec as gridspec
-import numpy as np
 from PySide6.QtCore import QEvent, QRect, QSortFilterProxyModel, Qt
 from PySide6.QtWidgets import (
     QStyle,
@@ -43,80 +41,6 @@ def set_header_alignments(model, alignments):
         item = model.horizontalHeaderItem(col)
         if item is not None:
             item.setTextAlignment(_map[char] | Qt.AlignmentFlag.AlignVCenter)
-
-
-def get_detailed_ica_properties(ica, data, comp_id, ic_probs, labels):
-    """Initialize the ICA properties plot."""
-    # TODO: workaround until https://github.com/mne-tools/mne-python/pull/13746 is
-    # merged (if all fixed-length epochs are covered by bad annotations, stitch the good
-    # segments together and retry so the plot can still be generated)
-    from mne.io import BaseRaw, RawArray
-
-    inst = data
-    if isinstance(data, BaseRaw):
-        try:
-            figs = ica.plot_properties(data, picks=comp_id, show=False)
-        except RuntimeError:
-            good_data = data.get_data(reject_by_annotation="omit")
-            if good_data.shape[1] >= int(2 * data.info["sfreq"]):
-                inst = RawArray(good_data, data.info.copy(), verbose=False)
-            figs = ica.plot_properties(
-                inst, picks=comp_id, show=False, reject_by_annotation=False
-            )
-    else:
-        figs = ica.plot_properties(data, picks=comp_id, show=False)
-    fig = figs[0]
-
-    # adjust overall figure dimensions
-    w, h = fig.get_size_inches()
-    fig.set_size_inches(w, h + 0.5)
-
-    # define main grid structure
-    gs = gridspec.GridSpec(3, 2, figure=fig, height_ratios=[1, 0.3, 1])
-
-    # create nested grids for column-specific spacing
-    gs_left_group = gridspec.GridSpecFromSubplotSpec(
-        2, 1, subplot_spec=gs[:2, 0], hspace=0.2, height_ratios=[3.75, 1]
-    )
-    gs_right_group = gridspec.GridSpecFromSubplotSpec(
-        2, 1, subplot_spec=gs[:2, 1], hspace=0, height_ratios=[3.5, 1]
-    )
-
-    # map existing mne axes to new grid locations
-    fig.axes[0].set_subplotspec(gs_left_group[0])
-    fig.axes[1].set_subplotspec(gs_right_group[0])
-    fig.axes[2].set_subplotspec(gs_right_group[1])
-    fig.axes[3].set_subplotspec(gs[2, 0])
-    fig.axes[4].set_subplotspec(gs[2, 1])
-
-    # custom probability bar plot
-    labels = [label.replace(" ", "\n") for label in labels]
-    ax_hist = fig.add_subplot(gs_left_group[1])
-
-    colors = ["#4c72b0"] * len(labels)
-    colors[np.argmax(ic_probs)] = "#228B22"
-
-    x_pos = range(len(labels))
-    ax_hist.bar(x_pos, ic_probs, color=colors)
-    ax_hist.set_xticks(x_pos)
-    ax_hist.set_xticklabels(labels, ha="center", fontsize=7)
-    ax_hist.tick_params(axis="x", which="both", length=0)
-    ax_hist.set_ylim(0, 1.1)
-    ax_hist.set_yticks([])
-    ax_hist.set_facecolor("none")
-
-    # keep only the bottom spine
-    for name, spine in ax_hist.spines.items():
-        if name != "bottom":
-            spine.set_visible(False)
-
-    # annotate bars with probability values
-    for i, v in enumerate(ic_probs):
-        ax_hist.text(i, v + 0.03, f"{v:.2f}", ha="center", fontsize=8)
-
-    fig.align_ylabels([ax_hist, fig.axes[3]])
-    fig.tight_layout()
-    return fig
 
 
 class IntTableWidgetItem(QTableWidgetItem):
