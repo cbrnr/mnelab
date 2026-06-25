@@ -5,6 +5,7 @@
 
 ### 🌀 Changed
 - Do not show .GZ for XDF.GZ and FIF.GZ file types in the info widget (just show XDF and FIF) ([#672](https://github.com/cbrnr/mnelab/issues/672) by [Clemens Brunner](https://github.com/cbrnr))
+- Move readers, writers, and ICLabel into the new [MNExtend](https://github.com/cbrnr/mnextend) package and use it as a dependency ([#674](https://github.com/cbrnr/mnelab/pull/674) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.5.4] · 2026-06-16
 ### 🔧 Fixed

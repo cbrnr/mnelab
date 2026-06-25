@@ -4,6 +4,7 @@
 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvas
+from mnextend import plot_ica_components
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QColor, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import (
@@ -23,7 +24,6 @@ from PySide6.QtWidgets import (
 from mnelab.dialogs.utils import (
     CheckBoxDelegate,
     NumberSortProxyModel,
-    get_detailed_ica_properties,
     set_header_alignments,
 )
 from mnelab.widgets import FlatDoubleSpinBox
@@ -293,13 +293,9 @@ class ICLabelDialog(QDialog):
         source_index = self.proxy_model.mapToSource(proxy_index)
         comp_id = self.model.item(source_index.row(), 0).data(Qt.ItemDataRole.UserRole)
 
-        fig = get_detailed_ica_properties(
-            ica=self.ica,
-            data=self.data,
-            comp_id=comp_id,
-            ic_probs=self.probs[comp_id],
-            labels=self.labels,
-        )
+        fig = plot_ica_components(
+            self.data, self.ica, self.probs, picks=comp_id, show=False
+        )[0]
         detail_plot = PlotDetailDialog(self, fig)
         detail_plot.show()
 

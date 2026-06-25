@@ -17,6 +17,12 @@ from urllib.request import Request, urlopen
 import mne
 import numpy as np
 from mne import channel_type
+from mnextend import read_raw, split_name_ext
+from mnextend.io.mat import parse_mat
+from mnextend.io.npy import parse_npy
+from mnextend.io.readers import raw_readers
+from mnextend.io.writers import epochs_writers, raw_writers
+from mnextend.io.xdf import get_xml, list_chunks
 from pybvrf import read_bvrf_header
 from PySide6.QtCore import (
     QEvent,
@@ -47,12 +53,6 @@ from pyxdf import resolve_streams
 from mnelab import IS_DEV_VERSION, __version__
 from mnelab.dialogs import *  # noqa: F403
 from mnelab.dialogs.channel_stats import ChannelStats
-from mnextend import read_raw, split_name_ext
-from mnextend.io.mat import parse_mat
-from mnextend.io.npy import parse_npy
-from mnextend.io.readers import raw_readers
-from mnextend.io.writers import epochs_writers, raw_writers
-from mnextend.io.xdf import get_xml, list_chunks
 from mnelab.model import InvalidAnnotationsError, LabelsNotFoundError, Model
 from mnelab.settings import SettingsDialog, read_settings, write_settings
 from mnelab.utils import (

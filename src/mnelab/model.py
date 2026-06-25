@@ -12,9 +12,16 @@ from pathlib import Path
 
 import mne
 import numpy as np
-
-from mnextend import read_epochs, read_raw, run_iclabel, split_name_ext, write_epochs, write_raw
+from mnextend import (
+    read_epochs,
+    read_raw,
+    run_iclabel,
+    split_name_ext,
+    write_epochs,
+    write_raw,
+)
 from mnextend.io.readers import raw_readers
+
 from mnelab.utils import Montage, count_locations
 
 
