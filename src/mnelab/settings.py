@@ -63,6 +63,7 @@ _DEFAULTS = {
     "show_menubar": True,
     "annotation_colors": {},
     "memory_saving": False,
+    "scalings": "auto",
     "toolbar_actions": [
         "open_file",
         "---",
@@ -240,6 +241,11 @@ class SettingsDialog(QDialog):
         self.epochs.setFixedWidth(100)
         plotting_form.addRow("Displayed Epochs:", self.epochs)
 
+        self.scalings = QComboBox()
+        self.scalings.addItems(["Auto", "Fixed"])
+        self.scalings.setCurrentText(read_settings("scalings").title())
+        plotting_form.addRow("Channel Scaling:", self.scalings)
+
         self._stack.addWidget(plotting_page)
 
         # Toolbar page
@@ -385,6 +391,7 @@ class SettingsDialog(QDialog):
             dtype_badges=self.dtype_badges.isChecked(),
             menu_icons=self.menu_icons.isChecked(),
             memory_saving=self.memory_saving.isChecked(),
+            scalings=self.scalings.currentText().lower(),
             toolbar_actions=toolbar_keys,
         )
         self.parent().recent = self.parent().recent[: read_settings("max_recent")]
@@ -403,6 +410,7 @@ class SettingsDialog(QDialog):
         self.plot_backend.setCurrentIndex(
             self.plot_backend.findText(_DEFAULTS["plot_backend"])
         )
+        self.scalings.setCurrentText(_DEFAULTS["scalings"].title())
         self.parent().resize(_DEFAULTS["size"])
         self.parent().move(_DEFAULTS["pos"])
         self.parent().recent = []
