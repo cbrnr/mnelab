@@ -9,7 +9,6 @@ from mnelab.utils.artifact_detection import (
     find_bad_epochs_ptp,
 )
 from mnelab.utils.dependencies import have
-from mnelab.utils.iclabel import run_iclabel
 from mnelab.utils.syntax import CodeEditor, PythonHighlighter, format_code
 from mnelab.utils.utils import (
     Montage,

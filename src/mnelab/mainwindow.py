@@ -47,11 +47,12 @@ from pyxdf import resolve_streams
 from mnelab import IS_DEV_VERSION, __version__
 from mnelab.dialogs import *  # noqa: F403
 from mnelab.dialogs.channel_stats import ChannelStats
-from mnelab.io import writers
-from mnelab.io.mat import parse_mat
-from mnelab.io.npy import parse_npy
-from mnelab.io.readers import read_raw, split_name_ext
-from mnelab.io.xdf import get_xml, list_chunks
+from mnextend import read_raw, split_name_ext
+from mnextend.io.mat import parse_mat
+from mnextend.io.npy import parse_npy
+from mnextend.io.readers import raw_readers
+from mnextend.io.writers import epochs_writers, raw_writers
+from mnextend.io.xdf import get_xml, list_chunks
 from mnelab.model import InvalidAnnotationsError, LabelsNotFoundError, Model
 from mnelab.settings import SettingsDialog, read_settings, write_settings
 from mnelab.utils import (
@@ -171,7 +172,7 @@ class MainWindow(QMainWindow):
         )
         file_menu.addSeparator()
         self.export_menu = file_menu.addMenu(QIcon.fromTheme("export"), "Export")
-        for ext, description in writers.items():
+        for ext, description in raw_writers.items():
             action = "export_data" + ext.replace(".", "_")
             self.all_actions[action] = self.export_menu.addAction(
                 f"{ext[1:].upper()} ({description[1]})...",
@@ -726,12 +727,9 @@ class MainWindow(QMainWindow):
             )
             # disable unsupported exporters for epochs (all must support raw)
             if self.model.current["dtype"] == "epochs":
-                for ext, description in writers.items():
+                for ext in raw_writers:
                     action = "export_data" + ext.replace(".", "_")
-                    if "epoch" in description[2]:
-                        self.all_actions[action].setEnabled(True)
-                    else:
-                        self.all_actions[action].setEnabled(False)
+                    self.all_actions[action].setEnabled(ext in epochs_writers)
         # add to recent files
         if len(self.model) > 0:
             self._add_recent(self.model.current["fname"])
@@ -829,7 +827,7 @@ class MainWindow(QMainWindow):
                                     fname, participants=selected, split=True
                                 )
                                 for pid, raw in data_dict.items():
-                                    name, _ = split_name_ext(fname)
+                                    name, _ = split_name_ext(fname, raw_readers)
                                     self.model.load_data(
                                         raw, fname, name=f"{name} ({pid})"
                                     )
