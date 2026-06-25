@@ -1206,7 +1206,12 @@ class MainWindow(QMainWindow):
         if events is not None and len(events):
             hist_parts.append("events=events")
 
-        fig = self.model.current["data"].plot(**kwargs)
+        scalings = read_settings("scalings")
+        if scalings == "auto":
+            hist_parts.append('scalings="auto"')
+        fig = self.model.current["data"].plot(
+            scalings="auto" if scalings == "auto" else None, **kwargs
+        )
         self.model.history.append(f"data.plot({', '.join(hist_parts)})")
         if mne.viz.get_browser_backend() == "matplotlib":
             win = fig.canvas.manager.window
