@@ -13,10 +13,9 @@ Guidelines for AI coding agents working on this repository.
 
 - Formatting is enforced by [Ruff](https://docs.astral.sh/ruff/). Run both of the following before committing:
   ```
-  uv run ruff check --select I --fix
+  uv run ruff check --fix
   uv run ruff format
   ```
-  CI also runs `ruff check` (full lint, not just import sorting) and `ruff format --diff`, so also run `uv run ruff check` before committing.
 - Line length is 88 characters (the default). This limit applies to all code, including docstrings.
 - Docstrings follow [NumPy style](https://numpydoc.readthedocs.io/en/latest/format.html), but use standard Markdown syntax instead of reStructuredText and a line length of 88 characters. In particular, inline code formatting uses single backticks (`` `x` ``), not double backticks (` ``x`` `).
 - Inline comments should start with a lower-case letter and be a single sentence where possible.
