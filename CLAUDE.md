@@ -1,4 +1,4 @@
-# AGENTS.md
+# CLAUDE.md
 
 Guidelines for AI coding agents working on this repository.
 
@@ -55,17 +55,12 @@ Every PR must include an entry in the `[UNRELEASED]` section of [CHANGELOG.md](C
 
 ## Release
 
-1. Remove the `.dev0` suffix from the `version` field in `pyproject.toml` (and/or adapt the version to be released if necessary).
-2. Run `uv lock` to update `uv.lock` with the new version.
-3. Update the section in `CHANGELOG.md` corresponding to the new release with the version and current date.
-4. Update the section on the standalone installers in `README.md` and `docs/tutorial/index.md` (use the to-be-released version in the URLs, e.g., https://github.com/cbrnr/mnelab/releases/download/v1.0.3/MNELAB-1.0.3.exe).
-5. Commit these changes and push.
-6. Create a new release on GitHub and use the version as the tag name (make sure to prepend the version with a `v`, e.g. `v0.7.0`).
-7. A GitHub Action takes care of building and uploading wheels to PyPI as well as adding standalone installers to the release.
+1. Run `uv run tools/release.py prepare X.Y.Z` (with the version to be released). This removes the `.dev0` suffix from the `version` field in `pyproject.toml`, dates the `## [UNRELEASED]` heading in `CHANGELOG.md` with the version and today's date, updates the standalone installer URLs in `README.md` and `docs/quickstart/index.md`, and runs `uv lock`.
+2. Review the resulting changes, then commit and push them.
+3. Create a new release on GitHub and use the version as the tag name (make sure to prepend the version with a `v`, e.g. `v0.7.0`). Use `uv run tools/release.py notes X.Y.Z` to print the CHANGELOG entries for the release notes.
+4. A GitHub Action takes care of building and uploading wheels to PyPI as well as adding standalone installers to the release.
 
 This concludes the new release. Now prepare the source for the next planned release as follows:
 
-1. Update the `version` field to the next planned release and append `.dev0`.
-2. Run `uv lock` to update `uv.lock` with the new version.
-3. Start a new section at the top of `CHANGELOG.md` titled `## [UNRELEASED] · YYYY-MM-DD`.
-4. Commit ("Prepare next dev version") and push.
+1. Run `uv run tools/release.py bump X.Y.Z` (with the next planned version). This sets the `version` field to `X.Y.Z.dev0`, starts a fresh `## [UNRELEASED] · YYYY-MM-DD` section at the top of `CHANGELOG.md`, and runs `uv lock`.
+2. Commit ("Prepare next dev version") and push.
