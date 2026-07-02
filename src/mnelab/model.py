@@ -7,7 +7,7 @@ import tempfile
 from collections import Counter, defaultdict
 from copy import deepcopy
 from functools import wraps
-from os.path import getsize, join, split, splitext
+from os.path import getsize
 from pathlib import Path
 
 import mne
@@ -364,17 +364,11 @@ class Model:
 
     def export_bads(self, fname):
         """Export bad channels info to a CSV file."""
-        name, ext = splitext(split(fname)[-1])
-        ext = ext if ext else ".csv"  # automatically add extension
-        fname = join(split(fname)[0], name + ext)
         with open(fname, "w") as f:
             f.write(",".join(self.current["data"].info["bads"]))
 
     def export_events(self, fname):
         """Export events to a CSV file."""
-        name, ext = splitext(split(fname)[-1])
-        ext = ext if ext else ".csv"  # automatically add extension
-        fname = join(split(fname)[0], name + ext)
         np.savetxt(
             fname,
             self.current["events"][:, [0, 2]],
@@ -395,9 +389,6 @@ class Model:
             Annotation types (descriptions) to export.  If `None`, all types are
             exported.
         """
-        name, ext = splitext(split(fname)[-1])
-        ext = ext if ext else ".csv"  # automatically add extension
-        fname = join(split(fname)[0], name + ext)
         annots = self.current["data"].annotations
         with open(fname, "w") as f:
             f.write("type,onset,duration\n")
@@ -410,9 +401,6 @@ class Model:
 
     def export_ica(self, fname):
         """Export ICA solution to file."""
-        name, ext = splitext(split(fname)[-1])
-        ext = ext if ext else ".fif.gz"  # automatically add extension
-        fname = join(split(fname)[0], name + ext)
         self.current["ica"].save(fname, overwrite=True)
 
     @data_changed
