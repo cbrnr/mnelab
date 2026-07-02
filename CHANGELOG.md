@@ -1,3 +1,5 @@
+## [UNRELEASED] · YYYY-MM-DD
+
 ## [1.5.5] · 2026-07-02
 ### ✨ Added
 - Add a "Channel Scaling" option to the plotting settings page to choose between auto-scaling (based on the 99.5th percentile of the data) and fixed scaling (MNE defaults per channel type) ([#675](https://github.com/cbrnr/mnelab/issues/675) by [Clemens Brunner](https://github.com/cbrnr))
