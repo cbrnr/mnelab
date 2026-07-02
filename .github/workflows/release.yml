@@ -33,6 +33,7 @@ jobs:
       - name: Upload assets to release
         uses: softprops/action-gh-release@v3
         with:
+          tag_name: ${{ github.event.release.tag_name }}
           files: artifacts/*/*
 
   publish:
