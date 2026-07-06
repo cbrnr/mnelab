@@ -10,9 +10,6 @@ Run from the repository root:
   # after the release: bump to the next dev version and reopen the CHANGELOG
   uv run tools/release.py bump 1.7.0
 
-  # print the CHANGELOG entries for a version (handy as GitHub release notes)
-  uv run tools/release.py notes 1.6.0
-
 `prepare` and `bump` run `uv lock` at the end. Both leave the resulting changes
 uncommitted so they can be reviewed before commit.
 """
@@ -94,19 +91,6 @@ def bump(next_version):
     uv_lock()
 
 
-def notes(version):
-    """Print the CHANGELOG entries for `version` (without the heading)."""
-    text = CHANGELOG.read_text(encoding="utf-8")
-    match = re.search(
-        rf"^## \[{re.escape(version)}\][^\n]*\n(.*?)(?=^## \[|\Z)",
-        text,
-        flags=re.MULTILINE | re.DOTALL,
-    )
-    if not match:
-        sys.exit(f"Could not find a CHANGELOG section for version {version}.")
-    print(match.group(1).strip())
-
-
 def main():
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -119,16 +103,11 @@ def main():
     p = sub.add_parser("bump", help="bump to the next development version")
     p.add_argument("version")
 
-    p = sub.add_parser("notes", help="print release notes for a version")
-    p.add_argument("version")
-
     args = parser.parse_args()
     if args.command == "prepare":
         prepare(args.version)
     elif args.command == "bump":
         bump(args.version)
-    elif args.command == "notes":
-        notes(args.version)
 
 
 if __name__ == "__main__":

@@ -55,10 +55,10 @@ Every PR must include an entry in the `[UNRELEASED]` section of [CHANGELOG.md](C
 
 ## Release
 
-1. Run `uv run tools/release.py prepare X.Y.Z` (with the version to be released). This removes the `.dev0` suffix from the `version` field in `pyproject.toml`, dates the `## [UNRELEASED]` heading in `CHANGELOG.md` with the version and today's date, updates the standalone installer URLs in `README.md` and `docs/quickstart/index.md`, and runs `uv lock`.
+1. Run `uv run tools/release.py prepare X.Y.Z` (with the version to be released). This removes the `.dev0` suffix from the `version` field in `pyproject.toml`, updates the `## [UNRELEASED]` heading in `CHANGELOG.md` with the version and today's date, updates the standalone installer URLs in `README.md` and `docs/quickstart/index.md`, and runs `uv lock`.
 2. Review the resulting changes, then commit and push them.
-3. Create a new release on GitHub and use the version as the tag name (make sure to prepend the version with a `v`, e.g. `v0.7.0`). Use `uv run tools/release.py notes X.Y.Z` to print the CHANGELOG entries for the release notes.
-4. A GitHub Action takes care of building and uploading wheels to PyPI as well as adding standalone installers to the release.
+3. Tag the release commit with the version prepended with a `v` (e.g. `v1.7.0`) and push the tag, e.g. `git tag v1.7.0 && git push origin v1.7.0`.
+4. A GitHub Action takes care of running the tests, building and uploading wheels to PyPI, building standalone installers, and creating the GitHub release.
 
 This concludes the new release. Now prepare the source for the next planned release as follows:
 
