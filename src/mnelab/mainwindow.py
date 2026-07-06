@@ -18,12 +18,12 @@ import mne
 import numpy as np
 from mne import channel_type
 from mnextend import read_raw, split_name_ext
+from mnextend.io.bvrf import read_bvrf_header
 from mnextend.io.mat import parse_mat
 from mnextend.io.npy import parse_npy
 from mnextend.io.readers import raw_readers
 from mnextend.io.writers import epochs_writers, raw_writers
-from mnextend.io.xdf import get_xml, list_chunks
-from pybvrf import read_bvrf_header
+from mnextend.io.xdf import get_xml, list_chunks, resolve_streams
 from PySide6.QtCore import (
     QEvent,
     QMetaObject,
@@ -48,7 +48,6 @@ from PySide6.QtWidgets import (
     QTreeWidgetItem,
     QWidget,
 )
-from pyxdf import resolve_streams
 
 from mnelab import IS_DEV_VERSION, __version__
 from mnelab.dialogs import *  # noqa: F403
