@@ -5,6 +5,7 @@
 from collections import defaultdict
 
 from PySide6.QtCore import Qt, Slot
+from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import (
     QCheckBox,
     QDialog,
@@ -26,11 +27,14 @@ from mnelab.widgets import FlatDoubleSpinBox
 
 
 class XDFStreamsDialog(QDialog):
-    def __init__(self, parent, rows, fname, selected=None):
+    def __init__(self, parent, rows, fname):
         super().__init__(parent)
         self.setWindowTitle("Select XDF Stream")
         self.fname = fname
 
+        muted = self.palette().color(
+            QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text
+        )
         self.view = QTableWidget(len(rows), 6)
         for i, row in enumerate(rows):
             self.view.setItem(i, 0, IntTableWidgetItem(row[0]))
@@ -39,6 +43,13 @@ class XDFStreamsDialog(QDialog):
             self.view.setItem(i, 3, IntTableWidgetItem(row[3]))
             self.view.setItem(i, 4, QTableWidgetItem(row[4]))
             self.view.setItem(i, 5, FloatTableWidgetItem(row[5]))
+            if row[4] == "string":  # marker stream
+                font = self.view.item(i, 0).font()
+                font.setItalic(True)
+                for col in range(self.view.columnCount()):
+                    item = self.view.item(i, col)
+                    item.setForeground(muted)
+                    item.setFont(font)
 
         self.view.setHorizontalHeaderLabels(
             [
@@ -57,10 +68,9 @@ class XDFStreamsDialog(QDialog):
         self.view.verticalHeader().setVisible(False)
         self.view.horizontalHeader().setStretchLastSection(True)
         self.view.setShowGrid(False)
-        if selected is not None:
-            self.view.selectRow(selected)
         self.view.setSortingEnabled(True)
         self.view.sortByColumn(0, Qt.SortOrder.AscendingOrder)
+        self.view.selectAll()
 
         self.view.itemSelectionChanged.connect(self.toggle_buttons)
 
@@ -89,6 +99,12 @@ class XDFStreamsDialog(QDialog):
         self._prefix_markers = QCheckBox("Prefix Markers with Stream ID")
         self._prefix_markers.setChecked(False)
 
+        self.marker_note = QLabel(
+            "Selected marker streams are automatically converted to annotations."
+        )
+        self.marker_note.setWordWrap(True)
+        self.marker_note.setStyleSheet(f"color: {muted.name()}; font-style: italic;")
+
         hbox1 = QHBoxLayout()
         hbox1.addWidget(self.resample)
         hbox1.addWidget(self.resample_label)
@@ -102,6 +118,7 @@ class XDFStreamsDialog(QDialog):
 
         vbox = QVBoxLayout(self)
         vbox.addWidget(self.view)
+        vbox.addWidget(self.marker_note)
         vbox.addLayout(hbox1)
 
         hbox2 = QHBoxLayout()
@@ -174,7 +191,11 @@ class XDFStreamsDialog(QDialog):
             # suggest the most common sampling rate (with the most channels)
             channel_counts = []
             sampling_rates = []
-            row_indices = {r.row() for r in self.view.selectedIndexes()}
+            row_indices = {
+                r.row()
+                for r in self.view.selectedIndexes()
+                if not self._is_marker_row(r.row())
+            }
             for row in row_indices:
                 channel_counts.append(self.view.item(row, 3).value())
                 sampling_rates.append(self.view.item(row, 5).value())
@@ -187,23 +208,22 @@ class XDFStreamsDialog(QDialog):
             suggested_fs = max(counts, key=counts.get)
             self.fs_new.setValue(suggested_fs)
 
+    def _is_marker_row(self, row):
+        """Return whether `row` is a marker (string-format) stream."""
+        return self.view.item(row, 4).text() == "string"
+
     @property
     def selected_streams(self):
-        streams = []
-        for row in self.view.selectionModel().selectedRows():
-            type_ = self.view.item(row.row(), 2).text()
-            fmt = self.view.item(row.row(), 4).text()
-            fs = self.view.item(row.row(), 5).value()
-            if type_ not in {"Marker", "Markers"} and fs != 0 and fmt != "string":
-                streams.append(self.view.item(row.row(), 0).value())
-        return streams
+        return [
+            self.view.item(row.row(), 0).value()
+            for row in self.view.selectionModel().selectedRows()
+            if not self._is_marker_row(row.row())
+        ]
 
     @property
     def selected_markers(self):
-        markers = []
-        for row in self.view.selectionModel().selectedRows():
-            type_ = self.view.item(row.row(), 2).text()
-            fs = self.view.item(row.row(), 5).value()
-            if type_ in {"Marker", "Markers"} and fs == 0:
-                markers.append(self.view.item(row.row(), 0).value())
-        return markers
+        return [
+            self.view.item(row.row(), 0).value()
+            for row in self.view.selectionModel().selectedRows()
+            if self._is_marker_row(row.row())
+        ]
