@@ -47,8 +47,6 @@ def test_standalone_fallback_detects_importable_dependencies(monkeypatch):
         "PySide6": SimpleNamespace(__version__="6.9.4"),
         "matplotlib": SimpleNamespace(__version__="3.10.0"),
         "scipy": SimpleNamespace(__version__="1.14.1"),
-        "pyxdf": SimpleNamespace(__version__="1.16.0"),
-        "pybvrf": SimpleNamespace(__version__="0.1.1"),
         "black": SimpleNamespace(__version__="25.0.0"),
         "picard": SimpleNamespace(__version__="0.8.0"),
     }
@@ -59,8 +57,6 @@ def test_standalone_fallback_detects_importable_dependencies(monkeypatch):
     assert dependencies.have["pyside6"] == "6.9.4"
     assert dependencies.have["matplotlib"] == "3.10.0"
     assert dependencies.have["scipy"] == "1.14.1"
-    assert dependencies.have["pyxdf"] == "1.16.0"
-    assert dependencies.have["pybvrf"] == "0.1.1"
     assert dependencies.have["black"] == "25.0.0"
     assert dependencies.have["python-picard"] == "0.8.0"
 

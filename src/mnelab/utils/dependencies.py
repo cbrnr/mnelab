@@ -11,8 +11,6 @@ required = [
     "matplotlib",
     "numpy",
     "scipy",
-    "pyxdf",
-    "pybvrf",
     "black",
     "isort",
 ]

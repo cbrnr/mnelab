@@ -26,11 +26,9 @@ dependencies = [
     "isort >= 8.0.1",
     "matplotlib >= 3.10.8",
     "mne >= 1.12.1",
-    "mnextend >= 0.2.0",
+    "mnextend >= 0.3.0",
     "numpy >= 2.4.4",
-    "pybvrf >= 0.1.4",
     "pyside6 >= 6.11.0",
-    "pyxdf >= 1.17.4",
     "scipy >= 1.17.1",
 ]
 
