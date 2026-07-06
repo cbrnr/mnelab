@@ -1,3 +1,5 @@
+## [UNRELEASED] · YYYY-MM-DD
+
 ## [1.5.6] · 2026-07-06
 ### 🔧 Fixed
 - Fix a regression where marker streams were not shown in the selection dialog and never converted to annotations when loading XDF files ([#678](https://github.com/cbrnr/mnelab/pull/678) by [Clemens Brunner](https://github.com/cbrnr))
