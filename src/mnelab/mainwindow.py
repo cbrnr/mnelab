@@ -769,14 +769,8 @@ class MainWindow(QMainWindow):
                         s["nominal_srate"],
                     ]
                     for s in resolve_streams(fname)
-                    if s["channel_format"] != "string"
                 ]
-                dialog = XDFStreamsDialog(
-                    self,
-                    rows,
-                    fname=fname,
-                    selected=None,
-                )
+                dialog = XDFStreamsDialog(self, rows, fname=fname)
                 if dialog.exec():
                     fs_new = None
                     gap_threshold = 0.0

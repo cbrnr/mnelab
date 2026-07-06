@@ -1,10 +1,10 @@
 ## [UNRELEASED] · YYYY-MM-DD
+### 🔧 Fixed
+- Fix a regression where marker streams were not shown in the selection dialog and never converted to annotations when loading XDF files ([#678](https://github.com/cbrnr/mnelab/pull/678) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.5.5] · 2026-07-02
 ### ✨ Added
 - Add a "Channel Scaling" option to the plotting settings page to choose between auto-scaling (based on the 99.5th percentile of the data) and fixed scaling (MNE defaults per channel type) ([#675](https://github.com/cbrnr/mnelab/issues/675) by [Clemens Brunner](https://github.com/cbrnr))
-
-### 🔧 Fixed
 - Add support for XDF string streams with more than one channel and/or regular sampling rates ([#671](https://github.com/cbrnr/mnelab/issues/671) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🌀 Changed
