@@ -1,8 +1,9 @@
 name: Release
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - "v*.*.*"
 
 jobs:
   test:
@@ -19,22 +20,27 @@ jobs:
       AC_USERNAME: ${{ secrets.AC_USERNAME }}
       AC_PASSWORD: ${{ secrets.AC_PASSWORD }}
 
-  upload_assets:
-    name: Upload release assets
+  release:
+    name: Create GitHub release
     needs: build_standalone
     runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v7
       - name: Download all artifacts
         uses: actions/download-artifact@v8
         with:
           path: artifacts
-      - name: Upload assets to release
-        uses: softprops/action-gh-release@v3
-        with:
-          tag_name: ${{ github.event.release.tag_name }}
-          files: artifacts/*/*
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes \
+            artifacts/*/*
 
   publish:
     name: Publish to PyPI
