@@ -929,9 +929,7 @@ dependencies = [
     { name = "mne" },
     { name = "mnextend" },
     { name = "numpy" },
-    { name = "pybvrf" },
     { name = "pyside6" },
-    { name = "pyxdf" },
     { name = "scipy" },
 ]
 
@@ -965,12 +963,10 @@ requires-dist = [
     { name = "matplotlib", specifier = ">=3.10.8" },
     { name = "mne", specifier = ">=1.12.1" },
     { name = "mne-qt-browser", marker = "extra == 'full'", specifier = ">=0.7.4" },
-    { name = "mnextend", specifier = ">=0.2.0" },
+    { name = "mnextend", specifier = ">=0.2.2" },
     { name = "numpy", specifier = ">=2.4.4" },
-    { name = "pybvrf", specifier = ">=0.1.4" },
     { name = "pyside6", specifier = ">=6.11.0" },
     { name = "python-picard", marker = "extra == 'full'", specifier = ">=0.8.1" },
-    { name = "pyxdf", specifier = ">=1.17.4" },
     { name = "scikit-learn", marker = "extra == 'full'", specifier = ">=1.8.0" },
     { name = "scipy", specifier = ">=1.17.1" },
 ]
@@ -990,7 +986,7 @@ docs = [{ name = "mkdocs-material", specifier = ">=9.7.6" }]
 
 [[package]]
 name = "mnextend"
-version = "0.2.1"
+version = "0.2.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "edfio" },
@@ -1003,9 +999,9 @@ dependencies = [
     { name = "pyxdf" },
     { name = "scipy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a8/87/600f8076d7eb798c9db3e47e10b2566429a2026b8a9c3ddc48d312bdf780/mnextend-0.2.1.tar.gz", hash = "sha256:820110918a416a0909da9170189bacc2c2243bcbb1e4704c8ec3e71ea8f2d279", size = 10793204, upload-time = "2026-07-02T14:05:49.244Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a7/7e/ce6bd7e3fb14ab2ebfa26a038d83bebc8e31841c6190d31470043c015847/mnextend-0.2.2.tar.gz", hash = "sha256:1ff216a6f75ed486cbcbda0d91719c3052a171caa234afefe774af9193b53843", size = 10793414, upload-time = "2026-07-06T13:34:47.657Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/54/df/71b6fc8286691043fd4c10a788a709399af7ef7ceabe1f422ff76fe73cb6/mnextend-0.2.1-py3-none-any.whl", hash = "sha256:70e6090befa791783c329cacbcfd7b35f70a944b5c722b7a587cd6066845409f", size = 10797137, upload-time = "2026-07-02T14:05:45.967Z" },
+    { url = "https://files.pythonhosted.org/packages/5b/37/bf3b670e4c74e2d7b09035afc0a8607ced0adea1096a70015505b0836c42/mnextend-0.2.2-py3-none-any.whl", hash = "sha256:85bd8902b9858fe1cfb0bafed8010f756ef1e3d43402851208bc69ff58ada5a0", size = 10797538, upload-time = "2026-07-06T13:34:45.026Z" },
 ]
 
 [[package]]
