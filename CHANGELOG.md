@@ -1,6 +1,6 @@
 ## [UNRELEASED] · YYYY-MM-DD
 ### 🌀 Changed
-- Use mnextend's `resolve_streams()` and `read_bvrf_header()` instead of depending on pyxdf and pybvrf directly ([#679](https://github.com/cbrnr/mnelab/pull/679) by [Clemens Brunner](https://github.com/cbrnr))
+- Use MNEXTEND's `resolve_streams()` and `read_bvrf_header()` instead of depending on PyXDF and PyBVRF directly ([#679](https://github.com/cbrnr/mnelab/pull/679) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.5.6] · 2026-07-06
 ### 🔧 Fixed
