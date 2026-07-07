@@ -1,6 +1,6 @@
 ## [UNRELEASED] · YYYY-MM-DD
 ### ✨ Added
-- Add a "Pipeline" feature to capture the processing steps applied to a data set and reapply them to another data set with a single click after compatibility checks; pipelines can be edited, saved to, and loaded from JSON files ([#680](https://github.com/cbrnr/mnelab/pull/680) by [Clemens Brunner](https://github.com/cbrnr))
+- Add a pipeline feature to capture the processing steps applied to a data set and reapply them to another data set  (pipelines can also be edited, saved to, and loaded from JSON files) ([#683](https://github.com/cbrnr/mnelab/pull/683) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🌀 Changed
 - Use MNEXTEND's `resolve_streams()` and `read_bvrf_header()` instead of depending on PyXDF and PyBVRF directly ([#679](https://github.com/cbrnr/mnelab/pull/679) by [Clemens Brunner](https://github.com/cbrnr))
