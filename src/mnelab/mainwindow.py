@@ -8,6 +8,7 @@ import multiprocessing as mp
 import sys
 import traceback
 from contextlib import contextmanager
+from copy import deepcopy
 from functools import partial
 from operator import itemgetter
 from pathlib import Path
@@ -52,7 +53,19 @@ from PySide6.QtWidgets import (
 from mnelab import IS_DEV_VERSION, __version__
 from mnelab.dialogs import *  # noqa: F403
 from mnelab.dialogs.channel_stats import ChannelStats
-from mnelab.model import InvalidAnnotationsError, LabelsNotFoundError, Model
+from mnelab.model import (
+    InvalidAnnotationsError,
+    LabelsNotFoundError,
+    Model,
+    PipelineStepError,
+)
+from mnelab.pipeline import (
+    check_pipeline,
+    has_unsupported,
+    make_context,
+    pipeline_mutates_data,
+    step_label,
+)
 from mnelab.settings import SettingsDialog, read_settings, write_settings
 from mnelab.utils import (
     annotations_between_events,
@@ -102,6 +115,7 @@ class MainWindow(QMainWindow):
         """
         super().__init__()
         self.model = model  # data model
+        self.pipeline = []  # current in-memory processing pipeline (list of steps)
         self.setWindowTitle("MNELAB")
         self.setMinimumSize(600, 500)
         sys.excepthook = self._excepthook
@@ -409,6 +423,21 @@ class MainWindow(QMainWindow):
             self.artifact_detection,
         )
 
+        pipeline_menu = self.menuBar().addMenu("Pipe&line")
+        self.all_actions["create_pipeline"] = pipeline_menu.addAction(
+            "&Create from Current Data Set",
+            self.create_pipeline,
+        )
+        self.all_actions["apply_pipeline"] = pipeline_menu.addAction(
+            "&Apply to Current Data Set",
+            self.apply_pipeline,
+        )
+        pipeline_menu.addSeparator()
+        self.all_actions["edit_pipeline"] = pipeline_menu.addAction(
+            "&Edit Pipeline...",
+            self.edit_pipeline,
+        )
+
         view_menu = self.menuBar().addMenu("&View")
         self.all_actions["history"] = view_menu.addAction(
             QIcon.fromTheme("history"),
@@ -466,6 +495,7 @@ class MainWindow(QMainWindow):
             "documentation",
             "history",
             "annotation_colors",
+            "edit_pipeline",
         ]
 
         # set up toolbar
@@ -723,6 +753,12 @@ class MainWindow(QMainWindow):
             )
             self.all_actions["xdf_metadata"].setEnabled(
                 enabled and self.model.current["ftype"] in ["XDF", "XDFZ", "XDF.GZ"]
+            )
+            self.all_actions["create_pipeline"].setEnabled(
+                enabled and bool(self.model.current["pipeline_steps"])
+            )
+            self.all_actions["apply_pipeline"].setEnabled(
+                enabled and bool(self.pipeline) and not has_unsupported(self.pipeline)
             )
             # disable unsupported exporters for epochs (all must support raw)
             if self.model.current["dtype"] == "epochs":
@@ -1693,6 +1729,96 @@ class MainWindow(QMainWindow):
         """Show history."""
         dialog = HistoryDialog(self, self.model.history, self.model.log)
         dialog.exec()
+
+    def create_pipeline(self):
+        """Create a pipeline from the current data set's processing steps."""
+        steps = self.model.current["pipeline_steps"]
+        if not steps:
+            return
+        self.pipeline = deepcopy(steps)
+        source = self.model.current["name"]
+        if has_unsupported(self.pipeline):
+            QMessageBox.warning(
+                self,
+                "Pipeline contains unsupported steps",
+                "This data set was processed with operations that cannot be "
+                "reproduced automatically (e.g. ICA, appending, or setting a montage). "
+                "These steps are marked in the pipeline and must be removed before the "
+                "pipeline can be applied.",
+            )
+        dialog = PipelineDialog(self, self.pipeline, source)
+        if dialog.exec():
+            self.pipeline = dialog.steps
+        self.data_changed()
+
+    def edit_pipeline(self):
+        """View, edit, save, or load the current pipeline."""
+        source = self.model.current["name"] if self.model.data else None
+        dialog = PipelineDialog(self, self.pipeline, source)
+        if dialog.exec():
+            self.pipeline = dialog.steps
+        self.data_changed()
+
+    def apply_pipeline(self):
+        """Apply the current pipeline to the current data set."""
+        steps = self.pipeline
+        if not steps:
+            return
+        ctx = make_context(self.model.current)
+        problems = check_pipeline(steps, ctx)
+        if problems and not self._confirm_apply(steps, problems):
+            return
+        # only duplicate if a step actually changes the signal data, matching how
+        # these operations behave when applied individually via their own menu actions
+        duplicated = self.auto_duplicate() if pipeline_mutates_data(steps) else False
+        try:
+            self.model.apply_pipeline(steps)
+        except PipelineStepError as e:
+            if duplicated:  # roll back the freshly created data set
+                self.model.remove_data()
+                self.model.index -= 1
+                self.data_changed()
+            msgbox = ErrorMessageBox(
+                self,
+                "Could not apply pipeline",
+                f"Step {e.index + 1} ({e.op}) failed:\n{e.original}",
+                traceback.format_exc(),
+            )
+            msgbox.show()
+
+    def _confirm_apply(self, steps, problems):
+        """Show a summary of compatibility problems and ask whether to proceed.
+
+        Returns True if the pipeline should be applied, False otherwise. Applying is
+        blocked entirely if the pipeline contains unsupported (non-reproducible) steps.
+        """
+        problem_by_index = {index: message for index, _, message in problems}
+        lines = []
+        for i, step in enumerate(steps):
+            if i in problem_by_index:
+                lines.append(f"✗ {step_label(step)} — {problem_by_index[i]}")
+            else:
+                lines.append(f"✓ {step_label(step)}")
+        details = "\n".join(lines)
+
+        if has_unsupported(steps):
+            QMessageBox.warning(
+                self,
+                "Cannot apply pipeline",
+                "The pipeline contains operations that cannot be reproduced and must "
+                f"be removed first:\n\n{details}",
+            )
+            return False
+
+        reply = QMessageBox.question(
+            self,
+            "Apply pipeline?",
+            "Some steps may not be compatible with the current data set:\n\n"
+            f"{details}\n\nApply anyway?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        return reply == QMessageBox.StandardButton.Yes
 
     def show_channel_stats(self):
         """Show channel stats."""

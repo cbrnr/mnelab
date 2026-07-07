@@ -2,6 +2,7 @@
 #
 # License: BSD (3-clause)
 
+import inspect
 import os
 import tempfile
 from collections import Counter, defaultdict
@@ -22,6 +23,7 @@ from mnextend import (
 )
 from mnextend.io.readers import raw_readers
 
+from mnelab.pipeline import REGISTRY
 from mnelab.utils import Montage, count_locations
 
 
@@ -35,6 +37,16 @@ class InvalidAnnotationsError(Exception):
 
 class AddReferenceError(Exception):
     pass
+
+
+class PipelineStepError(Exception):
+    """Raised when a pipeline step fails during replay."""
+
+    def __init__(self, index, op, original):
+        self.index = index  # zero-based index of the failing step
+        self.op = op  # human-readable label of the failing operation
+        self.original = original  # the original exception or message
+        super().__init__(f"Step {index + 1} ({op}) failed: {original}")
 
 
 def data_changed(_func=None, *, invalidate_cache=True):
@@ -57,6 +69,59 @@ def data_changed(_func=None, *, invalidate_cache=True):
 
     if _func is not None:
         return decorator(_func)
+    return decorator
+
+
+def _json_safe(value):
+    """Recursively convert a value into a JSON-serializable form."""
+    if isinstance(value, np.integer):
+        return int(value)
+    if isinstance(value, np.floating):
+        return float(value)
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(v) for v in value]
+    if isinstance(value, dict):
+        return {k: _json_safe(v) for k, v in value.items()}
+    return value
+
+
+def records_step(op_key=None, *, unsupported=False):
+    """Decorator: record a structured pipeline step on the current dataset.
+
+    Supported operations record `{"op": op_key, "params": {...}}`, where the parameters
+    are bound from the call signature and converted to a JSON-serializable form.
+    Non-reproducible operations (e.g. ICA, append, montage) record a sentinel
+    `{"op": op_key, "unsupported": True}` so that a derived pipeline cannot silently
+    omit them.
+    """
+
+    def decorator(f):
+        sig = inspect.signature(f)
+
+        @wraps(f)
+        def wrapper(self, *args, **kwargs):
+            result = f(self, *args, **kwargs)  # only record after a successful call
+            steps = self.current.get("pipeline_steps")
+            if steps is None:
+                steps = []
+                self.current["pipeline_steps"] = steps
+            if unsupported:
+                steps.append({"op": op_key or f.__name__, "unsupported": True})
+            else:
+                bound = sig.bind(self, *args, **kwargs)
+                bound.apply_defaults()
+                params = {
+                    name: _json_safe(value)
+                    for name, value in bound.arguments.items()
+                    if name != "self"
+                }
+                steps.append({"op": op_key, "params": params})
+            return result
+
+        return wrapper
+
     return decorator
 
 
@@ -240,6 +305,7 @@ class Model:
                 montage=montage,
                 events=events,
                 event_mapping=event_mapping,
+                pipeline_steps=[],
                 _cache_path=None,
             )
         )
@@ -275,6 +341,7 @@ class Model:
         self.load_data(data, fname, name=name)
 
     @data_changed
+    @records_step("find_events")
     def find_events(
         self,
         stim_channel,
@@ -633,12 +700,14 @@ class Model:
         }
 
     @data_changed
+    @records_step("pick_channels")
     def pick_channels(self, picks):
         self.current["data"] = self.current["data"].pick(picks)
         self.current["name"] += " (channels picked)"
         self.history.append(f"data.pick({picks})")
 
     @data_changed
+    @records_step("set_channel_properties")
     def set_channel_properties(self, bads=None, names=None, types=None):
         if bads != self.current["data"].info["bads"]:
             self.current["data"].info["bads"] = bads
@@ -651,6 +720,7 @@ class Model:
             self.history.append(f"data.set_channel_types({types})")
 
     @data_changed
+    @records_step("rename_channels")
     def rename_channels(self, new_names):
         old_names = self.current["data"].info["ch_names"]
         mapping = {o: n for o, n in zip(old_names, new_names) if o != n}
@@ -660,6 +730,7 @@ class Model:
         self.history.append(f"mne.rename_channels(data.info, {mapping})")
 
     @data_changed
+    @records_step("set_montage", unsupported=True)
     def set_montage(
         self,
         montage,
@@ -699,6 +770,7 @@ class Model:
             self.current["iclabel"] = None
 
     @data_changed
+    @records_step("filter")
     def filter(self, lower=None, upper=None, notch=None):
         """Apply filters to the current data based on provided parameters."""
         if lower is not None and upper is not None:  # bandpass filter
@@ -719,12 +791,14 @@ class Model:
             self.history.append(f"data.notch_filter({notch})")
 
     @data_changed
+    @records_step("resample")
     def resample(self, sfreq):
         self.current["data"].resample(sfreq)
         self.current["name"] += f" ({sfreq}\u2009Hz)"
         self.history.append(f"data.resample({sfreq})")
 
     @data_changed
+    @records_step("crop")
     def crop(self, start, stop):
         self.current["data"].crop(start, stop)
         self.current["name"] += " (cropped)"
@@ -785,6 +859,7 @@ class Model:
         return compatibles
 
     @data_changed
+    @records_step("append_data", unsupported=True)
     def append_data(self, selected_idx):
         """Append the given raw data sets."""
         for idx in selected_idx:  # ensure all source datasets are in memory
@@ -805,6 +880,7 @@ class Model:
             self.history.append(f"mne.concatenate_epochs(data, {', '.join(indices)})")
 
     @data_changed
+    @records_step("apply_ica", unsupported=True)
     def apply_ica(self):
         self.current["ica"].apply(self.current["data"])
         self.history.append(
@@ -826,12 +902,14 @@ class Model:
         return self.current["iclabel"]
 
     @data_changed
+    @records_step("interpolate_bads")
     def interpolate_bads(self):
         self.current["data"].interpolate_bads()
         self.history.append("data.interpolate_bads()")
         self.current["name"] += " (interpolated)"
 
     @data_changed
+    @records_step("epoch_data")
     def epoch_data(self, event_id, tmin, tmax, baseline):
         epochs = mne.Epochs(
             self.current["data"],
@@ -850,12 +928,14 @@ class Model:
         self.current["events"] = self.current["data"].events
 
     @data_changed
+    @records_step("drop_bad_epochs")
     def drop_bad_epochs(self, reject, flat):
         self.current["data"].drop_bad(reject, flat)
         self.current["name"] += " (dropped bad epochs)"
         self.history.append(f"data.drop_bad({reject}, {flat})")
 
     @data_changed
+    @records_step("drop_detected_artifacts", unsupported=True)
     def drop_detected_artifacts(self, indices):
         self.current["data"].drop(indices, reason="ARTIFACT_DETECTION")
         self.current["name"] += " (dropped detected epochs)"
@@ -877,6 +957,7 @@ class Model:
         self.history.append("data = mne.preprocessing.nirs.beer_lambert_law(data)")
 
     @data_changed
+    @records_step("change_reference")
     def change_reference(self, add, ref):
         self.current["reference"] = ref
         if add:
@@ -892,6 +973,24 @@ class Model:
             self.current["name"] += " (" + ",".join(ref) + ")"
         self.current["data"].set_eeg_reference(ref)
         self.history.append(f"data.set_eeg_reference({ref!r})")
+
+    def apply_pipeline(self, steps):
+        """Apply a sequence of pipeline steps to the current data set in place.
+
+        Each step is applied by calling the corresponding model method. The caller is
+        responsible for duplicating the data set beforehand and for rolling back on
+        failure. Raises `PipelineStepError` if a step is unsupported or fails.
+        """
+        for i, step in enumerate(steps):
+            if step.get("unsupported"):
+                raise PipelineStepError(i, step["op"], "unsupported operation")
+            op = REGISTRY.get(step["op"])
+            if op is None:
+                raise PipelineStepError(i, step["op"], "unknown operation")
+            try:
+                getattr(self, op.method)(**op.deserialize(step["params"]))
+            except Exception as e:
+                raise PipelineStepError(i, op.label, e) from e
 
     @data_changed
     def set_events(self, events):
