@@ -1147,14 +1147,17 @@ class MainWindow(QMainWindow):
             # check if at least one channel name matches a name in the montage
             if set(ch_names) & set(montage.montage.ch_names):
                 self.auto_duplicate()
-                self.model.set_montage(
-                    montage,
-                    match_case=dialog.match_case.isChecked(),
-                    match_alias=dialog.match_alias.isChecked(),
-                    on_missing="ignore"
-                    if dialog.ignore_missing.isChecked()
-                    else "raise",
-                )
+                kwargs = {
+                    "match_case": dialog.match_case.isChecked(),
+                    "match_alias": dialog.match_alias.isChecked(),
+                    "on_missing": (
+                        "ignore" if dialog.ignore_missing.isChecked() else "raise"
+                    ),
+                }
+                if montage.path is not None or montage.embedded:
+                    self.model.set_custom_montage(montage, **kwargs)
+                else:
+                    self.model.set_montage(montage.name, **kwargs)
             else:
                 QMessageBox.critical(
                     self,

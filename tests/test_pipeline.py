@@ -19,6 +19,7 @@ from mnelab.pipeline import (
     pipeline_mutates_data,
     pipeline_to_dict,
 )
+from mnelab.utils import Montage
 
 
 @pytest.fixture(scope="module")
@@ -67,11 +68,86 @@ def test_records_unsupported_sentinel(edf_file):
     """Non-reproducible operations are recorded as a sentinel step."""
     model = Model()
     model.load(edf_file)
-    model.set_montage(None)  # setting a montage is not reproducible
-    assert model.current["pipeline_steps"] == [
-        {"op": "set_montage", "unsupported": True}
-    ]
+    model.load(edf_file)
+    model.append_data([0])  # appending datasets is not reproducible
+    assert model.current["pipeline_steps"][-1] == {
+        "op": "append_data",
+        "unsupported": True,
+    }
     assert has_unsupported(model.current["pipeline_steps"])
+
+
+def test_records_set_montage_builtin(edf_file):
+    """Setting a built-in montage records a reproducible step."""
+    model = Model()
+    model.load(edf_file)
+    model.set_montage("standard_1020")
+    assert model.current["pipeline_steps"] == [
+        {
+            "op": "set_montage",
+            "params": {
+                "montage_name": "standard_1020",
+                "match_case": False,
+                "match_alias": False,
+                "on_missing": "raise",
+            },
+        }
+    ]
+
+
+def test_records_set_montage_clear(edf_file):
+    """Clearing the montage records a reproducible step."""
+    model = Model()
+    model.load(edf_file)
+    model.set_montage(None)
+    assert model.current["pipeline_steps"] == [
+        {
+            "op": "set_montage",
+            "params": {
+                "montage_name": None,
+                "match_case": False,
+                "match_alias": False,
+                "on_missing": "raise",
+            },
+        }
+    ]
+
+
+def test_records_set_custom_montage_unsupported(edf_file, tmp_path):
+    """A montage loaded from a file is not reproducible."""
+    model = Model()
+    model.load(edf_file)
+    dig = mne.channels.make_standard_montage("standard_1020")
+    montage = Montage(dig, "custom.sfp", path=tmp_path / "custom.sfp")
+    model.set_custom_montage(montage)
+    assert model.current["pipeline_steps"] == [
+        {"op": "set_custom_montage", "unsupported": True}
+    ]
+
+
+def test_records_set_custom_montage_embedded_unsupported(edf_file):
+    """A montage extracted from the dataset itself is not reproducible."""
+    model = Model()
+    model.load(edf_file)
+    dig = mne.channels.make_standard_montage("standard_1020")
+    montage = Montage(dig, "Custom", embedded=True)
+    model.set_custom_montage(montage)
+    assert model.current["pipeline_steps"] == [
+        {"op": "set_custom_montage", "unsupported": True}
+    ]
+
+
+def test_apply_pipeline_set_montage_builtin(edf_file):
+    """A built-in montage step can be replayed on another dataset."""
+    model = Model()
+    model.load(edf_file)
+    model.set_montage("standard_1020")
+    steps = [dict(step) for step in model.current["pipeline_steps"]]
+
+    model.load(edf_file)  # second, unprocessed dataset becomes current
+    assert model.current["data"].get_montage() is None
+    model.apply_pipeline(steps)
+    assert model.current["data"].get_montage() is not None
 
 
 def test_duplicate_inherits_independent_steps(edf_file):

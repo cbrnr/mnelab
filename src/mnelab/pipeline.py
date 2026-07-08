@@ -8,7 +8,7 @@ A pipeline is a list of steps. A step is either a supported operation
 
     {"op": "filter", "params": {"lower": 1.0, "upper": 40.0, "notch": None}}
 
-or a sentinel marking a non-reproducible operation (ICA, append, montage, ...)
+or a sentinel marking a non-reproducible operation (ICA, append, ...)
 
     {"op": "apply_ica", "unsupported": True}
 
@@ -135,6 +135,10 @@ def _check_interpolate(ctx, params):
         return "channel locations required (set a montage first)"
 
 
+def _check_set_montage(ctx, params):
+    ctx["has_locations"] = params["montage_name"] is not None
+
+
 def _check_epoch(ctx, params):
     if ctx["dtype"] != "raw":
         return f"requires raw data (current: {ctx['dtype']})"
@@ -198,6 +202,14 @@ REGISTRY = {
             "Interpolate Bad Channels",
             "interpolate_bads",
             _check_interpolate,
+        ),
+        Op(
+            "set_montage",
+            "Set Montage",
+            "set_montage",
+            _check_set_montage,
+            ("montage_name",),
+            mutates=False,
         ),
         Op(
             "find_events",

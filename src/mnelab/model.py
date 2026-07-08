@@ -93,8 +93,8 @@ def pipeline(_func=None, *, unsupported=False):
     The operation key is taken from the decorated method's name. Supported operations
     record `{"op": name, "params": {...}}`, where the parameters are bound from the call
     signature and converted to a JSON-serializable form. Non-reproducible operations
-    (e.g. ICA, append, montage) record a sentinel `{"op": name, "unsupported": True}` so
-    that a derived pipeline cannot silently omit them.
+    (e.g. ICA, append) record a sentinel `{"op": name, "unsupported": True}` so that a
+    derived pipeline cannot silently omit them.
     """
 
     def decorator(f):
@@ -731,15 +731,8 @@ class Model:
         mne.rename_channels(self.current["data"].info, mapping)
         self.history.append(f"mne.rename_channels(data.info, {mapping})")
 
-    @data_changed
-    @pipeline(unsupported=True)
-    def set_montage(
-        self,
-        montage,
-        match_case=False,
-        match_alias=False,
-        on_missing="raise",
-    ):
+    def _apply_montage(self, montage, match_case, match_alias, on_missing):
+        """Apply a montage (or `None` to clear it) to the current dataset and ICA."""
         self.current["montage"] = montage
         self.current["data"].set_montage(
             montage=montage.montage if montage is not None else None,
@@ -770,6 +763,35 @@ class Model:
                 f"match_alias={match_alias}, on_missing={on_missing!r})"
             )
             self.current["iclabel"] = None
+
+    @data_changed
+    @pipeline
+    def set_montage(
+        self,
+        montage_name=None,
+        match_case=False,
+        match_alias=False,
+        on_missing="raise",
+    ):
+        """Set a built-in montage by name, or clear it by passing `None`."""
+        montage = (
+            Montage(mne.channels.make_standard_montage(montage_name), montage_name)
+            if montage_name is not None
+            else None
+        )
+        self._apply_montage(montage, match_case, match_alias, on_missing)
+
+    @data_changed
+    @pipeline(unsupported=True)
+    def set_custom_montage(
+        self,
+        montage,
+        match_case=False,
+        match_alias=False,
+        on_missing="raise",
+    ):
+        """Set a montage loaded from a file, or one embedded in the dataset."""
+        self._apply_montage(montage, match_case, match_alias, on_missing)
 
     @data_changed
     @pipeline
