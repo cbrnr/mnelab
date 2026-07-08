@@ -585,6 +585,21 @@ class MainWindow(QMainWindow):
         )
         self.pipeline_button.setIcon(QIcon.fromTheme("edit-pipeline"))
         self.pipeline_button.clicked.connect(self.edit_pipeline)
+        if sys.platform == "darwin":
+            self.pipeline_button.setStyleSheet("""
+                QToolButton {
+                    border: none;
+                    background: transparent;
+                }
+                QToolButton:hover {
+                    background: rgba(128, 128, 128, 0.2);
+                    border-radius: 4px;
+                }
+                QToolButton:pressed {
+                    background: rgba(128, 128, 128, 0.35);
+                    border-radius: 4px;
+                }
+            """)
         self.statusBar().addWidget(self.pipeline_button)
         self._update_pipeline_button()
 
