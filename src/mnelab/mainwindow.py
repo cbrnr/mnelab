@@ -604,6 +604,10 @@ class MainWindow(QMainWindow):
         self._update_pipeline_button()
 
         self.status_label = QLabel()
+        if sys.platform == "darwin":
+            status_font = self.status_label.font()
+            status_font.setPointSizeF(status_font.pointSizeF() * 0.85)
+            self.status_label.setFont(status_font)
         self.statusBar().addPermanentWidget(self.status_label)
         if settings["statusbar"]:
             self.statusBar().show()
