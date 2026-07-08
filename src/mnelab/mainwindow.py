@@ -426,13 +426,19 @@ class MainWindow(QMainWindow):
         )
 
         pipeline_menu = self.menuBar().addMenu("Pipe&line")
-        self.all_actions["edit_pipeline"] = pipeline_menu.addAction(
+        self.all_actions["create_pipeline"] = pipeline_menu.addAction(
             QIcon.fromTheme("create-pipeline"),
+            "&Create Pipeline from Current Dataset",
+            self.create_pipeline,
+        )
+        self.all_actions["edit_pipeline"] = pipeline_menu.addAction(
+            QIcon.fromTheme("edit-pipeline"),
             "&Edit Pipeline...",
             self.edit_pipeline,
         )
         self.all_actions["apply_pipeline"] = pipeline_menu.addAction(
-            "&Apply to Current Dataset",
+            QIcon.fromTheme("apply-pipeline"),
+            "&Apply Pipeline to Current Dataset",
             self.apply_pipeline,
         )
 
@@ -577,7 +583,7 @@ class MainWindow(QMainWindow):
         self.pipeline_button.setToolButtonStyle(
             Qt.ToolButtonStyle.ToolButtonTextBesideIcon
         )
-        self.pipeline_button.setIcon(QIcon.fromTheme("create-pipeline"))
+        self.pipeline_button.setIcon(QIcon.fromTheme("edit-pipeline"))
         self.pipeline_button.clicked.connect(self.edit_pipeline)
         self.statusBar().addWidget(self.pipeline_button)
         self._update_pipeline_button()
@@ -762,6 +768,9 @@ class MainWindow(QMainWindow):
             )
             self.all_actions["xdf_metadata"].setEnabled(
                 enabled and self.model.current["ftype"] in ["XDF", "XDFZ", "XDF.GZ"]
+            )
+            self.all_actions["create_pipeline"].setEnabled(
+                enabled and bool(self.model.current["pipeline_steps"])
             )
             self.all_actions["apply_pipeline"].setEnabled(
                 enabled and bool(self.pipeline) and not has_unsupported(self.pipeline)
@@ -1747,6 +1756,11 @@ class MainWindow(QMainWindow):
         else:
             self.pipeline_button.setText(str(n))
         self.pipeline_button.setToolTip(tip)
+
+    def create_pipeline(self):
+        """Create a pipeline from the current dataset's processing steps."""
+        if self.model.data:
+            self._create_pipeline_from(self.model.current)
 
     def create_pipeline_for(self, dataset_id):
         """Create a pipeline from the given dataset's processing steps."""
