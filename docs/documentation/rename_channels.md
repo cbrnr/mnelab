@@ -1,6 +1,6 @@
 # Renaming Channels
 
-We use [S001R06.edf](https://www.physionet.org/files/eegmmidb/1.0.0/S001/S001R06.edf?download) from the [EEG Motor Movement/Imagery Dataset](https://www.physionet.org/content/eegmmidb/1.0.0/) in this example. In this data set, all channel names contain trailing dots (for example, `C3..` instead of `C3`). These extra characters prevent MNELAB from correctly matching the channels to a standard montage (that is, predefined channel locations), so let's remove them from the channel names.
+We use [S001R06.edf](https://www.physionet.org/files/eegmmidb/1.0.0/S001/S001R06.edf?download) from the [EEG Motor Movement/Imagery Dataset](https://www.physionet.org/content/eegmmidb/1.0.0/) in this example. In this dataset, all channel names contain trailing dots (for example, `C3..` instead of `C3`). These extra characters prevent MNELAB from correctly matching the channels to a standard montage (that is, predefined channel locations), so let's remove them from the channel names.
 
 To do this, select *Channels – Rename Channels…* and configure the dialog as follows to strip the dots from the end of the channel names:
 

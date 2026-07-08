@@ -284,7 +284,7 @@ class SidebarTreeWidget(QTreeWidget):
         return btn
 
     def _pipeline_available(self, dataset_id):
-        """Return True if a pipeline can be created from the given data set."""
+        """Return True if a pipeline can be created from the given dataset."""
         model = self.parent.window().model
         index = model.find_index_by_id(dataset_id)
         return index >= 0 and bool(model.data[index]["pipeline_steps"])
@@ -322,7 +322,7 @@ class SidebarTreeWidget(QTreeWidget):
                 )
 
     def _create_pipeline(self, dataset_id):
-        """Create a pipeline from the given data set's processing steps."""
+        """Create a pipeline from the given dataset's processing steps."""
         self.parent.window().create_pipeline_for(dataset_id)
 
     def _close_dataset(self, dataset_id):

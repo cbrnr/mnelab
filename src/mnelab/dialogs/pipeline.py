@@ -7,8 +7,6 @@ from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
 
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QFontMetrics
 from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
@@ -35,15 +33,11 @@ from mnelab.settings import read_settings, write_settings
 class PipelineDialog(QDialog):
     """Dialog to view, edit, save, and load a processing pipeline."""
 
-    def __init__(
-        self, parent, steps, source_name=None, dataset_steps=None, dataset_name=None
-    ):
+    def __init__(self, parent, steps, source_name=None):
         super().__init__(parent=parent)
         self.setWindowTitle("Pipeline")
         self.steps = deepcopy(steps)  # edit a copy; caller reads back on accept
         self.source_name = source_name
-        self.dataset_steps = dataset_steps  # steps of the currently selected data set
-        self.dataset_name = dataset_name
 
         vbox = QVBoxLayout(self)
 
@@ -72,25 +66,6 @@ class PipelineDialog(QDialog):
         hbox.addLayout(button_vbox)
         vbox.addLayout(hbox)
 
-        if self.dataset_name:
-            elided = QFontMetrics(self.font()).elidedText(
-                self.dataset_name, Qt.TextElideMode.ElideMiddle, 160
-            )
-            create_label = f'Create from "{elided}"'
-        else:
-            create_label = "Create from Dataset"
-        self.create_button = QPushButton(create_label)
-        self.create_button.setEnabled(bool(self.dataset_steps))
-        if not self.dataset_steps:
-            self.create_button.setToolTip(
-                "The selected data set has no reproducible steps."
-            )
-        elif self.dataset_name:
-            self.create_button.setToolTip(
-                f'Create a pipeline from "{self.dataset_name}"'
-            )
-        self.create_button.clicked.connect(self._create_from_dataset)
-
         self.load_button = QPushButton("Load...")
         self.save_button = QPushButton("Save...")
         self.load_button.clicked.connect(self._load)
@@ -103,7 +78,6 @@ class PipelineDialog(QDialog):
         buttonbox.rejected.connect(self.reject)
 
         bottom_hbox = QHBoxLayout()
-        bottom_hbox.addWidget(self.create_button)
         bottom_hbox.addWidget(self.load_button)
         bottom_hbox.addWidget(self.save_button)
         bottom_hbox.addStretch()
@@ -178,22 +152,6 @@ class PipelineDialog(QDialog):
             with open(filename, "w", encoding="utf-8") as f:
                 json.dump(document, f, indent=2)
             write_settings(last_dir=str(Path(filename).parent))
-
-    def _create_from_dataset(self):
-        if self.steps:  # guard against clobbering unsaved edits
-            reply = QMessageBox.question(
-                self,
-                "Replace pipeline?",
-                f"Replace the current pipeline with the "
-                f'{len(self.dataset_steps)} step(s) from "{self.dataset_name}"?',
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
-                QMessageBox.StandardButton.No,
-            )
-            if reply != QMessageBox.StandardButton.Yes:
-                return
-        self.steps = deepcopy(self.dataset_steps)
-        self.source_name = self.dataset_name
-        self._populate()
 
     def _load(self):
         start_dir = read_settings("last_dir") or str(Path.home())

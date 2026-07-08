@@ -132,8 +132,8 @@ class Model:
 
     def __init__(self):
         self.view = None  # current view
-        self.data = []  # list of data sets
-        self.index = -1  # index of currently active data set
+        self.data = []  # list of datasets
+        self.index = -1  # index of currently active dataset
         self._next_id = 1  # monotonically increasing dataset ID counter
         self._temp_files = set()  # paths of temporary .fif cache files
         self.log = []  # captured MNE log messages
@@ -155,7 +155,7 @@ class Model:
 
     @data_changed(invalidate_cache=False)
     def insert_data(self, dataset, parent_id=None):
-        """Insert data set after current index."""
+        """Insert dataset after current index."""
         dataset["id"] = self._next_id
         dataset["parent_id"] = parent_id
         self._next_id += 1
@@ -165,12 +165,12 @@ class Model:
 
     @data_changed(invalidate_cache=False)
     def update_data(self, dataset):
-        """Update/overwrite data set at current index."""
+        """Update/overwrite dataset at current index."""
         self.current = dataset
 
     @data_changed(invalidate_cache=False)
     def remove_data(self, index=-1):
-        """Remove data set at current index."""
+        """Remove dataset at current index."""
         if index == -1:
             index = self.index
 
@@ -183,7 +183,7 @@ class Model:
 
     @data_changed(invalidate_cache=False)
     def duplicate_data(self):
-        """Duplicate current data set."""
+        """Duplicate current dataset."""
         parent_id = self.current["id"]
         self.insert_data(deepcopy(self.current), parent_id=parent_id)
         self.history[-1] = self.history[-1][:-5] + "deepcopy(data))"
@@ -194,12 +194,12 @@ class Model:
 
     @property
     def names(self):
-        """Return list of all data set names."""
+        """Return list of all dataset names."""
         return [item["name"] for item in self.data]
 
     @property
     def nbytes(self):
-        """Return size (in bytes) of all data sets."""
+        """Return size (in bytes) of all datasets."""
         return sum(
             item["data"].get_data().nbytes
             for item in self.data
@@ -208,7 +208,7 @@ class Model:
 
     @property
     def current(self):
-        """Return current data set."""
+        """Return current dataset."""
         if self.index > -1:
             return self.data[self.index]
         return None
@@ -218,7 +218,7 @@ class Model:
         self.data[self.index] = value
 
     def __len__(self):
-        """Return number of data sets."""
+        """Return number of datasets."""
         return len(self.data)
 
     def find_index_by_id(self, dataset_id):
@@ -314,7 +314,7 @@ class Model:
 
     @data_changed(invalidate_cache=False)
     def load(self, fname, *args, **kwargs):
-        """Load data set from file."""
+        """Load dataset from file."""
         fname = str(Path(fname).resolve().as_posix())
         try:
             data = read_raw(fname, *args, **kwargs, preload=True)
@@ -589,12 +589,12 @@ class Model:
         self.history.append(f"ica = mne.preprocessing.read_ica({fname!r})")
 
     def get_info(self):
-        """Get basic information on current data set.
+        """Get basic information on current dataset.
 
         Returns
         -------
         info : dict
-            Dictionary with information on current data set.
+            Dictionary with information on current dataset.
         """
         if self.current["data"] is None:
             self.reload_dataset(self.index)
@@ -863,7 +863,7 @@ class Model:
     @data_changed
     @pipeline(unsupported=True)
     def append_data(self, selected_idx):
-        """Append the given raw data sets."""
+        """Append the given raw datasets."""
         for idx in selected_idx:  # ensure all source datasets are in memory
             self.reload_dataset(idx)
         self.current["name"] += " (appended)"
@@ -897,7 +897,7 @@ class Model:
             if self.current["data"].get_montage() is None:
                 raise ValueError("Montage must be set before ICLabel classification.")
             if self.current["ica"] is None:
-                raise ValueError("No ICA solution found in current data set.")
+                raise ValueError("No ICA solution found in current dataset.")
             probs = run_iclabel(self.current["data"], self.current["ica"])
             self.current["iclabel"] = probs
             self.history.append("probs = run_iclabel(data, ica)")
@@ -977,10 +977,10 @@ class Model:
         self.history.append(f"data.set_eeg_reference({ref!r})")
 
     def apply_pipeline(self, steps):
-        """Apply a sequence of pipeline steps to the current data set in place.
+        """Apply a sequence of pipeline steps to the current dataset in place.
 
         Each step is applied by calling the corresponding model method. The caller is
-        responsible for duplicating the data set beforehand and for rolling back on
+        responsible for duplicating the dataset beforehand and for rolling back on
         failure. Raises `PipelineStepError` if a step is unsupported or fails.
         """
         for i, step in enumerate(steps):
@@ -1007,14 +1007,14 @@ class Model:
     @data_changed(invalidate_cache=False)
     def move_data(self, source, target):
         """
-        Change the position of a single data set in `self.data`.
+        Change the position of a single dataset in `self.data`.
 
         Parameters
         ----------
         source : int
-            The data set's initial index.
+            The dataset's initial index.
         target : int
-            The index the data set should be moved to.
+            The index the dataset should be moved to.
         """
 
         # pop and save

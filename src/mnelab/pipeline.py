@@ -242,7 +242,7 @@ def pipeline_mutates_data(steps):
     """Return True if applying the pipeline would change the underlying signal data.
 
     Steps that only touch metadata (e.g. channel properties, event detection) do not
-    require duplicating the target data set first, matching how these operations behave
+    require duplicating the target dataset first, matching how these operations behave
     when run interactively (see the corresponding `MainWindow` handlers).
     """
     return any(

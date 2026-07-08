@@ -52,7 +52,7 @@ def fif_file_with_stim(tmp_path_factory):
 
 
 def test_records_supported_steps(edf_file):
-    """Supported operations attach structured steps to the data set."""
+    """Supported operations attach structured steps to the dataset."""
     model = Model()
     model.load(edf_file)
     model.filter(1, 40)
@@ -75,7 +75,7 @@ def test_records_unsupported_sentinel(edf_file):
 
 
 def test_duplicate_inherits_independent_steps(edf_file):
-    """A duplicated data set inherits an independent copy of the pipeline steps."""
+    """A duplicated dataset inherits an independent copy of the pipeline steps."""
     model = Model()
     model.load(edf_file)
     model.filter(1, 40)
@@ -117,14 +117,14 @@ def test_pipeline_from_dict_rejects_invalid():
 
 
 def test_apply_pipeline_to_other_dataset(edf_file):
-    """A pipeline captured from one data set can be applied to another."""
+    """A pipeline captured from one dataset can be applied to another."""
     model = Model()
     model.load(edf_file)
     model.filter(1, 40)
     model.resample(128)
     steps = [dict(step) for step in model.current["pipeline_steps"]]
 
-    model.load(edf_file)  # second, unprocessed data set becomes current
+    model.load(edf_file)  # second, unprocessed dataset becomes current
     assert model.current["data"].info["sfreq"] == 256
     model.apply_pipeline(steps)
     assert model.current["data"].info["sfreq"] == 128
@@ -233,14 +233,14 @@ def test_check_pipeline_find_events_missing_channel(fif_file_with_stim):
 
 
 def test_apply_pipeline_find_events_then_epoch(fif_file_with_stim):
-    """A captured find_events + epoch_data chain replays on another data set."""
+    """A captured find_events + epoch_data chain replays on another dataset."""
     model = Model()
     model.load(fif_file_with_stim)
     model.find_events(stim_channel="Stim")
     model.epoch_data(event_id=[5], tmin=-0.1, tmax=0.1, baseline=None)
     steps = [dict(step) for step in model.current["pipeline_steps"]]
 
-    model.load(fif_file_with_stim)  # fresh, unprocessed raw data set
+    model.load(fif_file_with_stim)  # fresh, unprocessed raw dataset
     assert model.current["dtype"] == "raw"
     model.apply_pipeline(steps)
     assert model.current["dtype"] == "epochs"
@@ -257,7 +257,7 @@ def test_pipeline_does_not_mutate_data_for_metadata_only_steps():
     """Metadata-only steps (e.g. find_events) do not require duplication.
 
     This matches the interactive behavior: running Find Events, Channel Properties, or
-    Rename Channels from the menu never creates a new data set (see the corresponding
+    Rename Channels from the menu never creates a new dataset (see the corresponding
     handlers in mainwindow.py, none of which call auto_duplicate()).
     """
     steps = [
@@ -281,7 +281,7 @@ def test_pipeline_mutates_data_for_mixed_steps():
 
 
 def test_apply_pipeline_find_events_does_not_create_new_dataset(fif_file_with_stim):
-    """Applying a metadata-only pipeline modifies the current data set in place."""
+    """Applying a metadata-only pipeline modifies the current dataset in place."""
     model = Model()
     model.load(fif_file_with_stim)
     n_datasets_before = len(model.data)
@@ -290,5 +290,5 @@ def test_apply_pipeline_find_events_does_not_create_new_dataset(fif_file_with_st
     steps = [{"op": "find_events", "params": {"stim_channel": "Stim"}}]
     assert pipeline_mutates_data(steps) is False
     model.apply_pipeline(steps)
-    assert len(model.data) == n_datasets_before  # no new data set was created
+    assert len(model.data) == n_datasets_before  # no new dataset was created
     assert len(model.current["events"]) == 1

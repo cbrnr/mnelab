@@ -109,7 +109,7 @@ class MainWindow(QMainWindow):
         Parameters
         ----------
         model : mnelab.model.Model instance
-            The main window needs to connect to a model containing all data sets. This
+            The main window needs to connect to a model containing all datasets. This
             decouples the GUI from the data (model/view).
         """
         super().__init__()
@@ -432,7 +432,7 @@ class MainWindow(QMainWindow):
             self.edit_pipeline,
         )
         self.all_actions["apply_pipeline"] = pipeline_menu.addAction(
-            "&Apply to Current Data Set",
+            "&Apply to Current Dataset",
             self.apply_pipeline,
         )
 
@@ -680,7 +680,7 @@ class MainWindow(QMainWindow):
         self._update_pipeline_button()
 
         # toggle actions
-        if len(self.model) == 0:  # disable if no data sets are currently open
+        if len(self.model) == 0:  # disable if no datasets are currently open
             enabled = False
         else:
             enabled = True
@@ -1043,8 +1043,8 @@ class MainWindow(QMainWindow):
         write_settings(last_dir=str(Path(fname).parent))
 
     def close_all(self):
-        """Close all currently open data sets."""
-        msg = QMessageBox.question(self, "Close all data sets", "Close all data sets?")
+        """Close all currently open datasets."""
+        msg = QMessageBox.question(self, "Close all datasets", "Close all datasets?")
         if msg == QMessageBox.StandardButton.Yes:
             while len(self.model) > 0:
                 self.model.remove_data()
@@ -1058,7 +1058,7 @@ class MainWindow(QMainWindow):
         dialog.exec()
 
     def pick_channels(self):
-        """Pick channels in current data set."""
+        """Pick channels in current dataset."""
         channels = self.model.current["data"].info["ch_names"]
         types = sorted(set(self.model.current["data"].get_channel_types()))
         dialog = PickChannelsDialog(self, channels, types)
@@ -1739,14 +1739,17 @@ class MainWindow(QMainWindow):
     def _update_pipeline_button(self):
         """Refresh the status-bar pipeline button to reflect the current pipeline."""
         n = len(self.pipeline)
-        self.pipeline_button.setText(str(n))
-        tip = f"Processing pipeline: {n} step(s) — click to edit"
+        step_word = "step" if n == 1 else "steps"
+        tip = f"Pipeline ({n} {step_word})"
         if has_unsupported(self.pipeline):
+            self.pipeline_button.setText(f"{n} ⚠")
             tip += " (contains non-reproducible steps)"
+        else:
+            self.pipeline_button.setText(str(n))
         self.pipeline_button.setToolTip(tip)
 
     def create_pipeline_for(self, dataset_id):
-        """Create a pipeline from the given data set's processing steps."""
+        """Create a pipeline from the given dataset's processing steps."""
         index = self.model.find_index_by_id(dataset_id)
         if index >= 0:
             self._create_pipeline_from(self.model.data[index])
@@ -1755,28 +1758,21 @@ class MainWindow(QMainWindow):
         steps = dataset["pipeline_steps"]
         if not steps:
             return
-        self._open_pipeline_dialog(steps, dataset["name"], dataset)
+        self._open_pipeline_dialog(steps, dataset["name"])
 
     def edit_pipeline(self):
         """View, edit, save, or load the current pipeline."""
-        dataset = self.model.current if self.model.data else None
-        self._open_pipeline_dialog(self.pipeline, self.pipeline_source, dataset)
+        self._open_pipeline_dialog(self.pipeline, self.pipeline_source)
 
-    def _open_pipeline_dialog(self, steps, source_name, dataset):
-        dialog = PipelineDialog(
-            self,
-            steps,
-            source_name=source_name,
-            dataset_steps=dataset["pipeline_steps"] if dataset is not None else None,
-            dataset_name=dataset["name"] if dataset is not None else None,
-        )
+    def _open_pipeline_dialog(self, steps, source_name):
+        dialog = PipelineDialog(self, steps, source_name=source_name)
         if dialog.exec():
             self.pipeline = dialog.steps
             self.pipeline_source = dialog.source_name
         self.data_changed()
 
     def apply_pipeline(self):
-        """Apply the current pipeline to the current data set."""
+        """Apply the current pipeline to the current dataset."""
         steps = self.pipeline
         if not steps:
             return
@@ -1790,7 +1786,7 @@ class MainWindow(QMainWindow):
         try:
             self.model.apply_pipeline(steps)
         except PipelineStepError as e:
-            if duplicated:  # roll back the freshly created data set
+            if duplicated:  # roll back the freshly created dataset
                 self.model.remove_data()
                 self.model.index -= 1
                 self.data_changed()
@@ -1829,7 +1825,7 @@ class MainWindow(QMainWindow):
         reply = QMessageBox.question(
             self,
             "Apply pipeline?",
-            "Some steps may not be compatible with the current data set:\n\n"
+            "Some steps may not be compatible with the current dataset:\n\n"
             f"{details}\n\nApply anyway?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
@@ -1954,20 +1950,20 @@ class MainWindow(QMainWindow):
             )
 
     def auto_duplicate(self):
-        """Automatically duplicate current data set.
+        """Automatically duplicate current dataset.
 
-        If the current data set is stored in a file (i.e. was loaded directly from a
-        file), a new data set is automatically created. If the current data set is not
+        If the current dataset is stored in a file (i.e. was loaded directly from a
+        file), a new dataset is automatically created. If the current dataset is not
         stored in a file (i.e. was created by operations in MNELAB), a dialog box asks
-        the user if the current data set should be overwritten or duplicated.
+        the user if the current dataset should be overwritten or duplicated.
 
         Returns
         -------
         duplicated : bool
-            True if the current data set was automatically duplicated, False if the
-            current data set was overwritten.
+            True if the current dataset was automatically duplicated, False if the
+            current dataset was overwritten.
         """
-        # if current data is stored in a file create a new data set
+        # if current data is stored in a file create a new dataset
         if self.model.current["fname"]:
             parent_index = self.model.index
             self.model.duplicate_data()
@@ -1981,15 +1977,15 @@ class MainWindow(QMainWindow):
             | Qt.WindowType.WindowTitleHint
             | Qt.WindowType.CustomizeWindowHint
         )
-        msg.setWindowTitle("Modify data set")
+        msg.setWindowTitle("Modify dataset")
         msg.setText(
-            "You are about to modify the current data set. How do you want to proceed?"
+            "You are about to modify the current dataset. How do you want to proceed?"
         )
         create_button = msg.addButton(
-            "Create new data set", QMessageBox.ButtonRole.AcceptRole
+            "Create new dataset", QMessageBox.ButtonRole.AcceptRole
         )
         overwrite_button = msg.addButton(
-            "Overwrite current data set", QMessageBox.ButtonRole.RejectRole
+            "Overwrite current dataset", QMessageBox.ButtonRole.RejectRole
         )
         msg.setDefaultButton(create_button)
         msg.setEscapeButton(create_button)

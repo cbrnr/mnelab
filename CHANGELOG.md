@@ -1,6 +1,6 @@
 ## [UNRELEASED] · YYYY-MM-DD
 ### ✨ Added
-- Add a pipeline feature to capture the processing steps applied to a data set and reapply them to another data set  (pipelines can also be edited, saved to, and loaded from JSON files) ([#683](https://github.com/cbrnr/mnelab/pull/683) by [Clemens Brunner](https://github.com/cbrnr))
+- Add a pipeline feature to capture the processing steps applied to a dataset and reapply them to another dataset (pipelines can also be edited, saved to, and loaded from JSON files) ([#683](https://github.com/cbrnr/mnelab/pull/683) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🌀 Changed
 - Use MNEXTEND's `resolve_streams()` and `read_bvrf_header()` instead of depending on PyXDF and PyBVRF directly ([#679](https://github.com/cbrnr/mnelab/pull/679) by [Clemens Brunner](https://github.com/cbrnr))
@@ -475,7 +475,7 @@
 ## [0.5.3] · 2020-02-03
 ### ✨ Added
 - Add history for setting reference ([#100](https://github.com/cbrnr/mnelab/pull/100) by [Clemens Brunner](https://github.com/cbrnr))
-- Add history for setting montage, switching/duplicating data sets, plot PSD, and plotting data with events ([#109](https://github.com/cbrnr/mnelab/pull/109) by [Clemens Brunner](https://github.com/cbrnr))
+- Add history for setting montage, switching/duplicating datasets, plot PSD, and plotting data with events ([#109](https://github.com/cbrnr/mnelab/pull/109) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🌀 Changed
 - Use environment markers in `setup.py` for `install_requires` ([#105](https://github.com/cbrnr/mnelab/pull/105) by [Clemens Brunner](https://github.com/cbrnr))

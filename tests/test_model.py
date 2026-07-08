@@ -41,11 +41,11 @@ def test_append_data(edf_files, duplicate_data):
     data = [d["data"].get_data()[0] for d in model.data]
 
     assert len(model.data) == len(edf_files), (
-        "Number of data sets in model is not equal to number of files after loading"
+        "Number of datasets in model is not equal to number of files after loading"
     )
 
-    idx_list = [1, 2]  # data sets to append
-    model.index = 0  # set current data set
+    idx_list = [1, 2]  # datasets to append
+    model.index = 0  # set current dataset
     if duplicate_data:  # adjust for index change if duplicated
         model.duplicate_data()
         idx_list = [idx + 1 if idx >= model.index else idx for idx in idx_list]
@@ -54,14 +54,14 @@ def test_append_data(edf_files, duplicate_data):
 
     assert (
         len(model.data) == len(edf_files) + 1 if duplicate_data else len(edf_files)
-    ), "Number of data sets in model is not equal to number of files after appending"
+    ), "Number of datasets in model is not equal to number of files after appending"
 
     assert model.current["name"].endswith("(appended)"), (
-        "Name of appended data set does not match expected name"
+        "Name of appended dataset does not match expected name"
     )
 
     assert len(model.current["data"].times) == sum(len(d) for d in data), (
-        "Length of appended data set does not match expected length"
+        "Length of appended dataset does not match expected length"
     )
 
     appended_data = model.current["data"].get_data()[0]

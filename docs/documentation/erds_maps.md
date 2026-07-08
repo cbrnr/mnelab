@@ -8,28 +8,28 @@ Download data files for runs 6, 10, and 14 of subject 1 from the [EEG Motor Move
 - [S001R10.edf](https://physionet.org/files/eegmmidb/1.0.0/S001/S001R10.edf?download)
 - [S001R14.edf](https://physionet.org/files/eegmmidb/1.0.0/S001/S001R14.edf?download)
 
-## Load data sets
+## Load datasets
 In MNELAB, select _File – Open…_, pick the three downloaded files and click _Open_.
-The three data sets appear in the sidebar. The data set loaded last ("S001R14") is highlighted, indicating that it is currently active.
-The info panel on the right shows information about the active data set.
+The three datasets appear in the sidebar. The dataset loaded last ("S001R14") is highlighted, indicating that it is currently active.
+The info panel on the right shows information about the active dataset.
 
 ![](./images/erds_maps/data_sets_loaded.png)
 
 ## Concatenate data
-We want to concatenate the three data sets, starting with _S001R06_.
+We want to concatenate the three datasets, starting with _S001R06_.
 In the sidebar, select _S001R06_, then go to _Edit – Append data…_ to open the corresponding dialog.
 Select _S001R10_ and _S001R14_ in the _Source_ panel; to select multiple items, hold <kbd>Ctrl</kbd> (<kbd>⌘</kbd> on macOS) while clicking.
-Drag the selected data sets to the _Destination_ panel (or click on the arrow button in the middle) and confirm with _OK_.
+Drag the selected datasets to the _Destination_ panel (or click on the arrow button in the middle) and confirm with _OK_.
 A new entry appears in the sidebar: "S001R06 (appended)".
 Rename it to "S001" by double-clicking the sidebar entry, entering the new name, and confirming with <kbd>Return</kbd>.
 The entries _Samples_ and _Length_ in the info panel confirm that it is indeed the result of the concatenation.
-To close the original data sets, select each one in the sidebar and click _File – Close_.
+To close the original datasets, select each one in the sidebar and click _File – Close_.
 
 ![](./images/erds_maps/append_data.png)
 
 ## Convert annotations to events
 Splitting the raw data into epochs requires events.
-The info panel shows that the data set already contains [annotations](https://mne.tools/stable/glossary.html#term-annotations), but no [events](https://mne.tools/stable/glossary.html#term-events).
+The info panel shows that the dataset already contains [annotations](https://mne.tools/stable/glossary.html#term-annotations), but no [events](https://mne.tools/stable/glossary.html#term-events).
 To convert annotations to events, select _Tools – Create events from annotations_.
 The _Events_ entry in the info panel now updates to "90 (1, 2, 3)", indicating there are a total of 90 events with IDs 1, 2, and 3, which correspond to:
 - 1 (annotation T0): rest
@@ -42,9 +42,9 @@ In the dialog, select events "2" and "3" (the two task onsets).
 You can click and drag to select multiple items in this dialog.
 For _Interval around events_ enter "-1.5" and "4.5" as start and end times relative to the selected events, respectively.
 We will create ERDS maps in the time interval ranging from -1 to 4 seconds, but we add half a second at the start and end to account for edge effects.
-Uncheck _Baseline Correction_, confirm with _OK_, and select _Create a new data set_.
-In the info panel, the _Data type_ of the newly created data set ("S001 (epoched)") is now [Epochs](https://mne.tools/stable/glossary.html#term-epochs).
-If you select the original data set, you'll see that it is of type [Raw](https://mne.tools/stable/glossary.html#term-raw).
+Uncheck _Baseline Correction_, confirm with _OK_, and select _Create new dataset_.
+In the info panel, the _Data type_ of the newly created dataset ("S001 (epoched)") is now [Epochs](https://mne.tools/stable/glossary.html#term-epochs).
+If you select the original dataset, you'll see that it is of type [Raw](https://mne.tools/stable/glossary.html#term-raw).
 ERDS maps can only be calculated from Epochs.
 
 ![](./images/erds_maps/create_epochs.png)
