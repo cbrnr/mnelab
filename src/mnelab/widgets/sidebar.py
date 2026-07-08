@@ -81,7 +81,7 @@ class SidebarTreeWidget(QTreeWidget):
     def __init__(self, parent):
         super().__init__(parent)
         self.parent = parent
-        self.setColumnCount(3)
+        self.setColumnCount(4)
         self.setHeaderHidden(True)
         self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.setEditTriggers(QAbstractItemView.EditTrigger.DoubleClicked)
@@ -99,9 +99,11 @@ class SidebarTreeWidget(QTreeWidget):
         self.header().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         self.header().setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
         self.header().setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
+        self.header().setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)
         self.header().setMinimumSectionSize(0)
         self.setColumnWidth(1, 56)
         self.setColumnWidth(2, 28)
+        self.setColumnWidth(3, 28)
         self.setItemDelegateForColumn(1, TypeBadgeDelegate(self))
         self.setAccessibleName("Opened datasets")
         self._dragging = False
@@ -196,7 +198,7 @@ class SidebarTreeWidget(QTreeWidget):
 
     def make_item(self, name, dataset_id):
         """Create a styled tree item for a dataset."""
-        item = QTreeWidgetItem(["", "", ""])
+        item = QTreeWidgetItem(["", "", "", ""])
         item.setText(0, name)
         item.setData(0, Qt.ItemDataRole.UserRole, dataset_id)
         item.setSizeHint(0, QSize(0, ROW_HEIGHT))
@@ -208,10 +210,10 @@ class SidebarTreeWidget(QTreeWidget):
         return item
 
     def style_items(self):
-        """Update the close button for the item currently under the cursor."""
+        """Update the hover buttons for the item currently under the cursor."""
         pos = self.viewport().mapFromGlobal(QCursor.pos())
         hovered = self.itemAt(pos)
-        self.showCloseButton(hovered)
+        self.showHoverButtons(hovered)
 
     def _all_items(self):
         """Yield every tree item in the widget, depth-first."""
@@ -230,9 +232,9 @@ class SidebarTreeWidget(QTreeWidget):
     def eventFilter(self, source, event):
         if source == self.viewport() and event.type() == QEvent.Type.MouseMove:
             item = self.itemAt(event.pos())
-            self.showCloseButton(item)
+            self.showHoverButtons(item)
         elif source == self.viewport() and event.type() == QEvent.Type.Leave:
-            self.showCloseButton(None)
+            self.showHoverButtons(None)
         elif isinstance(source, QToolButton) and event.type() == QEvent.Type.Enter:
             source.setStyleSheet("""
                 QToolButton {
@@ -257,36 +259,71 @@ class SidebarTreeWidget(QTreeWidget):
                 }
             """)
             pos = self.viewport().mapFromGlobal(QCursor.pos())
-            self.showCloseButton(self.itemAt(pos))
+            self.showHoverButtons(self.itemAt(pos))
         return False
 
-    def showCloseButton(self, hovered_item):
-        """Show the close button on the hovered item; remove it from all others."""
+    def _make_hover_button(self, icon_name, tooltip, on_click):
+        """Create a transparent tool button used as a per-row hover action."""
+        btn = QToolButton()
+        btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        btn.setFixedSize(24, ROW_HEIGHT)
+        btn.setIcon(QIcon.fromTheme(icon_name))
+        btn.setToolTip(tooltip)
+        btn.setStyleSheet("""
+            QToolButton {
+                background: transparent;
+                border: none;
+            }
+            QToolButton:pressed {
+                background: rgba(128, 128, 128, 0.35);
+                border-radius: 4px;
+            }
+        """)
+        btn.installEventFilter(self)
+        btn.clicked.connect(on_click)
+        return btn
+
+    def _pipeline_available(self, dataset_id):
+        """Return True if a pipeline can be created from the given data set."""
+        model = self.parent.window().model
+        index = model.find_index_by_id(dataset_id)
+        return index >= 0 and bool(model.data[index]["pipeline_steps"])
+
+    def showHoverButtons(self, hovered_item):
+        """Show hover action buttons on the hovered item; remove them from others."""
         for item in self._all_items():
-            if item is hovered_item:
-                if self.itemWidget(item, 2) is not None:
-                    continue  # button already present, don't recreate
-                dataset_id = item.data(0, Qt.ItemDataRole.UserRole)
-                btn = QToolButton()
-                btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-                btn.setFixedSize(24, ROW_HEIGHT)
-                btn.setIcon(QIcon.fromTheme("close-data"))
-                btn.setToolTip("Close Dataset")
-                btn.setStyleSheet("""
-                    QToolButton {
-                        background: transparent;
-                        border: none;
-                    }
-                    QToolButton:pressed {
-                        background: rgba(128, 128, 128, 0.35);
-                        border-radius: 4px;
-                    }
-                """)
-                btn.installEventFilter(self)
-                btn.clicked.connect(lambda _, did=dataset_id: self._close_dataset(did))
-                self.setItemWidget(item, 2, btn)
+            if item is not hovered_item:
+                self.removeItemWidget(item, 2)
+                self.removeItemWidget(item, 3)
+                continue
+            dataset_id = item.data(0, Qt.ItemDataRole.UserRole)
+            if self._pipeline_available(dataset_id):
+                if self.itemWidget(item, 2) is None:
+                    self.setItemWidget(
+                        item,
+                        2,
+                        self._make_hover_button(
+                            "create-pipeline",
+                            "Create Pipeline",
+                            lambda _, did=dataset_id: self._create_pipeline(did),
+                        ),
+                    )
             else:
                 self.removeItemWidget(item, 2)
+            if self.itemWidget(item, 3) is None:
+                self.setItemWidget(
+                    item,
+                    3,
+                    self._make_hover_button(
+                        "close-data",
+                        "Close Dataset",
+                        lambda _, did=dataset_id: self._close_dataset(did),
+                    ),
+                )
+
+    def _create_pipeline(self, dataset_id):
+        """Create a pipeline from the given data set's processing steps."""
+        self.parent.window().create_pipeline_for(dataset_id)
 
     def _close_dataset(self, dataset_id):
         """Close a dataset, cascading to descendants with a confirmation dialog."""

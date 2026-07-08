@@ -48,7 +48,7 @@ class PipelineDialog(QDialog):
 
         hbox = QHBoxLayout()
         self.list = QListWidget()
-        self.list.currentRowChanged.connect(self._update_buttons)
+        self.list.itemSelectionChanged.connect(self._update_buttons)
         hbox.addWidget(self.list, 1)
 
         button_vbox = QVBoxLayout()
@@ -115,7 +115,7 @@ class PipelineDialog(QDialog):
 
     def _update_buttons(self, *_):
         row = self.list.currentRow()
-        has_selection = row >= 0
+        has_selection = bool(self.list.selectedItems())
         self.up_button.setEnabled(has_selection and row > 0)
         self.down_button.setEnabled(has_selection and row < len(self.steps) - 1)
         self.remove_button.setEnabled(has_selection)

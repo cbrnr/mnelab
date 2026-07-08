@@ -425,6 +425,7 @@ class MainWindow(QMainWindow):
 
         pipeline_menu = self.menuBar().addMenu("Pipe&line")
         self.all_actions["create_pipeline"] = pipeline_menu.addAction(
+            QIcon.fromTheme("create-pipeline"),
             "&Create from Current Data Set",
             self.create_pipeline,
         )
@@ -1732,12 +1733,21 @@ class MainWindow(QMainWindow):
 
     def create_pipeline(self):
         """Create a pipeline from the current data set's processing steps."""
-        steps = self.model.current["pipeline_steps"]
+        self._create_pipeline_from(self.model.current)
+
+    def create_pipeline_for(self, dataset_id):
+        """Create a pipeline from the given data set's processing steps."""
+        index = self.model.find_index_by_id(dataset_id)
+        if index >= 0:
+            self._create_pipeline_from(self.model.data[index])
+
+    def _create_pipeline_from(self, dataset):
+        steps = dataset["pipeline_steps"]
         if not steps:
             return
-        self.pipeline = deepcopy(steps)
-        source = self.model.current["name"]
-        if has_unsupported(self.pipeline):
+        pipeline = deepcopy(steps)
+        source = dataset["name"]
+        if has_unsupported(pipeline):
             QMessageBox.warning(
                 self,
                 "Pipeline contains unsupported steps",
@@ -1746,7 +1756,7 @@ class MainWindow(QMainWindow):
                 "These steps are marked in the pipeline and must be removed before the "
                 "pipeline can be applied.",
             )
-        dialog = PipelineDialog(self, self.pipeline, source)
+        dialog = PipelineDialog(self, pipeline, source)
         if dialog.exec():
             self.pipeline = dialog.steps
         self.data_changed()
