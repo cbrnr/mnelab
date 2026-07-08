@@ -42,8 +42,8 @@ class Op:
 def make_context(dataset):
     """Build a lightweight state used to validate a pipeline against a dataset.
 
-    The context simulates how each operation changes the data (channels, dtype, ...)
-    so that chained operations can be validated without touching the real data.
+    The context simulates how each operation changes the data (channels, dtype, ...) so
+    that chained operations can be validated without touching the real data.
     """
     info = dataset["data"].info
     return {
@@ -59,9 +59,6 @@ def make_context(dataset):
 
 def _missing(names, available):
     return sorted(set(names) - set(available))
-
-
-# --- compatibility checks (each returns an error message or None, mutating ctx) ------
 
 
 def _check_raw_or_epochs(ctx, params):
@@ -160,28 +157,80 @@ def _deserialize_epoch(params):
     return {**params, "baseline": tuple(baseline) if baseline is not None else None}
 
 
-REGISTRY = {op.key: op for op in [
-    Op("filter", "Filter", "filter", _check_raw_or_epochs,
-       ("lower", "upper", "notch")),
-    Op("resample", "Resample", "resample", _check_raw_or_epochs, ("sfreq",)),
-    Op("crop", "Crop", "crop", _check_raw, ("start", "stop")),
-    Op("pick_channels", "Pick Channels", "pick_channels", _check_pick, ("picks",)),
-    Op("set_channel_properties", "Channel Properties", "set_channel_properties",
-       _check_channel_properties, ("bads", "names", "types"), mutates=False),
-    Op("rename_channels", "Rename Channels", "rename_channels", _check_rename,
-       ("new_names",), mutates=False),
-    Op("change_reference", "Change Reference", "change_reference", _check_reference,
-       ("add", "ref")),
-    Op("interpolate_bads", "Interpolate Bad Channels", "interpolate_bads",
-       _check_interpolate),
-    Op("find_events", "Find Events", "find_events", _check_find_events,
-       ("stim_channel", "consecutive", "initial_event", "mask", "min_duration",
-        "shortest_event"), mutates=False),
-    Op("epoch_data", "Create Epochs", "epoch_data", _check_epoch,
-       ("event_id", "tmin", "tmax", "baseline"), deserialize=_deserialize_epoch),
-    Op("drop_bad_epochs", "Drop Bad Epochs", "drop_bad_epochs", _check_epochs,
-       ("reject", "flat")),
-]}  # fmt: skip
+REGISTRY = {
+    op.key: op
+    for op in [
+        Op(
+            "filter",
+            "Filter",
+            "filter",
+            _check_raw_or_epochs,
+            ("lower", "upper", "notch"),
+        ),
+        Op("resample", "Resample", "resample", _check_raw_or_epochs, ("sfreq",)),
+        Op("crop", "Crop", "crop", _check_raw, ("start", "stop")),
+        Op("pick_channels", "Pick Channels", "pick_channels", _check_pick, ("picks",)),
+        Op(
+            "set_channel_properties",
+            "Channel Properties",
+            "set_channel_properties",
+            _check_channel_properties,
+            ("bads", "names", "types"),
+            mutates=False,
+        ),
+        Op(
+            "rename_channels",
+            "Rename Channels",
+            "rename_channels",
+            _check_rename,
+            ("new_names",),
+            mutates=False,
+        ),
+        Op(
+            "change_reference",
+            "Change Reference",
+            "change_reference",
+            _check_reference,
+            ("add", "ref"),
+        ),
+        Op(
+            "interpolate_bads",
+            "Interpolate Bad Channels",
+            "interpolate_bads",
+            _check_interpolate,
+        ),
+        Op(
+            "find_events",
+            "Find Events",
+            "find_events",
+            _check_find_events,
+            (
+                "stim_channel",
+                "consecutive",
+                "initial_event",
+                "mask",
+                "min_duration",
+                "shortest_event",
+            ),
+            mutates=False,
+        ),
+        Op(
+            "epoch_data",
+            "Create Epochs",
+            "epoch_data",
+            _check_epoch,
+            ("event_id", "tmin", "tmax", "baseline"),
+            deserialize=_deserialize_epoch,
+        ),
+        Op(
+            "drop_bad_epochs",
+            "Drop Bad Epochs",
+            "drop_bad_epochs",
+            _check_epochs,
+            ("reject", "flat"),
+        ),
+    ]
+}
 
 
 def is_supported(step):

@@ -87,14 +87,14 @@ def _json_safe(value):
     return value
 
 
-def records_step(op_key=None, *, unsupported=False):
+def pipeline(_func=None, *, unsupported=False):
     """Decorator: record a structured pipeline step on the current dataset.
 
-    Supported operations record `{"op": op_key, "params": {...}}`, where the parameters
-    are bound from the call signature and converted to a JSON-serializable form.
-    Non-reproducible operations (e.g. ICA, append, montage) record a sentinel
-    `{"op": op_key, "unsupported": True}` so that a derived pipeline cannot silently
-    omit them.
+    The operation key is taken from the decorated method's name. Supported operations
+    record `{"op": name, "params": {...}}`, where the parameters are bound from the call
+    signature and converted to a JSON-serializable form. Non-reproducible operations
+    (e.g. ICA, append, montage) record a sentinel `{"op": name, "unsupported": True}` so
+    that a derived pipeline cannot silently omit them.
     """
 
     def decorator(f):
@@ -108,7 +108,7 @@ def records_step(op_key=None, *, unsupported=False):
                 steps = []
                 self.current["pipeline_steps"] = steps
             if unsupported:
-                steps.append({"op": op_key or f.__name__, "unsupported": True})
+                steps.append({"op": f.__name__, "unsupported": True})
             else:
                 bound = sig.bind(self, *args, **kwargs)
                 bound.apply_defaults()
@@ -117,11 +117,13 @@ def records_step(op_key=None, *, unsupported=False):
                     for name, value in bound.arguments.items()
                     if name != "self"
                 }
-                steps.append({"op": op_key, "params": params})
+                steps.append({"op": f.__name__, "params": params})
             return result
 
         return wrapper
 
+    if _func is not None:
+        return decorator(_func)
     return decorator
 
 
@@ -341,7 +343,7 @@ class Model:
         self.load_data(data, fname, name=name)
 
     @data_changed
-    @records_step("find_events")
+    @pipeline
     def find_events(
         self,
         stim_channel,
@@ -700,14 +702,14 @@ class Model:
         }
 
     @data_changed
-    @records_step("pick_channels")
+    @pipeline
     def pick_channels(self, picks):
         self.current["data"] = self.current["data"].pick(picks)
         self.current["name"] += " (channels picked)"
         self.history.append(f"data.pick({picks})")
 
     @data_changed
-    @records_step("set_channel_properties")
+    @pipeline
     def set_channel_properties(self, bads=None, names=None, types=None):
         if bads != self.current["data"].info["bads"]:
             self.current["data"].info["bads"] = bads
@@ -720,7 +722,7 @@ class Model:
             self.history.append(f"data.set_channel_types({types})")
 
     @data_changed
-    @records_step("rename_channels")
+    @pipeline
     def rename_channels(self, new_names):
         old_names = self.current["data"].info["ch_names"]
         mapping = {o: n for o, n in zip(old_names, new_names) if o != n}
@@ -730,7 +732,7 @@ class Model:
         self.history.append(f"mne.rename_channels(data.info, {mapping})")
 
     @data_changed
-    @records_step("set_montage", unsupported=True)
+    @pipeline(unsupported=True)
     def set_montage(
         self,
         montage,
@@ -770,7 +772,7 @@ class Model:
             self.current["iclabel"] = None
 
     @data_changed
-    @records_step("filter")
+    @pipeline
     def filter(self, lower=None, upper=None, notch=None):
         """Apply filters to the current data based on provided parameters."""
         if lower is not None and upper is not None:  # bandpass filter
@@ -791,14 +793,14 @@ class Model:
             self.history.append(f"data.notch_filter({notch})")
 
     @data_changed
-    @records_step("resample")
+    @pipeline
     def resample(self, sfreq):
         self.current["data"].resample(sfreq)
         self.current["name"] += f" ({sfreq}\u2009Hz)"
         self.history.append(f"data.resample({sfreq})")
 
     @data_changed
-    @records_step("crop")
+    @pipeline
     def crop(self, start, stop):
         self.current["data"].crop(start, stop)
         self.current["name"] += " (cropped)"
@@ -859,7 +861,7 @@ class Model:
         return compatibles
 
     @data_changed
-    @records_step("append_data", unsupported=True)
+    @pipeline(unsupported=True)
     def append_data(self, selected_idx):
         """Append the given raw data sets."""
         for idx in selected_idx:  # ensure all source datasets are in memory
@@ -880,7 +882,7 @@ class Model:
             self.history.append(f"mne.concatenate_epochs(data, {', '.join(indices)})")
 
     @data_changed
-    @records_step("apply_ica", unsupported=True)
+    @pipeline(unsupported=True)
     def apply_ica(self):
         self.current["ica"].apply(self.current["data"])
         self.history.append(
@@ -902,14 +904,14 @@ class Model:
         return self.current["iclabel"]
 
     @data_changed
-    @records_step("interpolate_bads")
+    @pipeline
     def interpolate_bads(self):
         self.current["data"].interpolate_bads()
         self.history.append("data.interpolate_bads()")
         self.current["name"] += " (interpolated)"
 
     @data_changed
-    @records_step("epoch_data")
+    @pipeline
     def epoch_data(self, event_id, tmin, tmax, baseline):
         epochs = mne.Epochs(
             self.current["data"],
@@ -928,14 +930,14 @@ class Model:
         self.current["events"] = self.current["data"].events
 
     @data_changed
-    @records_step("drop_bad_epochs")
+    @pipeline
     def drop_bad_epochs(self, reject, flat):
         self.current["data"].drop_bad(reject, flat)
         self.current["name"] += " (dropped bad epochs)"
         self.history.append(f"data.drop_bad({reject}, {flat})")
 
     @data_changed
-    @records_step("drop_detected_artifacts", unsupported=True)
+    @pipeline(unsupported=True)
     def drop_detected_artifacts(self, indices):
         self.current["data"].drop(indices, reason="ARTIFACT_DETECTION")
         self.current["name"] += " (dropped detected epochs)"
@@ -957,7 +959,7 @@ class Model:
         self.history.append("data = mne.preprocessing.nirs.beer_lambert_law(data)")
 
     @data_changed
-    @records_step("change_reference")
+    @pipeline
     def change_reference(self, add, ref):
         self.current["reference"] = ref
         if add:

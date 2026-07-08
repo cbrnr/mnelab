@@ -134,8 +134,9 @@ class PipelineDialog(QDialog):
         self.down_button.setEnabled(has_selection and row < len(self.steps) - 1)
         self.remove_button.setEnabled(has_selection)
         self.clear_button.setEnabled(bool(self.steps))
-        self.save_button.setEnabled(bool(self.steps) and not has_unsupported(self.steps))
-        if self.steps and has_unsupported(self.steps):
+        unsupported = has_unsupported(self.steps)
+        self.save_button.setEnabled(bool(self.steps) and not unsupported)
+        if self.steps and unsupported:
             self.save_button.setToolTip(
                 "The pipeline contains non-reproducible steps and cannot be saved."
             )
