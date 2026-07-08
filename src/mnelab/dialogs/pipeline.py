@@ -7,12 +7,13 @@ from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
 
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QFontMetrics
 from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QFileDialog,
     QHBoxLayout,
-    QLabel,
     QListWidget,
     QListWidgetItem,
     QMessageBox,
@@ -34,17 +35,17 @@ from mnelab.settings import read_settings, write_settings
 class PipelineDialog(QDialog):
     """Dialog to view, edit, save, and load a processing pipeline."""
 
-    def __init__(self, parent, steps, source_name=None):
+    def __init__(
+        self, parent, steps, source_name=None, dataset_steps=None, dataset_name=None
+    ):
         super().__init__(parent=parent)
         self.setWindowTitle("Pipeline")
         self.steps = deepcopy(steps)  # edit a copy; caller reads back on accept
         self.source_name = source_name
+        self.dataset_steps = dataset_steps  # steps of the currently selected data set
+        self.dataset_name = dataset_name
 
         vbox = QVBoxLayout(self)
-
-        self.info_label = QLabel()
-        self.info_label.setWordWrap(True)
-        vbox.addWidget(self.info_label)
 
         hbox = QHBoxLayout()
         self.list = QListWidget()
@@ -71,46 +72,59 @@ class PipelineDialog(QDialog):
         hbox.addLayout(button_vbox)
         vbox.addLayout(hbox)
 
+        if self.dataset_name:
+            elided = QFontMetrics(self.font()).elidedText(
+                self.dataset_name, Qt.TextElideMode.ElideMiddle, 160
+            )
+            create_label = f'Create from "{elided}"'
+        else:
+            create_label = "Create from Dataset"
+        self.create_button = QPushButton(create_label)
+        self.create_button.setEnabled(bool(self.dataset_steps))
+        if not self.dataset_steps:
+            self.create_button.setToolTip(
+                "The selected data set has no reproducible steps."
+            )
+        elif self.dataset_name:
+            self.create_button.setToolTip(
+                f'Create a pipeline from "{self.dataset_name}"'
+            )
+        self.create_button.clicked.connect(self._create_from_dataset)
+
+        self.load_button = QPushButton("Load...")
+        self.save_button = QPushButton("Save...")
+        self.load_button.clicked.connect(self._load)
+        self.save_button.clicked.connect(self._save)
+
         buttonbox = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )
-        self.load_button = QPushButton("Load...")
-        self.save_button = QPushButton("Save...")
-        buttonbox.addButton(self.load_button, QDialogButtonBox.ButtonRole.ActionRole)
-        buttonbox.addButton(self.save_button, QDialogButtonBox.ButtonRole.ActionRole)
-        self.load_button.clicked.connect(self._load)
-        self.save_button.clicked.connect(self._save)
         buttonbox.accepted.connect(self.accept)
         buttonbox.rejected.connect(self.reject)
-        vbox.addWidget(buttonbox)
 
-        self.resize(500, 360)
+        bottom_hbox = QHBoxLayout()
+        bottom_hbox.addWidget(self.create_button)
+        bottom_hbox.addWidget(self.load_button)
+        bottom_hbox.addWidget(self.save_button)
+        bottom_hbox.addStretch()
+        bottom_hbox.addWidget(buttonbox)
+        vbox.addLayout(bottom_hbox)
+
+        self.resize(650, 400)
         self._populate()
 
     def _populate(self):
         self.list.clear()
-        for step in self.steps:
+        for i, step in enumerate(self.steps, start=1):
             summary = step_summary(step)
-            text = step_label(step)
+            text = f"{i}. {step_label(step)}"
             if summary:
                 text += f"  ({summary})"
             item = QListWidgetItem(text)
             if not is_supported(step):
-                item.setText("⚠ " + text)
+                item.setText(f"⚠ {text}")
                 item.setToolTip("This operation cannot be reproduced automatically.")
             self.list.addItem(item)
-        if not self.steps:
-            self.info_label.setText("The pipeline is empty.")
-        elif has_unsupported(self.steps):
-            self.info_label.setText(
-                "⚠ This pipeline contains operations that cannot be reproduced "
-                "(marked below). It cannot be applied until they are removed."
-            )
-        else:
-            source = f" from “{self.source_name}”" if self.source_name else ""
-            self.info_label.setText(
-                f"{len(self.steps)} step(s){source}. Reorder, remove, save, or load."
-            )
         self._update_buttons()
 
     def _update_buttons(self, *_):
@@ -120,7 +134,13 @@ class PipelineDialog(QDialog):
         self.down_button.setEnabled(has_selection and row < len(self.steps) - 1)
         self.remove_button.setEnabled(has_selection)
         self.clear_button.setEnabled(bool(self.steps))
-        self.save_button.setEnabled(bool(self.steps))
+        self.save_button.setEnabled(bool(self.steps) and not has_unsupported(self.steps))
+        if self.steps and has_unsupported(self.steps):
+            self.save_button.setToolTip(
+                "The pipeline contains non-reproducible steps and cannot be saved."
+            )
+        else:
+            self.save_button.setToolTip("")
 
     def _move(self, offset):
         row = self.list.currentRow()
@@ -157,6 +177,22 @@ class PipelineDialog(QDialog):
             with open(filename, "w", encoding="utf-8") as f:
                 json.dump(document, f, indent=2)
             write_settings(last_dir=str(Path(filename).parent))
+
+    def _create_from_dataset(self):
+        if self.steps:  # guard against clobbering unsaved edits
+            reply = QMessageBox.question(
+                self,
+                "Replace pipeline?",
+                f"Replace the current pipeline with the "
+                f'{len(self.dataset_steps)} step(s) from "{self.dataset_name}"?',
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No,
+            )
+            if reply != QMessageBox.StandardButton.Yes:
+                return
+        self.steps = deepcopy(self.dataset_steps)
+        self.source_name = self.dataset_name
+        self._populate()
 
     def _load(self):
         start_dir = read_settings("last_dir") or str(Path.home())

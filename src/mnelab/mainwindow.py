@@ -8,7 +8,6 @@ import multiprocessing as mp
 import sys
 import traceback
 from contextlib import contextmanager
-from copy import deepcopy
 from functools import partial
 from operator import itemgetter
 from pathlib import Path
@@ -116,6 +115,9 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.model = model  # data model
         self.pipeline = []  # current in-memory processing pipeline (list of steps)
+        self.pipeline_source = (
+            None  # where the current pipeline came from (name or file)
+        )
         self.setWindowTitle("MNELAB")
         self.setMinimumSize(600, 500)
         sys.excepthook = self._excepthook
@@ -424,19 +426,14 @@ class MainWindow(QMainWindow):
         )
 
         pipeline_menu = self.menuBar().addMenu("Pipe&line")
-        self.all_actions["create_pipeline"] = pipeline_menu.addAction(
+        self.all_actions["edit_pipeline"] = pipeline_menu.addAction(
             QIcon.fromTheme("create-pipeline"),
-            "&Create from Current Data Set",
-            self.create_pipeline,
+            "&Edit Pipeline...",
+            self.edit_pipeline,
         )
         self.all_actions["apply_pipeline"] = pipeline_menu.addAction(
             "&Apply to Current Data Set",
             self.apply_pipeline,
-        )
-        pipeline_menu.addSeparator()
-        self.all_actions["edit_pipeline"] = pipeline_menu.addAction(
-            "&Edit Pipeline...",
-            self.edit_pipeline,
         )
 
         view_menu = self.menuBar().addMenu("&View")
@@ -575,6 +572,16 @@ class MainWindow(QMainWindow):
         QTimer.singleShot(0, lambda: self._set_splitter_ratio(settings["splitter"]))
         self.setCentralWidget(self.splitter)
 
+        self.pipeline_button = QToolButton()
+        self.pipeline_button.setAutoRaise(True)
+        self.pipeline_button.setToolButtonStyle(
+            Qt.ToolButtonStyle.ToolButtonTextBesideIcon
+        )
+        self.pipeline_button.setIcon(QIcon.fromTheme("create-pipeline"))
+        self.pipeline_button.clicked.connect(self.edit_pipeline)
+        self.statusBar().addWidget(self.pipeline_button)
+        self._update_pipeline_button()
+
         self.status_label = QLabel()
         self.statusBar().addPermanentWidget(self.status_label)
         if settings["statusbar"]:
@@ -670,6 +677,7 @@ class MainWindow(QMainWindow):
             self.status_label.setText(f"Total Memory: {mb:.2f} MB")
         else:
             self.status_label.clear()
+        self._update_pipeline_button()
 
         # toggle actions
         if len(self.model) == 0:  # disable if no data sets are currently open
@@ -754,9 +762,6 @@ class MainWindow(QMainWindow):
             )
             self.all_actions["xdf_metadata"].setEnabled(
                 enabled and self.model.current["ftype"] in ["XDF", "XDFZ", "XDF.GZ"]
-            )
-            self.all_actions["create_pipeline"].setEnabled(
-                enabled and bool(self.model.current["pipeline_steps"])
             )
             self.all_actions["apply_pipeline"].setEnabled(
                 enabled and bool(self.pipeline) and not has_unsupported(self.pipeline)
@@ -1731,9 +1736,14 @@ class MainWindow(QMainWindow):
         dialog = HistoryDialog(self, self.model.history, self.model.log)
         dialog.exec()
 
-    def create_pipeline(self):
-        """Create a pipeline from the current data set's processing steps."""
-        self._create_pipeline_from(self.model.current)
+    def _update_pipeline_button(self):
+        """Refresh the status-bar pipeline button to reflect the current pipeline."""
+        n = len(self.pipeline)
+        self.pipeline_button.setText(str(n))
+        tip = f"Processing pipeline: {n} step(s) — click to edit"
+        if has_unsupported(self.pipeline):
+            tip += " (contains non-reproducible steps)"
+        self.pipeline_button.setToolTip(tip)
 
     def create_pipeline_for(self, dataset_id):
         """Create a pipeline from the given data set's processing steps."""
@@ -1745,28 +1755,24 @@ class MainWindow(QMainWindow):
         steps = dataset["pipeline_steps"]
         if not steps:
             return
-        pipeline = deepcopy(steps)
-        source = dataset["name"]
-        if has_unsupported(pipeline):
-            QMessageBox.warning(
-                self,
-                "Pipeline contains unsupported steps",
-                "This data set was processed with operations that cannot be "
-                "reproduced automatically (e.g. ICA, appending, or setting a montage). "
-                "These steps are marked in the pipeline and must be removed before the "
-                "pipeline can be applied.",
-            )
-        dialog = PipelineDialog(self, pipeline, source)
-        if dialog.exec():
-            self.pipeline = dialog.steps
-        self.data_changed()
+        self._open_pipeline_dialog(steps, dataset["name"], dataset)
 
     def edit_pipeline(self):
         """View, edit, save, or load the current pipeline."""
-        source = self.model.current["name"] if self.model.data else None
-        dialog = PipelineDialog(self, self.pipeline, source)
+        dataset = self.model.current if self.model.data else None
+        self._open_pipeline_dialog(self.pipeline, self.pipeline_source, dataset)
+
+    def _open_pipeline_dialog(self, steps, source_name, dataset):
+        dialog = PipelineDialog(
+            self,
+            steps,
+            source_name=source_name,
+            dataset_steps=dataset["pipeline_steps"] if dataset is not None else None,
+            dataset_name=dataset["name"] if dataset is not None else None,
+        )
         if dialog.exec():
             self.pipeline = dialog.steps
+            self.pipeline_source = dialog.source_name
         self.data_changed()
 
     def apply_pipeline(self):
