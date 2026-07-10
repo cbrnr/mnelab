@@ -2,6 +2,7 @@
 #
 # License: BSD (3-clause)
 
+import inspect
 import os
 import tempfile
 from collections import Counter, defaultdict
@@ -22,6 +23,7 @@ from mnextend import (
 )
 from mnextend.io.readers import raw_readers
 
+from mnelab.pipeline import REGISTRY, _template_sidecar_fname
 from mnelab.utils import Montage, count_locations
 
 
@@ -35,6 +37,16 @@ class InvalidAnnotationsError(Exception):
 
 class AddReferenceError(Exception):
     pass
+
+
+class PipelineStepError(Exception):
+    """Raised when a pipeline step fails during replay."""
+
+    def __init__(self, index, op, original):
+        self.index = index  # zero-based index of the failing step
+        self.op = op  # human-readable label of the failing operation
+        self.original = original  # the original exception or message
+        super().__init__(f"Step {index + 1} ({op}) failed: {original}")
 
 
 def data_changed(_func=None, *, invalidate_cache=True):
@@ -60,13 +72,137 @@ def data_changed(_func=None, *, invalidate_cache=True):
     return decorator
 
 
+def _json_safe(value):
+    """Recursively convert a value into a JSON-serializable form."""
+    if isinstance(value, np.integer):
+        return int(value)
+    if isinstance(value, np.floating):
+        return float(value)
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(v) for v in value]
+    if isinstance(value, dict):
+        return {k: _json_safe(v) for k, v in value.items()}
+    return value
+
+
+def _serialize_sidecar_fname(model, bound_arguments, extra_keys=()):
+    """Build pipeline params for a method whose only path argument is `fname`.
+
+    Replaces `fname` with a `suffix` relative to the dataset's original source file
+    (see `pipeline._template_sidecar_fname`), and passes any additional (non-path)
+    arguments named in `extra_keys` through `_json_safe`. Returns `None` when `fname`
+    doesn't follow the naming convention, signaling the `pipeline` decorator to record
+    this call as a (dynamically) unsupported step.
+    """
+    suffix = _template_sidecar_fname(model.current, bound_arguments["fname"])
+    if suffix is None:
+        return None
+    params = {"suffix": suffix}
+    for key in extra_keys:
+        params[key] = _json_safe(bound_arguments[key])
+    return params
+
+
+def _serialize_import_annotations(model, bound_arguments):
+    """Build pipeline params for `Model.import_annotations`.
+
+    Unlike `types`/`description`, `unit` is not recorded as the value confirmed for
+    this specific file: whether onsets are in samples or seconds is a property of each
+    individual sidecar file, not something that reliably generalizes to a different
+    dataset's own file, so replay always resolves it fresh via `unit="auto"` (see
+    `_resolve_annotation_unit`).
+    """
+    params = _serialize_sidecar_fname(
+        model, bound_arguments, extra_keys=("types", "description")
+    )
+    if params is not None:
+        params["unit"] = "auto"
+    return params
+
+
+def _resolve_annotation_unit(onsets, durations, unit, fs, n_times, fname):
+    """Convert parsed onset/duration values to seconds according to `unit`.
+
+    `"auto"` prefers samples (divide by `fs`) whenever all values are whole numbers,
+    since that's a strong hint they're sample indices rather than genuine second
+    values (which could otherwise coincidentally still fit within the data range as
+    seconds). Otherwise, or if that preference doesn't hold, values are tried as
+    seconds first and only divided by `fs` if that would place an annotation outside
+    the data range.
+    """
+    max_onset = n_times / fs
+    if unit == "auto":
+        looks_like_samples = all(v == int(v) for v in onsets + durations)
+        out_of_range = any(o > max_onset for o in onsets)
+        unit = "samples" if looks_like_samples or out_of_range else "seconds"
+    if unit == "samples":
+        onsets = [o / fs for o in onsets]
+        durations = [d / fs for d in durations]
+    if any(o > max_onset for o in onsets):
+        raise InvalidAnnotationsError(
+            f"{fname}: one or more annotations are outside the data range."
+        )
+    return onsets, durations
+
+
+def pipeline(_func=None, *, unsupported=False, serialize=None):
+    """Decorator: record a structured pipeline step on the current dataset.
+
+    The operation key is taken from the decorated method's name. Supported operations
+    record `{"op": name, "params": {...}}`, where the parameters are bound from the call
+    signature and converted to a JSON-serializable form (or built by `serialize`, if
+    given). Non-reproducible operations (e.g. append) record a sentinel
+    `{"op": name, "unsupported": True}` so that a derived pipeline cannot silently omit
+    them. `serialize(self, bound_arguments)` may also return `None` for a specific call
+    to record that call as unsupported dynamically (e.g. a sidecar file whose name
+    doesn't follow the expected naming convention).
+    """
+
+    def decorator(f):
+        sig = inspect.signature(f)
+
+        @wraps(f)
+        def wrapper(self, *args, **kwargs):
+            result = f(self, *args, **kwargs)  # only record after a successful call
+            steps = self.current.get("pipeline_steps")
+            if steps is None:
+                steps = []
+                self.current["pipeline_steps"] = steps
+            if unsupported:
+                steps.append({"op": f.__name__, "unsupported": True})
+            else:
+                bound = sig.bind(self, *args, **kwargs)
+                bound.apply_defaults()
+                if serialize is not None:
+                    params = serialize(self, bound.arguments)
+                    if params is None:
+                        steps.append({"op": f.__name__, "unsupported": True})
+                        return result
+                else:
+                    params = {
+                        name: _json_safe(value)
+                        for name, value in bound.arguments.items()
+                        if name != "self"
+                    }
+                steps.append({"op": f.__name__, "params": params})
+            return result
+
+        return wrapper
+
+    if _func is not None:
+        return decorator(_func)
+    return decorator
+
+
 class Model:
     """Data model for MNELAB."""
 
     def __init__(self):
         self.view = None  # current view
-        self.data = []  # list of data sets
-        self.index = -1  # index of currently active data set
+        self.data = []  # list of datasets
+        self.index = -1  # index of currently active dataset
         self._next_id = 1  # monotonically increasing dataset ID counter
         self._temp_files = set()  # paths of temporary .fif cache files
         self.log = []  # captured MNE log messages
@@ -88,7 +224,7 @@ class Model:
 
     @data_changed(invalidate_cache=False)
     def insert_data(self, dataset, parent_id=None):
-        """Insert data set after current index."""
+        """Insert dataset after current index."""
         dataset["id"] = self._next_id
         dataset["parent_id"] = parent_id
         self._next_id += 1
@@ -98,12 +234,12 @@ class Model:
 
     @data_changed(invalidate_cache=False)
     def update_data(self, dataset):
-        """Update/overwrite data set at current index."""
+        """Update/overwrite dataset at current index."""
         self.current = dataset
 
     @data_changed(invalidate_cache=False)
     def remove_data(self, index=-1):
-        """Remove data set at current index."""
+        """Remove dataset at current index."""
         if index == -1:
             index = self.index
 
@@ -116,7 +252,7 @@ class Model:
 
     @data_changed(invalidate_cache=False)
     def duplicate_data(self):
-        """Duplicate current data set."""
+        """Duplicate current dataset."""
         parent_id = self.current["id"]
         self.insert_data(deepcopy(self.current), parent_id=parent_id)
         self.history[-1] = self.history[-1][:-5] + "deepcopy(data))"
@@ -127,12 +263,12 @@ class Model:
 
     @property
     def names(self):
-        """Return list of all data set names."""
+        """Return list of all dataset names."""
         return [item["name"] for item in self.data]
 
     @property
     def nbytes(self):
-        """Return size (in bytes) of all data sets."""
+        """Return size (in bytes) of all datasets."""
         return sum(
             item["data"].get_data().nbytes
             for item in self.data
@@ -141,7 +277,7 @@ class Model:
 
     @property
     def current(self):
-        """Return current data set."""
+        """Return current dataset."""
         if self.index > -1:
             return self.data[self.index]
         return None
@@ -151,7 +287,7 @@ class Model:
         self.data[self.index] = value
 
     def __len__(self):
-        """Return number of data sets."""
+        """Return number of datasets."""
         return len(self.data)
 
     def find_index_by_id(self, dataset_id):
@@ -233,6 +369,11 @@ class Model:
                 lambda: None,
                 name=name,
                 fname=fname,
+                # frozen at load time, unlike `name`/`fname` (never mutated or cleared
+                # by later steps), so pipeline recording can always find sidecar files
+                # next to the original recording (see `_template_sidecar_fname`)
+                source_name=name,
+                source_fname=fname,
                 ftype=ext.upper()[1:],
                 fsize=fsize,
                 data=data,
@@ -240,13 +381,14 @@ class Model:
                 montage=montage,
                 events=events,
                 event_mapping=event_mapping,
+                pipeline_steps=[],
                 _cache_path=None,
             )
         )
 
     @data_changed(invalidate_cache=False)
     def load(self, fname, *args, **kwargs):
-        """Load data set from file."""
+        """Load dataset from file."""
         fname = str(Path(fname).resolve().as_posix())
         try:
             data = read_raw(fname, *args, **kwargs, preload=True)
@@ -275,6 +417,7 @@ class Model:
         self.load_data(data, fname, name=name)
 
     @data_changed
+    @pipeline
     def find_events(
         self,
         stim_channel,
@@ -404,6 +547,7 @@ class Model:
         self.current["ica"].save(fname, overwrite=True)
 
     @data_changed
+    @pipeline(serialize=_serialize_sidecar_fname)
     def import_bads(self, fname):
         """Import bad channels info from a CSV file."""
         with open(fname) as f:
@@ -411,8 +555,8 @@ class Model:
             unknown = set(bads) - set(self.current["data"].info["ch_names"])
             if unknown:
                 raise LabelsNotFoundError(
-                    "The following imported channel labels are not contained in the "
-                    "data: " + ",".join(unknown)
+                    f"{fname}: the following imported channel labels are not "
+                    "contained in the data: " + ",".join(unknown)
                 )
             else:
                 self.current["data"].info["bads"] = bads
@@ -440,6 +584,7 @@ class Model:
             raise ValueError(f"Unsupported event file: {fname}")
 
     @data_changed
+    @pipeline(serialize=_serialize_import_annotations)
     def import_annotations(self, fname, types=None, description=None, unit="seconds"):
         """Import annotations from a CSV file.
 
@@ -453,10 +598,15 @@ class Model:
             Label assigned to every annotation when the file has no type column. Ignored
             when the type column is present.
         unit : str
-            `"seconds"` (default) or `"samples"`. When `"samples"`, onset and duration
-            values are divided by `sfreq` to convert them to seconds.
+            `"seconds"` (default), `"samples"`, or `"auto"`. When `"samples"`, onset and
+            duration values are divided by `sfreq` to convert them to seconds. `"auto"`
+            (always used when replaying a pipeline step, since the samples vs. seconds
+            convention is a property of each sidecar file and can't be assumed to
+            generalize to a different dataset's own file) prefers samples whenever all
+            values are whole numbers, and otherwise falls back to samples only if
+            seconds would place an annotation outside the data range.
         """
-        descs, onsets, durations = [], [], []
+        descs, raw_onsets, raw_durations = [], [], []
         fs = self.current["data"].info["sfreq"]
         try:
             with open(fname) as f:
@@ -465,7 +615,7 @@ class Model:
                 no_type_col = header == "onset,duration"
                 if not has_type_col and not no_type_col:
                     raise InvalidAnnotationsError(
-                        "Invalid annotations file (expected header: "
+                        f"{fname}: invalid annotations file (expected header: "
                         "'type,onset,duration' or 'onset,duration')."
                     )
                 for line in f:
@@ -489,30 +639,27 @@ class Model:
                         duration = float(duration_str)
                     except ValueError:
                         raise InvalidAnnotationsError(
-                            "One or more annotations have invalid onset or duration"
-                            " values."
-                        )
-                    if unit == "samples":
-                        onset /= fs
-                        duration /= fs
-                    if onset > self.current["data"].n_times / fs:
-                        raise InvalidAnnotationsError(
-                            "One or more annotations are outside the data range."
+                            f"{fname}: one or more annotations have invalid onset or "
+                            "duration values."
                         )
                     descs.append(desc)
-                    onsets.append(onset)
-                    durations.append(duration)
+                    raw_onsets.append(onset)
+                    raw_durations.append(duration)
         except InvalidAnnotationsError:
             raise
         except UnicodeDecodeError:
             raise InvalidAnnotationsError(
-                "The file contains binary data and cannot be read as CSV."
+                f"{fname}: the file contains binary data and cannot be read as CSV."
             )
+        onsets, durations = _resolve_annotation_unit(
+            raw_onsets, raw_durations, unit, fs, self.current["data"].n_times, fname
+        )
         existing = self.current["data"].annotations
         new = mne.Annotations(onsets, durations, descs, orig_time=existing.orig_time)
         self.current["data"].set_annotations(existing + new)
 
     @data_changed
+    @pipeline(serialize=_serialize_sidecar_fname)
     def import_ica(self, fname):
         """Import ICA solution from file."""
         self.current["ica"] = mne.preprocessing.read_ica(fname)
@@ -520,12 +667,12 @@ class Model:
         self.history.append(f"ica = mne.preprocessing.read_ica({fname!r})")
 
     def get_info(self):
-        """Get basic information on current data set.
+        """Get basic information on current dataset.
 
         Returns
         -------
         info : dict
-            Dictionary with information on current data set.
+            Dictionary with information on current dataset.
         """
         if self.current["data"] is None:
             self.reload_dataset(self.index)
@@ -633,12 +780,14 @@ class Model:
         }
 
     @data_changed
+    @pipeline
     def pick_channels(self, picks):
         self.current["data"] = self.current["data"].pick(picks)
         self.current["name"] += " (channels picked)"
         self.history.append(f"data.pick({picks})")
 
     @data_changed
+    @pipeline
     def set_channel_properties(self, bads=None, names=None, types=None):
         if bads != self.current["data"].info["bads"]:
             self.current["data"].info["bads"] = bads
@@ -651,6 +800,7 @@ class Model:
             self.history.append(f"data.set_channel_types({types})")
 
     @data_changed
+    @pipeline
     def rename_channels(self, new_names):
         old_names = self.current["data"].info["ch_names"]
         mapping = {o: n for o, n in zip(old_names, new_names) if o != n}
@@ -659,14 +809,8 @@ class Model:
         mne.rename_channels(self.current["data"].info, mapping)
         self.history.append(f"mne.rename_channels(data.info, {mapping})")
 
-    @data_changed
-    def set_montage(
-        self,
-        montage,
-        match_case=False,
-        match_alias=False,
-        on_missing="raise",
-    ):
+    def _apply_montage(self, montage, match_case, match_alias, on_missing):
+        """Apply a montage (or `None` to clear it) to the current dataset and ICA."""
         self.current["montage"] = montage
         self.current["data"].set_montage(
             montage=montage.montage if montage is not None else None,
@@ -699,6 +843,36 @@ class Model:
             self.current["iclabel"] = None
 
     @data_changed
+    @pipeline
+    def set_montage(
+        self,
+        montage_name=None,
+        match_case=False,
+        match_alias=False,
+        on_missing="raise",
+    ):
+        """Set a built-in montage by name, or clear it by passing `None`."""
+        montage = (
+            Montage(mne.channels.make_standard_montage(montage_name), montage_name)
+            if montage_name is not None
+            else None
+        )
+        self._apply_montage(montage, match_case, match_alias, on_missing)
+
+    @data_changed
+    @pipeline(unsupported=True)
+    def set_custom_montage(
+        self,
+        montage,
+        match_case=False,
+        match_alias=False,
+        on_missing="raise",
+    ):
+        """Set a montage loaded from a file, or one embedded in the dataset."""
+        self._apply_montage(montage, match_case, match_alias, on_missing)
+
+    @data_changed
+    @pipeline
     def filter(self, lower=None, upper=None, notch=None):
         """Apply filters to the current data based on provided parameters."""
         if lower is not None and upper is not None:  # bandpass filter
@@ -719,12 +893,14 @@ class Model:
             self.history.append(f"data.notch_filter({notch})")
 
     @data_changed
+    @pipeline
     def resample(self, sfreq):
         self.current["data"].resample(sfreq)
         self.current["name"] += f" ({sfreq}\u2009Hz)"
         self.history.append(f"data.resample({sfreq})")
 
     @data_changed
+    @pipeline
     def crop(self, start, stop):
         self.current["data"].crop(start, stop)
         self.current["name"] += " (cropped)"
@@ -785,8 +961,9 @@ class Model:
         return compatibles
 
     @data_changed
+    @pipeline(unsupported=True)
     def append_data(self, selected_idx):
-        """Append the given raw data sets."""
+        """Append the given raw datasets."""
         for idx in selected_idx:  # ensure all source datasets are in memory
             self.reload_dataset(idx)
         self.current["name"] += " (appended)"
@@ -805,6 +982,7 @@ class Model:
             self.history.append(f"mne.concatenate_epochs(data, {', '.join(indices)})")
 
     @data_changed
+    @pipeline
     def apply_ica(self):
         self.current["ica"].apply(self.current["data"])
         self.history.append(
@@ -819,19 +997,21 @@ class Model:
             if self.current["data"].get_montage() is None:
                 raise ValueError("Montage must be set before ICLabel classification.")
             if self.current["ica"] is None:
-                raise ValueError("No ICA solution found in current data set.")
+                raise ValueError("No ICA solution found in current dataset.")
             probs = run_iclabel(self.current["data"], self.current["ica"])
             self.current["iclabel"] = probs
             self.history.append("probs = run_iclabel(data, ica)")
         return self.current["iclabel"]
 
     @data_changed
+    @pipeline
     def interpolate_bads(self):
         self.current["data"].interpolate_bads()
         self.history.append("data.interpolate_bads()")
         self.current["name"] += " (interpolated)"
 
     @data_changed
+    @pipeline
     def epoch_data(self, event_id, tmin, tmax, baseline):
         epochs = mne.Epochs(
             self.current["data"],
@@ -850,12 +1030,14 @@ class Model:
         self.current["events"] = self.current["data"].events
 
     @data_changed
+    @pipeline
     def drop_bad_epochs(self, reject, flat):
         self.current["data"].drop_bad(reject, flat)
         self.current["name"] += " (dropped bad epochs)"
         self.history.append(f"data.drop_bad({reject}, {flat})")
 
     @data_changed
+    @pipeline(unsupported=True)
     def drop_detected_artifacts(self, indices):
         self.current["data"].drop(indices, reason="ARTIFACT_DETECTION")
         self.current["name"] += " (dropped detected epochs)"
@@ -877,6 +1059,7 @@ class Model:
         self.history.append("data = mne.preprocessing.nirs.beer_lambert_law(data)")
 
     @data_changed
+    @pipeline
     def change_reference(self, add, ref):
         self.current["reference"] = ref
         if add:
@@ -893,6 +1076,24 @@ class Model:
         self.current["data"].set_eeg_reference(ref)
         self.history.append(f"data.set_eeg_reference({ref!r})")
 
+    def apply_pipeline(self, steps):
+        """Apply a sequence of pipeline steps to the current dataset in place.
+
+        Each step is applied by calling the corresponding model method. The caller is
+        responsible for duplicating the dataset beforehand and for rolling back on
+        failure. Raises `PipelineStepError` if a step is unsupported or fails.
+        """
+        for i, step in enumerate(steps):
+            if step.get("unsupported"):
+                raise PipelineStepError(i, step["op"], "unsupported operation")
+            op = REGISTRY.get(step["op"])
+            if op is None:
+                raise PipelineStepError(i, step["op"], "unknown operation")
+            try:
+                getattr(self, op.method)(**op.deserialize(step["params"], self.current))
+            except Exception as e:
+                raise PipelineStepError(i, op.label, e) from e
+
     @data_changed
     def set_events(self, events):
         self.current["events"] = events
@@ -906,14 +1107,14 @@ class Model:
     @data_changed(invalidate_cache=False)
     def move_data(self, source, target):
         """
-        Change the position of a single data set in `self.data`.
+        Change the position of a single dataset in `self.data`.
 
         Parameters
         ----------
         source : int
-            The data set's initial index.
+            The dataset's initial index.
         target : int
-            The index the data set should be moved to.
+            The index the dataset should be moved to.
         """
 
         # pop and save

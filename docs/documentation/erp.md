@@ -7,7 +7,7 @@ Download the two files listed below, which are part of the [MNE-Python sample da
 - Raw data: [sample_audvis_filt-0-40_raw.fif](https://osf.io/szh6d/download)
 - Events: [sample_audvis_filt-0-40_raw-eve.fif](https://osf.io/xbvt2/download)
 
-## Load data set and events
+## Load dataset and events
 Select _File – Open…_ and pick the *sample_audvis_filt-0-40_raw.fif* file you just downloaded.
 In the info panel, you will see that neither events nor annotations are present.
 To load events from a separate file, go to _File – Import events…_, select *sample_audvis_filt-0-40_raw-eve.fif*, and click _Open_.
@@ -22,9 +22,9 @@ In the sidebar, you will recognize it by the suffix "(cropped)".
 ![](./images/erp/crop_data.png)
 
 ## Pick channels
-The _Channels_ entry in the info panel informs us that this is a combined MEG and EEG data set.
+The _Channels_ entry in the info panel informs us that this is a combined MEG and EEG dataset.
 We will only work with EEG data, so go to _Edit – Pick channels…_, choose _By type_, and select "eeg".
-You are free to either create a new data set containing only the EEG channels or to overwrite the current one (we will not need it anymore).
+You are free to either create a new dataset containing only the EEG channels or to overwrite the current one (we will not need it anymore).
 
 ![](./images/erp/pick_channels.png)
 
@@ -39,7 +39,7 @@ _EEG 053_ is colored red because it is marked as "bad".
 To remove baseline drift, we will apply a simple highpass filter.
 Select _Tools – Filter data…_ (or click the corresponding icon in the toolbar) and enter "0.1" as the low cutoff frequency.
 Leave the high cutoff frequency empty and click _OK_.
-Again, you are free to create a new data set or overwrite the existing one.
+Again, you are free to create a new dataset or overwrite the existing one.
 
 ![](./images/erp/filter_data.png)
 

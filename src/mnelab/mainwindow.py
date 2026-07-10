@@ -52,7 +52,19 @@ from PySide6.QtWidgets import (
 from mnelab import IS_DEV_VERSION, __version__
 from mnelab.dialogs import *  # noqa: F403
 from mnelab.dialogs.channel_stats import ChannelStats
-from mnelab.model import InvalidAnnotationsError, LabelsNotFoundError, Model
+from mnelab.model import (
+    InvalidAnnotationsError,
+    LabelsNotFoundError,
+    Model,
+    PipelineStepError,
+)
+from mnelab.pipeline import (
+    check_pipeline,
+    has_unsupported,
+    make_context,
+    pipeline_mutates_data,
+    step_label,
+)
 from mnelab.settings import SettingsDialog, read_settings, write_settings
 from mnelab.utils import (
     annotations_between_events,
@@ -97,11 +109,15 @@ class MainWindow(QMainWindow):
         Parameters
         ----------
         model : mnelab.model.Model instance
-            The main window needs to connect to a model containing all data sets. This
+            The main window needs to connect to a model containing all datasets. This
             decouples the GUI from the data (model/view).
         """
         super().__init__()
         self.model = model  # data model
+        self.pipeline = []  # current in-memory processing pipeline (list of steps)
+        self.pipeline_source = (
+            None  # where the current pipeline came from (name or file)
+        )
         self.setWindowTitle("MNELAB")
         self.setMinimumSize(600, 500)
         sys.excepthook = self._excepthook
@@ -409,6 +425,23 @@ class MainWindow(QMainWindow):
             self.artifact_detection,
         )
 
+        pipeline_menu = self.menuBar().addMenu("Pipe&line")
+        self.all_actions["create_pipeline"] = pipeline_menu.addAction(
+            QIcon.fromTheme("create-pipeline"),
+            "&Create Pipeline from Current Dataset",
+            self.create_pipeline,
+        )
+        self.all_actions["edit_pipeline"] = pipeline_menu.addAction(
+            QIcon.fromTheme("edit-pipeline"),
+            "&Edit Pipeline...",
+            self.edit_pipeline,
+        )
+        self.all_actions["apply_pipeline"] = pipeline_menu.addAction(
+            QIcon.fromTheme("apply-pipeline"),
+            "&Apply Pipeline to Current Dataset",
+            self.apply_pipeline,
+        )
+
         view_menu = self.menuBar().addMenu("&View")
         self.all_actions["history"] = view_menu.addAction(
             QIcon.fromTheme("history"),
@@ -466,6 +499,7 @@ class MainWindow(QMainWindow):
             "documentation",
             "history",
             "annotation_colors",
+            "edit_pipeline",
         ]
 
         # set up toolbar
@@ -544,7 +578,36 @@ class MainWindow(QMainWindow):
         QTimer.singleShot(0, lambda: self._set_splitter_ratio(settings["splitter"]))
         self.setCentralWidget(self.splitter)
 
+        self.pipeline_button = QToolButton()
+        self.pipeline_button.setAutoRaise(True)
+        self.pipeline_button.setToolButtonStyle(
+            Qt.ToolButtonStyle.ToolButtonTextBesideIcon
+        )
+        self.pipeline_button.setIcon(QIcon.fromTheme("edit-pipeline"))
+        self.pipeline_button.clicked.connect(self.edit_pipeline)
+        if sys.platform == "darwin":
+            self.pipeline_button.setStyleSheet("""
+                QToolButton {
+                    border: none;
+                    background: transparent;
+                }
+                QToolButton:hover {
+                    background: rgba(128, 128, 128, 0.2);
+                    border-radius: 4px;
+                }
+                QToolButton:pressed {
+                    background: rgba(128, 128, 128, 0.35);
+                    border-radius: 4px;
+                }
+            """)
+        self.statusBar().addWidget(self.pipeline_button)
+        self._update_pipeline_button()
+
         self.status_label = QLabel()
+        if sys.platform == "darwin":
+            status_font = self.status_label.font()
+            status_font.setPointSizeF(status_font.pointSizeF() * 0.85)
+            self.status_label.setFont(status_font)
         self.statusBar().addPermanentWidget(self.status_label)
         if settings["statusbar"]:
             self.statusBar().show()
@@ -639,9 +702,10 @@ class MainWindow(QMainWindow):
             self.status_label.setText(f"Total Memory: {mb:.2f} MB")
         else:
             self.status_label.clear()
+        self._update_pipeline_button()
 
         # toggle actions
-        if len(self.model) == 0:  # disable if no data sets are currently open
+        if len(self.model) == 0:  # disable if no datasets are currently open
             enabled = False
         else:
             enabled = True
@@ -723,6 +787,12 @@ class MainWindow(QMainWindow):
             )
             self.all_actions["xdf_metadata"].setEnabled(
                 enabled and self.model.current["ftype"] in ["XDF", "XDFZ", "XDF.GZ"]
+            )
+            self.all_actions["create_pipeline"].setEnabled(
+                enabled and bool(self.model.current["pipeline_steps"])
+            )
+            self.all_actions["apply_pipeline"].setEnabled(
+                enabled and bool(self.pipeline) and not has_unsupported(self.pipeline)
             )
             # disable unsupported exporters for epochs (all must support raw)
             if self.model.current["dtype"] == "epochs":
@@ -961,6 +1031,9 @@ class MainWindow(QMainWindow):
                 types = dialog.selected_types
             else:
                 types = all_types
+            # record "no filtering" as None
+            if set(types) == set(all_types):
+                types = None
         # check if all values look like integers (may be in samples)
         unit = "seconds"
         try:
@@ -1001,8 +1074,8 @@ class MainWindow(QMainWindow):
         write_settings(last_dir=str(Path(fname).parent))
 
     def close_all(self):
-        """Close all currently open data sets."""
-        msg = QMessageBox.question(self, "Close all data sets", "Close all data sets?")
+        """Close all currently open datasets."""
+        msg = QMessageBox.question(self, "Close all datasets", "Close all datasets?")
         if msg == QMessageBox.StandardButton.Yes:
             while len(self.model) > 0:
                 self.model.remove_data()
@@ -1016,7 +1089,7 @@ class MainWindow(QMainWindow):
         dialog.exec()
 
     def pick_channels(self):
-        """Pick channels in current data set."""
+        """Pick channels in current dataset."""
         channels = self.model.current["data"].info["ch_names"]
         types = sorted(set(self.model.current["data"].get_channel_types()))
         dialog = PickChannelsDialog(self, channels, types)
@@ -1077,14 +1150,17 @@ class MainWindow(QMainWindow):
             # check if at least one channel name matches a name in the montage
             if set(ch_names) & set(montage.montage.ch_names):
                 self.auto_duplicate()
-                self.model.set_montage(
-                    montage,
-                    match_case=dialog.match_case.isChecked(),
-                    match_alias=dialog.match_alias.isChecked(),
-                    on_missing="ignore"
-                    if dialog.ignore_missing.isChecked()
-                    else "raise",
-                )
+                kwargs = {
+                    "match_case": dialog.match_case.isChecked(),
+                    "match_alias": dialog.match_alias.isChecked(),
+                    "on_missing": (
+                        "ignore" if dialog.ignore_missing.isChecked() else "raise"
+                    ),
+                }
+                if montage.path is not None or montage.embedded:
+                    self.model.set_custom_montage(montage, **kwargs)
+                else:
+                    self.model.set_montage(montage.name, **kwargs)
             else:
                 QMessageBox.critical(
                     self,
@@ -1694,6 +1770,107 @@ class MainWindow(QMainWindow):
         dialog = HistoryDialog(self, self.model.history, self.model.log)
         dialog.exec()
 
+    def _update_pipeline_button(self):
+        """Refresh the status-bar pipeline button to reflect the current pipeline."""
+        n = len(self.pipeline)
+        step_word = "step" if n == 1 else "steps"
+        tip = f"Pipeline ({n} {step_word})"
+        if has_unsupported(self.pipeline):
+            self.pipeline_button.setText(f"{n} ⚠")
+            tip += " (contains non-reproducible steps)"
+        else:
+            self.pipeline_button.setText(str(n))
+        self.pipeline_button.setToolTip(tip)
+
+    def create_pipeline(self):
+        """Create a pipeline from the current dataset's processing steps."""
+        if self.model.data:
+            self._create_pipeline_from(self.model.current)
+
+    def create_pipeline_for(self, dataset_id):
+        """Create a pipeline from the given dataset's processing steps."""
+        index = self.model.find_index_by_id(dataset_id)
+        if index >= 0:
+            self._create_pipeline_from(self.model.data[index])
+
+    def _create_pipeline_from(self, dataset):
+        steps = dataset["pipeline_steps"]
+        if not steps:
+            return
+        self._open_pipeline_dialog(steps, dataset["name"])
+
+    def edit_pipeline(self):
+        """View, edit, save, or load the current pipeline."""
+        self._open_pipeline_dialog(self.pipeline, self.pipeline_source)
+
+    def _open_pipeline_dialog(self, steps, source_name):
+        dialog = PipelineDialog(self, steps, source_name=source_name)
+        if dialog.exec():
+            self.pipeline = dialog.steps
+            self.pipeline_source = dialog.source_name
+        self.data_changed()
+
+    def apply_pipeline(self):
+        """Apply the current pipeline to the current dataset."""
+        steps = self.pipeline
+        if not steps:
+            return
+        ctx = make_context(self.model.current)
+        problems = check_pipeline(steps, ctx)
+        if problems and not self._confirm_apply(steps, problems):
+            return
+        # only duplicate if a step actually changes the signal data, matching how
+        # these operations behave when applied individually via their own menu actions
+        duplicated = self.auto_duplicate() if pipeline_mutates_data(steps) else False
+        try:
+            self.model.apply_pipeline(steps)
+        except PipelineStepError as e:
+            if duplicated:  # roll back the freshly created dataset
+                self.model.remove_data()
+                self.model.index -= 1
+                self.data_changed()
+            msgbox = ErrorMessageBox(
+                self,
+                "Could not apply pipeline",
+                f"Step {e.index + 1} ({e.op}) failed:\n{e.original}",
+                traceback.format_exc(),
+            )
+            msgbox.show()
+
+    def _confirm_apply(self, steps, problems):
+        """Show a summary of compatibility problems and ask whether to proceed.
+
+        Returns True if the pipeline should be applied, False otherwise. Applying is
+        blocked entirely if the pipeline contains unsupported (non-reproducible) steps.
+        """
+        problem_by_index = {index: message for index, _, message in problems}
+        lines = []
+        for i, step in enumerate(steps):
+            if i in problem_by_index:
+                lines.append(f"✗ {step_label(step)} — {problem_by_index[i]}")
+            else:
+                lines.append(f"✓ {step_label(step)}")
+        details = "\n".join(lines)
+
+        if has_unsupported(steps):
+            QMessageBox.warning(
+                self,
+                "Cannot apply pipeline",
+                "The pipeline contains operations that cannot be reproduced and must "
+                f"be removed first:\n\n{details}",
+            )
+            return False
+
+        reply = QMessageBox.question(
+            self,
+            "Apply pipeline?",
+            "Some steps may not be compatible with the current dataset:\n\n"
+            f"{details}\n\nApply anyway?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+        return reply == QMessageBox.StandardButton.Yes
+
     def show_channel_stats(self):
         """Show channel stats."""
         dialog = ChannelStats(self, self.model.current["data"])
@@ -1812,20 +1989,20 @@ class MainWindow(QMainWindow):
             )
 
     def auto_duplicate(self):
-        """Automatically duplicate current data set.
+        """Automatically duplicate current dataset.
 
-        If the current data set is stored in a file (i.e. was loaded directly from a
-        file), a new data set is automatically created. If the current data set is not
+        If the current dataset is stored in a file (i.e. was loaded directly from a
+        file), a new dataset is automatically created. If the current dataset is not
         stored in a file (i.e. was created by operations in MNELAB), a dialog box asks
-        the user if the current data set should be overwritten or duplicated.
+        the user if the current dataset should be overwritten or duplicated.
 
         Returns
         -------
         duplicated : bool
-            True if the current data set was automatically duplicated, False if the
-            current data set was overwritten.
+            True if the current dataset was automatically duplicated, False if the
+            current dataset was overwritten.
         """
-        # if current data is stored in a file create a new data set
+        # if current data is stored in a file create a new dataset
         if self.model.current["fname"]:
             parent_index = self.model.index
             self.model.duplicate_data()
@@ -1839,15 +2016,15 @@ class MainWindow(QMainWindow):
             | Qt.WindowType.WindowTitleHint
             | Qt.WindowType.CustomizeWindowHint
         )
-        msg.setWindowTitle("Modify data set")
+        msg.setWindowTitle("Modify dataset")
         msg.setText(
-            "You are about to modify the current data set. How do you want to proceed?"
+            "You are about to modify the current dataset. How do you want to proceed?"
         )
         create_button = msg.addButton(
-            "Create new data set", QMessageBox.ButtonRole.AcceptRole
+            "Create new dataset", QMessageBox.ButtonRole.AcceptRole
         )
         overwrite_button = msg.addButton(
-            "Overwrite current data set", QMessageBox.ButtonRole.RejectRole
+            "Overwrite current dataset", QMessageBox.ButtonRole.RejectRole
         )
         msg.setDefaultButton(create_button)
         msg.setEscapeButton(create_button)
