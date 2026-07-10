@@ -861,22 +861,6 @@ class Model:
         self.current["name"] += " (dropped detected epochs)"
 
     @data_changed
-    def convert_od(self):
-        self.current["data"] = mne.preprocessing.nirs.optical_density(
-            self.current["data"]
-        )
-        self.current["name"] += " (OD)"
-        self.history.append("data = mne.preprocessing.nirs.optical_density(data)")
-
-    @data_changed
-    def convert_beer_lambert(self):
-        self.current["data"] = mne.preprocessing.nirs.beer_lambert_law(
-            self.current["data"]
-        )
-        self.current["name"] += " (BL)"
-        self.history.append("data = mne.preprocessing.nirs.beer_lambert_law(data)")
-
-    @data_changed
     def change_reference(self, add, ref):
         self.current["reference"] = ref
         if add:
