@@ -2,6 +2,9 @@
 ### 🌀 Changed
 - Use MNEXTEND's `resolve_streams()` and `read_bvrf_header()` instead of depending on PyXDF and PyBVRF directly ([#679](https://github.com/cbrnr/mnelab/pull/679) by [Clemens Brunner](https://github.com/cbrnr))
 
+### 🗑️ Removed
+- Remove fNIRS functions ([#684](https://github.com/cbrnr/mnelab/pull/684) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [1.5.6] · 2026-07-06
 ### 🔧 Fixed
 - Fix a regression where marker streams were not shown in the selection dialog and never converted to annotations when loading XDF files ([#678](https://github.com/cbrnr/mnelab/pull/678) by [Clemens Brunner](https://github.com/cbrnr))
