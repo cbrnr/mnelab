@@ -1,6 +1,7 @@
 ## [UNRELEASED] · YYYY-MM-DD
 ### ✨ Added
 - Add a pipeline feature to capture the processing steps applied to a dataset and reapply them to another dataset (pipelines can also be edited, saved to, and loaded from JSON files) ([#683](https://github.com/cbrnr/mnelab/pull/683) by [Clemens Brunner](https://github.com/cbrnr))
+- Add pipeline support for importing bad channels, annotations, and ICA solutions from sidecar files named after the dataset (e.g. `s01-bad_channels.csv` for `s01.bdf`), and make applying an ICA solution reproducible when it follows an imported one ([#683](https://github.com/cbrnr/mnelab/pull/683) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🌀 Changed
 - Use MNEXTEND's `resolve_streams()` and `read_bvrf_header()` instead of depending on PyXDF and PyBVRF directly ([#679](https://github.com/cbrnr/mnelab/pull/679) by [Clemens Brunner](https://github.com/cbrnr))

@@ -23,7 +23,7 @@ from mnextend import (
 )
 from mnextend.io.readers import raw_readers
 
-from mnelab.pipeline import REGISTRY
+from mnelab.pipeline import REGISTRY, _template_sidecar_fname
 from mnelab.utils import Montage, count_locations
 
 
@@ -87,14 +87,77 @@ def _json_safe(value):
     return value
 
 
-def pipeline(_func=None, *, unsupported=False):
+def _serialize_sidecar_fname(model, bound_arguments, extra_keys=()):
+    """Build pipeline params for a method whose only path argument is `fname`.
+
+    Replaces `fname` with a `suffix` relative to the dataset's original source file
+    (see `pipeline._template_sidecar_fname`), and passes any additional (non-path)
+    arguments named in `extra_keys` through `_json_safe`. Returns `None` when `fname`
+    doesn't follow the naming convention, signaling the `pipeline` decorator to record
+    this call as a (dynamically) unsupported step.
+    """
+    suffix = _template_sidecar_fname(model.current, bound_arguments["fname"])
+    if suffix is None:
+        return None
+    params = {"suffix": suffix}
+    for key in extra_keys:
+        params[key] = _json_safe(bound_arguments[key])
+    return params
+
+
+def _serialize_import_annotations(model, bound_arguments):
+    """Build pipeline params for `Model.import_annotations`.
+
+    Unlike `types`/`description`, `unit` is not recorded as the value confirmed for
+    this specific file: whether onsets are in samples or seconds is a property of each
+    individual sidecar file, not something that reliably generalizes to a different
+    dataset's own file, so replay always resolves it fresh via `unit="auto"` (see
+    `_resolve_annotation_unit`).
+    """
+    params = _serialize_sidecar_fname(
+        model, bound_arguments, extra_keys=("types", "description")
+    )
+    if params is not None:
+        params["unit"] = "auto"
+    return params
+
+
+def _resolve_annotation_unit(onsets, durations, unit, fs, n_times, fname):
+    """Convert parsed onset/duration values to seconds according to `unit`.
+
+    `"auto"` prefers samples (divide by `fs`) whenever all values are whole numbers,
+    since that's a strong hint they're sample indices rather than genuine second
+    values (which could otherwise coincidentally still fit within the data range as
+    seconds). Otherwise, or if that preference doesn't hold, values are tried as
+    seconds first and only divided by `fs` if that would place an annotation outside
+    the data range.
+    """
+    max_onset = n_times / fs
+    if unit == "auto":
+        looks_like_samples = all(v == int(v) for v in onsets + durations)
+        out_of_range = any(o > max_onset for o in onsets)
+        unit = "samples" if looks_like_samples or out_of_range else "seconds"
+    if unit == "samples":
+        onsets = [o / fs for o in onsets]
+        durations = [d / fs for d in durations]
+    if any(o > max_onset for o in onsets):
+        raise InvalidAnnotationsError(
+            f"{fname}: one or more annotations are outside the data range."
+        )
+    return onsets, durations
+
+
+def pipeline(_func=None, *, unsupported=False, serialize=None):
     """Decorator: record a structured pipeline step on the current dataset.
 
     The operation key is taken from the decorated method's name. Supported operations
     record `{"op": name, "params": {...}}`, where the parameters are bound from the call
-    signature and converted to a JSON-serializable form. Non-reproducible operations
-    (e.g. ICA, append) record a sentinel `{"op": name, "unsupported": True}` so that a
-    derived pipeline cannot silently omit them.
+    signature and converted to a JSON-serializable form (or built by `serialize`, if
+    given). Non-reproducible operations (e.g. append) record a sentinel
+    `{"op": name, "unsupported": True}` so that a derived pipeline cannot silently omit
+    them. `serialize(self, bound_arguments)` may also return `None` for a specific call
+    to record that call as unsupported dynamically (e.g. a sidecar file whose name
+    doesn't follow the expected naming convention).
     """
 
     def decorator(f):
@@ -112,11 +175,17 @@ def pipeline(_func=None, *, unsupported=False):
             else:
                 bound = sig.bind(self, *args, **kwargs)
                 bound.apply_defaults()
-                params = {
-                    name: _json_safe(value)
-                    for name, value in bound.arguments.items()
-                    if name != "self"
-                }
+                if serialize is not None:
+                    params = serialize(self, bound.arguments)
+                    if params is None:
+                        steps.append({"op": f.__name__, "unsupported": True})
+                        return result
+                else:
+                    params = {
+                        name: _json_safe(value)
+                        for name, value in bound.arguments.items()
+                        if name != "self"
+                    }
                 steps.append({"op": f.__name__, "params": params})
             return result
 
@@ -300,6 +369,11 @@ class Model:
                 lambda: None,
                 name=name,
                 fname=fname,
+                # frozen at load time, unlike `name`/`fname` (never mutated or cleared
+                # by later steps), so pipeline recording can always find sidecar files
+                # next to the original recording (see `_template_sidecar_fname`)
+                source_name=name,
+                source_fname=fname,
                 ftype=ext.upper()[1:],
                 fsize=fsize,
                 data=data,
@@ -473,6 +547,7 @@ class Model:
         self.current["ica"].save(fname, overwrite=True)
 
     @data_changed
+    @pipeline(serialize=_serialize_sidecar_fname)
     def import_bads(self, fname):
         """Import bad channels info from a CSV file."""
         with open(fname) as f:
@@ -480,8 +555,8 @@ class Model:
             unknown = set(bads) - set(self.current["data"].info["ch_names"])
             if unknown:
                 raise LabelsNotFoundError(
-                    "The following imported channel labels are not contained in the "
-                    "data: " + ",".join(unknown)
+                    f"{fname}: the following imported channel labels are not "
+                    "contained in the data: " + ",".join(unknown)
                 )
             else:
                 self.current["data"].info["bads"] = bads
@@ -509,6 +584,7 @@ class Model:
             raise ValueError(f"Unsupported event file: {fname}")
 
     @data_changed
+    @pipeline(serialize=_serialize_import_annotations)
     def import_annotations(self, fname, types=None, description=None, unit="seconds"):
         """Import annotations from a CSV file.
 
@@ -522,10 +598,15 @@ class Model:
             Label assigned to every annotation when the file has no type column. Ignored
             when the type column is present.
         unit : str
-            `"seconds"` (default) or `"samples"`. When `"samples"`, onset and duration
-            values are divided by `sfreq` to convert them to seconds.
+            `"seconds"` (default), `"samples"`, or `"auto"`. When `"samples"`, onset and
+            duration values are divided by `sfreq` to convert them to seconds. `"auto"`
+            (always used when replaying a pipeline step, since the samples vs. seconds
+            convention is a property of each sidecar file and can't be assumed to
+            generalize to a different dataset's own file) prefers samples whenever all
+            values are whole numbers, and otherwise falls back to samples only if
+            seconds would place an annotation outside the data range.
         """
-        descs, onsets, durations = [], [], []
+        descs, raw_onsets, raw_durations = [], [], []
         fs = self.current["data"].info["sfreq"]
         try:
             with open(fname) as f:
@@ -534,7 +615,7 @@ class Model:
                 no_type_col = header == "onset,duration"
                 if not has_type_col and not no_type_col:
                     raise InvalidAnnotationsError(
-                        "Invalid annotations file (expected header: "
+                        f"{fname}: invalid annotations file (expected header: "
                         "'type,onset,duration' or 'onset,duration')."
                     )
                 for line in f:
@@ -558,30 +639,27 @@ class Model:
                         duration = float(duration_str)
                     except ValueError:
                         raise InvalidAnnotationsError(
-                            "One or more annotations have invalid onset or duration"
-                            " values."
-                        )
-                    if unit == "samples":
-                        onset /= fs
-                        duration /= fs
-                    if onset > self.current["data"].n_times / fs:
-                        raise InvalidAnnotationsError(
-                            "One or more annotations are outside the data range."
+                            f"{fname}: one or more annotations have invalid onset or "
+                            "duration values."
                         )
                     descs.append(desc)
-                    onsets.append(onset)
-                    durations.append(duration)
+                    raw_onsets.append(onset)
+                    raw_durations.append(duration)
         except InvalidAnnotationsError:
             raise
         except UnicodeDecodeError:
             raise InvalidAnnotationsError(
-                "The file contains binary data and cannot be read as CSV."
+                f"{fname}: the file contains binary data and cannot be read as CSV."
             )
+        onsets, durations = _resolve_annotation_unit(
+            raw_onsets, raw_durations, unit, fs, self.current["data"].n_times, fname
+        )
         existing = self.current["data"].annotations
         new = mne.Annotations(onsets, durations, descs, orig_time=existing.orig_time)
         self.current["data"].set_annotations(existing + new)
 
     @data_changed
+    @pipeline(serialize=_serialize_sidecar_fname)
     def import_ica(self, fname):
         """Import ICA solution from file."""
         self.current["ica"] = mne.preprocessing.read_ica(fname)
@@ -904,7 +982,7 @@ class Model:
             self.history.append(f"mne.concatenate_epochs(data, {', '.join(indices)})")
 
     @data_changed
-    @pipeline(unsupported=True)
+    @pipeline
     def apply_ica(self):
         self.current["ica"].apply(self.current["data"])
         self.history.append(
@@ -1012,7 +1090,7 @@ class Model:
             if op is None:
                 raise PipelineStepError(i, step["op"], "unknown operation")
             try:
-                getattr(self, op.method)(**op.deserialize(step["params"]))
+                getattr(self, op.method)(**op.deserialize(step["params"], self.current))
             except Exception as e:
                 raise PipelineStepError(i, op.label, e) from e
 

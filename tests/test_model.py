@@ -237,6 +237,14 @@ def test_import_annotations_in_samples(model_with_data, tmp_path):
     np.testing.assert_allclose(annots.duration, [0.5], rtol=1e-6)
 
 
+def test_import_annotations_in_samples_outside_range(model_with_data, tmp_path):
+    """unit='samples' still validates the converted onset against the data range."""
+    csv = tmp_path / "samples_outside_range.csv"
+    _write_annotations_csv(csv, [("BAD", 9999 * 256, 256)])  # 9999s, way past 30s
+    with pytest.raises(InvalidAnnotationsError):
+        model_with_data.import_annotations(csv, unit="samples")
+
+
 def test_import_annotations_in_samples_no_type_column(model_with_data, tmp_path):
     """unit='samples' works with two-column files as well."""
     fs = model_with_data.current["data"].info["sfreq"]

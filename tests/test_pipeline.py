@@ -3,12 +3,15 @@
 # License: BSD (3-clause)
 
 import json
+import shutil
+from unittest.mock import patch
 
 import mne
 import numpy as np
 import pytest
 from edfio import Edf, EdfSignal
 
+from mnelab.mainwindow import MainWindow
 from mnelab.model import Model, PipelineStepError
 from mnelab.pipeline import (
     REGISTRY,
@@ -34,6 +37,35 @@ def edf_file(tmp_path_factory):
     path = tmp_path_factory.mktemp("data") / "sample.edf"
     Edf(signals).write(path)
     return path
+
+
+@pytest.fixture(scope="module")
+def ica_solution():
+    """Fit a small, reusable ICA solution matching `edf_file`'s channels (Fz/Cz/Pz)."""
+    fs = 256
+    n_samples = 30 * fs
+    rng = np.random.default_rng(0)
+    data = rng.standard_normal((3, n_samples)) * 1e-6
+    info = mne.create_info(["Fz", "Cz", "Pz"], fs, ch_types="eeg")
+    raw = mne.io.RawArray(data, info, verbose=False)
+    raw.filter(1, None, verbose=False)
+    ica = mne.preprocessing.ICA(
+        n_components=2, method="fastica", max_iter=200, random_state=0
+    )
+    ica.fit(raw, verbose=False)
+    ica.exclude = [0]
+    return ica
+
+
+@pytest.fixture
+def write_ica(ica_solution):
+    """Return a function that saves the shared ICA solution to a given path."""
+
+    def _write(path):
+        ica_solution.save(path, overwrite=True)
+        return path
+
+    return _write
 
 
 @pytest.fixture(scope="module")
@@ -368,3 +400,412 @@ def test_apply_pipeline_find_events_does_not_create_new_dataset(fif_file_with_st
     model.apply_pipeline(steps)
     assert len(model.data) == n_datasets_before  # no new dataset was created
     assert len(model.current["events"]) == 1
+
+
+def test_records_import_bads_matching_convention(edf_file):
+    """A sidecar file named after the dataset records a reproducible suffix."""
+    model = Model()
+    model.load(edf_file)
+    name = model.current["name"]
+    sidecar = edf_file.parent / f"{name}-bad_channels.csv"
+    sidecar.write_text("Fz")
+    model.import_bads(str(sidecar))
+    assert model.current["pipeline_steps"][-1] == {
+        "op": "import_bads",
+        "params": {"suffix": "-bad_channels.csv"},
+    }
+    assert model.current["data"].info["bads"] == ["Fz"]
+
+
+def test_records_import_bads_non_matching_convention_unsupported(edf_file, tmp_path):
+    """A sidecar file that doesn't follow the naming convention is unsupported."""
+    model = Model()
+    model.load(edf_file)
+    sidecar = tmp_path / "custom_bads.csv"  # different directory, unrelated name
+    sidecar.write_text("Fz")
+    model.import_bads(str(sidecar))
+    assert model.current["pipeline_steps"][-1] == {
+        "op": "import_bads",
+        "unsupported": True,
+    }
+
+
+def test_apply_pipeline_import_bads_resolves_new_dataset_path(
+    edf_file, tmp_path_factory
+):
+    """Replaying an import_bads step resolves the sidecar next to the new dataset."""
+    model = Model()
+    model.load(edf_file)
+    name = model.current["name"]
+    sidecar = edf_file.parent / f"{name}-bad_channels.csv"
+    sidecar.write_text("Fz")
+    model.import_bads(str(sidecar))
+    steps = [dict(step) for step in model.current["pipeline_steps"]]
+
+    other_dir = tmp_path_factory.mktemp("data")
+    other_edf = other_dir / "other.edf"
+    shutil.copy(edf_file, other_edf)
+    (other_dir / "other-bad_channels.csv").write_text("Cz")
+
+    model.load(other_edf)
+    assert model.current["data"].info["bads"] == []
+    model.apply_pipeline(steps)
+    assert model.current["data"].info["bads"] == ["Cz"]  # from other.edf's own sidecar
+
+
+def test_records_import_bads_after_duplicate_still_matches_convention(edf_file):
+    """A prior duplication (e.g. before filtering) must not break sidecar matching.
+
+    `duplicate_data()` clears `fname` to `None` (mirroring `MainWindow.auto_duplicate`,
+    called by essentially every interactive mutating operation such as Filter). The
+    naming convention must still resolve via the frozen `source_fname`/`source_name`,
+    not the (now `None`) `fname`.
+    """
+    model = Model()
+    model.load(edf_file)
+    name = model.current["name"]
+    sidecar = edf_file.parent / f"{name}-bad_channels.csv"
+    sidecar.write_text("Fz")
+
+    model.duplicate_data()  # simulates auto_duplicate() before e.g. filtering
+    assert model.current["fname"] is None
+    model.filter(1, 40)
+    model.import_bads(str(sidecar))
+
+    steps = model.current["pipeline_steps"]
+    assert steps[-1] == {"op": "import_bads", "params": {"suffix": "-bad_channels.csv"}}
+
+
+def test_apply_pipeline_import_bads_onto_duplicated_target(edf_file, tmp_path_factory):
+    """Replay resolves the sidecar even if the target dataset was itself duplicated."""
+    model = Model()
+    model.load(edf_file)
+    name = model.current["name"]
+    sidecar = edf_file.parent / f"{name}-bad_channels.csv"
+    sidecar.write_text("Fz")
+    model.import_bads(str(sidecar))
+    steps = [dict(step) for step in model.current["pipeline_steps"]]
+
+    other_dir = tmp_path_factory.mktemp("data")
+    other_edf = other_dir / "other.edf"
+    shutil.copy(edf_file, other_edf)
+    (other_dir / "other-bad_channels.csv").write_text("Cz")
+
+    model.load(other_edf)
+    model.duplicate_data()  # target dataset was itself processed before replay
+    assert model.current["fname"] is None
+    model.apply_pipeline(steps)
+    assert model.current["data"].info["bads"] == ["Cz"]
+
+
+def test_apply_pipeline_import_bads_missing_sidecar_raises(edf_file, tmp_path_factory):
+    """Replaying an import_bads step with no matching sidecar fails clearly."""
+    model = Model()
+    model.load(edf_file)
+    name = model.current["name"]
+    sidecar = edf_file.parent / f"{name}-bad_channels.csv"
+    sidecar.write_text("Fz")
+    model.import_bads(str(sidecar))
+    steps = [dict(step) for step in model.current["pipeline_steps"]]
+
+    other_dir = tmp_path_factory.mktemp("data")
+    other_edf = other_dir / "other.edf"
+    shutil.copy(edf_file, other_edf)  # no matching sidecar written here
+
+    model.load(other_edf)
+    with pytest.raises(PipelineStepError):
+        model.apply_pipeline(steps)
+
+
+def test_records_import_annotations_matching_convention(edf_file):
+    """A sidecar annotations file named after the dataset records a suffix."""
+    model = Model()
+    model.load(edf_file)
+    name = model.current["name"]
+    sidecar = edf_file.parent / f"{name}-bad_segments.csv"
+    sidecar.write_text("type,onset,duration\nBAD_movement,1.0,0.5\n")
+    model.import_annotations(str(sidecar), types=["BAD_movement"])
+    assert model.current["pipeline_steps"][-1] == {
+        "op": "import_annotations",
+        "params": {
+            "suffix": "-bad_segments.csv",
+            "types": ["BAD_movement"],
+            "description": None,
+            "unit": "auto",
+        },
+    }
+
+
+def test_records_import_annotations_non_matching_convention_unsupported(
+    edf_file, tmp_path
+):
+    """A non-conforming annotations sidecar is recorded as unsupported."""
+    model = Model()
+    model.load(edf_file)
+    sidecar = tmp_path / "custom_annotations.csv"
+    sidecar.write_text("type,onset,duration\nBAD_movement,1.0,0.5\n")
+    model.import_annotations(str(sidecar))
+    assert model.current["pipeline_steps"][-1] == {
+        "op": "import_annotations",
+        "unsupported": True,
+    }
+
+
+def test_apply_pipeline_import_annotations_resolves_new_dataset_path(
+    edf_file, tmp_path_factory
+):
+    """Replaying an import_annotations step resolves the new dataset's own sidecar."""
+    model = Model()
+    model.load(edf_file)
+    name = model.current["name"]
+    sidecar = edf_file.parent / f"{name}-bad_segments.csv"
+    sidecar.write_text("type,onset,duration\nBAD_movement,1.0,0.5\n")
+    model.import_annotations(str(sidecar))
+    steps = [dict(step) for step in model.current["pipeline_steps"]]
+
+    other_dir = tmp_path_factory.mktemp("data")
+    other_edf = other_dir / "other.edf"
+    shutil.copy(edf_file, other_edf)
+    (other_dir / "other-bad_segments.csv").write_text(
+        "type,onset,duration\nBAD_muscle,2.0,1.0\n"
+    )
+
+    model.load(other_edf)
+    assert len(model.current["data"].annotations) == 0
+    model.apply_pipeline(steps)
+    annots = model.current["data"].annotations
+    assert list(annots.description) == ["BAD_muscle"]
+
+
+def test_apply_pipeline_import_annotations_unit_auto_uses_seconds_for_non_integers(
+    edf_file, tmp_path_factory
+):
+    """Replaying import_annotations must not pin the samples-vs-seconds convention.
+
+    Whether onset/duration values are in samples or seconds is a property of each
+    sidecar file, not the pipeline step. Recording always stores `unit="auto"`
+    (regardless of what was actually passed for the original file). On replay, values
+    that already fit the data range and aren't whole numbers are used as seconds as-is.
+    """
+    model = Model()
+    model.load(edf_file)  # 30s recording at 256 Hz
+    name = model.current["name"]
+    sidecar = edf_file.parent / f"{name}-bad_segments.csv"
+    # 5120 samples at 256 Hz == 20.0s; recorded with the (now-irrelevant) unit="samples"
+    sidecar.write_text("type,onset,duration\nBAD_movement,5120,256\n")
+    model.import_annotations(str(sidecar), unit="samples")
+    assert model.current["pipeline_steps"][-1]["params"]["unit"] == "auto"
+    steps = [dict(step) for step in model.current["pipeline_steps"]]
+
+    other_dir = tmp_path_factory.mktemp("data")
+    other_edf = other_dir / "other.edf"
+    shutil.copy(edf_file, other_edf)
+    # this dataset's own sidecar genuinely uses (non-integer) seconds
+    (other_dir / "other-bad_segments.csv").write_text(
+        "type,onset,duration\nBAD_muscle,20.5,1.0\n"
+    )
+
+    model.load(other_edf)
+    model.apply_pipeline(steps)
+    annots = model.current["data"].annotations
+    assert annots.onset[0] == pytest.approx(20.5)  # used as-is, not divided by fs
+
+
+def test_apply_pipeline_import_annotations_unit_auto_prefers_samples_for_integers(
+    edf_file, tmp_path_factory
+):
+    """Whole-number onset/duration values are treated as samples, not seconds.
+
+    Integers are a strong hint that they're sample indices, even when they'd also
+    happen to fit the data range if taken literally as seconds (genuine second-
+    precision onsets are rarely exact whole numbers).
+    """
+    model = Model()
+    model.load(edf_file)
+    name = model.current["name"]
+    sidecar = edf_file.parent / f"{name}-bad_segments.csv"
+    sidecar.write_text("type,onset,duration\nBAD_movement,1.0,0.5\n")
+    model.import_annotations(str(sidecar))
+    steps = [dict(step) for step in model.current["pipeline_steps"]]
+
+    other_dir = tmp_path_factory.mktemp("data")
+    other_edf = other_dir / "other.edf"
+    shutil.copy(edf_file, other_edf)
+    # 20 and 1 would also be valid onset/duration in seconds for this 30s recording,
+    # but being whole numbers, they're treated as samples (256 Hz) instead
+    (other_dir / "other-bad_segments.csv").write_text(
+        "type,onset,duration\nBAD_muscle,20,1\n"
+    )
+
+    model.load(other_edf)
+    model.apply_pipeline(steps)
+    annots = model.current["data"].annotations
+    assert annots.onset[0] == pytest.approx(20 / 256)
+
+
+def test_apply_pipeline_import_annotations_unit_auto_falls_back_out_of_range(
+    edf_file, tmp_path_factory
+):
+    """A non-integer value that doesn't fit as seconds is retried as samples."""
+    model = Model()
+    model.load(edf_file)
+    name = model.current["name"]
+    sidecar = edf_file.parent / f"{name}-bad_segments.csv"
+    sidecar.write_text("type,onset,duration\nBAD_movement,1.0,0.5\n")
+    model.import_annotations(str(sidecar))  # default unit="seconds", forced to "auto"
+    steps = [dict(step) for step in model.current["pipeline_steps"]]
+
+    other_dir = tmp_path_factory.mktemp("data")
+    other_edf = other_dir / "other.edf"
+    shutil.copy(edf_file, other_edf)
+    # not whole numbers, so the format alone doesn't suggest samples; but 5120.5 is
+    # far too large to be a literal seconds value for this 30s recording, so the data
+    # range alone must trigger the samples fallback
+    (other_dir / "other-bad_segments.csv").write_text(
+        "type,onset,duration\nBAD_muscle,5120.5,256.5\n"
+    )
+
+    model.load(other_edf)
+    model.apply_pipeline(steps)
+    annots = model.current["data"].annotations
+    assert annots.onset[0] == pytest.approx(5120.5 / 256)
+
+
+def test_import_annotations_survives_json_roundtrip(edf_file):
+    """Recorded import_annotations params survive a JSON save/load round trip."""
+    model = Model()
+    model.load(edf_file)
+    name = model.current["name"]
+    sidecar = edf_file.parent / f"{name}-bad_segments.csv"
+    sidecar.write_text("onset,duration\n1.0,0.5\n")
+    model.import_annotations(str(sidecar), description="BAD_movement", unit="samples")
+    steps = [dict(step) for step in model.current["pipeline_steps"]]
+
+    document = pipeline_to_dict(steps, source_name=name)
+    loaded = pipeline_from_dict(json.loads(json.dumps(document)))
+    assert loaded == steps
+
+
+def test_mainwindow_import_annotations_replays_across_differing_type_labels(
+    edf_file, tmp_path_factory, qtbot
+):
+    """An unfiltered annotation import must not be pinned to one file's type labels.
+
+    `MainWindow.import_annotations` records `types=None` (rather than the literal list
+    of types discovered in the source file) whenever the user did not deliberately
+    narrow the selection, so replaying the step on another dataset isn't silently
+    restricted to labels that happen to appear in the very first file.
+    """
+    model = Model()
+    view = MainWindow(model)
+    model.view = view
+    qtbot.addWidget(view)
+    model.load(edf_file)
+
+    name = model.current["name"]
+    sidecar = edf_file.parent / f"{name}-bad_segments.csv"
+    sidecar.write_text("type,onset,duration\nBAD_movement,1.0,0.5\n")
+    with patch(
+        "mnelab.mainwindow.QFileDialog.getOpenFileName",
+        return_value=(str(sidecar), ""),
+    ):
+        view.import_annotations()
+    steps = [dict(step) for step in model.current["pipeline_steps"]]
+    assert steps[-1]["params"]["types"] is None
+    view.pipeline = steps
+
+    other_dir = tmp_path_factory.mktemp("data")
+    other_edf = other_dir / "other.edf"
+    shutil.copy(edf_file, other_edf)
+    # a different type label than the one found in the original sidecar file
+    (other_dir / "other-bad_segments.csv").write_text(
+        "type,onset,duration\nBAD_muscle,2.0,1.0\n"
+    )
+
+    model.load(other_edf)
+    view.apply_pipeline()
+    annots = model.current["data"].annotations
+    assert list(annots.description) == ["BAD_muscle"]
+
+
+def test_records_import_ica_matching_convention(edf_file, write_ica):
+    """A sidecar ICA file named after the dataset records a reproducible suffix."""
+    model = Model()
+    model.load(edf_file)
+    name = model.current["name"]
+    ica_path = write_ica(edf_file.parent / f"{name}-ica.fif.gz")
+    model.import_ica(str(ica_path))
+    assert model.current["pipeline_steps"][-1] == {
+        "op": "import_ica",
+        "params": {"suffix": "-ica.fif.gz"},
+    }
+    assert model.current["ica"] is not None
+
+
+def test_records_import_ica_non_matching_convention_unsupported(
+    edf_file, tmp_path, write_ica
+):
+    """A non-conforming ICA sidecar path is recorded as unsupported."""
+    model = Model()
+    model.load(edf_file)
+    ica_path = write_ica(tmp_path / "custom-ica.fif.gz")  # different directory
+    model.import_ica(str(ica_path))
+    assert model.current["pipeline_steps"][-1] == {
+        "op": "import_ica",
+        "unsupported": True,
+    }
+
+
+def test_records_apply_ica_now_supported(edf_file, write_ica):
+    """Applying ICA now records a normal, reproducible step (no longer a sentinel)."""
+    model = Model()
+    model.load(edf_file)
+    name = model.current["name"]
+    ica_path = write_ica(edf_file.parent / f"{name}-ica.fif.gz")
+    model.import_ica(str(ica_path))
+    model.apply_ica()
+    assert model.current["pipeline_steps"][-1] == {"op": "apply_ica", "params": {}}
+
+
+def test_check_pipeline_apply_ica_requires_prior_import_ica(edf_file):
+    """apply_ica is incompatible unless an ICA solution was loaded first."""
+    model = Model()
+    model.load(edf_file)
+    problems = check_pipeline(
+        [{"op": "apply_ica", "params": {}}], make_context(model.current)
+    )
+    assert len(problems) == 1
+
+    problems = check_pipeline(
+        [
+            {"op": "import_ica", "params": {"suffix": "-ica.fif.gz"}},
+            {"op": "apply_ica", "params": {}},
+        ],
+        make_context(model.current),
+    )
+    assert problems == []
+
+
+def test_apply_pipeline_import_ica_then_apply_ica_end_to_end(
+    edf_file, write_ica, tmp_path_factory
+):
+    """import_ica + apply_ica replay resolves the new dataset's own ICA solution."""
+    model = Model()
+    model.load(edf_file)
+    name = model.current["name"]
+    write_ica(edf_file.parent / f"{name}-ica.fif.gz")
+    model.import_ica(str(edf_file.parent / f"{name}-ica.fif.gz"))
+    model.apply_ica()
+    steps = [dict(step) for step in model.current["pipeline_steps"]]
+
+    other_dir = tmp_path_factory.mktemp("data")
+    other_edf = other_dir / "other.edf"
+    shutil.copy(edf_file, other_edf)
+    write_ica(other_dir / "other-ica.fif.gz")
+
+    model.load(other_edf)
+    before = model.current["data"].get_data().copy()
+    model.apply_pipeline(steps)
+    after = model.current["data"].get_data()
+    assert not np.allclose(before, after)
+    assert model.current["ica"] is not None

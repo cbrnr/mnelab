@@ -8,9 +8,9 @@ A pipeline is a list of steps. A step is either a supported operation
 
     {"op": "filter", "params": {"lower": 1.0, "upper": 40.0, "notch": None}}
 
-or a sentinel marking a non-reproducible operation (ICA, append, ...)
+or a sentinel marking a non-reproducible operation (append, custom montage, ...)
 
-    {"op": "apply_ica", "unsupported": True}
+    {"op": "append_data", "unsupported": True}
 
 Steps are recorded onto datasets as they are processed (see `Model.records_step`) and
 can be applied to another dataset via `Model.apply_pipeline`. Because steps are plain
@@ -20,6 +20,7 @@ JSON-serializable dicts, pipelines can be saved to and loaded from disk.
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
+from pathlib import Path
 
 from mnelab.utils import count_locations
 
@@ -35,7 +36,8 @@ class Op:
     method: str  # name of the `Model` method to call on replay
     check: Callable  # (ctx, params) -> error message or None; mutates ctx in place
     params: tuple = ()  # parameter names (for display), in call order
-    deserialize: Callable = field(default=lambda p: p)  # JSON params -> method kwargs
+    # JSON params, target dataset -> method kwargs
+    deserialize: Callable = field(default=lambda p, dataset=None: p)
     mutates: bool = True  # whether this operation changes the underlying signal data
 
 
@@ -54,6 +56,7 @@ def make_context(dataset):
         "has_events": len(dataset["events"]) > 0,
         "has_locations": bool(count_locations(info)),
         "has_bads": bool(info["bads"]),
+        "has_ica": dataset.get("ica") is not None,
     }
 
 
@@ -156,9 +159,62 @@ def _check_find_events(ctx, params):
     ctx["has_events"] = True
 
 
-def _deserialize_epoch(params):
+def _check_import_bads(ctx, params):
+    # the CSV's content cannot be statically verified, so assume it succeeds
+    ctx["has_bads"] = True
+
+
+def _check_import_annotations(ctx, params):
+    # the CSV's content and time range cannot be statically verified
+    return None
+
+
+def _check_import_ica(ctx, params):
+    ctx["has_ica"] = True
+
+
+def _check_apply_ica(ctx, params):
+    if not ctx["has_ica"]:
+        return "no ICA solution loaded — add an Import ICA step first"
+
+
+def _deserialize_epoch(params, dataset=None):
     baseline = params["baseline"]
     return {**params, "baseline": tuple(baseline) if baseline is not None else None}
+
+
+def _template_sidecar_fname(dataset, fname):
+    """Return the sidecar suffix for `fname` relative to `dataset`, if any.
+
+    A sidecar file follows the naming convention if it lives in the same directory as
+    the dataset's original source file and its name starts with the dataset's original
+    name (e.g. `fname` `.../s01-bad_channels.csv` for a dataset originally loaded from
+    `.../s01.bdf`). Matching is against `source_fname`/`source_name` rather than the
+    (possibly `None` or renamed) `fname`/`name`, since those are cleared or suffixed by
+    later processing steps (e.g. duplicating before filtering), while `source_*` is
+    frozen at load time (see `Model.load_data`). Returns the suffix after the name
+    (e.g. `"-bad_channels.csv"`), or `None` if the convention doesn't hold, meaning
+    replay could not resolve an equivalent file for a different dataset.
+    """
+    source_fname = dataset.get("source_fname")
+    if not source_fname:
+        return None
+    path = Path(fname).resolve()
+    if path.parent != Path(source_fname).resolve().parent:
+        return None
+    name = dataset["source_name"]
+    if not path.name.startswith(name):
+        return None
+    return path.name[len(name) :]
+
+
+def _deserialize_sidecar(params, dataset):
+    """Resolve a recorded sidecar suffix against the target dataset."""
+    suffix = params["suffix"]
+    fname = str(
+        Path(dataset["source_fname"]).parent / (dataset["source_name"] + suffix)
+    )
+    return {**{k: v for k, v in params.items() if k != "suffix"}, "fname": fname}
 
 
 REGISTRY = {
@@ -240,6 +296,39 @@ REGISTRY = {
             "drop_bad_epochs",
             _check_epochs,
             ("reject", "flat"),
+        ),
+        Op(
+            "import_bads",
+            "Import Bad Channels",
+            "import_bads",
+            _check_import_bads,
+            ("suffix",),
+            deserialize=_deserialize_sidecar,
+            mutates=False,
+        ),
+        Op(
+            "import_annotations",
+            "Import Annotations",
+            "import_annotations",
+            _check_import_annotations,
+            ("suffix", "types", "description", "unit"),
+            deserialize=_deserialize_sidecar,
+            mutates=False,
+        ),
+        Op(
+            "import_ica",
+            "Import ICA",
+            "import_ica",
+            _check_import_ica,
+            ("suffix",),
+            deserialize=_deserialize_sidecar,
+            mutates=False,
+        ),
+        Op(
+            "apply_ica",
+            "Apply ICA",
+            "apply_ica",
+            _check_apply_ica,
         ),
     ]
 }

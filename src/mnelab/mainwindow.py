@@ -1031,6 +1031,9 @@ class MainWindow(QMainWindow):
                 types = dialog.selected_types
             else:
                 types = all_types
+            # record "no filtering" as None
+            if set(types) == set(all_types):
+                types = None
         # check if all values look like integers (may be in samples)
         unit = "seconds"
         try:
