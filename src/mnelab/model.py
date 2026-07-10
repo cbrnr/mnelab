@@ -38,7 +38,7 @@ class AddReferenceError(Exception):
 
 
 def data_changed(_func=None, *, invalidate_cache=True):
-    """Decorator: call view.data_changed() after f(), optionally invalidating cache."""
+    """Call view.data_changed() after f(), optionally invalidating cache."""
 
     def decorator(f):
         @wraps(f)
@@ -46,9 +46,8 @@ def data_changed(_func=None, *, invalidate_cache=True):
             if invalidate_cache and self.current is not None:
                 self._invalidate_cache()
             if self.view is not None:
-                with self.view._wait_cursor():
-                    result = f(self, *args, **kwargs)
-                    self.view.data_changed()
+                result = f(self, *args, **kwargs)
+                self.view.data_changed()
             else:
                 result = f(self, *args, **kwargs)
             return result
@@ -325,7 +324,6 @@ class Model:
     @data_changed
     def annotations_from_events(self):
         """Convert events to annotations."""
-        # get unique event types
         unique_events = {
             int(v): str(v) for v in np.unique(self.current["events"][:, 2])
         }
@@ -923,17 +921,17 @@ class Model:
     def _invalidate_cache(self):
         """Mark the current dataset's cache as stale.
 
-        The cache path is cleared so the next eviction will write a fresh file.
-        The old temp file (if any) is left on disk and collected by `cleanup()`.
+        The cache path is cleared so the next eviction will write a fresh file. The old
+        temp file (if any) is left on disk and collected by `cleanup()`.
         """
         self.current["_cache_path"] = None
 
     def evict_dataset(self, index):
-        """Remove the in-memory data for the dataset at *index*.
+        """Remove the in-memory data for the dataset at index.
 
-        If no cache file exists yet the data is saved to a temporary FIF file
-        first. If a valid cache already exists (e.g. from a previous eviction
-        cycle) the write is skipped.
+        If no cache file exists yet the data is saved to a temporary FIF file first. If
+        a valid cache already exists (e.g. from a previous eviction cycle) the write is
+        skipped.
         """
         dataset = self.data[index]
         if dataset["data"] is None:
@@ -956,7 +954,7 @@ class Model:
         dataset["data"] = None
 
     def reload_dataset(self, index):
-        """Restore in-memory data for the dataset at *index* from its cache.
+        """Restore in-memory data for the dataset at index from its cache.
 
         Parameters
         ----------

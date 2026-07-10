@@ -7,7 +7,6 @@ import logging
 import multiprocessing as mp
 import sys
 import traceback
-from contextlib import contextmanager
 from functools import partial
 from operator import itemgetter
 from pathlib import Path
@@ -140,7 +139,6 @@ class MainWindow(QMainWindow):
             [f"{Path(__file__).parent}/icons"] + QIcon.themeSearchPaths()
         )
         QIcon.setFallbackThemeName("light")
-        # some styles do not emit PaletteChange on startup
         QApplication.sendEvent(self, QEvent(QEvent.Type.PaletteChange))
 
         self.all_actions = {}  # contains all actions
@@ -584,24 +582,11 @@ class MainWindow(QMainWindow):
             if index >= 0:
                 self.model.data[index]["name"] = item.text(0)
 
-    @contextmanager
-    def _wait_cursor(self):
-        # disabled on macOS because of outdated icon
-        if sys.platform.startswith("darwin"):
-            yield
-        else:
-            default_cursor = self.cursor()
-            self.setCursor(Qt.WaitCursor)
-            try:
-                yield
-            finally:
-                self.setCursor(default_cursor)
-
     def data_changed(self):
         # update sidebar
         if len(self.model.data) > 0:
             self.sidebar_container.show()
-            # block signals during rebuild to prevent spurious currentItemChanged /
+            # block signals during rebuild to prevent spurious currentItemChanged or
             # itemChanged callbacks that would corrupt model.index or dataset names
             self.sidebar.blockSignals(True)
             self.sidebar.clear()
@@ -751,8 +736,7 @@ class MainWindow(QMainWindow):
                 return
 
             if read_settings("memory_saving") and self.model.data:
-                with self._wait_cursor():
-                    self.model.evict_dataset(self.model.index)
+                self.model.evict_dataset(self.model.index)
 
             self._set_last_dir(fname)
             ext = "".join(Path(fname).suffixes)
@@ -808,7 +792,6 @@ class MainWindow(QMainWindow):
                 try:
                     header = read_bvrf_header(Path(fname).with_suffix(".bvrh"))
                     if header["n_participants"] > 1:
-                        # get participant IDs
                         participants = [
                             p["Id"] for p in header["yaml_header"]["Participants"]
                         ]
@@ -828,8 +811,7 @@ class MainWindow(QMainWindow):
                                 self.model.load(
                                     fname, participants=selected, split=False
                                 )
-                    else:
-                        # single participant, load directly
+                    else:  # single participant, load directly
                         self.model.load(fname)
                 except Exception as e:
                     QMessageBox.critical(self, "Error loading BVRF file", str(e))
@@ -1062,7 +1044,6 @@ class MainWindow(QMainWindow):
             self.model.rename_channels(dialog.new_names)
 
     def set_montage(self):
-        """Set montage."""
         montages = natural_sort(mne.channels.get_builtin_montages())
         dialog = MontageDialog(
             self, montages, current_montage=self.model.current["montage"]
@@ -1143,7 +1124,6 @@ class MainWindow(QMainWindow):
             self.model.set_events(events)
 
     def crop(self):
-        """Crop data."""
         stop = self.model.current["data"].times[-1]
         dialog = CropDialog(self, 0, stop)
         if dialog.exec():
@@ -1906,11 +1886,9 @@ class MainWindow(QMainWindow):
         new_index = self.model.find_index_by_id(dataset_id)
         if new_index != self.model.index:
             if read_settings("memory_saving"):
-                with self._wait_cursor():
-                    self.model.evict_dataset(self.model.index)
+                self.model.evict_dataset(self.model.index)
             if self.model.data[new_index]["data"] is None:
-                with self._wait_cursor():
-                    self.model.reload_dataset(new_index)
+                self.model.reload_dataset(new_index)
             self.model.index = new_index
             self.data_changed()
             self.model.history.append(f"data = datasets[{self.model.index}]")
