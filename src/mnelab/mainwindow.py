@@ -51,7 +51,12 @@ from PySide6.QtWidgets import (
 from mnelab import IS_DEV_VERSION, __version__
 from mnelab.dialogs import *  # noqa: F403
 from mnelab.dialogs.channel_stats import ChannelStats
-from mnelab.model import InvalidAnnotationsError, LabelsNotFoundError, Model
+from mnelab.model import (
+    InvalidAnnotationsError,
+    InvalidBadChannelsError,
+    LabelsNotFoundError,
+    Model,
+)
 from mnelab.settings import SettingsDialog, read_settings, write_settings
 from mnelab.utils import (
     annotations_between_events,
@@ -876,6 +881,8 @@ class MainWindow(QMainWindow):
                 f(fname)
             except LabelsNotFoundError as e:
                 QMessageBox.critical(self, "Channel labels not found", str(e))
+            except InvalidBadChannelsError as e:
+                QMessageBox.critical(self, "Invalid bad channels", str(e))
             except InvalidAnnotationsError as e:
                 QMessageBox.critical(self, "Invalid annotations", str(e))
 

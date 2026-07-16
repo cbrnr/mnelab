@@ -29,6 +29,10 @@ class LabelsNotFoundError(Exception):
     pass
 
 
+class InvalidBadChannelsError(Exception):
+    pass
+
+
 class InvalidAnnotationsError(Exception):
     pass
 
@@ -404,16 +408,36 @@ class Model:
     @data_changed
     def import_bads(self, fname):
         """Import bad channels info from a CSV file."""
-        with open(fname) as f:
-            bads = f.read().replace(" ", "").strip().split(",")
-            unknown = set(bads) - set(self.current["data"].info["ch_names"])
-            if unknown:
-                raise LabelsNotFoundError(
-                    "The following imported channel labels are not contained in the "
-                    "data: " + ",".join(unknown)
-                )
-            else:
-                self.current["data"].info["bads"] = bads
+        try:
+            with open(fname) as f:
+                content = f.read()
+        except UnicodeDecodeError:
+            raise InvalidBadChannelsError(
+                "The file contains binary data and cannot be read as CSV."
+            )
+        # a valid file contains a single line with a comma-separated list of labels
+        lines = [line for line in content.splitlines() if line.strip()]
+        if len(lines) > 1:
+            raise InvalidBadChannelsError(
+                "Invalid bad channels file (expected a single line with a "
+                "comma-separated list of channel labels)."
+            )
+        bads = [label.strip() for label in content.replace(" ", "").split(",")]
+        bads = [label for label in bads if label]  # drop empty tokens
+        if not bads:
+            raise InvalidBadChannelsError(
+                "The file does not contain any channel labels."
+            )
+        unknown = sorted(set(bads) - set(self.current["data"].info["ch_names"]))
+        if unknown:
+            preview = ", ".join(unknown[:10])
+            if len(unknown) > 10:
+                preview += f", … ({len(unknown) - 10} more)"
+            raise LabelsNotFoundError(
+                "The following imported channel labels are not contained in the "
+                "data: " + preview
+            )
+        self.current["data"].info["bads"] = bads
 
     @data_changed
     def import_events(self, fname):
