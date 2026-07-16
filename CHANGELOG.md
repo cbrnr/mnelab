@@ -1,4 +1,7 @@
 ## [UNRELEASED] · YYYY-MM-DD
+### 🔧 Fixed
+- Handle invalid files gracefully when importing bad channels ([#686](https://github.com/cbrnr/mnelab/pull/686) by [Clemens Brunner](https://github.com/cbrnr))
+
 ### 🌀 Changed
 - Use MNEXTEND's `resolve_streams()` and `read_bvrf_header()` instead of depending on PyXDF and PyBVRF directly ([#679](https://github.com/cbrnr/mnelab/pull/679) by [Clemens Brunner](https://github.com/cbrnr))
 
