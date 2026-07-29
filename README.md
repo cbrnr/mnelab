@@ -1,10 +1,3 @@
-![Python](https://img.shields.io/pypi/pyversions/mnelab.svg?logo=python&logoColor=white)
-[![PyPI](https://img.shields.io/pypi/v/mnelab)](https://pypi.org/project/mnelab/)
-[![Docs](https://readthedocs.org/projects/mnelab/badge/?version=latest)](https://mnelab.readthedocs.io/)
-[![DOI](https://joss.theoj.org/papers/10.21105/joss.04650/status.svg)](https://doi.org/10.21105/joss.04650)
-[![License](https://img.shields.io/github/license/cbrnr/mnelab?color=68%2C192%2C58)](LICENSE)
-
-
 # MNELAB
 
 ![](https://raw.githubusercontent.com/cbrnr/mnelab/main/mnelab/images/mnelab_logo.png)
@@ -66,3 +59,10 @@ QT_PLUGIN_PATH=/usr/lib/qt6/plugins uvx mnelab
 ## Contributing
 
 The [contributing guide](https://github.com/cbrnr/mnelab/blob/main/CONTRIBUTING.md) provides detailed instructions for contributing to MNELAB.
+
+
+## Citing
+
+If you use MNELAB in your research, please cite the following paper (see also [CITATION.cff](CITATION.cff)):
+
+Brunner, C. (2022). MNELAB: a graphical user interface for MNE-Python. *Journal of Open Source Software*, 7(78), 4650, [doi:10.21105/joss.04650](https://doi.org/10.21105/joss.04650).
