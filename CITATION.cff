@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "MNELAB: a graphical user interface for MNE-Python"
+type: software
+authors:
+  - family-names: Brunner
+    given-names: Clemens
+repository-code: "https://github.com/cbrnr/mnelab"
+license: BSD-3-Clause
+preferred-citation:
+  type: article
+  title: "MNELAB: a graphical user interface for MNE-Python"
+  authors:
+    - family-names: Brunner
+      given-names: Clemens
+  journal: "Journal of Open Source Software"
+  year: 2022
+  volume: 7
+  issue: 78
+  start: "4650"
+  doi: "10.21105/joss.04650"
+  url: "https://doi.org/10.21105/joss.04650"
