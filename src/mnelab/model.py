@@ -79,12 +79,14 @@ class Model:
             "from mnextend import read_raw, run_iclabel",
             "from mnelab.utils import annotations_between_events",
             "import numpy as np",
-            "from mnelab.utils import ("
-            "detect_extreme_values,"
-            "detect_kurtosis,"
-            "detect_peak_to_peak,"
-            "detect_with_autoreject,"
-            ")"
+            (
+                "from mnelab.utils import ("
+                "detect_extreme_values,"
+                "detect_kurtosis,"
+                "detect_peak_to_peak,"
+                "detect_with_autoreject,"
+                ")"
+            ),
             "",
             "datasets = []",
         ]

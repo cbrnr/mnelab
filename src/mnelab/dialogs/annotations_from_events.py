@@ -26,7 +26,7 @@ class AnnotationsIntervalDialog(QDialog):
         self.setWindowTitle("Create Annotations from Events")
         vbox = QVBoxLayout(self)
         self.event_counts = event_counts
-        self.event_names = [str(e) for e in event_counts.keys()]
+        self.event_names = [str(e) for e in event_counts]
 
         # radio buttons
         self.annotations_events_button = QRadioButton("Copy Events to Annotations")

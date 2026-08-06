@@ -56,10 +56,10 @@ def _center_cmap(cmap, vmin, vmax, name="cmap_centered"):
     )
 
     colors = ("red", "green", "blue", "alpha")
-    cdict = {name: [] for name in colors}
+    cdict = {channel: [] for channel in colors}
     for old, new in zip(index_old, index_new):
-        for color, name in zip(cmap(old), colors):
-            cdict[name].append((new, color, color))
+        for color, channel in zip(cmap(old), colors):
+            cdict[channel].append((new, color, color))
     return LinearSegmentedColormap(name, cdict)
 
 

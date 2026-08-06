@@ -40,6 +40,7 @@ with patch("PySide6.QtWidgets.QApplication.exec", return_value=0):
         capture_output=True,
         text=True,
         timeout=60,
+        check=False,
     )
     assert result.returncode == 0, (
         f"main() subprocess exited with code {result.returncode}.\n"

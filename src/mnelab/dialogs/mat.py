@@ -29,7 +29,7 @@ def populate_tree(parent, nodes):
         for k, v in nodes.items():
             item = QTreeWidgetItem(parent)
             item.setText(0, k)
-            if isinstance(v, dict) or isinstance(v, list):
+            if isinstance(v, (dict, list)):
                 item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsSelectable)
                 populate_tree(item, v)
             else:

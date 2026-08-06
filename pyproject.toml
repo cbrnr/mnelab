@@ -65,7 +65,7 @@ changelog = "https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md"
 
 [tool.ruff.lint]
 extend-select = ["C4", "PERF", "W"]
-ignore = ["DTZ"]
+ignore = ["DTZ", "BLE001", "S110"]  # BLE001/S110: broad except blocks are intentional
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
