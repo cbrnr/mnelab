@@ -29,10 +29,7 @@ def populate_tree(parent, nodes):
         for k, v in nodes.items():
             item = QTreeWidgetItem(parent)
             item.setText(0, k)
-            if isinstance(v, dict):
-                item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsSelectable)
-                populate_tree(item, v)
-            elif isinstance(v, list):
+            if isinstance(v, dict) or isinstance(v, list):
                 item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsSelectable)
                 populate_tree(item, v)
             else:
@@ -40,9 +37,10 @@ def populate_tree(parent, nodes):
                 if isinstance(v, np.ndarray):
                     item.setText(1, f"{type(v).__name__} ({v.dtype.name})")  # add dtype
                     item.setText(2, " × ".join(map(str, v.shape)))
-                    if v.ndim > 2:  # arrays cannot have more than two dimensions
-                        item.setFlags(Qt.ItemFlag.NoItemFlags)
-                    elif v.dtype not in (np.float32, np.float64):  # must be numeric
+                    if v.ndim > 2 or v.dtype not in (
+                        np.float32,
+                        np.float64,
+                    ):  # arrays cannot have more than two dimensions
                         item.setFlags(Qt.ItemFlag.NoItemFlags)
                 else:
                     item.setFlags(Qt.ItemFlag.NoItemFlags)

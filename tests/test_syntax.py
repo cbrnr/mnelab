@@ -57,7 +57,7 @@ annotations = annotations_between_events(events=events,
                                          end_offset=0.0,
                                          extend_start=True,
                                          extend_end=True)
-"""  # noqa: E501
+"""
 
 
 def test_format_code():

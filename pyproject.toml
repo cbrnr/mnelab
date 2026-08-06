@@ -65,6 +65,7 @@ changelog = "https://github.com/cbrnr/mnelab/blob/main/CHANGELOG.md"
 
 [tool.ruff.lint]
 extend-select = ["C4", "PERF", "W"]
+ignore = ["DTZ"]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]

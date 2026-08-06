@@ -49,7 +49,7 @@ from PySide6.QtWidgets import (
 )
 
 from mnelab import IS_DEV_VERSION, __version__
-from mnelab.dialogs import *  # noqa: F403
+from mnelab.dialogs import *
 from mnelab.dialogs.channel_stats import ChannelStats
 from mnelab.model import (
     InvalidAnnotationsError,

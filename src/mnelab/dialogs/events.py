@@ -108,10 +108,7 @@ class EventsDialog(QDialog):
             self.remove_button.setEnabled(False)
             self.mapping_button.setEnabled(False)
             self.counts_button.setEnabled(False)
-        elif n_items == 2:  # one row (2 items) selected
-            self.remove_button.setEnabled(True)
-            self.mapping_button.setEnabled(True)
-        elif n_items > 2:  # more than one row selected
+        elif n_items == 2 or n_items > 2:  # one row (2 items) selected
             self.remove_button.setEnabled(True)
             self.mapping_button.setEnabled(True)
         else:  # no rows selected
