@@ -307,7 +307,7 @@ class ArtifactDetectionDialog(QDialog):
         # manual detection
         auto_rejected = set()
         for idx, results in self.detection_results.items():
-            if any(results.get(method, False) for method in selected_methods.keys()):
+            if any(results.get(method, False) for method in selected_methods):
                 auto_rejected.add(idx)
 
         final_rejects = set(self.get_bad_epochs())
@@ -395,9 +395,7 @@ class ArtifactPreviewTable(QDialog):
         """Populate table with detection results."""
         n_epochs = len(self.detection_results)
 
-        method_cols = [
-            key for key in self.detection_results[0].keys() if key != "reject"
-        ]
+        method_cols = [key for key in self.detection_results[0] if key != "reject"]
         header_labels = ["Epoch"] + method_cols + ["Reject"]
         self.model.setHorizontalHeaderLabels(header_labels)
         set_header_alignments(self.model, "r" + "c" * (len(method_cols) + 1))

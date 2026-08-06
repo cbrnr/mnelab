@@ -49,7 +49,7 @@ from PySide6.QtWidgets import (
 )
 
 from mnelab import IS_DEV_VERSION, __version__
-from mnelab.dialogs import *  # noqa: F403
+from mnelab.dialogs import *
 from mnelab.dialogs.channel_stats import ChannelStats
 from mnelab.model import (
     InvalidAnnotationsError,
@@ -723,15 +723,15 @@ class MainWindow(QMainWindow):
         if len(self.model) > 0:
             self._add_recent(self.model.current["fname"])
 
-    def open_data(self, fname=None):
+    def open_data(self, path=None):
         """Open raw file."""
-        if fname is None:
+        if path is None:
             # getOpenFileNames returns a tuple (filenames, selected_filter)
             fnames, _ = QFileDialog.getOpenFileNames(
                 self, "Open raw", self._get_last_dir()
             )
         else:
-            fnames = [fname]
+            fnames = [path]
         for fname in fnames:
             if not (Path(fname).is_file() or Path(fname).is_dir()):
                 self._remove_recent(fname)
@@ -1908,7 +1908,7 @@ class MainWindow(QMainWindow):
 
     @Slot(QAction)
     def _load_recent(self, action):
-        self.open_data(fname=action.text())
+        self.open_data(path=action.text())
 
     def _apply_toolbar(self, action_keys):
         for action in list(self.toolbar.actions()):

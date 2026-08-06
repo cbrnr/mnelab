@@ -186,10 +186,9 @@ def _remove_unused_imports(code):
         for node in ast.walk(tree):
             if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load):
                 used_names.add(node.id)
-            elif isinstance(node, ast.Attribute):
+            elif isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name):
                 # for attribute access like module.function, track the base
-                if isinstance(node.value, ast.Name):
-                    used_names.add(node.value.id)
+                used_names.add(node.value.id)
 
         # reconstruct or remove import lines
         lines = code.splitlines(keepends=True)

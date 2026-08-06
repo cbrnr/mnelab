@@ -104,9 +104,7 @@ class AnnotationsDialog(QDialog):
         if self.table.rowCount() == 0:  # no annotations available
             self.remove_button.setEnabled(False)
             self.counts_button.setEnabled(False)
-        elif n_items == 3:  # one row (3 items) selected
-            self.remove_button.setEnabled(True)
-        elif n_items > 3:  # more than one row selected
+        elif n_items == 3 or n_items > 3:  # one row (3 items) selected
             self.remove_button.setEnabled(True)
         else:  # no rows selected
             self.remove_button.setEnabled(False)

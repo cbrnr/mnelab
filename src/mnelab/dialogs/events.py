@@ -108,10 +108,7 @@ class EventsDialog(QDialog):
             self.remove_button.setEnabled(False)
             self.mapping_button.setEnabled(False)
             self.counts_button.setEnabled(False)
-        elif n_items == 2:  # one row (2 items) selected
-            self.remove_button.setEnabled(True)
-            self.mapping_button.setEnabled(True)
-        elif n_items > 2:  # more than one row selected
+        elif n_items == 2 or n_items > 2:  # one row (2 items) selected
             self.remove_button.setEnabled(True)
             self.mapping_button.setEnabled(True)
         else:  # no rows selected
@@ -138,7 +135,7 @@ class EventsDialog(QDialog):
         for row in sorted(rows, reverse=True):
             value = self.event_table.item(row, 1).value()
             self.event_table.removeRow(row)
-            if value not in self.unique_events.keys():
+            if value not in self.unique_events:
                 self.event_mapping.pop(value, None)
 
 
@@ -230,7 +227,7 @@ class EventMappingDialog(QDialog):
     def store_mapping(self):
         for i in range(self.mapping_table.rowCount()):
             event_id = int(self.mapping_table.item(i, 0).value())
-            if event_id not in self.unique_events.keys():
+            if event_id not in self.unique_events:
                 del self.event_mapping[event_id]
             if self.mapping_table.item(i, 1) is not None:
                 self.event_mapping[event_id] = self.mapping_table.item(i, 1).text()

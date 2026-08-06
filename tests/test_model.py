@@ -110,8 +110,7 @@ def _write_annotations_csv(path, rows, header=True):
     with open(path, "w") as f:
         if header:
             f.write("type,onset,duration\n")
-        for row in rows:
-            f.write(",".join(str(v) for v in row) + "\n")
+        f.writelines(",".join(str(v) for v in row) + "\n" for row in rows)
 
 
 def test_import_annotations_basic(model_with_data, tmp_path):

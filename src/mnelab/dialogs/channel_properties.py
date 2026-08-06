@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (
 
 from mnelab.dialogs.utils import CheckBoxDelegate, set_header_alignments
 
-channel_types = [k.upper() for k in get_channel_type_constants().keys()]
+channel_types = [k.upper() for k in get_channel_type_constants()]
 
 
 class ChannelPropertiesDialog(QDialog):
