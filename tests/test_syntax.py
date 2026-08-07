@@ -46,17 +46,21 @@ mne.viz.set_browser_backend('Qt')
 
 data = read_raw("test.bdf", preload=True)
 datasets.insert(0, data)
-events = mne.find_events(data, stim_channel="Status", initial_event=True, uint_cast=True)
-annotations = annotations_between_events(events=events,
-                                         sfreq=data.info["sfreq"],
-                                         start_events=[2],
-                                         end_events=[3],
-                                         annotation="BAD_SEGMENT",
-                                         max_time=data.times[-1],
-                                         start_offset=0.0,
-                                         end_offset=0.0,
-                                         extend_start=True,
-                                         extend_end=True)
+events = mne.find_events(
+    data, stim_channel="Status", initial_event=True, uint_cast=True
+)
+annotations = annotations_between_events(
+    events=events,
+    sfreq=data.info["sfreq"],
+    start_events=[2],
+    end_events=[3],
+    annotation="BAD_SEGMENT",
+    max_time=data.times[-1],
+    start_offset=0.0,
+    end_offset=0.0,
+    extend_start=True,
+    extend_end=True,
+)
 """
 
 
