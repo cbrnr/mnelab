@@ -1,4 +1,4 @@
-## [UNRELEASED] · YYYY-MM-DD
+## [1.5.7] · 2026-08-31
 ### 🔧 Fixed
 - Handle invalid files gracefully when importing bad channels ([#686](https://github.com/cbrnr/mnelab/pull/686) by [Clemens Brunner](https://github.com/cbrnr))
 - Add missing ONNX model to standalone releases to fix the broken "Label ICs" functionality ([#692](https://github.com/cbrnr/mnelab/pull/692) by [Clemens Brunner](https://github.com/cbrnr))
