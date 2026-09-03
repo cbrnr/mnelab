@@ -101,6 +101,38 @@ class RenameChannelsDialog(QDialog):
         self.setFixedSize(450, 450)
         self.setFocus()
 
+    @property
+    def mapping(self):
+        """Return the selected channel renaming function."""
+        if self.method.currentText() == "Strip characters":
+            chars = self.strip_chars.text()
+            if self.where.currentText() == "from beginning":
+                return lambda name: name.lstrip(chars)
+            return lambda name: name.rstrip(chars)
+
+        num = int(self.slice_num.value())
+        if self.where.currentText() == "from beginning":
+            return lambda name: name[num:]
+        if num > 0:
+            return lambda name: name[:-num]
+        return lambda name: name[:]
+
+    @property
+    def history_mapping(self):
+        """Return the selected channel renaming function as history code."""
+        if self.method.currentText() == "Strip characters":
+            method = (
+                "lstrip" if self.where.currentText() == "from beginning" else "rstrip"
+            )
+            return f"lambda name: name.{method}({self.strip_chars.text()!r})"
+
+        num = int(self.slice_num.value())
+        if self.where.currentText() == "from beginning":
+            return f"lambda name: name[{num}:]"
+        if num > 0:
+            return f"lambda name: name[:-{num}]"
+        return "lambda name: name[:]"
+
     @Slot()
     def toggle_input(self):
         if self.method.currentText() == "Strip characters":
@@ -112,24 +144,7 @@ class RenameChannelsDialog(QDialog):
 
     @Slot()
     def update_preview(self):
-        if self.method.currentText() == "Strip characters":
-            if self.where.currentText() == "from beginning":
-                new_names = [n.lstrip(self.strip_chars.text()) for n in self.old_names]
-            else:
-                new_names = [n.rstrip(self.strip_chars.text()) for n in self.old_names]
-
-        else:
-            if self.where.currentText() == "from beginning":
-                new_names = [n[int(self.slice_num.value()) :] for n in self.old_names]
-            else:
-                if self.slice_num.value() > 0:
-                    new_names = [
-                        n[: -int(self.slice_num.value())] for n in self.old_names
-                    ]
-                else:
-                    new_names = self.old_names[:]
-
-        self.new_names = new_names
+        self.new_names = [self.mapping(name) for name in self.old_names]
         for row, (old, new) in enumerate(zip(self.old_names, self.new_names)):
             self.preview.setItem(row, 0, QTableWidgetItem(old))
             self.preview.setItem(row, 1, QTableWidgetItem(new))
