@@ -1099,7 +1099,9 @@ class MainWindow(QMainWindow):
                 duration.append(float(data) / fs)
                 data = dialog.table.item(i, 2).data(Qt.ItemDataRole.DisplayRole)
                 description.append(data)
-            self.model.set_annotations(onset, duration, description)
+            self.model.set_annotations(
+                onset, duration, description, row_ids=dialog.row_ids
+            )
 
     def set_annotation_colors(self):
         """Open dialog to manage custom annotation colors."""
@@ -1119,16 +1121,22 @@ class MainWindow(QMainWindow):
                 pos = dialog.event_table.item(i, 0).value()
                 desc = dialog.event_table.item(i, 1).value()
                 events[i] = pos, 0, desc
-            self.model.current["event_mapping"] = dict(dialog.event_mapping)
+            event_mapping_old = dict(self.model.current["event_mapping"])
+            event_mapping = dict(dialog.event_mapping)
+            self.model.current["event_mapping"] = event_mapping
+            if event_mapping != event_mapping_old:
+                self.model.history.append(f"event_mapping = {event_mapping}")
             if self.model.current["dtype"] == "epochs":
                 event_id_old = self.model.current["data"].event_id
                 event_id_new = {
                     f"{k} ({v})": k
-                    for k, v in dialog.event_mapping.items()
+                    for k, v in event_mapping.items()
                     if k in event_id_old.values()
                 }
-                self.model.current["data"].event_id = event_id_new
-            self.model.set_events(events)
+                if event_id_new != event_id_old:
+                    self.model.current["data"].event_id = event_id_new
+                    self.model.history.append(f"data.event_id = {event_id_new}")
+            self.model.set_events(events, row_ids=dialog.row_ids)
 
     def crop(self):
         stop = self.model.current["data"].times[-1]
@@ -1184,7 +1192,7 @@ class MainWindow(QMainWindow):
             kwargs.update(duration=duration, clipping=None)
             hist_parts = [f"n_channels={nchan}", f"duration={duration}"]
         if events is not None and len(events):
-            hist_parts.append("events=events")
+            hist_parts.append("events=data.events")
 
         scalings = read_settings("scalings")
         if scalings == "auto":
@@ -1562,7 +1570,7 @@ class MainWindow(QMainWindow):
 
                     self.model.history.append(
                         f"annotations = annotations_between_events(\n"
-                        f"    events=events,\n"
+                        f"    events=data.events,\n"
                         f'    sfreq=data.info["sfreq"],\n'
                         f"    start_events={interval_data['start_events']},\n"
                         f"    end_events={interval_data['end_events']},\n"
