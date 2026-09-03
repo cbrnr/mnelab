@@ -1,4 +1,9 @@
 ## [UNRELEASED] · YYYY-MM-DD
+### ✨ Added
+- Add tooltips in many places ([#694](https://github.com/cbrnr/mnelab/pull/694) by [Clemens Brunner](https://github.com/cbrnr))
+
+### 🔧 Fixed
+- Apply the selected Number of Components setting when running ICA ([#694](https://github.com/cbrnr/mnelab/pull/694) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.5.7] · 2026-08-31
 ### 🔧 Fixed

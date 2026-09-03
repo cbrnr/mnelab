@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
 )
 
 from mnelab.dialogs.utils import select_all
+from mnelab.widgets import selection_key, set_tooltip
 
 
 class PlotEvokedDialog(QDialog):
@@ -35,6 +36,11 @@ class PlotEvokedDialog(QDialog):
         self.picks.insertItems(0, channels)
         self.picks.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
         select_all(self.picks)
+        set_tooltip(
+            f"Use Shift-click or {selection_key}-click to select multiple channels",
+            label,
+            self.picks,
+        )
         grid.addWidget(self.picks, 0, 1)
 
         label = QLabel("Events:")
@@ -45,22 +51,32 @@ class PlotEvokedDialog(QDialog):
         self.events.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
         self.events.setMaximumHeight(self.events.sizeHintForRow(0) * 5.5)
         select_all(self.events)
+        set_tooltip(
+            f"Use Shift-click or {selection_key}-click to select multiple event types",
+            label,
+            self.events,
+        )
         grid.addWidget(self.events, 1, 1)
 
         grid.addWidget(QLabel("Show GFP:"), 2, 0)
         self.gfp = QCheckBox()
         self.gfp.setChecked(False)
+        self.gfp.setToolTip("Show global field power alongside channel traces")
         grid.addWidget(self.gfp, 2, 1)
 
         self.spatial_colors_label = QLabel("Spatial Colors:")
         grid.addWidget(self.spatial_colors_label, 3, 0)
         self.spatial_colors = QCheckBox()
         self.spatial_colors.setChecked(False)
+        self.spatial_colors.setToolTip(
+            "Color channel traces according to their positions"
+        )
         grid.addWidget(self.spatial_colors, 3, 1)
 
         self.topomaps = QGroupBox("Topomaps")
         self.topomaps.setCheckable(True)
         self.topomaps.setChecked(False)
+        self.topomaps.setToolTip("Add topographic maps below the evoked traces")
         topomaps_grid = QGridLayout()
         topomaps_grid.setColumnStretch(0, 2)
         topomaps_grid.setColumnStretch(1, 3)
@@ -68,6 +84,14 @@ class PlotEvokedDialog(QDialog):
         self.topomaps_auto = QRadioButton("Auto")
         self.topomaps_times = QRadioButton("Time (s):")
         self.topomaps_timelist = QLineEdit()
+        self.topomaps_peaks.setToolTip(
+            "Select time points at peaks in global field power"
+        )
+        self.topomaps_auto.setToolTip("Select evenly spaced time points automatically")
+        self.topomaps_times.setToolTip("Enter time points manually")
+        self.topomaps_timelist.setToolTip(
+            "Enter comma-separated time points in seconds"
+        )
         topomaps_grid.addWidget(self.topomaps_peaks, 0, 0)
         topomaps_grid.addWidget(self.topomaps_auto, 1, 0)
         topomaps_grid.addWidget(self.topomaps_times, 2, 0)
@@ -128,6 +152,11 @@ class PlotEvokedComparisonDialog(QDialog):
         self.picks.insertItems(0, channels)
         self.picks.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
         select_all(self.picks)
+        set_tooltip(
+            f"Use Shift-click or {selection_key}-click to select multiple channels",
+            label,
+            self.picks,
+        )
         grid.addWidget(self.picks, 0, 1, 1, 1)
 
         label = QLabel("Events:")
@@ -138,23 +167,35 @@ class PlotEvokedComparisonDialog(QDialog):
         self.events.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
         self.events.setMaximumHeight(self.events.sizeHintForRow(0) * 5.5)
         select_all(self.events)
+        set_tooltip(
+            f"Use Shift-click or {selection_key}-click to select multiple event types",
+            label,
+            self.events,
+        )
         grid.addWidget(self.events, 1, 1, 1, 1)
 
         grid.addWidget(QLabel("Average Epochs:"), 2, 0)
         self.average_epochs = QComboBox()
         self.average_epochs.addItems(["mean", "median"])
         self.average_epochs.setCurrentIndex(0)
+        self.average_epochs.setToolTip("Choose how to average epochs")
         grid.addWidget(self.average_epochs, 2, 1)
 
         grid.addWidget(QLabel("Combine Channels:"), 3, 0)
         self.combine_channels = QComboBox()
         self.combine_channels.addItems(["gfp", "mean", "median", "std"])
         self.combine_channels.setCurrentIndex(0)
+        self.combine_channels.setToolTip(
+            "Choose how to combine selected channels into a single trace"
+        )
         grid.addWidget(self.combine_channels, 3, 1)
 
         grid.addWidget(QLabel("Confidence Intervals:"), 4, 0)
         self.confidence_intervals = QCheckBox()
         self.confidence_intervals.setChecked(True)
+        self.confidence_intervals.setToolTip(
+            "Show shaded confidence intervals around evoked traces"
+        )
         grid.addWidget(self.confidence_intervals, 4, 1)
 
         self.buttonbox = QDialogButtonBox(
@@ -194,12 +235,18 @@ class PlotEvokedTopomaps(QDialog):
         self.events.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
         self.events.setMaximumHeight(self.events.sizeHintForRow(0) * 5.5)
         select_all(self.events)
+        set_tooltip(
+            f"Use Shift-click or {selection_key}-click to select multiple event types",
+            label,
+            self.events,
+        )
         grid.addWidget(self.events, 0, 1)
 
         grid.addWidget(QLabel("Average Epochs:"), 1, 0)
         self.average_epochs = QComboBox()
         self.average_epochs.addItems(["mean", "median"])
         self.average_epochs.setCurrentIndex(0)
+        self.average_epochs.setToolTip("Choose how to average epochs")
         grid.addWidget(self.average_epochs, 1, 1)
 
         timepoints = QGroupBox("Select Time Point(s):")
@@ -212,6 +259,11 @@ class PlotEvokedTopomaps(QDialog):
         self.interactive = QRadioButton("Interactive")
         self.manual = QRadioButton("Manual:")
         self.timelist = QLineEdit()
+        self.auto.setToolTip("Select time points automatically")
+        self.peaks.setToolTip("Select time points at peaks in global field power")
+        self.interactive.setToolTip("Select time points interactively in the plot")
+        self.manual.setToolTip("Enter time points manually")
+        self.timelist.setToolTip("Enter comma-separated time points in seconds")
         self.auto.setChecked(True)
         timepoints_grid.addWidget(self.auto, 0, 0)
         timepoints_grid.addWidget(self.peaks, 1, 0)

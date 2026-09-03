@@ -8,12 +8,15 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from mne.channels import make_standard_montage, read_custom_montage
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
+    QApplication,
     QCheckBox,
     QDialog,
     QDialogButtonBox,
     QFileDialog,
     QHBoxLayout,
+    QLabel,
     QListWidget,
     QListWidgetItem,
     QMessageBox,
@@ -55,7 +58,14 @@ class MontageDialog(QDialog):
         self.setWindowTitle("Set Montage")
         self.resize(760, 500)
 
+        header_font = QFont(QApplication.font())
+        header_font.setPointSizeF(header_font.pointSizeF() * 0.85)
+        header_font.setBold(True)
+
         vbox = QVBoxLayout()
+        montages_header = QLabel("Montages")
+        montages_header.setFont(header_font)
+        vbox.addWidget(montages_header)
         self.montages = QListWidget()
         self.montages.setSelectionMode(QListWidget.SelectionMode.SingleSelection)
         for name in montages:
@@ -67,9 +77,16 @@ class MontageDialog(QDialog):
         self.montages.itemSelectionChanged.connect(self.view_montage)
         self.montages.itemSelectionChanged.connect(self._update_clear_button)
         self.match_case = QCheckBox("Match Case-Sensitive", self)
+        self.match_case.setToolTip(
+            "Require exact capitalization when matching channel names"
+        )
         self.match_alias = QCheckBox("Match Aliases", self)
+        self.match_alias.setToolTip("Match channel names using known aliases")
         self.ignore_missing = QCheckBox("Ignore Missing", self)
         self.ignore_missing.setChecked(True)
+        self.ignore_missing.setToolTip(
+            "Continue when some channels are missing from the montage"
+        )
         vbox.addWidget(self.match_case)
         vbox.addWidget(self.match_alias)
         vbox.addWidget(self.ignore_missing)
@@ -86,13 +103,20 @@ class MontageDialog(QDialog):
         self.canvas_layout.setSpacing(0)
         self.canvas_layout.addWidget(self.canvas)
         self.canvas_container.setLayout(self.canvas_layout)
-        hbox.addWidget(self.canvas_container, stretch=2)
+        preview_vbox = QVBoxLayout()
+        preview_header = QLabel("Preview")
+        preview_header.setFont(header_font)
+        preview_vbox.addWidget(preview_header)
+        preview_vbox.addWidget(self.canvas_container)
+        hbox.addLayout(preview_vbox, stretch=2)
 
         button_layout = QHBoxLayout()
         self.open_file_button = QPushButton("Load Custom Montage...", self)
+        self.open_file_button.setToolTip("Load a custom montage from a file")
         self.open_file_button.clicked.connect(self.load_custom_montage)
         button_layout.addWidget(self.open_file_button)
         self.clear_button = QPushButton("Clear Montage", self)
+        self.clear_button.setToolTip("Clear the montage selection")
         self.clear_button.clicked.connect(self._clear_montage)
         self.clear_button.setEnabled(current_montage is not None)
         button_layout.addWidget(self.clear_button)

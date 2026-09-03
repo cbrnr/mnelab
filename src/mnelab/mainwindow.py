@@ -1400,6 +1400,7 @@ class MainWindow(QMainWindow):
             calc = CalcDialog(self, "Calculating ICA", "Calculating ICA...")
 
             method = dialog.method.currentText().lower()
+            n_components = dialog.n_components.value()
             exclude_bad_segments = dialog.exclude_bad_segments.isChecked()
 
             fit_params = {}
@@ -1408,8 +1409,13 @@ class MainWindow(QMainWindow):
             if dialog.ortho.isEnabled():
                 fit_params["ortho"] = dialog.ortho.isChecked()
 
-            ica = mne.preprocessing.ICA(method=method, fit_params=fit_params)
-            history = f"ica = mne.preprocessing.ICA(method='{method}'"
+            ica = mne.preprocessing.ICA(
+                n_components=n_components, method=method, fit_params=fit_params
+            )
+            history = (
+                "ica = mne.preprocessing.ICA("
+                f"n_components={n_components}, method='{method}'"
+            )
             if fit_params:
                 history += f", fit_params={fit_params})"
             else:

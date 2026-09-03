@@ -40,7 +40,7 @@ from mnelab.widgets import FlatDoubleSpinBox
 class ArtifactDetectionDialog(QDialog):
     def __init__(self, parent, data):
         super().__init__(parent)
-        self.setWindowTitle("Artifact Detection")
+        self.setWindowTitle("Detect Artifacts")
         self.detection_methods = {
             "Extreme Values": {
                 "parameters": [
@@ -84,12 +84,26 @@ class ArtifactDetectionDialog(QDialog):
 
         grid.addWidget(QLabel("<b>Method</b>"), 0, 0)
         grid.addWidget(QLabel("<b>Parameters</b>"), 0, 1)
+        method_tooltips = {
+            "Extreme Values": "Mark epochs with absolute amplitudes exceeding the "
+            "threshold",
+            "Peak-to-Peak": "Mark epochs with peak-to-peak amplitudes exceeding the "
+            "threshold",
+            "Kurtosis": "Mark epochs with kurtosis exceeding the threshold",
+            "AutoReject": "Mark epochs identified as bad by AutoReject",
+        }
+        parameter_tooltips = {
+            "Extreme Values": "Set the maximum absolute amplitude",
+            "Peak-to-Peak": "Set the maximum peak-to-peak amplitude",
+            "Kurtosis": "Set the maximum kurtosis z-score allowed in an epoch",
+        }
 
         # dynamically create UI elements for each detection method
         for idx, (method, details) in enumerate(
             self.detection_methods.items(), start=1
         ):
             checkbox = QCheckBox(method)
+            checkbox.setToolTip(method_tooltips[method])
 
             # parameter container
             param_container = QWidget()
@@ -108,6 +122,7 @@ class ArtifactDetectionDialog(QDialog):
                 spin_box.setPrefix(prefix)
                 spin_box.setSuffix(f" {unit}")
                 spin_box.setAlignment(Qt.AlignmentFlag.AlignRight)
+                spin_box.setToolTip(parameter_tooltips[method])
 
                 # single parameter - no label
                 if display_name is None:
@@ -145,6 +160,9 @@ class ArtifactDetectionDialog(QDialog):
 
         self.preview_button = QPushButton("Preview...")
         self.preview_button.setEnabled(False)
+        self.preview_button.setToolTip(
+            "Review and adjust the epochs marked for rejection"
+        )
         self.preview_button.clicked.connect(self.show_preview_table)
         button_layout.addWidget(self.preview_button)
 
@@ -217,7 +235,7 @@ class ArtifactDetectionDialog(QDialog):
         # update tooltip
         ok_button = self.button_box.button(QDialogButtonBox.StandardButton.Ok)
         ok_button.setToolTip(
-            f"Apply rejection (will drop {n_rejected}/{n_total} epochs)."
+            f"Apply rejection (will drop {n_rejected}/{n_total} epochs)"
         )
 
     def run_detection(self):
@@ -365,6 +383,9 @@ class ArtifactPreviewTable(QDialog):
         self.table_view.setEditTriggers(QTableView.EditTrigger.NoEditTriggers)
         self.table_view.setAlternatingRowColors(False)
         self.table_view.verticalHeader().setVisible(False)
+        self.table_view.setToolTip(
+            "Review detection results and choose epochs to reject"
+        )
 
         self.checkbox_delegate = CheckBoxDelegate()
 
@@ -377,6 +398,9 @@ class ArtifactPreviewTable(QDialog):
 
         button_layout = QHBoxLayout()
         self.view_epochs_button = QPushButton("View Epochs...")
+        self.view_epochs_button.setToolTip(
+            "Inspect and adjust epoch rejections in an interactive plot"
+        )
         self.view_epochs_button.clicked.connect(self.show_epoch_visualization)
         button_layout.addWidget(self.view_epochs_button)
 

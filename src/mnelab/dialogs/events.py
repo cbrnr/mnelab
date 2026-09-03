@@ -43,6 +43,7 @@ class EventsDialog(QDialog):
         )
         self.event_table.setSortingEnabled(True)
         self.event_table.sortByColumn(0, Qt.SortOrder.AscendingOrder)
+        self.event_table.setToolTip("Edit events (positions are in samples)")
 
         self.event_mapping = defaultdict(str, event_mapping)  # make copy
 
@@ -53,6 +54,10 @@ class EventsDialog(QDialog):
         self.remove_button = QPushButton("–")
         self.counts_button = QPushButton("Counts...")
         self.mapping_button = QPushButton("Mapping...")
+        self.add_button.setToolTip("Add a new event")
+        self.remove_button.setToolTip("Remove selected events")
+        self.counts_button.setToolTip("Show event counts by type")
+        self.mapping_button.setToolTip("Edit labels assigned to event types")
         buttonbox = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )

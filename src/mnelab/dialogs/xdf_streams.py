@@ -23,7 +23,7 @@ from mnelab.dialogs.utils import (
     IntTableWidgetItem,
     set_header_alignments,
 )
-from mnelab.widgets import FlatDoubleSpinBox
+from mnelab.widgets import FlatDoubleSpinBox, selection_key, set_tooltip
 
 
 class XDFStreamsDialog(QDialog):
@@ -71,6 +71,10 @@ class XDFStreamsDialog(QDialog):
         self.view.setSortingEnabled(True)
         self.view.sortByColumn(0, Qt.SortOrder.AscendingOrder)
         self.view.selectAll()
+        self.view.setToolTip(
+            f"Use Shift-click or {selection_key}-click to select multiple streams and "
+            "markers"
+        )
 
         self.view.itemSelectionChanged.connect(self.toggle_buttons)
 
@@ -82,6 +86,12 @@ class XDFStreamsDialog(QDialog):
         self.fs_new.setValue(1)
         self.fs_new.setDecimals(1)
         self.fs_new.setSuffix(" Hz")
+        set_tooltip(
+            "Resample selected signal streams to this sampling frequency",
+            self.resample,
+            self.resample_label,
+            self.fs_new,
+        )
 
         self.gap_threshold_label = QLabel("Detect Gaps Longer than")
         self.gap_threshold_checkbox = QCheckBox()
@@ -95,9 +105,18 @@ class XDFStreamsDialog(QDialog):
         self.gap_threshold.setSingleStep(0.1)
         self.gap_threshold.setSuffix(" s")
         self.gap_threshold.setEnabled(False)
+        set_tooltip(
+            "Detect gaps in resampled streams longer than this duration",
+            self.gap_threshold_checkbox,
+            self.gap_threshold_label,
+            self.gap_threshold,
+        )
 
         self._prefix_markers = QCheckBox("Prefix Markers with Stream ID")
         self._prefix_markers.setChecked(False)
+        self._prefix_markers.setToolTip(
+            "Prefix marker descriptions with their stream ID"
+        )
 
         self.marker_note = QLabel(
             "Selected marker streams are automatically converted to annotations."
@@ -123,6 +142,7 @@ class XDFStreamsDialog(QDialog):
 
         hbox2 = QHBoxLayout()
         self.details_button = QPushButton("Details")
+        self.details_button.setToolTip("Show XDF metadata")
         self.details_button.clicked.connect(self.details)
         hbox2.addWidget(self.details_button)
         hbox2.addStretch()

@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from mnelab.widgets import FlatDoubleSpinBox
+from mnelab.widgets import FlatDoubleSpinBox, set_tooltip
 
 
 class CropDialog(QDialog):
@@ -31,6 +31,7 @@ class CropDialog(QDialog):
         self._start.setSuffix(" s")
         self._start.setAlignment(Qt.AlignmentFlag.AlignRight)
         self._start.setMinimumWidth(140)
+        set_tooltip("Crop data from this time", self.start_checkbox, self._start)
         grid.addWidget(self._start, 0, 1)
 
         self.stop_checkbox = QCheckBox("Stop Time:")
@@ -44,6 +45,7 @@ class CropDialog(QDialog):
         self._stop.setSuffix(" s")
         self._stop.setAlignment(Qt.AlignmentFlag.AlignRight)
         self._stop.setMinimumWidth(140)
+        set_tooltip("Crop data until this time", self.stop_checkbox, self._stop)
         grid.addWidget(self._stop, 1, 1)
         vbox.addLayout(grid)
         buttonbox = QDialogButtonBox(

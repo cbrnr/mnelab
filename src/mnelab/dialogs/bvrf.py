@@ -32,11 +32,15 @@ class BVRFDialog(QDialog):
             item = self._participant_list.item(i)
             item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
             item.setCheckState(Qt.CheckState.Checked)  # All selected by default
+        self._participant_list.setToolTip("Check participants to import")
         vbox.addWidget(self._participant_list)
 
         # checkbox for creating separate datasets
         self._create_separate = QCheckBox("Create Separate Datasets")
         self._create_separate.setChecked(True)  # Checked by default
+        self._create_separate.setToolTip(
+            "Create one dataset for each selected participant"
+        )
         vbox.addWidget(self._create_separate)
 
         buttonbox = QDialogButtonBox(

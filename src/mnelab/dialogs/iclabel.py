@@ -6,9 +6,10 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvas
 from mnextend import plot_ica_components
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QBrush, QColor, QStandardItem, QStandardItemModel
+from PySide6.QtGui import QBrush, QColor, QFont, QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QApplication,
     QCheckBox,
     QDialog,
     QDialogButtonBox,
@@ -26,7 +27,7 @@ from mnelab.dialogs.utils import (
     NumberSortProxyModel,
     set_header_alignments,
 )
-from mnelab.widgets import FlatDoubleSpinBox
+from mnelab.widgets import FlatDoubleSpinBox, set_tooltip
 
 
 class PlotDetailDialog(QDialog):
@@ -65,8 +66,15 @@ class AutoSelectDialog(QDialog):
         grid.setColumnStretch(2, 0)
         layout.addLayout(grid)
 
-        grid.addWidget(QLabel("Label"), 0, 0)
-        grid.addWidget(QLabel("Threshold"), 0, 2)
+        header_font = QFont(QApplication.font())
+        header_font.setPointSizeF(header_font.pointSizeF() * 0.85)
+        header_font.setBold(True)
+        label_header = QLabel("Label")
+        label_header.setFont(header_font)
+        threshold_header = QLabel("Threshold")
+        threshold_header.setFont(header_font)
+        grid.addWidget(label_header, 0, 0)
+        grid.addWidget(threshold_header, 0, 2)
 
         for idx, label in enumerate(labels):
             row = idx + 1
@@ -84,9 +92,15 @@ class AutoSelectDialog(QDialog):
 
             spinbox.setEnabled(checkbox.isChecked())
             checkbox.toggled.connect(spinbox.setEnabled)
+            set_tooltip(
+                "Automatically exclude components with this label at or above the "
+                "threshold",
+                checkbox,
+                spinbox,
+            )
 
             grid.addWidget(checkbox, row, 0, Qt.AlignmentFlag.AlignLeft)
-            grid.addWidget(QLabel(">"), row, 1, Qt.AlignmentFlag.AlignRight)
+            grid.addWidget(QLabel("≥"), row, 1, Qt.AlignmentFlag.AlignRight)
             grid.addWidget(spinbox, row, 2)
 
             self.criteria[label] = checkbox, spinbox
@@ -197,6 +211,9 @@ class ICLabelDialog(QDialog):
         self.view.selectionModel().selectionChanged.connect(self.selection_state)
         self.view.setSortingEnabled(True)
         self.view.setShowGrid(True)
+        self.view.setToolTip(
+            "Review ICLabel probabilities and choose components to exclude"
+        )
 
         header = self.view.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
@@ -211,8 +228,13 @@ class ICLabelDialog(QDialog):
 
         button_layout = QHBoxLayout()
         self.autoselect_button = QPushButton("Auto-Select...")
+        self.autoselect_button.setToolTip(
+            "Automatically exclude components based on their ICLabel probabilities"
+        )
         self.reset_button = QPushButton("Reset All")
+        self.reset_button.setToolTip("Clear all component exclusions")
         self.visualize_button = QPushButton("Plot IC Properties...")
+        self.visualize_button.setToolTip("Plot properties of the selected component")
         self.visualize_button.setEnabled(False)
         self.reset_button.clicked.connect(self.reset_exclusions)
         self.autoselect_button.clicked.connect(self.open_auto_select)

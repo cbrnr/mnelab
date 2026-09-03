@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
 )
 
 from mnelab.dialogs.utils import select_all
+from mnelab.widgets import selection_key
 
 
 class PickChannelsDialog(QDialog):
@@ -22,19 +23,27 @@ class PickChannelsDialog(QDialog):
         grid = QGridLayout(self)
 
         self.by_name = QRadioButton("By Name:")
+        self.by_name.setToolTip("Pick individual channels by name")
         grid.addWidget(self.by_name, 0, 0, Qt.AlignmentFlag.AlignTop)
         self.names = QListWidget()
         self.names.insertItems(0, channels)
         self.names.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
+        self.names.setToolTip(
+            f"Use Shift-click or {selection_key}-click to select multiple channels"
+        )
         select_all(self.names)
         grid.addWidget(self.names, 0, 1)
         self.by_name.setChecked(True)
 
         self.by_type = QRadioButton("By Type:")
+        self.by_type.setToolTip("Pick channels by their type")
         grid.addWidget(self.by_type, 1, 0, Qt.AlignmentFlag.AlignTop)
         self.types = QListWidget()
         self.types.insertItems(0, types)
         self.types.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
+        self.types.setToolTip(
+            f"Use Shift-click or {selection_key}-click to select multiple channel types"
+        )
         self.types.setMaximumHeight(self.types.sizeHintForRow(0) * 5.5)
         select_all(self.types)
         grid.addWidget(self.types, 1, 1)

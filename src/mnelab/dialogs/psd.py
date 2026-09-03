@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from mnelab.widgets import FlatDoubleSpinBox
+from mnelab.widgets import FlatDoubleSpinBox, set_tooltip
 
 
 class PSDDialog(QDialog):
@@ -31,6 +31,11 @@ class PSDDialog(QDialog):
         self.fmin_input.setSingleStep(1)
         self.fmin_input.setMaximum(fmax)
         self.fmin_input.setAlignment(Qt.AlignmentFlag.AlignRight)
+        set_tooltip(
+            "Set the lowest frequency included in the PSD plot",
+            fmin_label,
+            self.fmin_input,
+        )
         grid.addWidget(fmin_label, 0, 0)
         grid.addWidget(self.fmin_input, 0, 1)
 
@@ -42,18 +47,33 @@ class PSDDialog(QDialog):
         self.fmax_input.setSingleStep(1)
         self.fmax_input.setMaximum(fmax)
         self.fmax_input.setAlignment(Qt.AlignmentFlag.AlignRight)
+        set_tooltip(
+            "Set the highest frequency included in the PSD plot",
+            fmax_label,
+            self.fmax_input,
+        )
         grid.addWidget(fmax_label, 1, 0)
         grid.addWidget(self.fmax_input, 1, 1)
 
         bad_label = QLabel("Include Bad Channels:")
         self.bad_checkbox = QCheckBox()
         self.bad_checkbox.setChecked(True)
+        set_tooltip(
+            "Include channels marked as bad in the PSD plot",
+            bad_label,
+            self.bad_checkbox,
+        )
         grid.addWidget(bad_label, 2, 0)
         grid.addWidget(self.bad_checkbox, 2, 1)
 
         color_label = QLabel("Use Spatial Colors:")
         self.color_checkbox = QCheckBox()
         self.color_checkbox.setChecked(True)
+        set_tooltip(
+            "Color traces by channel position (requires a montage)",
+            color_label,
+            self.color_checkbox,
+        )
         grid.addWidget(color_label, 3, 0)
         grid.addWidget(self.color_checkbox, 3, 1)
         if not montage:

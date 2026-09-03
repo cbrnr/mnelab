@@ -16,6 +16,9 @@ class BrainVisionDialog(QDialog):
             "Ignore Marker Types (Use Description Only)"
         )
         self._ignore_marker_types.setChecked(False)
+        self._ignore_marker_types.setToolTip(
+            "Use only marker descriptions as event labels"
+        )
         vbox.addWidget(self._ignore_marker_types)
         buttonbox = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
