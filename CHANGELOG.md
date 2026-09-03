@@ -6,6 +6,9 @@
 ### 🔧 Fixed
 - Apply the selected Number of Components setting when running ICA ([#694](https://github.com/cbrnr/mnelab/pull/694) by [Clemens Brunner](https://github.com/cbrnr))
 
+### 🌀 Changed
+- Validate generated history syntax during tests ([#696](https://github.com/cbrnr/mnelab/issues/696) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [1.5.7] · 2026-08-31
 ### 🔧 Fixed
 - Handle invalid files gracefully when importing bad channels ([#686](https://github.com/cbrnr/mnelab/pull/686) by [Clemens Brunner](https://github.com/cbrnr))
