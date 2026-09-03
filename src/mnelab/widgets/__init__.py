@@ -5,4 +5,4 @@
 from mnelab.widgets.infowidget import EmptyWidget, InfoWidget
 from mnelab.widgets.sidebar import SidebarTreeWidget, SidebarWidget
 from mnelab.widgets.spinbox import FlatDoubleSpinBox, FlatSpinBox
-from mnelab.widgets.utils import set_tooltip
+from mnelab.widgets.utils import selection_key, set_tooltip

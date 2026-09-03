@@ -61,6 +61,7 @@ class AnnotationsDialog(QDialog):
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setSortingEnabled(True)
         self.table.sortByColumn(0, Qt.SortOrder.AscendingOrder)
+        self.table.setToolTip("Edit annotations (onset and duration are in samples)")
 
         vbox = QVBoxLayout(self)
         vbox.addWidget(self.table)
@@ -68,6 +69,9 @@ class AnnotationsDialog(QDialog):
         self.add_button = QPushButton("+")
         self.remove_button = QPushButton("–")
         self.counts_button = QPushButton("Counts...")
+        self.add_button.setToolTip("Add a new annotation")
+        self.remove_button.setToolTip("Remove selected annotations")
+        self.counts_button.setToolTip("Show annotation counts by type")
         buttonbox = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )
@@ -226,6 +230,7 @@ class AnnotationColorsDialog(QDialog):
         self.table.verticalHeader().setVisible(False)
         self.table.setShowGrid(False)
         self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table.setToolTip("Assign a color to each annotation description")
         self.table.itemSelectionChanged.connect(self._toggle_buttons)
 
         for desc, color in colors.items():
@@ -237,6 +242,8 @@ class AnnotationColorsDialog(QDialog):
         hbox = QHBoxLayout()
         self.add_button = QPushButton("+")
         self.remove_button = QPushButton("–")
+        self.add_button.setToolTip("Add a color mapping")
+        self.remove_button.setToolTip("Remove selected color mappings")
         buttonbox = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )
@@ -265,6 +272,7 @@ class AnnotationColorsDialog(QDialog):
 
         swatch = QPushButton()
         swatch.setFixedSize(20, 20)
+        swatch.setToolTip("Open a color picker")
         self._style_swatch(swatch, color)
         swatch.clicked.connect(lambda: self._pick_color(container))
         layout.addWidget(swatch)
@@ -274,6 +282,7 @@ class AnnotationColorsDialog(QDialog):
         hex_edit.setMaxLength(7)
         hex_edit.setValidator(_HexColorValidator(hex_edit))
         hex_edit.setStyleSheet("QLineEdit { border: none; background: transparent; }")
+        hex_edit.setToolTip("Enter a hexadecimal RGB color code")
         hex_edit.textEdited.connect(lambda text: self._hex_edited(container, text))
         layout.addWidget(hex_edit)
 

@@ -15,6 +15,8 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
+from mnelab.widgets import selection_key
+
 
 class ReferenceDialog(QDialog):
     def __init__(self, parent, available_channels):
@@ -22,7 +24,7 @@ class ReferenceDialog(QDialog):
         self.setWindowTitle("Change Reference")
         vbox = QVBoxLayout(self)
 
-        self.add_group = QGroupBox("Add Reference (All Zero)")
+        self.add_group = QGroupBox("Add zero-valued reference channels")
         self.reref_group = QGroupBox("Re-reference to Existing Channel(s)")
 
         vbox.addWidget(self.add_group)
@@ -34,6 +36,9 @@ class ReferenceDialog(QDialog):
         self.add_group.setChecked(False)
 
         self.add_channellist = QLineEdit()
+        self.add_channellist.setToolTip(
+            "Enter comma-separated names of reference channels to add"
+        )
         add_grid = QGridLayout()
         add_grid.setColumnStretch(0, 2)
         add_grid.setColumnStretch(1, 3)
@@ -46,9 +51,16 @@ class ReferenceDialog(QDialog):
         self.reref_channellist = QListWidget()
         self.reref_channellist.insertItems(0, available_channels)
         self.reref_average.setChecked(True)
+        self.reref_average.setToolTip("Re-reference EEG channels to their average")
+        self.reref_channels.setToolTip(
+            "Re-reference EEG channels to the selected channels"
+        )
         self.reref_channellist.setEnabled(False)
         self.reref_channellist.setSelectionMode(
             QListWidget.SelectionMode.ExtendedSelection
+        )
+        self.reref_channellist.setToolTip(
+            f"Use Shift-click or {selection_key}-click to select multiple channels"
         )
         reref_grid = QGridLayout()
         reref_grid.setColumnStretch(0, 2)

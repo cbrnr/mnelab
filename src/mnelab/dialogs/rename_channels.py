@@ -3,11 +3,14 @@
 # License: BSD (3-clause)
 
 from PySide6.QtCore import Qt, Slot
+from PySide6.QtGui import QFont
 from PySide6.QtWidgets import (
+    QApplication,
     QComboBox,
     QDialog,
     QDialogButtonBox,
     QGridLayout,
+    QLabel,
     QLineEdit,
     QTableWidget,
     QTableWidgetItem,
@@ -28,15 +31,24 @@ class RenameChannelsDialog(QDialog):
         self.method = QComboBox()
         self.method.addItems(["Strip characters", "Delete characters"])
         self.method.setCurrentIndex(0)
+        self.method.setToolTip("Choose how to remove characters from channel names")
 
         self.strip_chars = QLineEdit()
+        self.strip_chars.setToolTip("Enter characters to strip from channel names")
         self.slice_num = FlatDoubleSpinBox()
         self.slice_num.setMinimum(0)
         self.slice_num.setDecimals(0)
+        self.slice_num.setToolTip(
+            "Set the number of characters to remove from channel names"
+        )
 
         self.where = QComboBox()
         self.where.addItems(["from beginning", "from end"])
         self.where.setCurrentIndex(0)
+        self.where.setToolTip(
+            "Choose whether to remove characters from the beginning or end of channel "
+            "names"
+        )
 
         option_grid = QGridLayout()
         option_grid.setColumnStretch(0, 1)
@@ -63,6 +75,12 @@ class RenameChannelsDialog(QDialog):
         vbox = QVBoxLayout(self)
         vbox.addLayout(option_grid)
         vbox.addSpacing(10)
+        header_font = QFont(QApplication.font())
+        header_font.setPointSizeF(header_font.pointSizeF() * 0.85)
+        header_font.setBold(True)
+        preview_header = QLabel("Preview")
+        preview_header.setFont(header_font)
+        vbox.addWidget(preview_header)
         vbox.addWidget(self.preview)
 
         self.buttonbox = QDialogButtonBox(

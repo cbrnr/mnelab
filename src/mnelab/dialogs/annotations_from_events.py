@@ -17,7 +17,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from mnelab.widgets import FlatDoubleSpinBox
+from mnelab.widgets import FlatDoubleSpinBox, selection_key, set_tooltip
 
 
 class AnnotationsIntervalDialog(QDialog):
@@ -30,10 +30,16 @@ class AnnotationsIntervalDialog(QDialog):
 
         # radio buttons
         self.annotations_events_button = QRadioButton("Copy Events to Annotations")
+        self.annotations_events_button.setToolTip(
+            "Create an annotation for every event"
+        )
         vbox.addWidget(self.annotations_events_button)
         self.annotations_events_button.setChecked(True)
 
         self.event_event_button = QRadioButton("Create Intervals between Events")
+        self.event_event_button.setToolTip(
+            "Create annotations between selected start and end event types"
+        )
         vbox.addWidget(self.event_event_button)
 
         self.annotation_type_group = QButtonGroup(self)
@@ -47,7 +53,8 @@ class AnnotationsIntervalDialog(QDialog):
         self.grid.setColumnStretch(1, 1)
 
         # start event
-        self.grid.addWidget(QLabel("Start Event(s):"), 0, 0, Qt.AlignmentFlag.AlignTop)
+        self.start_event_label = QLabel("Start Event(s):")
+        self.grid.addWidget(self.start_event_label, 0, 0, Qt.AlignmentFlag.AlignTop)
         self.start_event_list = QListWidget()
         self.start_event_list.setSelectionMode(
             QListWidget.SelectionMode.ExtendedSelection
@@ -57,7 +64,8 @@ class AnnotationsIntervalDialog(QDialog):
         self.grid.addWidget(self.start_event_list, 0, 1)
 
         # start offset
-        self.grid.addWidget(QLabel("Start Offset:"), 1, 0)
+        self.start_offset_label = QLabel("Start Offset:")
+        self.grid.addWidget(self.start_offset_label, 1, 0)
         self.start_offset_spin = FlatDoubleSpinBox()
         self.start_offset_spin.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.start_offset_spin.setSingleStep(0.5)
@@ -67,7 +75,8 @@ class AnnotationsIntervalDialog(QDialog):
         self.grid.addWidget(self.start_offset_spin, 1, 1)
 
         # end event
-        self.grid.addWidget(QLabel("End Event(s):"), 2, 0, Qt.AlignmentFlag.AlignTop)
+        self.end_event_label = QLabel("End Event(s):")
+        self.grid.addWidget(self.end_event_label, 2, 0, Qt.AlignmentFlag.AlignTop)
         self.end_event_list = QListWidget()
         self.end_event_list.setSelectionMode(
             QListWidget.SelectionMode.ExtendedSelection
@@ -77,7 +86,8 @@ class AnnotationsIntervalDialog(QDialog):
         self.grid.addWidget(self.end_event_list, 2, 1)
 
         # end offset
-        self.grid.addWidget(QLabel("End Offset:"), 3, 0)
+        self.end_offset_label = QLabel("End Offset:")
+        self.grid.addWidget(self.end_offset_label, 3, 0)
         self.end_offset_spin = FlatDoubleSpinBox()
         self.end_offset_spin.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.end_offset_spin.setSingleStep(0.5)
@@ -87,7 +97,8 @@ class AnnotationsIntervalDialog(QDialog):
         self.grid.addWidget(self.end_offset_spin, 3, 1)
 
         # annotation name
-        self.grid.addWidget(QLabel("Annotation:"), 4, 0)
+        self.annotation_label = QLabel("Annotation:")
+        self.grid.addWidget(self.annotation_label, 4, 0)
         self.annotation_combo = QComboBox()
         self.annotation_combo.setEditable(True)
         self.annotation_combo.lineEdit().setPlaceholderText("Create Annotation...")
@@ -104,6 +115,48 @@ class AnnotationsIntervalDialog(QDialog):
         self.to_end_check = QCheckBox("Extend to End of Recording")
         self.to_end_check.setChecked(True)
         self.grid.addWidget(self.to_end_check, 6, 0, 1, 2)
+
+        self._interval_tooltips = (
+            (
+                (
+                    f"Use Shift-click or {selection_key}-click to select multiple "
+                    "start event types"
+                ),
+                self.start_event_label,
+                self.start_event_list,
+            ),
+            (
+                "Offset annotation starts relative to selected start events in seconds",
+                self.start_offset_label,
+                self.start_offset_spin,
+            ),
+            (
+                (
+                    f"Use Shift-click or {selection_key}-click to select multiple end "
+                    "event types"
+                ),
+                self.end_event_label,
+                self.end_event_list,
+            ),
+            (
+                "Offset annotation ends relative to selected end events in seconds",
+                self.end_offset_label,
+                self.end_offset_spin,
+            ),
+            (
+                "Choose an existing annotation description or enter a new one",
+                self.annotation_label,
+                self.annotation_combo,
+            ),
+            (
+                "Add an annotation from recording start to the first event boundary",
+                self.to_start_check,
+            ),
+            (
+                "Add an annotation from the last event boundary to recording end",
+                self.to_end_check,
+            ),
+        )
 
         # warning label
         self.warning_label = QLabel("")
@@ -134,6 +187,7 @@ class AnnotationsIntervalDialog(QDialog):
         self.annotation_combo.currentTextChanged.connect(self._check_validity)
 
         self.interval_settings_widget.setEnabled(self.event_event_button.isChecked())
+        self._set_interval_tooltips(self.event_event_button.isChecked())
 
         # initial check
         self._check_validity()
@@ -197,9 +251,15 @@ class AnnotationsIntervalDialog(QDialog):
             return
         is_interval_mode = button == self.event_event_button
         self.interval_settings_widget.setEnabled(is_interval_mode)
+        self._set_interval_tooltips(is_interval_mode)
 
         if not is_interval_mode:
             self.warning_label.setVisible(False)
+
+    def _set_interval_tooltips(self, is_interval_mode):
+        """Set tooltips only while interval controls are enabled."""
+        for tooltip, *widgets in self._interval_tooltips:
+            set_tooltip(tooltip if is_interval_mode else "", *widgets)
 
     def annotations_from_events(self):
         return self.annotations_events_button.isChecked()

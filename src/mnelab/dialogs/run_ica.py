@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from mnelab.widgets import FlatSpinBox
+from mnelab.widgets import FlatSpinBox, set_tooltip
 
 
 class RunICADialog(QDialog):
@@ -24,38 +24,66 @@ class RunICADialog(QDialog):
         vbox = QVBoxLayout(self)
 
         grid = QGridLayout()
-        grid.addWidget(QLabel("Method:"), 0, 0)
+        method_label = QLabel("Method:")
         self.method = QComboBox()
         self.method.addItems(methods)
         self.method.setCurrentIndex(0)
+        set_tooltip(
+            "Choose the algorithm used to estimate independent components",
+            method_label,
+            self.method,
+        )
         self.method.currentIndexChanged.connect(self.toggle_options)
+        grid.addWidget(method_label, 0, 0)
         grid.addWidget(self.method, 0, 1)
 
         self.extended_label = QLabel("Extended:")
         grid.addWidget(self.extended_label, 1, 0)
         self.extended = QCheckBox()
         self.extended.setChecked(True)
+        set_tooltip(
+            "Model both sub- and super-Gaussian sources",
+            self.extended_label,
+            self.extended,
+        )
         grid.addWidget(self.extended, 1, 1)
 
         self.ortho_label = QLabel("Orthogonal:")
         grid.addWidget(self.ortho_label, 2, 0)
         self.ortho = QCheckBox()
         self.ortho.setChecked(False)
+        set_tooltip(
+            "Use Picard-O to constrain the unmixing matrix to be orthogonal",
+            self.ortho_label,
+            self.ortho,
+        )
         grid.addWidget(self.ortho, 2, 1)
         if "Picard" not in methods:
             self.ortho_label.hide()
             self.ortho.hide()
 
-        grid.addWidget(QLabel("Number of Components:"), 3, 0)
+        n_components_label = QLabel("Number of Components:")
         self.n_components = FlatSpinBox()
-        self.n_components.setRange(0, nchan)
+        self.n_components.setRange(2, nchan)
         self.n_components.setValue(nchan)
         self.n_components.setAlignment(Qt.AlignmentFlag.AlignRight)
+        set_tooltip(
+            "Set the number of principal components passed to the ICA algorithm",
+            n_components_label,
+            self.n_components,
+        )
+        grid.addWidget(n_components_label, 3, 0)
         grid.addWidget(self.n_components, 3, 1)
 
-        grid.addWidget(QLabel("Exclude Bad Segments:"), 4, 0)
+        exclude_bad_segments_label = QLabel("Exclude Bad Segments:")
         self.exclude_bad_segments = QCheckBox()
         self.exclude_bad_segments.setChecked(True)
+        set_tooltip(
+            "Exclude segments marked bad by annotations while fitting ICA",
+            exclude_bad_segments_label,
+            self.exclude_bad_segments,
+        )
+        grid.addWidget(exclude_bad_segments_label, 4, 0)
         grid.addWidget(self.exclude_bad_segments, 4, 1)
 
         vbox.addLayout(grid)
