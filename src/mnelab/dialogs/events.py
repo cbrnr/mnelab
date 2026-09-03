@@ -26,10 +26,12 @@ class EventsDialog(QDialog):
         self.setWindowTitle("Edit Events")
 
         self.event_table = QTableWidget(len(pos), 2)
+        self._next_row_id = len(pos)
 
         for row, (p, d) in enumerate(zip(pos, desc)):
             self.event_table.setItem(row, 0, IntTableWidgetItem(p))
             self.event_table.setItem(row, 1, IntTableWidgetItem(d))
+            self.event_table.item(row, 0).setData(Qt.ItemDataRole.UserRole, row)
 
         self.event_table.setHorizontalHeaderLabels(["Position", "Type"])
         set_header_alignments(self.event_table, "rr")
@@ -132,6 +134,10 @@ class EventsDialog(QDialog):
         self.event_table.insertRow(current_row)
         self.event_table.setItem(current_row, 0, IntTableWidgetItem(pos))
         self.event_table.setItem(current_row, 1, IntTableWidgetItem(0))
+        self.event_table.item(current_row, 0).setData(
+            Qt.ItemDataRole.UserRole, self._next_row_id
+        )
+        self._next_row_id += 1
         self.event_table.setSortingEnabled(True)
 
     def remove_event(self):
@@ -142,6 +148,14 @@ class EventsDialog(QDialog):
             self.event_table.removeRow(row)
             if value not in self.unique_events:
                 self.event_mapping.pop(value, None)
+
+    @property
+    def row_ids(self):
+        """Return stable row IDs in the current table order."""
+        return [
+            self.event_table.item(row, 0).data(Qt.ItemDataRole.UserRole)
+            for row in range(self.event_table.rowCount())
+        ]
 
 
 class EventCountsDialog(QDialog):

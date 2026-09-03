@@ -23,6 +23,7 @@ from mnextend import (
 from mnextend.io.readers import raw_readers
 
 from mnelab.utils import Montage, count_locations
+from mnelab.utils.marker_history import annotations_history, events_history
 
 
 class LabelsNotFoundError(Exception):
@@ -248,6 +249,9 @@ class Model:
                 _cache_path=None,
             )
         )
+        if dtype == "raw":
+            data.events = events
+            self.history.append("data.events = np.empty((0, 3), dtype=int)")
 
     @data_changed(invalidate_cache=False)
     def load(self, fname, *args, **kwargs):
@@ -301,7 +305,8 @@ class Model:
         )
         if events.shape[0] > 0:  # if events were found
             self.current["events"] = events
-            hist = "events = mne.find_events(data"
+            self.current["data"].events = events
+            hist = "data.events = mne.find_events(data"
             hist += f", stim_channel={stim_channel!r}"
             if consecutive != "increasing":
                 hist += f", consecutive={consecutive!r}"
@@ -324,8 +329,9 @@ class Model:
             # swap mapping for annotations from {str: int} to {int: str}
             mapping = {v: k for k, v in mapping.items()}
             self.current["events"] = events
+            self.current["data"].events = events
             self.current["event_mapping"] = mapping
-            self.history.append("events, _ = mne.events_from_annotations(data)")
+            self.history.append("data.events, _ = mne.events_from_annotations(data)")
 
     @data_changed
     def annotations_from_events(self):
@@ -352,7 +358,9 @@ class Model:
             self.current["data"].set_annotations(
                 self.current["data"].annotations + annots
             )
-            hist = 'annots = mne.annotations_from_events(events, data.info["sfreq"]'
+            hist = (
+                'annots = mne.annotations_from_events(data.events, data.info["sfreq"]'
+            )
             if mapping is not None:
                 hist += f", event_desc={mapping}"
             hist += ")\n"
@@ -462,6 +470,10 @@ class Model:
             self.current["events"] = mne.read_events(fname)
         else:
             raise ValueError(f"Unsupported event file: {fname}")
+        self.current["data"].events = self.current["events"]
+        self.history.append(
+            f"data.events = np.array({self.current['events'].tolist()}, dtype=int)"
+        )
 
     @data_changed
     def import_annotations(self, fname, types=None, description=None, unit="seconds"):
@@ -866,7 +878,8 @@ class Model:
             preload=True,
         )
         self.history.append(
-            f"data = mne.Epochs(data, events[np.isin(events[:, 2], {event_id})], "
+            "data = mne.Epochs(data, "
+            f"data.events[np.isin(data.events[:, 2], {event_id})], "
             f"tmin={tmin}, tmax={tmax}, baseline={baseline}, preload=True)"
         )
         self.current["data"] = epochs
@@ -902,14 +915,34 @@ class Model:
         self.history.append(f"data.set_eeg_reference({ref!r})")
 
     @data_changed
-    def set_events(self, events):
+    def set_events(self, events, row_ids=None):
+        old = self.current["events"].copy()
         self.current["events"] = events
+        self.current["data"].events = events
+        if row_ids is None:
+            return
+        history = events_history(old, events, row_ids)
+        if history is not None:
+            self.history.append(history)
 
     @data_changed
-    def set_annotations(self, onset, duration, description):
+    def set_annotations(self, onset, duration, description, row_ids=None):
+        old = self.current["data"].annotations.copy()
+        if row_ids is not None:
+            order = sorted(
+                range(len(row_ids)),
+                key=lambda index: (onset[index], duration[index], index),
+            )
+            row_ids = [row_ids[index] for index in order]
         self.current["data"].set_annotations(
             mne.Annotations(onset, duration, description)
         )
+        if row_ids is not None:
+            history = annotations_history(
+                old, self.current["data"].annotations, row_ids
+            )
+            if history is not None:
+                self.history.append(history)
 
     @data_changed(invalidate_cache=False)
     def move_data(self, source, target):
@@ -1002,6 +1035,7 @@ class Model:
             )
         if dataset["dtype"] == "raw":
             dataset["data"] = mne.io.read_raw_fif(path, preload=True)
+            dataset["data"].events = dataset["events"]
         else:
             dataset["data"] = mne.read_epochs(path, preload=True)
 

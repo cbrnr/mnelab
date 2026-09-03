@@ -47,11 +47,13 @@ class AnnotationsDialog(QDialog):
         self.setWindowTitle("Edit Annotations")
 
         self.table = QTableWidget(len(onset), 3)
+        self._next_row_id = len(onset)
 
         for row, annotation in enumerate(zip(onset, duration, description)):
             self.table.setItem(row, 0, IntTableWidgetItem(annotation[0]))
             self.table.setItem(row, 1, IntTableWidgetItem(annotation[1]))
             self.table.setItem(row, 2, QTableWidgetItem(annotation[2]))
+            self.table.item(row, 0).setData(Qt.ItemDataRole.UserRole, row)
 
         self.table.setHorizontalHeaderLabels(["Onset", "Duration", "Type"])
         set_header_alignments(self.table, "rrl")
@@ -126,6 +128,10 @@ class AnnotationsDialog(QDialog):
         self.table.setItem(current_row, 0, IntTableWidgetItem(pos))
         self.table.setItem(current_row, 1, IntTableWidgetItem(0))
         self.table.setItem(current_row, 2, QTableWidgetItem("New Annotation"))
+        self.table.item(current_row, 0).setData(
+            Qt.ItemDataRole.UserRole, self._next_row_id
+        )
+        self._next_row_id += 1
         self.table.setSortingEnabled(True)
 
     def remove_event(self):
@@ -133,6 +139,14 @@ class AnnotationsDialog(QDialog):
         self.table.clearSelection()
         for row in sorted(rows, reverse=True):
             self.table.removeRow(row)
+
+    @property
+    def row_ids(self):
+        """Return stable row IDs in the current table order."""
+        return [
+            self.table.item(row, 0).data(Qt.ItemDataRole.UserRole)
+            for row in range(self.table.rowCount())
+        ]
 
     def open_counts_dialog(self):
         dialog = EventCountsDialog(self)
