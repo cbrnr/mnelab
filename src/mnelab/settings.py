@@ -164,6 +164,12 @@ class SettingsDialog(QDialog):
         _form_vspacing = 8
         _form_hspacing = 12
 
+        def add_setting_row(form, label, field, tooltip):
+            """Add a setting field with matching label and field tooltips."""
+            form.addRow(label, field)
+            form.labelForField(field).setToolTip(tooltip)
+            field.setToolTip(tooltip)
+
         # General page
         general_page = QWidget()
         general_form = QFormLayout(general_page)
@@ -182,19 +188,40 @@ class SettingsDialog(QDialog):
         self.max_recent.setValue(read_settings("max_recent"))
         self.max_recent.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.max_recent.setFixedWidth(100)
-        general_form.addRow("Recent Files:", self.max_recent)
+        add_setting_row(
+            general_form,
+            "Recent Files:",
+            self.max_recent,
+            "Set how many recently opened files to keep in the File menu",
+        )
 
         self.dtype_badges = QCheckBox()
         self.dtype_badges.setChecked(read_settings("dtype_badges"))
-        general_form.addRow("Data Type Badges:", self.dtype_badges)
+        add_setting_row(
+            general_form,
+            "Data Type Badges:",
+            self.dtype_badges,
+            "Show data type badges (Raw, Epochs) in the sidebar",
+        )
 
         self.menu_icons = QCheckBox()
         self.menu_icons.setChecked(read_settings("menu_icons"))
-        general_form.addRow("Menu Icons:", self.menu_icons)
+        add_setting_row(
+            general_form,
+            "Menu Icons:",
+            self.menu_icons,
+            "Show icons beside actions in application menus",
+        )
 
         self.memory_saving = QCheckBox()
         self.memory_saving.setChecked(read_settings("memory_saving"))
-        general_form.addRow("Save Memory:", self.memory_saving)
+        add_setting_row(
+            general_form,
+            "Save Memory:",
+            self.memory_saving,
+            "Unload inactive datasets and reload them when selected to reduce "
+            "memory use",
+        )
 
         self._stack.addWidget(general_page)
 
@@ -217,14 +244,24 @@ class SettingsDialog(QDialog):
         self.plot_backend = QComboBox()
         self.plot_backend.addItems(backends)
         self.plot_backend.setCurrentIndex(backends.index(backend))
-        plotting_form.addRow("Plot Backend:", self.plot_backend)
+        add_setting_row(
+            plotting_form,
+            "Plot Backend:",
+            self.plot_backend,
+            "Choose the backend used for plots",
+        )
 
         self.max_channels = FlatSpinBox()
         self.max_channels.setRange(1, 256)
         self.max_channels.setValue(read_settings("max_channels"))
         self.max_channels.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.max_channels.setFixedWidth(100)
-        plotting_form.addRow("Displayed Channels:", self.max_channels)
+        add_setting_row(
+            plotting_form,
+            "Displayed Channels:",
+            self.max_channels,
+            "Set how many channels to show at once in data plots",
+        )
 
         self.duration = FlatSpinBox()
         self.duration.setRange(1, 3600)
@@ -232,19 +269,34 @@ class SettingsDialog(QDialog):
         self.duration.setSuffix(" s")
         self.duration.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.duration.setFixedWidth(100)
-        plotting_form.addRow("Displayed Duration:", self.duration)
+        add_setting_row(
+            plotting_form,
+            "Displayed Duration:",
+            self.duration,
+            "Set the duration shown at once in continuous-data plots",
+        )
 
         self.epochs = FlatSpinBox()
         self.epochs.setRange(1, 100)
         self.epochs.setValue(read_settings("epochs"))
         self.epochs.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.epochs.setFixedWidth(100)
-        plotting_form.addRow("Displayed Epochs:", self.epochs)
+        add_setting_row(
+            plotting_form,
+            "Displayed Epochs:",
+            self.epochs,
+            "Set how many epochs to show at once in epoch plots",
+        )
 
         self.scalings = QComboBox()
         self.scalings.addItems(["Auto", "Fixed"])
         self.scalings.setCurrentText(read_settings("scalings").title())
-        plotting_form.addRow("Channel Scaling:", self.scalings)
+        add_setting_row(
+            plotting_form,
+            "Channel Scaling:",
+            self.scalings,
+            "Automatically scale data or use fixed scales for each channel type",
+        )
 
         self._stack.addWidget(plotting_page)
 

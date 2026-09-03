@@ -46,6 +46,7 @@ class ChannelPropertiesDialog(QDialog):
             bad.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
             bad.setCheckable(True)
             bad.setEditable(False)
+            bad.setToolTip("Toggle channel as bad")
             checked = ch["ch_name"] in info["bads"]
             bad.setCheckState(
                 Qt.CheckState.Checked if checked else Qt.CheckState.Unchecked

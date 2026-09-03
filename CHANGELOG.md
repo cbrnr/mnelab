@@ -1,4 +1,6 @@
 ## [UNRELEASED] · YYYY-MM-DD
+### ✨ Added
+- Add tooltips in many places ([#XXX](https://github.com/cbrnr/mnelab/pull/XXX) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.5.7] · 2026-08-31
 ### 🔧 Fixed
