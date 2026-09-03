@@ -15,7 +15,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from mnelab.widgets import FlatDoubleSpinBox
+from mnelab.widgets import FlatDoubleSpinBox, set_tooltip
 
 
 class FilterDialog(QDialog):
@@ -61,6 +61,11 @@ class FilterDialog(QDialog):
         self.lower_edit.setValue(1)
         self.lower_edit.setSingleStep(0.5)
         self.lower_edit.setAlignment(Qt.AlignmentFlag.AlignRight)
+        set_tooltip(
+            "Frequencies below this cutoff are attenuated",
+            self.lower_label,
+            self.lower_edit,
+        )
         self.upper_label = QLabel("Upper Cutoff Frequency (Hz):")
         self.upper_edit = FlatDoubleSpinBox()
         self.upper_edit.setMinimum(0)
@@ -68,6 +73,11 @@ class FilterDialog(QDialog):
         self.upper_edit.setValue(30)
         self.upper_edit.setSingleStep(0.5)
         self.upper_edit.setAlignment(Qt.AlignmentFlag.AlignRight)
+        set_tooltip(
+            "Frequencies above this cutoff are attenuated",
+            self.upper_label,
+            self.upper_edit,
+        )
         self.notch_label = QLabel("Notch Frequency (Hz):")
         self.notch_edit = FlatDoubleSpinBox()
         self.notch_edit.setMinimum(0)
@@ -75,6 +85,11 @@ class FilterDialog(QDialog):
         self.notch_edit.setValue(50)
         self.notch_edit.setSingleStep(0.5)
         self.notch_edit.setAlignment(Qt.AlignmentFlag.AlignRight)
+        set_tooltip(
+            "Frequencies around this value are attenuated",
+            self.notch_label,
+            self.notch_edit,
+        )
 
         self.grid.addWidget(self.lower_label, 0, 0)
         self.grid.addWidget(self.lower_edit, 0, 1)

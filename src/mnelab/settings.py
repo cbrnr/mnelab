@@ -34,7 +34,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from mnelab.widgets import FlatSpinBox
+from mnelab.widgets import FlatSpinBox, set_tooltip
 
 SETTINGS_PATH = str(
     Path(
@@ -167,8 +167,7 @@ class SettingsDialog(QDialog):
         def add_setting_row(form, label, field, tooltip):
             """Add a setting field with matching label and field tooltips."""
             form.addRow(label, field)
-            form.labelForField(field).setToolTip(tooltip)
-            field.setToolTip(tooltip)
+            set_tooltip(tooltip, form.labelForField(field), field)
 
         # General page
         general_page = QWidget()
