@@ -37,6 +37,9 @@ class DropBadEpochsDialog(QDialog):
         self.reject_box = QGroupBox("Reject (Maximum PTP Amplitude)")
         self.reject_box.setCheckable(True)
         self.reject_box.setChecked(False)
+        self.reject_box.setToolTip(
+            "Drop epochs with peak-to-peak amplitude exceeding any specified threshold"
+        )
         self.reject_fields = {}
         reject_grid = QGridLayout()
 
@@ -48,6 +51,9 @@ class DropBadEpochsDialog(QDialog):
             self.reject_fields[type] = QLineEdit()
             self.reject_fields[type].setValidator(decimal_validator)
             self.reject_fields[type].textChanged.connect(self.toggle_ok)
+            self.reject_fields[type].setToolTip(
+                "Set the maximum peak-to-peak amplitude for this channel type"
+            )
             reject_grid.addWidget(self.reject_fields[type], row, 1)
         self.reject_box.setLayout(reject_grid)
         vbox.addWidget(self.reject_box)
@@ -55,6 +61,9 @@ class DropBadEpochsDialog(QDialog):
         self.flat_box = QGroupBox("Flat (Minimum PTP Amplitude)")
         self.flat_box.setCheckable(True)
         self.flat_box.setChecked(False)
+        self.flat_box.setToolTip(
+            "Drop epochs with peak-to-peak amplitude below any specified threshold"
+        )
         self.flat_fields = {}
         flat_grid = QGridLayout()
         for row, type in enumerate(types):
@@ -62,6 +71,9 @@ class DropBadEpochsDialog(QDialog):
             self.flat_fields[type] = QLineEdit()
             self.flat_fields[type].setValidator(decimal_validator)
             self.flat_fields[type].textChanged.connect(self.toggle_ok)
+            self.flat_fields[type].setToolTip(
+                "Set the minimum peak-to-peak amplitude for this channel type"
+            )
             flat_grid.addWidget(self.flat_fields[type], row, 1)
         self.flat_box.setLayout(flat_grid)
         vbox.addWidget(self.flat_box)

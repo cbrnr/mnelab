@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (
     QListWidget,
 )
 
-from mnelab.widgets import FlatDoubleSpinBox
+from mnelab.widgets import FlatDoubleSpinBox, selection_key, set_tooltip
 
 
 class EpochDialog(QDialog):
@@ -28,6 +28,11 @@ class EpochDialog(QDialog):
         self.events = QListWidget()
         self.events.insertItems(0, event_types)
         self.events.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
+        set_tooltip(
+            f"Use Shift-click or {selection_key}-click to select multiple event types",
+            label,
+            self.events,
+        )
         grid.addWidget(self.events, 0, 1, 1, 2)
 
         grid.addWidget(QLabel("Interval Around Events:"), 1, 0, 1, 1)
@@ -36,28 +41,41 @@ class EpochDialog(QDialog):
         self.tmin.setValue(-0.2)
         self.tmin.setSingleStep(0.1)
         self.tmin.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.tmin.setToolTip(
+            "Set the start of each epoch relative to selected events in seconds"
+        )
         self.tmax = FlatDoubleSpinBox()
         self.tmax.setMinimum(-10000)
         self.tmax.setValue(0.5)
         self.tmax.setSingleStep(0.1)
         self.tmax.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.tmax.setToolTip(
+            "Set the end of each epoch relative to selected events in seconds"
+        )
         grid.addWidget(self.tmin, 1, 1, 1, 1)
         grid.addWidget(self.tmax, 1, 2, 1, 1)
 
         self.baseline = QCheckBox("Baseline Correction:")
         self.baseline.setChecked(True)
         self.baseline.stateChanged.connect(self.toggle_baseline)
+        self.baseline.setToolTip(
+            "Subtract the mean over the baseline interval from each epoch"
+        )
         grid.addWidget(self.baseline, 2, 0, 1, 1)
         self.a = FlatDoubleSpinBox()
         self.a.setMinimum(-10000)
         self.a.setValue(-0.2)
         self.a.setSingleStep(0.1)
         self.a.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.a.setToolTip(
+            "Set the baseline start relative to selected events in seconds"
+        )
         self.b = FlatDoubleSpinBox()
         self.b.setMinimum(-10000)
         self.b.setValue(0)
         self.b.setSingleStep(0.1)
         self.b.setAlignment(Qt.AlignmentFlag.AlignRight)
+        self.b.setToolTip("Set the baseline end relative to selected events in seconds")
         grid.addWidget(self.a, 2, 1, 1, 1)
         grid.addWidget(self.b, 2, 2, 1, 1)
         self.buttonbox = QDialogButtonBox(
