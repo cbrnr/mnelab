@@ -15,7 +15,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from mnelab.widgets import FlatDoubleSpinBox
+from mnelab.widgets import FlatDoubleSpinBox, set_tooltip
 
 
 def populate_tree(parent, nodes):
@@ -66,6 +66,9 @@ class MatDialog(QDialog):
         populate_tree(self.root, nodes)
 
         self.tree.expandAll()
+        self.tree.setToolTip(
+            "Select a one- or two-dimensional numeric variable to import"
+        )
 
         vbox = QVBoxLayout(self)
         vbox.addWidget(self.tree)
@@ -75,11 +78,16 @@ class MatDialog(QDialog):
         self._fs.setValue(250)
         self._fs.setDecimals(2)
         self._fs.setSuffix(" Hz")
-        hbox.addWidget(QLabel("Sampling Frequency:"))
+        fs_label = QLabel("Sampling Frequency:")
+        set_tooltip(
+            "Set the sampling frequency of the imported data", fs_label, self._fs
+        )
+        hbox.addWidget(fs_label)
         hbox.addWidget(self._fs)
         hbox.addStretch()
         self._transpose = QCheckBox("Transpose")
         self._transpose.setChecked(False)
+        self._transpose.setToolTip("Swap the selected array's channel and time axes")
         hbox.addWidget(self._transpose)
         vbox.addLayout(hbox)
 

@@ -17,6 +17,8 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
+from mnelab.widgets import selection_key
+
 ROW_HEIGHT = 10
 
 
@@ -138,12 +140,20 @@ class AppendDialog(QDialog):
         grid.addWidget(QLabel("Destination"), 0, 2, Qt.AlignmentFlag.AlignCenter)
 
         self.source = DragDropTableWidget(self, items=compatibles)
+        self.source.setToolTip(
+            f"Use Shift-click or {selection_key}-click to select multiple datasets to "
+            "append"
+        )
 
         self.move_button = QPushButton("→")
         self.move_button.setEnabled(False)
+        self.move_button.setToolTip("Move selected datasets between the two lists")
         grid.addWidget(self.move_button, 1, 1, Qt.AlignmentFlag.AlignHCenter)
 
         self.destination = DragDropTableWidget(self)
+        self.destination.setToolTip(
+            "Drag datasets to set the order in which they are appended"
+        )
 
         grid.addWidget(self.source, 1, 0)
         grid.addWidget(self.destination, 1, 2)

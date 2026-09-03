@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from mnelab.widgets import FlatDoubleSpinBox
+from mnelab.widgets import FlatDoubleSpinBox, set_tooltip
 
 
 class NpyDialog(QDialog):
@@ -24,12 +24,16 @@ class NpyDialog(QDialog):
         grid = QGridLayout()
         grid.addWidget(QLabel("Array Shape:"), 0, 0)
         grid.addWidget(QLabel(f"{' × '.join(map(str, shape))}"), 0, 1)
-        grid.addWidget(QLabel("Sampling Frequency:"), 1, 0)
+        fs_label = QLabel("Sampling Frequency:")
+        grid.addWidget(fs_label, 1, 0)
 
         self._fs = FlatDoubleSpinBox()
         self._fs.setRange(0, 20e3)
         self._fs.setValue(250)
         self._fs.setSuffix(" Hz")
+        set_tooltip(
+            "Set the sampling frequency of the imported data", fs_label, self._fs
+        )
         grid.addWidget(self._fs, 1, 1)
 
         self._transpose = QCheckBox("Transpose")
@@ -37,6 +41,7 @@ class NpyDialog(QDialog):
             self._transpose.setChecked(True)
         else:
             self._transpose.setChecked(False)
+        self._transpose.setToolTip("Swap the array's channel and time axes")
         grid.addWidget(self._transpose, 2, 0)
 
         vbox.addLayout(grid)

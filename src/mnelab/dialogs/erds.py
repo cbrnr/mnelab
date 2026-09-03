@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
 )
 
 from mnelab.dialogs.utils import select_all
-from mnelab.widgets import FlatDoubleSpinBox
+from mnelab.widgets import FlatDoubleSpinBox, selection_key, set_tooltip
 
 
 class ERDSDialog(QDialog):
@@ -30,6 +30,7 @@ class ERDSDialog(QDialog):
         self._f1.setValue(f_range[0])
         self._f1.setDecimals(1)
         self._f1.setSuffix(" Hz")
+        self._f1.setToolTip("Set the lowest frequency included in the ERDS map")
         grid.addWidget(self._f1, 0, 1)
 
         self._f2 = FlatDoubleSpinBox()
@@ -37,6 +38,7 @@ class ERDSDialog(QDialog):
         self._f2.setValue(f_range[1])
         self._f2.setDecimals(1)
         self._f2.setSuffix(" Hz")
+        self._f2.setToolTip("Set the highest frequency included in the ERDS map")
         grid.addWidget(self._f2, 0, 2)
 
         grid.addWidget(QLabel("Step Size:"), 1, 0)
@@ -46,6 +48,7 @@ class ERDSDialog(QDialog):
         self._step.setDecimals(1)
         self._step.setSingleStep(0.1)
         self._step.setSuffix(" Hz")
+        self._step.setToolTip("Set the spacing between analyzed frequencies")
         grid.addWidget(self._step, 1, 1)
 
         grid.addWidget(QLabel("Time Range:"), 2, 0)
@@ -55,6 +58,7 @@ class ERDSDialog(QDialog):
         self._t1.setDecimals(1)
         self._t1.setSingleStep(0.1)
         self._t1.setSuffix(" s")
+        self._t1.setToolTip("Set the earliest time included in the ERDS map")
         grid.addWidget(self._t1, 2, 1)
 
         self._t2 = FlatDoubleSpinBox()
@@ -63,6 +67,7 @@ class ERDSDialog(QDialog):
         self._t2.setDecimals(1)
         self._t2.setSingleStep(0.1)
         self._t2.setSuffix(" s")
+        self._t2.setToolTip("Set the latest time included in the ERDS map")
         grid.addWidget(self._t2, 2, 2)
 
         grid.addWidget(QLabel("Baseline:"), 3, 0)
@@ -72,6 +77,7 @@ class ERDSDialog(QDialog):
         self._b1.setDecimals(1)
         self._b1.setSingleStep(0.1)
         self._b1.setSuffix(" s")
+        self._b1.setToolTip("Set the beginning of the baseline interval")
         grid.addWidget(self._b1, 3, 1)
 
         self._b2 = FlatDoubleSpinBox()
@@ -80,15 +86,18 @@ class ERDSDialog(QDialog):
         self._b2.setDecimals(1)
         self._b2.setSingleStep(0.1)
         self._b2.setSuffix(" s")
+        self._b2.setToolTip("Set the end of the baseline interval")
         grid.addWidget(self._b2, 3, 2)
 
         self.significance_mask = QCheckBox("Significance Level:")
         self.significance_mask.setChecked(False)
+        self.significance_mask.setToolTip("Mask ERDS values that are not significant")
         self.alpha = FlatDoubleSpinBox()
         self.alpha.setMinimum(0)
         self.alpha.setValue(0.05)
         self.alpha.setDecimals(2)
         self.alpha.setSingleStep(0.01)
+        self.alpha.setToolTip("Set the statistical significance level")
         grid.addWidget(self.significance_mask, 4, 0)
         grid.addWidget(self.alpha, 4, 1)
         self.significance_mask.toggled.connect(self.toggle_alpha)
@@ -150,6 +159,7 @@ class ERDSTopomapsDialog(QDialog):
         self._f1.setValue(f_range[0])
         self._f1.setDecimals(1)
         self._f1.setSuffix(" Hz")
+        self._f1.setToolTip("Set the lowest frequency included in the ERDS topomaps")
         grid.addWidget(self._f1, 0, 1)
 
         self._f2 = FlatDoubleSpinBox()
@@ -157,6 +167,7 @@ class ERDSTopomapsDialog(QDialog):
         self._f2.setValue(f_range[1])
         self._f2.setDecimals(1)
         self._f2.setSuffix(" Hz")
+        self._f2.setToolTip("Set the highest frequency included in the ERDS topomaps")
         grid.addWidget(self._f2, 0, 2)
 
         grid.addWidget(QLabel("Time Range:"), 1, 0)
@@ -166,6 +177,7 @@ class ERDSTopomapsDialog(QDialog):
         self._t1.setDecimals(1)
         self._t1.setSingleStep(0.1)
         self._t1.setSuffix(" s")
+        self._t1.setToolTip("Set the earliest time included in the ERDS topomaps")
         grid.addWidget(self._t1, 1, 1)
 
         self._t2 = FlatDoubleSpinBox()
@@ -174,6 +186,7 @@ class ERDSTopomapsDialog(QDialog):
         self._t2.setDecimals(1)
         self._t2.setSingleStep(0.1)
         self._t2.setSuffix(" s")
+        self._t2.setToolTip("Set the latest time included in the ERDS topomaps")
         grid.addWidget(self._t2, 1, 2)
 
         grid.addWidget(QLabel("Baseline:"), 2, 0)
@@ -183,6 +196,7 @@ class ERDSTopomapsDialog(QDialog):
         self._b1.setDecimals(1)
         self._b1.setSingleStep(0.1)
         self._b1.setSuffix(" s")
+        self._b1.setToolTip("Set the beginning of the baseline interval")
         grid.addWidget(self._b1, 2, 1)
 
         self._b2 = FlatDoubleSpinBox()
@@ -191,6 +205,7 @@ class ERDSTopomapsDialog(QDialog):
         self._b2.setDecimals(1)
         self._b2.setSingleStep(0.1)
         self._b2.setSuffix(" s")
+        self._b2.setToolTip("Set the end of the baseline interval")
         grid.addWidget(self._b2, 2, 2)
 
         label = QLabel("Events:")
@@ -201,6 +216,11 @@ class ERDSTopomapsDialog(QDialog):
         self.events.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
         self.events.setMaximumHeight(self.events.sizeHintForRow(0) * 5.5)
         select_all(self.events)
+        set_tooltip(
+            f"Use Shift-click or {selection_key}-click to select multiple event types",
+            label,
+            self.events,
+        )
         grid.addWidget(self.events, 3, 1, 1, 2)
 
         grid.addWidget(QLabel("Frequency Step:"), 4, 0)
@@ -210,6 +230,7 @@ class ERDSTopomapsDialog(QDialog):
         self._step.setDecimals(1)
         self._step.setSingleStep(0.1)
         self._step.setSuffix(" Hz")
+        self._step.setToolTip("Set the spacing between plotted frequencies")
         grid.addWidget(self._step, 4, 1)
 
         vbox.addLayout(grid)
