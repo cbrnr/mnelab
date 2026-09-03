@@ -687,13 +687,12 @@ class Model:
             self.history.append(f"data.set_channel_types({types})")
 
     @data_changed
-    def rename_channels(self, new_names):
+    def rename_channels(self, mapping, history_mapping):
         old_names = self.current["data"].info["ch_names"]
-        mapping = {o: n for o, n in zip(old_names, new_names) if o != n}
-        if not mapping:
+        if all(mapping(name) == name for name in old_names):
             return
         mne.rename_channels(self.current["data"].info, mapping)
-        self.history.append(f"mne.rename_channels(data.info, {mapping})")
+        self.history.append(f"mne.rename_channels(data.info, {history_mapping})")
 
     @data_changed
     def set_montage(

@@ -1048,7 +1048,10 @@ class MainWindow(QMainWindow):
     def rename_channels(self):
         dialog = RenameChannelsDialog(self, self.model.current["data"].info["ch_names"])
         if dialog.exec():
-            self.model.rename_channels(dialog.new_names)
+            if dialog.new_names == self.model.current["data"].info["ch_names"]:
+                return
+            self.auto_duplicate()
+            self.model.rename_channels(dialog.mapping, dialog.history_mapping)
 
     def set_montage(self):
         montages = natural_sort(mne.channels.get_builtin_montages())

@@ -5,11 +5,13 @@
 import math
 from pathlib import Path
 
+import mne
 import numpy as np
 import pytest
 from edfio import Edf, EdfSignal
 from mne import Annotations
 
+from mnelab.dialogs.rename_channels import RenameChannelsDialog
 from mnelab.model import InvalidAnnotationsError, Model
 
 
@@ -111,6 +113,75 @@ def model_with_data(tmp_path):
     model = Model()
     model.load(path)
     return model
+
+
+@pytest.mark.parametrize(
+    ("method", "where", "argument", "expected_name", "history_mapping"),
+    [
+        (
+            "Strip characters",
+            "from beginning",
+            "EE",
+            "G",
+            "lambda name: name.lstrip('EE')",
+        ),
+        (
+            "Strip characters",
+            "from end",
+            "G",
+            "EE",
+            "lambda name: name.rstrip('G')",
+        ),
+        (
+            "Delete characters",
+            "from beginning",
+            1,
+            "EG",
+            "lambda name: name[1:]",
+        ),
+        (
+            "Delete characters",
+            "from end",
+            1,
+            "EE",
+            "lambda name: name[:-1]",
+        ),
+    ],
+)
+def test_rename_channels_history(
+    model_with_data,
+    qtbot,
+    method,
+    where,
+    argument,
+    expected_name,
+    history_mapping,
+):
+    """Batch channel renaming records a compact, reproducible callable."""
+    dialog = RenameChannelsDialog(
+        None, model_with_data.current["data"].info["ch_names"]
+    )
+    qtbot.addWidget(dialog)
+    dialog.method.setCurrentText(method)
+    dialog.where.setCurrentText(where)
+    if method == "Strip characters":
+        dialog.strip_chars.setText(argument)
+    else:
+        dialog.slice_num.setValue(argument)
+    dialog.update_preview()
+
+    assert dialog.new_names == [expected_name]
+    assert callable(dialog.mapping)
+
+    model_with_data.rename_channels(dialog.mapping, dialog.history_mapping)
+
+    assert model_with_data.current["data"].info["ch_names"] == [expected_name]
+    history = model_with_data.history[-1]
+    assert history == f"mne.rename_channels(data.info, {history_mapping})"
+
+    data = mne.io.RawArray(np.zeros((1, 10)), mne.create_info(["EEG"], 10))
+    exec(history, {"data": data, "mne": mne})  # noqa: S102
+    assert data.info["ch_names"] == [expected_name]
 
 
 def _write_annotations_csv(path, rows, header=True):

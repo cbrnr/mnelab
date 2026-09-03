@@ -5,6 +5,8 @@
 
 ### 🔧 Fixed
 - Apply the selected Number of Components setting when running ICA ([#694](https://github.com/cbrnr/mnelab/pull/694) by [Clemens Brunner](https://github.com/cbrnr))
+- Record compact History entries when batch-renaming channels ([#696](https://github.com/cbrnr/mnelab/issues/696) by [Clemens Brunner](https://github.com/cbrnr))
+- Create a new data set before batch-renaming channels ([#696](https://github.com/cbrnr/mnelab/issues/696) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🌀 Changed
 - Validate generated history syntax during tests ([#696](https://github.com/cbrnr/mnelab/issues/696) by [Clemens Brunner](https://github.com/cbrnr))
