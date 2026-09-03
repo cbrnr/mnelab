@@ -93,6 +93,14 @@ def test_append_data(edf_files, duplicate_data):
     )
 
 
+def test_history_syntax_is_validated():
+    """Invalid history syntax raises an error during tests."""
+    model = Model()
+
+    with pytest.raises(SyntaxError):
+        model.history.append("data = (")
+
+
 @pytest.fixture
 def model_with_data(tmp_path):
     """Model with a single 30-second EDF file loaded."""
