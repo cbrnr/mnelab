@@ -35,6 +35,7 @@ from mnelab.dialogs.plot_evoked import (
 )
 from mnelab.dialogs.psd import PSDDialog
 from mnelab.dialogs.reference import ReferenceDialog
+from mnelab.dialogs.remove_line_noise import RemoveLineNoiseDialog
 from mnelab.dialogs.rename_channels import RenameChannelsDialog
 from mnelab.dialogs.resample import ResampleDialog
 from mnelab.dialogs.run_ica import RunICADialog

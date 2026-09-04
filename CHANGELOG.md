@@ -2,6 +2,7 @@
 ### ✨ Added
 - Add tooltips in many places ([#694](https://github.com/cbrnr/mnelab/pull/694) by [Clemens Brunner](https://github.com/cbrnr))
 - Add History entries for editing events or annotations ([#695](https://github.com/cbrnr/mnelab/issues/695) by [Clemens Brunner](https://github.com/cbrnr))
+- Add a Remove Line Noise action using MNEXTEND ([#697](https://github.com/cbrnr/mnelab/pull/697) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🔧 Fixed
 - Apply the selected Number of Components setting when running ICA ([#694](https://github.com/cbrnr/mnelab/pull/694) by [Clemens Brunner](https://github.com/cbrnr))
