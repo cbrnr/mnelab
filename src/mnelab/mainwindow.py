@@ -366,6 +366,11 @@ class MainWindow(QMainWindow):
         self.all_actions["filter"] = process_menu.addAction(
             QIcon.fromTheme("filter-data"), "&Filter Data...", self.filter_data
         )
+        self.all_actions["remove_line_noise"] = process_menu.addAction(
+            QIcon.fromTheme("filter-data"),
+            "Remove Line &Noise...",
+            self.remove_line_noise,
+        )
         self.all_actions["resample"] = process_menu.addAction(
             QIcon.fromTheme("resample"), "&Resample Data...", self.resample_data
         )
@@ -701,6 +706,9 @@ class MainWindow(QMainWindow):
             )
             self.all_actions["resample"].setEnabled(
                 enabled and self.model.current["dtype"] in ("raw", "epochs")
+            )
+            self.all_actions["remove_line_noise"].setEnabled(
+                enabled and self.model.current["dtype"] == "raw"
             )
             self.all_actions["crop"].setEnabled(
                 enabled and self.model.current["dtype"] == "raw"
@@ -1502,6 +1510,17 @@ class MainWindow(QMainWindow):
         if dialog.exec():
             self.auto_duplicate()
             self.model.filter(dialog.lower, dialog.upper, dialog.notch)
+
+    def remove_line_noise(self):
+        """Remove line noise."""
+        sfreq = self.model.current["data"].info["sfreq"]
+        dialog = RemoveLineNoiseDialog(self, sfreq)
+        if dialog.exec():
+            self.auto_duplicate()
+            self.model.remove_line_noise(
+                dialog.line_frequency,
+                dialog.include_harmonics.isChecked(),
+            )
 
     def resample_data(self):
         """Resample data."""

@@ -15,6 +15,7 @@ import numpy as np
 from mnextend import (
     read_epochs,
     read_raw,
+    remove_line_noise,
     run_iclabel,
     split_name_ext,
     write_epochs,
@@ -77,7 +78,7 @@ class Model:
         self.history = [
             "from copy import deepcopy",
             "import mne",
-            "from mnextend import read_raw, run_iclabel",
+            "from mnextend import read_raw, remove_line_noise, run_iclabel",
             "from mnelab.utils import annotations_between_events",
             "import numpy as np",
             (
@@ -752,6 +753,21 @@ class Model:
             self.current["data"].notch_filter(notch)
             self.current["name"] += f" (notch {notch}\u2009Hz)"
             self.history.append(f"data.notch_filter({notch})")
+
+    @data_changed
+    def remove_line_noise(self, line_freq, include_harmonics):
+        """Remove line noise from the current data."""
+        remove_line_noise(
+            self.current["data"],
+            line_freq,
+            include_harmonics=include_harmonics,
+        )
+        self.current["name"] += " (line noise removed)"
+        self.history.append(
+            "remove_line_noise("
+            f"data, {line_freq}, include_harmonics={include_harmonics}"
+            ")"
+        )
 
     @data_changed
     def resample(self, sfreq):

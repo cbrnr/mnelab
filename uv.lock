@@ -951,7 +951,7 @@ requires-dist = [
     { name = "matplotlib", specifier = ">=3.10.8" },
     { name = "mne", specifier = ">=1.12.1" },
     { name = "mne-qt-browser", marker = "extra == 'full'", specifier = ">=0.7.4" },
-    { name = "mnextend", specifier = ">=0.2.2" },
+    { name = "mnextend", specifier = ">=0.3.0" },
     { name = "numpy", specifier = ">=2.4.4" },
     { name = "pyside6", specifier = ">=6.11.0" },
     { name = "python-picard", marker = "extra == 'full'", specifier = ">=0.8.1" },
@@ -974,7 +974,7 @@ docs = [{ name = "mkdocs-material", specifier = ">=9.7.6" }]
 
 [[package]]
 name = "mnextend"
-version = "0.2.2"
+version = "0.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "edfio" },
@@ -987,9 +987,9 @@ dependencies = [
     { name = "pyxdf" },
     { name = "scipy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a7/7e/ce6bd7e3fb14ab2ebfa26a038d83bebc8e31841c6190d31470043c015847/mnextend-0.2.2.tar.gz", hash = "sha256:1ff216a6f75ed486cbcbda0d91719c3052a171caa234afefe774af9193b53843", size = 10793414, upload-time = "2026-07-06T13:34:47.657Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ec/4e/aefa0797fadae25a50e170d199026b704270d31b1074a7f8d928c2ab4eaf/mnextend-0.3.0.tar.gz", hash = "sha256:0432a38b575c8787526f18d2d1eff437917963e08d5267b3fa522683f490f749", size = 10796691, upload-time = "2026-09-04T09:31:07.051Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5b/37/bf3b670e4c74e2d7b09035afc0a8607ced0adea1096a70015505b0836c42/mnextend-0.2.2-py3-none-any.whl", hash = "sha256:85bd8902b9858fe1cfb0bafed8010f756ef1e3d43402851208bc69ff58ada5a0", size = 10797538, upload-time = "2026-07-06T13:34:45.026Z" },
+    { url = "https://files.pythonhosted.org/packages/e4/d3/f5bee60e64e979d785cdd63af617d11da6e3e080fce724bf237c15bb276d/mnextend-0.3.0-py3-none-any.whl", hash = "sha256:071e7d5ea10b81e3f08d1f1feb91fb0cf2edf1b6696a0fa738bd29006faefb73", size = 10800967, upload-time = "2026-09-04T09:31:03.991Z" },
 ]
 
 [[package]]
