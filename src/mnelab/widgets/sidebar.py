@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
     QHeaderView,
+    QMenu,
     QMessageBox,
     QStyledItemDelegate,
     QToolButton,
@@ -87,6 +88,8 @@ class SidebarTreeWidget(QTreeWidget):
         self.setEditTriggers(QAbstractItemView.EditTrigger.DoubleClicked)
         self.setUniformRowHeights(True)
         self.setObjectName("sidebar")
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.customContextMenuRequested.connect(self._show_context_menu)
         self.setMouseTracking(True)
         self.setTabKeyNavigation(False)
         # prevent double-click from toggling expand/collapse so it can trigger editing
@@ -206,6 +209,24 @@ class SidebarTreeWidget(QTreeWidget):
             | Qt.ItemFlag.ItemIsEditable
         )
         return item
+
+    def _show_context_menu(self, pos):
+        """Offer pipeline creation for the dataset under the pointer."""
+        item = self.itemAt(pos)
+        if item is None:
+            return
+        dataset_id = item.data(0, Qt.ItemDataRole.UserRole)
+        window = self.parent.window()
+        index = window.model.find_index_by_id(dataset_id)
+        if index < 0:
+            return
+        menu = QMenu(self)
+        action = menu.addAction(
+            "Create Pipeline from Here",
+            lambda: window.create_pipeline_for(dataset_id),
+        )
+        action.setEnabled(bool(window.model.data[index].get("pipeline_steps")))
+        menu.exec(self.viewport().mapToGlobal(pos))
 
     def style_items(self):
         """Update the close button for the item currently under the cursor."""

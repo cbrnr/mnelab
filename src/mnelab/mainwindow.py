@@ -57,6 +57,7 @@ from mnelab.model import (
     LabelsNotFoundError,
     Model,
 )
+from mnelab.pipeline import has_unsupported
 from mnelab.settings import SettingsDialog, read_settings, write_settings
 from mnelab.utils import (
     annotations_between_events,
@@ -147,6 +148,8 @@ class MainWindow(QMainWindow):
         QApplication.sendEvent(self, QEvent(QEvent.Type.PaletteChange))
 
         self.all_actions = {}  # contains all actions
+        self.pipeline = []
+        self.pipeline_source = None
 
         # initialize menus
         file_menu = self.menuBar().addMenu("&File")
@@ -401,6 +404,16 @@ class MainWindow(QMainWindow):
             "Export ICA...",
             lambda: self.export_file(model.export_ica, "Export ICA", "*.fif.gz *.fif"),
         )
+        process_menu.addSeparator()
+        self.all_actions["create_pipeline"] = process_menu.addAction(
+            "Create Pipeline from Dataset", self.create_pipeline
+        )
+        self.all_actions["pipeline"] = process_menu.addAction(
+            QIcon.fromTheme("pipeline"), "Pipeline...", self.edit_pipeline
+        )
+        self.all_actions["apply_pipeline"] = process_menu.addAction(
+            "Apply Pipeline", self.apply_pipeline
+        )
 
         epochs_menu = self.menuBar().addMenu("Ep&ochs")
         self.all_actions["epoch_data"] = epochs_menu.addAction(
@@ -474,6 +487,7 @@ class MainWindow(QMainWindow):
             "documentation",
             "history",
             "annotation_colors",
+            "pipeline",
         ]
 
         # set up toolbar
@@ -644,6 +658,12 @@ class MainWindow(QMainWindow):
         for name, action in self.all_actions.items():  # toggle
             if name not in self.always_enabled:
                 action.setEnabled(enabled)
+        self.all_actions["create_pipeline"].setEnabled(
+            enabled and bool(self.model.current.get("pipeline_steps"))
+        )
+        self.all_actions["apply_pipeline"].setEnabled(
+            enabled and bool(self.pipeline) and not has_unsupported(self.pipeline)
+        )
 
         if self.model.data:  # toggle if specific conditions are met
             bads = bool(self.model.current["data"].info["bads"])
@@ -1153,8 +1173,12 @@ class MainWindow(QMainWindow):
         stop = self.model.current["data"].times[-1]
         dialog = CropDialog(self, 0, stop)
         if dialog.exec():
+            if dialog.start is None and dialog.stop is None:
+                return
+            start = max(dialog.start, 0) if dialog.start is not None else 0
+            end = min(dialog.stop, stop) if dialog.stop is not None else None
             self.auto_duplicate()
-            self.model.crop(max(dialog.start, 0), min(dialog.stop, stop))
+            self.model.crop(start, end)
 
     def append_data(self):
         """Concatenate raw data objects to current one."""
@@ -1462,6 +1486,7 @@ class MainWindow(QMainWindow):
             else:
                 self.model.current["ica"] = res.get(timeout=1)
                 self.model.current["iclabel"] = None
+                self.model.mark_pipeline_unsupported("run_ica")
                 self.model.history.append(
                     f"ica.fit(inst=raw, reject_by_annotation={exclude_bad_segments})"
                 )
@@ -1483,6 +1508,7 @@ class MainWindow(QMainWindow):
             exclude_indices = dialog.get_excluded_indices()
 
             ica.exclude = sorted([int(x) for x in exclude_indices])
+            self.model.mark_pipeline_unsupported("label_ica")
             self.model.history.append(f"ica.exclude = {ica.exclude}")
             self.data_changed()
 
@@ -1529,6 +1555,49 @@ class MainWindow(QMainWindow):
         if dialog.exec():
             self.auto_duplicate()
             self.model.resample(dialog.new_sfreq)
+
+    def create_pipeline(self):
+        """Create a pipeline from the selected dataset's recorded steps."""
+        if self.model.current is not None:
+            self.create_pipeline_for(self.model.current["id"])
+
+    def create_pipeline_for(self, dataset_id):
+        """Create a pipeline from any dataset in the sidebar tree."""
+        index = self.model.find_index_by_id(dataset_id)
+        if index < 0:
+            return
+        dataset = self.model.data[index]
+        if dataset.get("pipeline_steps"):
+            self._open_pipeline_dialog(dataset["pipeline_steps"], dataset["name"])
+
+    def edit_pipeline(self):
+        """Review, load, or save the current pipeline."""
+        self._open_pipeline_dialog(self.pipeline, self.pipeline_source)
+
+    def _open_pipeline_dialog(self, steps, source_name=None):
+        dialog = PipelineDialog(
+            self, steps, source_name, can_apply=self.model.current is not None
+        )
+        result = dialog.exec()
+        if result:
+            self.pipeline = dialog.steps
+            self.pipeline_source = dialog.source_name
+            self.data_changed()
+            if result == PipelineDialog.APPLY:
+                self.apply_pipeline()
+
+    def apply_pipeline(self):
+        """Apply the current pipeline to a new dataset."""
+        if not self.pipeline or self.model.current is None:
+            return
+        parent_index = self.model.index
+        try:
+            self.model.apply_pipeline(self.pipeline)
+        except ValueError as error:
+            QMessageBox.warning(self, "Could Not Apply Pipeline", str(error))
+            return
+        if read_settings("memory_saving"):
+            self.model.evict_dataset(parent_index)
 
     def find_events(self):
         info = self.model.current["data"].info
@@ -1588,6 +1657,7 @@ class MainWindow(QMainWindow):
                         **interval_data,
                     )
                     self.model.current["data"].set_annotations(existing + new)
+                    self.model.mark_pipeline_unsupported("annotations_between_events")
                     self.data_changed()
 
                     self.model.history.append(
@@ -2000,10 +2070,11 @@ class MainWindow(QMainWindow):
     def _plot_closed(self, event=None):
         if self.model.current is None:
             return
-        self.data_changed()
         bads = self.model.current["data"].info["bads"]
         if self.bads != bads:
+            self.model.mark_pipeline_unsupported("mark_bad_channels")
             self.model.history.append(f'data.info["bads"] = {bads}')
+        self.data_changed()
 
     def event(self, event):
         if event.type() == QEvent.Type.Close:

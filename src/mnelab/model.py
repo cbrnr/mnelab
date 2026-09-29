@@ -23,6 +23,7 @@ from mnextend import (
 )
 from mnextend.io.readers import raw_readers
 
+from mnelab.pipeline import pipeline_step, serialize_montage, validate_for_data
 from mnelab.utils import Montage, count_locations
 from mnelab.utils.marker_history import annotations_history, events_history
 
@@ -92,6 +93,12 @@ class Model:
             "",
             "datasets = []",
         ]
+
+    def mark_pipeline_unsupported(self, operation):
+        """Keep a derived pipeline from silently omitting an operation."""
+        self.current.setdefault("pipeline_steps", []).append(
+            {"op": operation, "unsupported": True}
+        )
 
     @data_changed(invalidate_cache=False)
     def insert_data(self, dataset, parent_id=None):
@@ -247,6 +254,7 @@ class Model:
                 montage=montage,
                 events=events,
                 event_mapping=event_mapping,
+                pipeline_steps=[],
                 _cache_path=None,
             )
         )
@@ -285,6 +293,7 @@ class Model:
         self.load_data(data, fname, name=name)
 
     @data_changed
+    @pipeline_step
     def find_events(
         self,
         stim_channel,
@@ -323,6 +332,7 @@ class Model:
             self.history.append(hist)
 
     @data_changed
+    @pipeline_step
     def events_from_annotations(self):
         """Convert annotations to events."""
         events, mapping = mne.events_from_annotations(self.current["data"])
@@ -335,6 +345,7 @@ class Model:
             self.history.append("data.events, _ = mne.events_from_annotations(data)")
 
     @data_changed
+    @pipeline_step
     def annotations_from_events(self):
         """Convert events to annotations."""
         unique_events = {
@@ -417,6 +428,7 @@ class Model:
         self.current["ica"].save(fname, overwrite=True)
 
     @data_changed
+    @pipeline_step(unsupported=True)
     def import_bads(self, fname):
         """Import bad channels info from a CSV file."""
         try:
@@ -451,6 +463,7 @@ class Model:
         self.current["data"].info["bads"] = bads
 
     @data_changed
+    @pipeline_step(unsupported=True)
     def import_events(self, fname):
         """Import events from a CSV or FIF file."""
         if fname.lower().endswith(".csv"):
@@ -477,6 +490,7 @@ class Model:
         )
 
     @data_changed
+    @pipeline_step(unsupported=True)
     def import_annotations(self, fname, types=None, description=None, unit="seconds"):
         """Import annotations from a CSV file.
 
@@ -550,6 +564,7 @@ class Model:
         self.current["data"].set_annotations(existing + new)
 
     @data_changed
+    @pipeline_step(unsupported=True)
     def import_ica(self, fname):
         """Import ICA solution from file."""
         self.current["ica"] = mne.preprocessing.read_ica(fname)
@@ -670,12 +685,14 @@ class Model:
         }
 
     @data_changed
+    @pipeline_step
     def pick_channels(self, picks):
         self.current["data"] = self.current["data"].pick(picks)
         self.current["name"] += " (channels picked)"
         self.history.append(f"data.pick({picks})")
 
     @data_changed
+    @pipeline_step
     def set_channel_properties(self, bads=None, names=None, types=None):
         if bads != self.current["data"].info["bads"]:
             self.current["data"].info["bads"] = bads
@@ -688,6 +705,7 @@ class Model:
             self.history.append(f"data.set_channel_types({types})")
 
     @data_changed
+    @pipeline_step(unsupported=True)
     def rename_channels(self, mapping, history_mapping):
         old_names = self.current["data"].info["ch_names"]
         if all(mapping(name) == name for name in old_names):
@@ -696,6 +714,7 @@ class Model:
         self.history.append(f"mne.rename_channels(data.info, {history_mapping})")
 
     @data_changed
+    @pipeline_step(serialize=serialize_montage)
     def set_montage(
         self,
         montage,
@@ -719,14 +738,29 @@ class Model:
             )
         if montage is None:
             self.history.append("data.set_montage(None)")
-        elif not montage.embedded:
+        else:
             if montage.path is not None:
                 self.history.append(
-                    f"montage = mne.read_custom_montage('{montage.path}')"
+                    f"montage = mne.channels.read_custom_montage({str(montage.path)!r})"
+                )
+            elif (
+                not montage.embedded
+                and montage.name in mne.channels.get_builtin_montages()
+            ):
+                self.history.append(
+                    f"montage = mne.channels.make_standard_montage({montage.name!r})"
                 )
             else:
+                positions = serialize_montage(
+                    {
+                        "montage": montage,
+                        "match_case": match_case,
+                        "match_alias": match_alias,
+                        "on_missing": on_missing,
+                    }
+                )["montage_positions"]
                 self.history.append(
-                    f"montage = mne.channels.make_standard_montage('{montage.name}')"
+                    f"montage = mne.channels.make_dig_montage(**{positions!r})"
                 )
             self.history.append(
                 f"data.set_montage(montage, match_case={match_case}, "
@@ -735,6 +769,7 @@ class Model:
             self.current["iclabel"] = None
 
     @data_changed
+    @pipeline_step
     def filter(self, lower=None, upper=None, notch=None):
         """Apply filters to the current data based on provided parameters."""
         if lower is not None and upper is not None:  # bandpass filter
@@ -755,6 +790,7 @@ class Model:
             self.history.append(f"data.notch_filter({notch})")
 
     @data_changed
+    @pipeline_step
     def remove_line_noise(self, line_freq, include_harmonics):
         """Remove line noise from the current data."""
         remove_line_noise(
@@ -770,16 +806,80 @@ class Model:
         )
 
     @data_changed
+    @pipeline_step
     def resample(self, sfreq):
         self.current["data"].resample(sfreq)
         self.current["name"] += f" ({sfreq}\u2009Hz)"
         self.history.append(f"data.resample({sfreq})")
 
     @data_changed
+    @pipeline_step
     def crop(self, start, stop):
         self.current["data"].crop(start, stop)
         self.current["name"] += " (cropped)"
         self.history.append(f"data.crop({start}, {stop})")
+
+    def apply_pipeline(self, steps):
+        """Apply all steps to a copy and insert it only after they succeed."""
+        if not steps:
+            raise ValueError("The pipeline has no steps.")
+        if any(step.get("unsupported") for step in steps):
+            raise ValueError("Remove operations that cannot be replayed first.")
+        parent_id = self.current["id"]
+        staged = Model()
+        staged.data = [deepcopy(self.current)]
+        staged.index = 0
+        staged.history = []
+        embedded_montage = staged.current["montage"]
+        if embedded_montage is not None and not embedded_montage.embedded:
+            embedded_montage = None
+        staged.current["fname"] = None
+        staged.current["ftype"] = None
+        staged.current["_cache_path"] = None
+        for number, step in enumerate(steps, 1):
+            try:
+                op = validate_for_data(
+                    step, staged.current["data"], staged.current["dtype"]
+                )
+                params = step["params"].copy()
+                if op == "epoch_data" and params["baseline"] is not None:
+                    params["baseline"] = tuple(params["baseline"])
+                if op == "crop" and params["start"] is None:
+                    params["start"] = 0
+                if op == "set_montage":
+                    name = params.pop("montage_name")
+                    positions = params.pop("montage_positions")
+                    if positions == "embedded":
+                        if embedded_montage is None:
+                            raise ValueError("Target dataset has no embedded montage.")
+                        montage = embedded_montage
+                    elif positions is None:
+                        montage = (
+                            Montage(mne.channels.make_standard_montage(name), name)
+                            if name is not None
+                            else None
+                        )
+                    else:
+                        montage = Montage(
+                            mne.channels.make_dig_montage(**positions),
+                            name,
+                        )
+                    params["montage"] = montage
+                getattr(staged, op)(**params)
+                if (
+                    op == "set_montage"
+                    and montage is not None
+                    and not count_locations(staged.current["data"].info)
+                ):
+                    raise ValueError("No channel locations match the montage.")
+            except Exception as error:
+                raise ValueError(f"Step {number} failed: {error}") from error
+        staged.current["name"] += " (pipeline)"
+        self.insert_data(staged.current, parent_id=parent_id)
+        self.history[-1] = f"datasets.insert({self.index}, deepcopy(data))"
+        self.history.append(f"data = datasets[{self.index}]")
+        for entry in staged.history:
+            self.history.append(entry)
 
     def get_compatibles(self):
         """Return indices and names of datasets compatible with the current one.
@@ -836,6 +936,7 @@ class Model:
         return compatibles
 
     @data_changed
+    @pipeline_step(unsupported=True)
     def append_data(self, selected_idx):
         """Append the given raw data sets."""
         for idx in selected_idx:  # ensure all source datasets are in memory
@@ -856,6 +957,7 @@ class Model:
             self.history.append(f"mne.concatenate_epochs(data, {', '.join(indices)})")
 
     @data_changed
+    @pipeline_step(unsupported=True)
     def apply_ica(self):
         self.current["ica"].apply(self.current["data"])
         self.history.append(
@@ -864,6 +966,7 @@ class Model:
         self.current["name"] += " (ICA)"
 
     @data_changed(invalidate_cache=False)
+    @pipeline_step(unsupported=True)
     def get_iclabels(self):
         """Get ICLabel classifications for current ICA solution."""
         if self.current["iclabel"] is None:
@@ -877,12 +980,14 @@ class Model:
         return self.current["iclabel"]
 
     @data_changed
+    @pipeline_step
     def interpolate_bads(self):
         self.current["data"].interpolate_bads()
         self.history.append("data.interpolate_bads()")
         self.current["name"] += " (interpolated)"
 
     @data_changed
+    @pipeline_step
     def epoch_data(self, event_id, tmin, tmax, baseline):
         epochs = mne.Epochs(
             self.current["data"],
@@ -902,17 +1007,20 @@ class Model:
         self.current["events"] = self.current["data"].events
 
     @data_changed
+    @pipeline_step
     def drop_bad_epochs(self, reject, flat):
         self.current["data"].drop_bad(reject, flat)
         self.current["name"] += " (dropped bad epochs)"
         self.history.append(f"data.drop_bad({reject}, {flat})")
 
     @data_changed
+    @pipeline_step(unsupported=True)
     def drop_detected_artifacts(self, indices):
         self.current["data"].drop(indices, reason="ARTIFACT_DETECTION")
         self.current["name"] += " (dropped detected epochs)"
 
     @data_changed
+    @pipeline_step
     def change_reference(self, add, ref):
         self.current["reference"] = ref
         if add:
@@ -930,6 +1038,7 @@ class Model:
         self.history.append(f"data.set_eeg_reference({ref!r})")
 
     @data_changed
+    @pipeline_step(unsupported=True)
     def set_events(self, events, row_ids=None):
         old = self.current["events"].copy()
         self.current["events"] = events
@@ -941,6 +1050,7 @@ class Model:
             self.history.append(history)
 
     @data_changed
+    @pipeline_step(unsupported=True)
     def set_annotations(self, onset, duration, description, row_ids=None):
         old = self.current["data"].annotations.copy()
         if row_ids is not None:

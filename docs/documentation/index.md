@@ -4,5 +4,6 @@ This section provides practical examples to help you get started with MNELAB and
 
 - [Compute and visualize ERDS maps](erds_maps.md)
 - [Event-Related Potentials (ERPs)](erp.md)
+- [Create and reuse a processing pipeline](pipelines.md)
 
 *Browse through the examples to see step-by-step guides on using MNELAB.*
