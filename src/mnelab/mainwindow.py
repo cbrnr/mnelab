@@ -1575,16 +1575,11 @@ class MainWindow(QMainWindow):
         self._open_pipeline_dialog(self.pipeline, self.pipeline_source)
 
     def _open_pipeline_dialog(self, steps, source_name=None):
-        dialog = PipelineDialog(
-            self, steps, source_name, can_apply=self.model.current is not None
-        )
-        result = dialog.exec()
-        if result:
+        dialog = PipelineDialog(self, steps, source_name)
+        if dialog.exec():
             self.pipeline = dialog.steps
             self.pipeline_source = dialog.source_name
             self.data_changed()
-            if result == PipelineDialog.APPLY:
-                self.apply_pipeline()
 
     def apply_pipeline(self):
         """Apply the current pipeline to a new dataset."""

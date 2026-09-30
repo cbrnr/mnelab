@@ -12,12 +12,13 @@ import mne
 import numpy as np
 import pytest
 from PySide6.QtCore import QPoint, Qt
+from PySide6.QtWidgets import QWidget
 
 import mnelab.widgets.sidebar as sidebar_module
-from mnelab.dialogs.pipeline import PipelineDialog
+from mnelab.dialogs.pipeline import FileRuleDialog, PipelineDialog
 from mnelab.mainwindow import MainWindow
 from mnelab.model import Model
-from mnelab.pipeline import load_pipeline, save_pipeline
+from mnelab.pipeline import load_pipeline, make_file_spec, save_pipeline
 from mnelab.settings import _DEFAULTS
 from mnelab.utils import Montage, count_locations
 
@@ -113,10 +114,14 @@ def test_pipeline_file_round_trip_and_validation(tmp_path):
         {"op": "resample", "params": {"sfreq": 100}},
     ]
     save_pipeline(path, steps)
+    assert json.loads(path.read_text())["version"] == 1
     assert load_pipeline(path) == steps
-
     path.write_text(json.dumps({"version": 1, "steps": [{"op": "unknown"}]}))
     with pytest.raises(ValueError, match="pipeline step"):
+        load_pipeline(path)
+
+    path.write_text(json.dumps({"version": 2, "steps": steps}))
+    with pytest.raises(ValueError, match="Unsupported pipeline file version"):
         load_pipeline(path)
 
 
@@ -134,10 +139,166 @@ def test_pipeline_dialog_edits_order(qtbot):
     qtbot.mouseClick(dialog.remove_button, Qt.LeftButton)
     assert len(dialog.steps) == 1
 
-    unloaded = PipelineDialog(None, steps, can_apply=False)
-    qtbot.addWidget(unloaded)
-    assert unloaded.save_button.isEnabled()
-    assert not unloaded.apply_button.isEnabled()
+    assert dialog.save_button.isEnabled()
+
+
+def test_file_imports_use_target_files_and_preserve_rules(tmp_path):
+    info = mne.create_info(["EEG001", "EEG002"], 200, "eeg")
+    raw = mne.io.RawArray(np.zeros((2, 1200)), info)
+    model = Model()
+    model.insert_data(
+        defaultdict(
+            lambda: None,
+            name="s01",
+            fname=None,
+            source_fname=str(tmp_path / "s01.fif"),
+            data=raw,
+            dtype="raw",
+            events=np.empty((0, 3), dtype=int),
+            pipeline_steps=[],
+            _cache_path=None,
+        )
+    )
+    target = deepcopy(model.current)
+    target["name"] = "s02"
+    target["source_fname"] = str(tmp_path / "s02.fif")
+    (tmp_path / "s01-bad_channels.csv").write_text("EEG001")
+    (tmp_path / "s02-bad_channels.csv").write_text("EEG002")
+    (tmp_path / "s01-events.csv").write_text("pos,type\n200,1\n")
+    (tmp_path / "s02-events.csv").write_text("pos,type\n300,2\n")
+    (tmp_path / "s01-annotations.csv").write_text(
+        "type,onset,duration\nkeep,200,20\ndrop,400,20\n"
+    )
+    (tmp_path / "s02-annotations.csv").write_text(
+        "type,onset,duration\nkeep,300,40\ndrop,500,20\n"
+    )
+
+    model.import_bads(str(tmp_path / "s01-bad_channels.csv"))
+    model.import_events(str(tmp_path / "s01-events.csv"))
+    model.import_annotations(
+        str(tmp_path / "s01-annotations.csv"), types=["keep"], unit="samples"
+    )
+    steps = deepcopy(model.current["pipeline_steps"])
+    assert [step["params"]["file"]["mode"] for step in steps] == ["matching"] * 3
+    path = tmp_path / "imports.json"
+    save_pipeline(path, steps)
+    model.insert_data(target)
+    model.duplicate_data()
+    assert model.current["fname"] is None
+    assert model.current["source_fname"] == str(tmp_path / "s02.fif")
+    model.apply_pipeline(load_pipeline(path))
+
+    assert model.current["data"].info["bads"] == ["EEG002"]
+    assert model.current["events"][0, 2] == 2
+    assert model.current["data"].annotations.description.tolist() == ["keep"]
+    assert model.current["data"].annotations.onset[0] == 1.5
+    assert model.current["pipeline_steps"] == steps
+
+    model.index -= 1
+    (tmp_path / "s02-events.csv").unlink()
+    before = len(model)
+    with pytest.raises(ValueError, match="Step 2 failed: Matching file not found"):
+        model.apply_pipeline(steps)
+    assert len(model) == before
+
+
+def test_fixed_imports_embed_contents_and_replay_without_files(tmp_path):
+    info = mne.create_info(["EEG001", "EEG002"], 200, "eeg")
+    raw = mne.io.RawArray(np.zeros((2, 1200)), info)
+    model = Model()
+    model.insert_data(
+        defaultdict(
+            lambda: None,
+            name="s01",
+            source_fname=str(tmp_path / "s01.fif"),
+            data=raw,
+            dtype="raw",
+            events=np.empty((0, 3), dtype=int),
+            pipeline_steps=[],
+        )
+    )
+    target = deepcopy(model.current)
+    target["name"] = "s02"
+    target["source_fname"] = str(tmp_path / "s02.fif")
+    target["data"].resample(100)
+    target["events"] = np.array([[100, 0, 9]])
+    files = [
+        tmp_path / "shared-bads.csv",
+        tmp_path / "shared-events.csv",
+        tmp_path / "shared-annotations.csv",
+    ]
+    files[0].write_text("EEG002")
+    files[1].write_text("pos,type\n200,1\n")
+    files[2].write_text("type,onset,duration\nkeep,200,20\ndrop,400,20\n")
+
+    model.import_bads(str(files[0]))
+    model.import_events(str(files[1]))
+    model.import_annotations(str(files[2]), types=["keep"], unit="samples")
+    steps = deepcopy(model.current["pipeline_steps"])
+    assert [step["params"]["file"]["mode"] for step in steps] == ["embedded"] * 3
+    assert steps[0]["params"]["file"]["data"] == ["EEG002"]
+    assert steps[1]["params"]["file"]["data"] == {
+        "events": [[200, 0, 1]],
+        "merge": True,
+    }
+    assert steps[2]["params"]["file"]["data"] == [["keep", 200.0, 20.0]]
+    path = tmp_path / "fixed-imports.json"
+    save_pipeline(path, steps)
+    for file in files:
+        file.unlink()
+
+    model.insert_data(target)
+    model.apply_pipeline(load_pipeline(path))
+
+    assert model.current["data"].info["bads"] == ["EEG002"]
+    np.testing.assert_array_equal(
+        model.current["events"], np.array([[100, 0, 9], [200, 0, 1]])
+    )
+    assert model.current["data"].annotations.description.tolist() == ["keep"]
+    assert model.current["data"].annotations.onset[0] == 2
+    assert model.current["data"].annotations.duration[0] == pytest.approx(0.2)
+    assert model.current["pipeline_steps"] == steps
+
+
+def test_file_rule_dialog_previews_target_path(tmp_path, qtbot):
+    spec = make_file_spec(tmp_path / "s01-bad_channels.csv", tmp_path / "s01.fif")
+    dialog = FileRuleDialog(None, spec, str(tmp_path / "s02.fif"))
+    qtbot.addWidget(dialog)
+    assert "s02-bad_channels.csv" in dialog.preview.text()
+    assert dialog.ok_button.isEnabled()
+
+
+def test_file_rule_dialog_embeds_selected_file(
+    model_with_raw, tmp_path, qtbot, monkeypatch
+):
+    model = model_with_raw
+    mne.rename_channels(model.current["data"].info, {"EEG 001": "EEG001"})
+    model.current["source_fname"] = str(tmp_path / "s01.fif")
+    source = tmp_path / "s01-bads.csv"
+    source.write_text("EEG 001")
+    fixed = tmp_path / "shared-bads.csv"
+    fixed.write_text("EEG 001")
+    model.import_bads(str(source))
+    parent = QWidget()
+    parent.model = model
+    dialog = PipelineDialog(parent, model.current["pipeline_steps"])
+    qtbot.addWidget(parent)
+    qtbot.addWidget(dialog)
+    dialog.list.setCurrentRow(0)
+
+    def select_fixed(file_dialog):
+        file_dialog.fixed_radio.setChecked(True)
+        file_dialog.fixed_path.setText(str(fixed))
+        assert file_dialog.ok_button.isEnabled()
+        return 1
+
+    monkeypatch.setattr(FileRuleDialog, "exec", select_fixed)
+    dialog._edit_file_rule()
+
+    assert dialog.steps[0]["params"]["file"] == {
+        "mode": "embedded",
+        "data": ["EEG001"],
+    }
 
 
 def test_unsupported_operation_is_visible_but_cannot_be_applied(model_with_raw, qtbot):
@@ -147,7 +308,6 @@ def test_unsupported_operation_is_visible_but_cannot_be_applied(model_with_raw, 
     dialog = PipelineDialog(None, steps)
     qtbot.addWidget(dialog)
     assert not dialog.save_button.isEnabled()
-    assert not dialog.apply_button.isEnabled()
     with pytest.raises(ValueError, match="cannot be replayed"):
         model_with_raw.apply_pipeline(steps)
     assert len(model_with_raw) == 1
@@ -265,6 +425,86 @@ def test_custom_file_montage_and_clearing_replay(model_with_raw, tmp_path):
     assert model.current["data"].get_montage() is None
 
 
+def test_matching_custom_montage_uses_target_file(
+    model_with_raw, tmp_path, qtbot, monkeypatch
+):
+    model = model_with_raw
+    mne.rename_channels(model.current["data"].info, {"EEG 001": "Cz"})
+    source_fname = tmp_path / "s01-raw.fif"
+    model.current["source_fname"] = str(source_fname)
+    target = deepcopy(model.current)
+    target["source_fname"] = str(tmp_path / "s02-raw.fif")
+    for subject, height in (("s01", 0.1), ("s02", 0.2)):
+        (tmp_path / f"{subject}-montage.sfp").write_text(
+            f"Cz 0.0 0.0 {height}\nPz 0.0 -0.1 0.0\n"
+            "FidNz 0.0 0.1 0.0\nFidT9 -0.1 0.0 0.0\nFidT10 0.1 0.0 0.0\n"
+        )
+    path = tmp_path / "s01-montage.sfp"
+    model.set_montage(Montage(mne.channels.read_custom_montage(path), path.name, path))
+    parent = QWidget()
+    parent.model = model
+    dialog = PipelineDialog(parent, model.current["pipeline_steps"])
+    qtbot.addWidget(parent)
+    qtbot.addWidget(dialog)
+    dialog.list.setCurrentRow(0)
+    assert dialog.file_rule_button.isEnabled()
+
+    def select_matching(dialog):
+        dialog.matching_radio.setChecked(True)
+        return 1
+
+    monkeypatch.setattr(FileRuleDialog, "exec", select_matching)
+    dialog._edit_file_rule()
+    steps = deepcopy(dialog.steps)
+    assert steps[0]["params"]["montage_positions"]["file"]["mode"] == "matching"
+    saved = tmp_path / "matching-montage.json"
+    save_pipeline(saved, steps)
+    model.insert_data(target)
+    model.apply_pipeline(load_pipeline(saved))
+
+    assert model.current["montage"].path.name == "s02-montage.sfp"
+    assert not np.allclose(
+        model.current["data"].info["chs"][0]["loc"][:3],
+        model.data[0]["data"].info["chs"][0]["loc"][:3],
+    )
+    assert model.current["pipeline_steps"] == steps
+
+
+def test_matching_ica_import_can_be_applied(model_with_raw, tmp_path, monkeypatch):
+    model = model_with_raw
+    model.current["source_fname"] = str(tmp_path / "s01.fif")
+    target = deepcopy(model.current)
+    target["source_fname"] = str(tmp_path / "s02.fif")
+    for subject in ("s01", "s02"):
+        (tmp_path / f"{subject}-ica.fif").touch()
+    loaded = []
+
+    class FakeICA:
+        def __init__(self):
+            self.exclude = [0]
+
+        def apply(self, data):
+            data._data += 1
+
+    def read_ica(path):
+        loaded.append(str(path))
+        return FakeICA()
+
+    monkeypatch.setattr(mne.preprocessing, "read_ica", read_ica)
+    model.import_ica(str(tmp_path / "s01-ica.fif"))
+    model.apply_ica()
+    steps = deepcopy(model.current["pipeline_steps"])
+    assert [step["op"] for step in steps] == ["import_ica", "apply_ica"]
+    model.insert_data(target)
+    model.apply_pipeline(steps)
+
+    assert loaded[-1] == str(tmp_path / "s02-ica.fif")
+    np.testing.assert_allclose(
+        model.current["data"].get_data(), target["data"].get_data() + 1
+    )
+    assert model.current["pipeline_steps"] == steps
+
+
 def test_embedded_montage_uses_target_dataset(model_with_raw, tmp_path):
     model = model_with_raw
     mne.rename_channels(model.current["data"].info, {"EEG 001": "Cz"})
@@ -362,6 +602,7 @@ def test_sidebar_dataset_can_fill_pipeline(model_with_raw, qtbot, monkeypatch):
 
     assert view.pipeline == root["pipeline_steps"]
     assert len(view.pipeline) == 1
+    assert len(model) == 2
 
     class Menu:
         def __init__(self, parent):

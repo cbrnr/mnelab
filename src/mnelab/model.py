@@ -23,7 +23,14 @@ from mnextend import (
 )
 from mnextend.io.readers import raw_readers
 
-from mnelab.pipeline import pipeline_step, serialize_montage, validate_for_data
+from mnelab.pipeline import (
+    FILE_IMPORTS,
+    pipeline_step,
+    resolve_file_spec,
+    serialize_import,
+    serialize_montage,
+    validate_for_data,
+)
 from mnelab.utils import Montage, count_locations
 from mnelab.utils.marker_history import annotations_history, events_history
 
@@ -38,6 +45,92 @@ class InvalidBadChannelsError(Exception):
 
 class InvalidAnnotationsError(Exception):
     pass
+
+
+def read_bad_channels(fname):
+    """Read bad channel names from a CSV file."""
+    try:
+        with open(fname) as file:
+            content = file.read()
+    except UnicodeDecodeError:
+        raise InvalidBadChannelsError(
+            "The file contains binary data and cannot be read as CSV."
+        )
+    lines = [line for line in content.splitlines() if line.strip()]
+    if len(lines) > 1:
+        raise InvalidBadChannelsError(
+            "Invalid bad channels file (expected a single line with a "
+            "comma-separated list of channel labels)."
+        )
+    bads = [label.strip() for label in content.replace(" ", "").split(",")]
+    bads = [label for label in bads if label]
+    if not bads:
+        raise InvalidBadChannelsError("The file does not contain any channel labels.")
+    return bads
+
+
+def read_imported_events(fname):
+    """Read event rows and the CSV merge behavior from a file."""
+    if fname.lower().endswith(".csv"):
+        pos, desc = [], []
+        with open(fname) as file:
+            file.readline()
+            for line in file:
+                p, d = (int(token.strip()) for token in line.split(","))
+                pos.append(p)
+                desc.append(d)
+        events = np.column_stack((pos, desc))
+        events = np.insert(events, 1, 0, axis=1)
+        merge = True
+    elif fname.lower().endswith(".fif"):
+        events = mne.read_events(fname)
+        merge = False
+    else:
+        raise ValueError(f"Unsupported event file: {fname}")
+    return {"events": events.tolist(), "merge": merge}
+
+
+def read_imported_annotations(fname, types=None, description=None):
+    """Read selected annotation rows in their original file units."""
+    rows = []
+    try:
+        with open(fname) as file:
+            header = file.readline().strip()
+            has_type_col = header == "type,onset,duration"
+            if not has_type_col and header != "onset,duration":
+                raise InvalidAnnotationsError(
+                    "Invalid annotations file (expected header: "
+                    "'type,onset,duration' or 'onset,duration')."
+                )
+            for line in file:
+                annot = line.split(",")
+                if has_type_col:
+                    if len(annot) < 3:
+                        continue
+                    desc = annot[0].strip()
+                    onset_str, duration_str = annot[1:3]
+                else:
+                    if len(annot) < 2:
+                        continue
+                    desc = description if description is not None else "annotation"
+                    onset_str, duration_str = annot[:2]
+                if types is not None and desc not in types:
+                    continue
+                try:
+                    onset = float(onset_str.strip())
+                    duration = float(duration_str.strip())
+                except ValueError:
+                    raise InvalidAnnotationsError(
+                        "One or more annotations have invalid onset or duration values."
+                    )
+                rows.append([desc, onset, duration])
+    except InvalidAnnotationsError:
+        raise
+    except UnicodeDecodeError:
+        raise InvalidAnnotationsError(
+            "The file contains binary data and cannot be read as CSV."
+        )
+    return rows
 
 
 class AddReferenceError(Exception):
@@ -75,6 +168,7 @@ class Model:
         self.index = -1  # index of currently active data set
         self._next_id = 1  # monotonically increasing dataset ID counter
         self._temp_files = set()  # paths of temporary .fif cache files
+        self._replaying_pipeline = False
         self.log = []  # captured MNE log messages
         self.history = [
             "from copy import deepcopy",
@@ -247,6 +341,7 @@ class Model:
                 lambda: None,
                 name=name,
                 fname=fname,
+                source_fname=fname,
                 ftype=ext.upper()[1:],
                 fsize=fsize,
                 data=data,
@@ -428,29 +523,15 @@ class Model:
         self.current["ica"].save(fname, overwrite=True)
 
     @data_changed
-    @pipeline_step(unsupported=True)
+    @pipeline_step(serialize=serialize_import)
     def import_bads(self, fname):
         """Import bad channels info from a CSV file."""
-        try:
-            with open(fname) as f:
-                content = f.read()
-        except UnicodeDecodeError:
-            raise InvalidBadChannelsError(
-                "The file contains binary data and cannot be read as CSV."
-            )
-        # a valid file contains a single line with a comma-separated list of labels
-        lines = [line for line in content.splitlines() if line.strip()]
-        if len(lines) > 1:
-            raise InvalidBadChannelsError(
-                "Invalid bad channels file (expected a single line with a "
-                "comma-separated list of channel labels)."
-            )
-        bads = [label.strip() for label in content.replace(" ", "").split(",")]
-        bads = [label for label in bads if label]  # drop empty tokens
-        if not bads:
-            raise InvalidBadChannelsError(
-                "The file does not contain any channel labels."
-            )
+        bads = read_bad_channels(fname)
+        self._set_bad_channels(bads)
+        return bads
+
+    def _set_bad_channels(self, bads):
+        """Apply imported bad channel names to the current dataset."""
         unknown = sorted(set(bads) - set(self.current["data"].info["ch_names"]))
         if unknown:
             preview = ", ".join(unknown[:10])
@@ -463,34 +544,27 @@ class Model:
         self.current["data"].info["bads"] = bads
 
     @data_changed
-    @pipeline_step(unsupported=True)
+    @pipeline_step(serialize=serialize_import)
     def import_events(self, fname):
         """Import events from a CSV or FIF file."""
-        if fname.lower().endswith(".csv"):
-            pos, desc = [], []
-            with open(fname) as f:
-                f.readline()  # skip header
-                for line in f:
-                    p, d = (int(token.strip()) for token in line.split(","))
-                    pos.append(p)
-                    desc.append(d)
-            events = np.column_stack((pos, desc))
-            events = np.insert(events, 1, 0, axis=1)  # insert zero column
-            if self.current["events"] is not None:
-                events = np.vstack((self.current["events"], events))
-                events = np.unique(events, axis=0)
-            self.current["events"] = events
-        elif fname.lower().endswith(".fif"):
-            self.current["events"] = mne.read_events(fname)
-        else:
-            raise ValueError(f"Unsupported event file: {fname}")
+        payload = read_imported_events(fname)
+        self._set_imported_events(payload)
+        return payload
+
+    def _set_imported_events(self, payload):
+        """Add CSV events or replace events from a FIF snapshot."""
+        events = np.asarray(payload["events"], dtype=int).reshape(-1, 3)
+        if payload["merge"] and self.current["events"] is not None:
+            events = np.vstack((self.current["events"], events))
+            events = np.unique(events, axis=0)
+        self.current["events"] = events
         self.current["data"].events = self.current["events"]
         self.history.append(
             f"data.events = np.array({self.current['events'].tolist()}, dtype=int)"
         )
 
     @data_changed
-    @pipeline_step(unsupported=True)
+    @pipeline_step(serialize=serialize_import)
     def import_annotations(self, fname, types=None, description=None, unit="seconds"):
         """Import annotations from a CSV file.
 
@@ -507,64 +581,31 @@ class Model:
             `"seconds"` (default) or `"samples"`. When `"samples"`, onset and duration
             values are divided by `sfreq` to convert them to seconds.
         """
+        rows = read_imported_annotations(fname, types, description)
+        self._set_imported_annotations(rows, unit)
+        return rows
+
+    def _set_imported_annotations(self, rows, unit):
+        """Add imported annotation rows using the target sampling frequency."""
         descs, onsets, durations = [], [], []
         fs = self.current["data"].info["sfreq"]
-        try:
-            with open(fname) as f:
-                header = f.readline().strip()
-                has_type_col = header == "type,onset,duration"
-                no_type_col = header == "onset,duration"
-                if not has_type_col and not no_type_col:
-                    raise InvalidAnnotationsError(
-                        "Invalid annotations file (expected header: "
-                        "'type,onset,duration' or 'onset,duration')."
-                    )
-                for line in f:
-                    annot = line.split(",")
-                    if has_type_col:
-                        if len(annot) < 3:
-                            continue
-                        desc = annot[0].strip()
-                        onset_str = annot[1].strip()
-                        duration_str = annot[2].strip()
-                    else:  # no type column
-                        if len(annot) < 2:
-                            continue
-                        desc = description if description is not None else "annotation"
-                        onset_str = annot[0].strip()
-                        duration_str = annot[1].strip()
-                    if types is not None and desc not in types:
-                        continue
-                    try:
-                        onset = float(onset_str)
-                        duration = float(duration_str)
-                    except ValueError:
-                        raise InvalidAnnotationsError(
-                            "One or more annotations have invalid onset or duration"
-                            " values."
-                        )
-                    if unit == "samples":
-                        onset /= fs
-                        duration /= fs
-                    if onset > self.current["data"].n_times / fs:
-                        raise InvalidAnnotationsError(
-                            "One or more annotations are outside the data range."
-                        )
-                    descs.append(desc)
-                    onsets.append(onset)
-                    durations.append(duration)
-        except InvalidAnnotationsError:
-            raise
-        except UnicodeDecodeError:
-            raise InvalidAnnotationsError(
-                "The file contains binary data and cannot be read as CSV."
-            )
+        for desc, onset, duration in rows:
+            if unit == "samples":
+                onset /= fs
+                duration /= fs
+            if onset > self.current["data"].n_times / fs:
+                raise InvalidAnnotationsError(
+                    "One or more annotations are outside the data range."
+                )
+            descs.append(desc)
+            onsets.append(onset)
+            durations.append(duration)
         existing = self.current["data"].annotations
         new = mne.Annotations(onsets, durations, descs, orig_time=existing.orig_time)
         self.current["data"].set_annotations(existing + new)
 
     @data_changed
-    @pipeline_step(unsupported=True)
+    @pipeline_step(serialize=serialize_import)
     def import_ica(self, fname):
         """Import ICA solution from file."""
         self.current["ica"] = mne.preprocessing.read_ica(fname)
@@ -826,10 +867,20 @@ class Model:
         if any(step.get("unsupported") for step in steps):
             raise ValueError("Remove operations that cannot be replayed first.")
         parent_id = self.current["id"]
+        source_fname = self.current.get("source_fname") or self.current.get("fname")
+        ancestor_id = self.current.get("parent_id")
+        while source_fname is None and ancestor_id is not None:
+            ancestor = next((d for d in self.data if d["id"] == ancestor_id), None)
+            if ancestor is None:
+                break
+            source_fname = ancestor.get("source_fname") or ancestor.get("fname")
+            ancestor_id = ancestor.get("parent_id")
         staged = Model()
         staged.data = [deepcopy(self.current)]
         staged.index = 0
         staged.history = []
+        staged._replaying_pipeline = True
+        staged.current["source_fname"] = source_fname
         embedded_montage = staged.current["montage"]
         if embedded_montage is not None and not embedded_montage.embedded:
             embedded_montage = None
@@ -846,6 +897,22 @@ class Model:
                     params["baseline"] = tuple(params["baseline"])
                 if op == "crop" and params["start"] is None:
                     params["start"] = 0
+                handled = False
+                if op in FILE_IMPORTS:
+                    file_spec = params.pop("file")
+                    if file_spec["mode"] == "embedded":
+                        data = file_spec["data"]
+                        if op == "import_bads":
+                            staged._set_bad_channels(data)
+                        elif op == "import_events":
+                            staged._set_imported_events(data)
+                        else:
+                            staged._set_imported_annotations(data, params["unit"])
+                        handled = True
+                    else:
+                        params["fname"] = str(
+                            resolve_file_spec(file_spec, source_fname)
+                        )
                 if op == "set_montage":
                     name = params.pop("montage_name")
                     positions = params.pop("montage_positions")
@@ -853,6 +920,11 @@ class Model:
                         if embedded_montage is None:
                             raise ValueError("Target dataset has no embedded montage.")
                         montage = embedded_montage
+                    elif isinstance(positions, dict) and "file" in positions:
+                        path = resolve_file_spec(positions["file"], source_fname)
+                        montage = Montage(
+                            mne.channels.read_custom_montage(path), path.name, path
+                        )
                     elif positions is None:
                         montage = (
                             Montage(mne.channels.make_standard_montage(name), name)
@@ -865,7 +937,11 @@ class Model:
                             name,
                         )
                     params["montage"] = montage
-                getattr(staged, op)(**params)
+                if op == "apply_ica" and staged.current["ica"] is None:
+                    raise ValueError("Import an ICA solution before applying ICA.")
+                if not handled:
+                    getattr(staged, op)(**params)
+                staged.current.setdefault("pipeline_steps", []).append(deepcopy(step))
                 if (
                     op == "set_montage"
                     and montage is not None
@@ -957,7 +1033,7 @@ class Model:
             self.history.append(f"mne.concatenate_epochs(data, {', '.join(indices)})")
 
     @data_changed
-    @pipeline_step(unsupported=True)
+    @pipeline_step
     def apply_ica(self):
         self.current["ica"].apply(self.current["data"])
         self.history.append(
