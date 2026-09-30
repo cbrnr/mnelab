@@ -270,7 +270,7 @@ def has_unsupported(steps):
 def step_label(step):
     """Return a readable one-line description of a pipeline step."""
     op = step["op"]
-    label = OPERATIONS.get(op, op.replace("_", " ").title())
+    label = OPERATIONS.get(op, op.replace("_", " ").title().replace("Ica", "ICA"))
     if step.get("unsupported"):
         return f"{label} (cannot replay)"
     params = step["params"]

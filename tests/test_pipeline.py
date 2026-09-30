@@ -18,7 +18,7 @@ import mnelab.widgets.sidebar as sidebar_module
 from mnelab.dialogs.pipeline import FileRuleDialog, PipelineDialog
 from mnelab.mainwindow import MainWindow
 from mnelab.model import Model
-from mnelab.pipeline import load_pipeline, make_file_spec, save_pipeline
+from mnelab.pipeline import load_pipeline, make_file_spec, save_pipeline, step_label
 from mnelab.settings import _DEFAULTS
 from mnelab.utils import Montage, count_locations
 
@@ -503,6 +503,71 @@ def test_matching_ica_import_can_be_applied(model_with_raw, tmp_path, monkeypatc
         model.current["data"].get_data(), target["data"].get_data() + 1
     )
     assert model.current["pipeline_steps"] == steps
+
+
+def test_ica_worker_is_owned_by_model(model_with_raw, monkeypatch):
+    notifications = []
+    pools = []
+
+    class FakeICA:
+        def __init__(self, n_components, method, fit_params):
+            self.settings = (n_components, method, fit_params)
+            self.exclude = []
+
+        def fit(self, data, reject_by_annotation):
+            self.data = data
+            self.reject_by_annotation = reject_by_annotation
+            return self
+
+    class FakeResult:
+        def __init__(self, value):
+            self.value = value
+
+        def get(self):
+            return self.value
+
+    class FakePool:
+        def __init__(self, processes):
+            assert processes == 1
+            self.closed = False
+            self.terminated = False
+            self.joined = False
+            pools.append(self)
+
+        def apply_async(self, func, args, callback, error_callback):
+            value = func(*args)
+            callback(value)
+            return FakeResult(value)
+
+        def close(self):
+            self.closed = True
+
+        def terminate(self):
+            self.terminated = True
+
+        def join(self):
+            self.joined = True
+
+    monkeypatch.setattr(mne.preprocessing, "ICA", FakeICA)
+    monkeypatch.setattr("mnelab.model.mp.Pool", FakePool)
+    model = model_with_raw
+    job = model.start_ica(2, "infomax", {"extended": True}, True, notifications.append)
+    assert model.current["ica"] is None
+    assert len(notifications) == 1
+    assert pools[0].closed
+
+    model.finish_ica(job)
+    assert model.current["ica"].settings == (2, "infomax", {"extended": True})
+    assert model.current["ica"].data is model.current["data"]
+    assert model.current["ica"].reject_by_annotation
+    assert model.current["pipeline_steps"] == [{"op": "run_ica", "unsupported": True}]
+    assert step_label(model.current["pipeline_steps"][0]) == "Run ICA (cannot replay)"
+    assert pools[0].joined
+
+    job = model.start_ica(2, "infomax", {}, True, notifications.append)
+    job.cancel()
+    assert pools[1].terminated and pools[1].joined
+    assert len(model.current["pipeline_steps"]) == 1
 
 
 def test_embedded_montage_uses_target_dataset(model_with_raw, tmp_path):

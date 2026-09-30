@@ -2,6 +2,7 @@
 #
 # License: BSD (3-clause)
 
+import multiprocessing as mp
 import os
 import tempfile
 from collections import Counter, defaultdict
@@ -135,6 +136,35 @@ def read_imported_annotations(fname, types=None, description=None):
 
 class AddReferenceError(Exception):
     pass
+
+
+def _fit_ica(data, n_components, method, fit_params, exclude_bad_segments):
+    """Fit ICA on a dataset in this process or a worker process."""
+    ica = mne.preprocessing.ICA(
+        n_components=n_components, method=method, fit_params=fit_params
+    )
+    return ica.fit(data, reject_by_annotation=exclude_bad_segments)
+
+
+class _ICAJob:
+    """Keep an ICA worker and its fitting settings together."""
+
+    def __init__(self, pool, result, settings):
+        self.pool = pool
+        self.result = result
+        self.settings = settings
+
+    def cancel(self):
+        """Stop a running ICA fit."""
+        self.pool.terminate()
+        self.pool.join()
+
+    def get(self):
+        """Return the fitted ICA and release the worker."""
+        try:
+            return self.result.get()
+        finally:
+            self.pool.join()
 
 
 def data_changed(_func=None, *, invalidate_cache=True):
@@ -1031,6 +1061,41 @@ class Model:
         elif self.current["dtype"] == "epochs":
             self.current["data"] = mne.concatenate_epochs(datasets)
             self.history.append(f"mne.concatenate_epochs(data, {', '.join(indices)})")
+
+    def start_ica(
+        self, n_components, method, fit_params, exclude_bad_segments, callback
+    ):
+        """Fit ICA in a worker and call back when it finishes or fails."""
+        settings = (n_components, method, fit_params, exclude_bad_segments)
+        pool = mp.Pool(processes=1)
+        try:
+            result = pool.apply_async(
+                _fit_ica,
+                args=(self.current["data"], *settings),
+                callback=callback,
+                error_callback=callback,
+            )
+        except Exception:
+            pool.terminate()
+            pool.join()
+            raise
+        pool.close()
+        return _ICAJob(pool, result, settings)
+
+    def finish_ica(self, job):
+        """Store a completed worker fit and mark it unavailable for replay."""
+        n_components, method, fit_params, exclude_bad_segments = job.settings
+        self.current["ica"] = job.get()
+        self.current["iclabel"] = None
+        self.mark_pipeline_unsupported("run_ica")
+        self.history.append(
+            "ica = mne.preprocessing.ICA("
+            f"n_components={n_components}, method={method!r}, "
+            f"fit_params={fit_params!r})"
+        )
+        self.history.append(
+            f"ica.fit(inst=data, reject_by_annotation={exclude_bad_segments})"
+        )
 
     @data_changed
     @pipeline_step
