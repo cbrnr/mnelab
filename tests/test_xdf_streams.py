@@ -19,23 +19,20 @@ def rows():
     ]
 
 
-def test_all_rows_shown(qtbot, rows):
-    """Test that marker streams are included in the table, not filtered out."""
+def test_all_streams_selected_by_default(qtbot, rows):
+    """Default selection includes every row and ignores markers for sampling rate."""
     dialog = XDFStreamsDialog(None, rows, fname="x")
     qtbot.addWidget(dialog)
 
     assert dialog.view.rowCount() == len(rows)
-
-
-def test_all_streams_selected_by_default(qtbot, rows):
-    """Test that all streams (data and marker) are selected by default."""
-    dialog = XDFStreamsDialog(None, rows, fname="x")
-    qtbot.addWidget(dialog)
-
     selected = set(dialog.selected_streams) | set(dialog.selected_markers)
     assert selected == {row[0] for row in rows}
     assert set(dialog.selected_streams) == {2, 4}
     assert set(dialog.selected_markers) == {1, 3}
+    ok_button = dialog.buttonbox.button(dialog.buttonbox.StandardButton.Ok)
+    assert ok_button.isEnabled()
+    # the 5000 Hz marker stream must not skew the data stream suggestion
+    assert dialog.fs_new.value() == 256.0
 
 
 def test_ok_disabled_with_only_markers_selected(qtbot, rows):
@@ -57,22 +54,3 @@ def test_ok_disabled_with_only_markers_selected(qtbot, rows):
     assert not dialog.selected_streams
     assert dialog.selected_markers
     assert not ok_button.isEnabled()
-
-
-def test_ok_enabled_with_data_stream_selected(qtbot, rows):
-    """Test that OK is enabled once a non-marker stream is selected."""
-    dialog = XDFStreamsDialog(None, rows, fname="x")
-    qtbot.addWidget(dialog)
-
-    ok_button = dialog.buttonbox.button(dialog.buttonbox.StandardButton.Ok)
-    assert ok_button.isEnabled()
-
-
-def test_suggested_fs_ignores_marker_rows(qtbot, rows):
-    """Test that the suggested sampling rate is based on data streams only."""
-    dialog = XDFStreamsDialog(None, rows, fname="x")
-    qtbot.addWidget(dialog)
-
-    # data streams have sampling rates 256 (67 channels) and 44100 (2 channels); the
-    # marker stream at 5000 Hz (1 channel) must not skew the suggestion
-    assert dialog.fs_new.value() == 256.0

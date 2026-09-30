@@ -43,52 +43,31 @@ def test_check_updates_network_error(view):
     instance.exec.assert_called_once()
 
 
-def test_check_updates_update_available(view):
-    """When a newer version exists, the dialog mentions both versions."""
+@pytest.mark.parametrize(
+    ("tag", "version", "is_dev", "expected_text", "expected_informative"),
+    [
+        ("v99.0.0", "1.0.0", False, ("99.0.0", "1.0.0"), None),
+        ("v1.0.0", "1.0.0", False, ("latest version",), None),
+        ("v1.0.0", "1.1.0.dev0", True, ("development version",), "1.0.0"),
+    ],
+    ids=["update_available", "up_to_date", "development_version"],
+)
+def test_check_updates_response(
+    view, tag, version, is_dev, expected_text, expected_informative
+):
+    """Show the appropriate message for each release comparison."""
     with (
-        patch("mnelab.mainwindow.urlopen", _urlopen_mock("v99.0.0")),
+        patch("mnelab.mainwindow.urlopen", _urlopen_mock(tag)),
         patch("mnelab.mainwindow.QMessageBox") as MockBox,
-        patch("mnelab.mainwindow.__version__", "1.0.0"),
-        patch("mnelab.mainwindow.IS_DEV_VERSION", False),
+        patch("mnelab.mainwindow.__version__", version),
+        patch("mnelab.mainwindow.IS_DEV_VERSION", is_dev),
     ):
         view.show_check_for_updates()
 
     instance = MockBox.return_value
     text = instance.setText.call_args[0][0]
-    assert "99.0.0" in text
-    assert "1.0.0" in text
-    instance.exec.assert_called_once()
-
-
-def test_check_updates_up_to_date(view):
-    """When already on the latest version, the dialog says so."""
-    with (
-        patch("mnelab.mainwindow.urlopen", _urlopen_mock("v1.0.0")),
-        patch("mnelab.mainwindow.QMessageBox") as MockBox,
-        patch("mnelab.mainwindow.__version__", "1.0.0"),
-        patch("mnelab.mainwindow.IS_DEV_VERSION", False),
-    ):
-        view.show_check_for_updates()
-
-    instance = MockBox.return_value
-    text = instance.setText.call_args[0][0]
-    assert "latest version" in text
-    instance.exec.assert_called_once()
-
-
-def test_check_updates_dev_version(view):
-    """When running a dev version, the dialog mentions that and the latest release."""
-    with (
-        patch("mnelab.mainwindow.urlopen", _urlopen_mock("v1.0.0")),
-        patch("mnelab.mainwindow.QMessageBox") as MockBox,
-        patch("mnelab.mainwindow.__version__", "1.1.0.dev0"),
-        patch("mnelab.mainwindow.IS_DEV_VERSION", True),
-    ):
-        view.show_check_for_updates()
-
-    instance = MockBox.return_value
-    text = instance.setText.call_args[0][0]
-    assert "development version" in text
-    informative = instance.setInformativeText.call_args[0][0]
-    assert "1.0.0" in informative
+    assert all(value in text for value in expected_text)
+    if expected_informative is not None:
+        informative = instance.setInformativeText.call_args[0][0]
+        assert expected_informative in informative
     instance.exec.assert_called_once()
