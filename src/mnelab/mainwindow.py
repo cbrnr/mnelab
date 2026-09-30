@@ -2048,7 +2048,10 @@ class MainWindow(QMainWindow):
         self.data_changed()
 
     def event(self, event):
-        if event.type() == QEvent.Type.Close:
+        if event.type() == QEvent.Type.WindowBlocked:
+            self.infowidget.widget(0).clear_hover()
+            self.sidebar_container.clear_hover()
+        elif event.type() == QEvent.Type.Close:
             sizes = self.splitter.sizes()
             total = sum(sizes)
             kwargs = {"size": self.size(), "pos": self.pos()}

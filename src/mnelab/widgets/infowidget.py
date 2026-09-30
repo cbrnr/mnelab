@@ -217,7 +217,16 @@ class InfoWidget(QWidget):
                 entry["btn"].setIcon(QIcon())
         super().leaveEvent(event)
 
+    def clear_hover(self):
+        """Hide all hover actions, including the temporary copy confirmation."""
+        self._restore_timer.stop()
+        for entry in self._hover_entries:
+            entry["btn"].setIcon(QIcon())
+
     def _update_hover_from_cursor(self):
+        if QApplication.activeModalWidget() is not None:
+            self.clear_hover()
+            return
         cursor_local = self.mapFromGlobal(QCursor.pos())
         for entry in self._hover_entries:
             if self.rect().contains(cursor_local):
@@ -237,6 +246,9 @@ class InfoWidget(QWidget):
             self._restore_timer.start()
 
     def _restore_copy_icon(self):
+        if QApplication.activeModalWidget() is not None:
+            self.clear_hover()
+            return
         if self._copy_entry:
             entry = self._copy_entry
             cursor_local = self.mapFromGlobal(QCursor.pos())
