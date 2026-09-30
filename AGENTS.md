@@ -5,7 +5,7 @@ Guidelines for AI coding agents working on this repository.
 ## Project setup
 
 - This project uses [uv](https://docs.astral.sh/uv/) for package and environment management.
-- Install dependencies with `uv sync --all-groups --all-extras`.
+- Install dependencies with `uv sync --locked --all-groups --all-extras`.
 - Run the app with `uv run mnelab`.
 - Run tests with `uv run pytest -W error tests` (CI promotes warnings to errors; a plain `uv run pytest` will miss these).
 
@@ -49,9 +49,14 @@ Every PR must include an entry in the `[UNRELEASED]` section of [CHANGELOG.md](C
 
   1. Download the icon from the Material Symbols website.
   2. Rename it to reflect its intended action.
-  3. Place it in `icons/light/actions`.
+  3. Place it in `src/mnelab/icons/light/actions`.
   4. Edit the SVG and add `fill="black"` to the `<svg>` tag.
-  5. Copy the SVG to `icons/dark/actions` and change the fill attribute to `fill="white"`.
+  5. Copy the SVG to `src/mnelab/icons/dark/actions` and change the fill attribute to `fill="white"`.
+
+## Documentation screenshots
+
+- Follow the capture instructions in [CONTRIBUTING.md](CONTRIBUTING.md).
+- For a PNG screenshot captured at 200% display scaling, add `{ .screenshot }` after its Markdown image. The documentation build reads the PNG width and displays it at half that width, including fractional pixels for odd widths.
 
 ## Release
 

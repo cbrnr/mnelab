@@ -7,7 +7,7 @@ MNELAB can be customized in various ways to suit your preferences and workflow. 
 
 First, the *View* menu contains an option to toggle the status bar. On Linux and Windows, it is also possible to toggle the menu bar. If the menu bar is hidden, a hamburger menu will appear in the top right corner of the toolbar instead.
 
-![Main window without menu bar](images/settings/main_window_hamburger.png){ style="width: 50%" }
+![Main window without menu bar](images/settings/main_window_hamburger.png){ .screenshot }
 
 
 ## Settings
@@ -19,7 +19,7 @@ The *Settings* menu contains three main sections: *General*, *Plotting*, and *To
 
 The *General* section groups options related to the overall behavior of MNELAB.
 
-![General settings](images/settings/general_settings.png){ style="width: 50%" }
+![General settings](images/settings/general_settings.png){ .screenshot }
 
 The *Recent Files* option allows you to specify how many recently opened files should be displayed in the *File* menu for quick access.
 
@@ -34,7 +34,7 @@ Finally, the *Save Memory* option influences how MNELAB handles open datasets. I
 
 The *Plotting* section contains options related to the appearance of plots in MNELAB.
 
-![Plotting settings](images/settings/plotting_settings.png){ style="width: 50%" }
+![Plotting settings](images/settings/plotting_settings.png){ .screenshot }
 
 The *Plot Backend* option allows you to choose between two different plotting backends for the data browser: *Matplotlib* and *Qt*. Whereas the *Matplotlib* backend provides a more traditional user experience, the *Qt* backend offers a more modern and possibly also more responsive interface.
 
@@ -45,7 +45,7 @@ The other options in this section allow you to customize the default appearance 
 
 The *Toolbar* section allows you to customize the appearance of the toolbar in MNELAB.
 
-![Toolbar settings](images/settings/toolbar_settings.png){ style="width: 50%" }
+![Toolbar settings](images/settings/toolbar_settings.png){ .screenshot }
 
 The *Available Actions* list on the left contains all the actions that can be added to the toolbar, whereas the *Toolbar* list on the right shows the actions that are currently included in the toolbar. To add an action to the toolbar, simply select it in the *Available Actions* list and click the right arrow button. To remove an action from the toolbar, select it in the *Toolbar* list and click the left arrow button. You can also rearrange the order of actions in the toolbar by selecting an action in the *Toolbar* list and using the up and down arrow buttons to move it.
 
