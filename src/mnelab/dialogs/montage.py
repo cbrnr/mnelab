@@ -134,7 +134,11 @@ class MontageDialog(QDialog):
         self.setLayout(main_layout)
 
         if current_montage is not None:
-            if current_montage.path is not None or current_montage.embedded:
+            if (
+                current_montage.path is not None
+                or current_montage.embedded
+                or current_montage.name not in montages
+            ):
                 # custom or embedded montage: add it to the list and select it
                 self.montages.addItem(
                     MontageItem(

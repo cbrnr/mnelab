@@ -77,6 +77,7 @@ _DEFAULTS = {
         "find_events",
         "epoch_data",
         "run_ica",
+        "pipeline",
         "---",
         "settings",
     ],

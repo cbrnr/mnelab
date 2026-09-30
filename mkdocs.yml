@@ -9,6 +9,7 @@ nav:
   - Documentation:
     - documentation/index.md
     - Settings: documentation/settings.md
+    - Pipelines: documentation/pipelines.md
     - Renaming Channels: documentation/rename_channels.md
     - ERDS Maps: documentation/erds_maps.md
     - ERPs: documentation/erp.md
