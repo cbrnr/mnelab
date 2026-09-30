@@ -73,24 +73,8 @@ def test_format_code():
     assert formatted_code == invalid_code  # invalid code should be returned unmodified
 
 
-def test_remove_unused_imports_keeps_called_functions():
-    """Test that function calls are recognized as used imports."""
-    code = dedent(
-        """
-        import mne
-        from mnextend import run_iclabel
-
-        data = mne.io.read_raw_fif("test.fif")
-        probs = run_iclabel(data, None)
-        """
-    )
-    result = _remove_unused_imports(code)
-    assert "run_iclabel" in result
-    assert "import mne" in result
-
-
 def test_remove_unused_imports_removes_unused():
-    """Test that genuinely unused imports are removed."""
+    """Remove unused imports while keeping imports used in function calls."""
     code = dedent(
         """
         import mne

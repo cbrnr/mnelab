@@ -20,9 +20,9 @@ def edf_files(tmp_path_factory):
     """Generate .edf files for testing purposes."""
     fs = 256
     signals = [
-        np.linspace(-1, 1, 30 * fs),
-        np.linspace(-10, -15, 30 * fs),
-        np.linspace(10, 15, 30 * fs),
+        np.linspace(-1, 1, 12 * fs),
+        np.linspace(-10, -15, 12 * fs),
+        np.linspace(10, 15, 12 * fs),
     ]
     paths = []
     for i, signal_data in enumerate(signals):
@@ -104,14 +104,10 @@ def test_history_syntax_is_validated():
 
 
 @pytest.fixture
-def model_with_data(tmp_path):
-    """Model with a single 30-second EDF file loaded."""
-    fs = 256
-    signal = np.zeros(30 * fs)
-    path = tmp_path / "sample.edf"
-    Edf([EdfSignal(signal, sampling_frequency=fs, label="EEG")]).write(path)
+def model_with_data(edf_files):
+    """Model with a single EDF file loaded."""
     model = Model()
-    model.load(path)
+    model.load(edf_files[0])
     return model
 
 
@@ -331,21 +327,17 @@ def test_import_annotations_in_samples_no_type_column(model_with_data, tmp_path)
 
 
 @pytest.fixture
-def model_two_datasets(tmp_path):
+def model_two_datasets(edf_files):
     """Model with two EDF files loaded (indices 0 and 1)."""
-    fs = 256
     model = Model()
-    for i in range(2):
-        path = tmp_path / f"file_{i}.edf"
-        signal = np.zeros(30 * fs)
-        Edf([EdfSignal(signal, sampling_frequency=fs, label="EEG")]).write(path)
+    for path in edf_files[:2]:
         model.load(path)
     model.index = 0
     return model
 
 
-def test_evict_dataset(model_two_datasets):
-    """Evicting a dataset sets data to None and writes a temp cache file."""
+def test_evict_reload_reuses_cache(model_two_datasets):
+    """Eviction writes a cache that reload and later eviction can reuse."""
     model = model_two_datasets
     model.evict_dataset(0)
 
@@ -354,30 +346,13 @@ def test_evict_dataset(model_two_datasets):
     assert cache is not None
     assert Path(cache).exists()
 
-
-def test_reload_dataset(model_two_datasets):
-    """Reloading a dataset restores its data and keeps the cache path."""
-    model = model_two_datasets
-    model.evict_dataset(0)
-    cache_before = model.data[0]["_cache_path"]
-
     model.reload_dataset(0)
-
     assert model.data[0]["data"] is not None
-    # cache path is preserved so a second eviction can skip the write
-    assert model.data[0]["_cache_path"] == cache_before
+    assert model.data[0]["_cache_path"] == cache
 
-
-def test_evict_twice_reuses_cache(model_two_datasets):
-    """A second eviction after a reload reuses the existing cache file."""
-    model = model_two_datasets
     model.evict_dataset(0)
-    first_cache = model.data[0]["_cache_path"]
-
-    model.reload_dataset(0)
-    model.evict_dataset(0)
-
-    assert model.data[0]["_cache_path"] == first_cache
+    assert model.data[0]["data"] is None
+    assert model.data[0]["_cache_path"] == cache
 
 
 def test_cache_invalidated_after_modify(model_two_datasets):
