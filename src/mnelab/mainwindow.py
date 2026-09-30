@@ -863,7 +863,19 @@ class MainWindow(QMainWindow):
         ]
         if fname:
             self._set_last_dir(fname)
-            f(fname)
+            self._import_into_new_dataset(f, fname)
+
+    def _import_into_new_dataset(self, f, fname, **kwargs):
+        """Protect the current data set and discard a failed duplicate."""
+        history = self.model.history.copy()
+        duplicated = self.auto_duplicate()
+        try:
+            return f(fname, **kwargs)
+        except Exception:
+            if duplicated:
+                self.model.remove_data()
+                self.model.history[:] = history
+            raise
 
     def xdf_chunks(self):
         """Inspect XDF chunks."""
@@ -906,7 +918,7 @@ class MainWindow(QMainWindow):
         if fname:
             self._set_last_dir(fname)
             try:
-                f(fname)
+                self._import_into_new_dataset(f, fname)
             except LabelsNotFoundError as e:
                 QMessageBox.critical(self, "Channel labels not found", str(e))
             except InvalidBadChannelsError as e:
@@ -995,7 +1007,8 @@ class MainWindow(QMainWindow):
         except Exception:
             pass
         try:
-            self.model.import_annotations(
+            self._import_into_new_dataset(
+                self.model.import_annotations,
                 fname,
                 types=types if description is None else None,
                 description=description,
@@ -1071,6 +1084,9 @@ class MainWindow(QMainWindow):
                     types[new_label] = new_type
                 if dialog.model.item(i, 3).checkState() == Qt.CheckState.Checked:
                     bads.append(info["ch_names"][i])
+            if set(bads) == set(info["bads"]) and not renamed and not types:
+                return
+            self.auto_duplicate()
             self.model.set_channel_properties(bads, renamed, types)
 
     def rename_channels(self):
@@ -1130,6 +1146,13 @@ class MainWindow(QMainWindow):
                 duration.append(float(data) / fs)
                 data = dialog.table.item(i, 2).data(Qt.ItemDataRole.DisplayRole)
                 description.append(data)
+            if (
+                onset == [sample / fs for sample in pos]
+                and duration == [sample / fs for sample in dur]
+                and description == desc
+            ):
+                return
+            self.auto_duplicate()
             self.model.set_annotations(
                 onset, duration, description, row_ids=dialog.row_ids
             )
@@ -1152,6 +1175,11 @@ class MainWindow(QMainWindow):
                 pos = dialog.event_table.item(i, 0).value()
                 desc = dialog.event_table.item(i, 1).value()
                 events[i] = pos, 0, desc
+            if np.array_equal(events, self.model.current["events"]) and dict(
+                dialog.event_mapping
+            ) == dict(self.model.current["event_mapping"]):
+                return
+            self.auto_duplicate()
             event_mapping_old = dict(self.model.current["event_mapping"])
             event_mapping = dict(dialog.event_mapping)
             self.model.current["event_mapping"] = event_mapping
@@ -1465,6 +1493,7 @@ class MainWindow(QMainWindow):
                 job.cancel()
                 print("ICA calculation aborted...")
             else:
+                self.auto_duplicate()
                 self.model.finish_ica(job)
                 self.data_changed()
 
@@ -1482,10 +1511,13 @@ class MainWindow(QMainWindow):
         dialog = ICLabelDialog(self, data, ica, probs, exclude=ica.exclude)
         if dialog.exec():
             exclude_indices = dialog.get_excluded_indices()
-
-            ica.exclude = sorted([int(x) for x in exclude_indices])
+            exclude = sorted(int(x) for x in exclude_indices)
+            if exclude == ica.exclude:
+                return
+            self.auto_duplicate()
+            self.model.current["ica"].exclude = exclude
             self.model.mark_pipeline_unsupported("label_ica")
-            self.model.history.append(f"ica.exclude = {ica.exclude}")
+            self.model.history.append(f"ica.exclude = {exclude}")
             self.data_changed()
 
     def interpolate_bads(self):
@@ -1596,6 +1628,7 @@ class MainWindow(QMainWindow):
             )
             min_dur = dialog.minduredit.value()
             shortest_event = dialog.shortesteventedit.value()
+            self.auto_duplicate()
             self.model.find_events(
                 stim_channel=stim_channel,
                 consecutive=consecutive,
@@ -1606,6 +1639,7 @@ class MainWindow(QMainWindow):
             )
 
     def events_from_annotations(self):
+        self.auto_duplicate()
         self.model.events_from_annotations()
 
     def annotations_from_events(self):
@@ -1615,6 +1649,7 @@ class MainWindow(QMainWindow):
         dialog = AnnotationsIntervalDialog(self, event_counts, annotations)
         if dialog.exec():
             if dialog.annotations_from_events():
+                self.auto_duplicate()
                 self.model.annotations_from_events()
             else:
                 interval_data = dialog.event_to_event_data()
@@ -1627,6 +1662,7 @@ class MainWindow(QMainWindow):
                         orig_time=existing.orig_time,
                         **interval_data,
                     )
+                    self.auto_duplicate()
                     self.model.current["data"].set_annotations(existing + new)
                     self.model.mark_pipeline_unsupported("annotations_between_events")
                     self.data_changed()

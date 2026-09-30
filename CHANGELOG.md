@@ -6,6 +6,7 @@
 - Add a Remove Line Noise action using MNEXTEND ([#697](https://github.com/cbrnr/mnelab/pull/697) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🔧 Fixed
+- Duplicate file-backed data sets and ask whether to duplicate or overwrite derived data sets when changing channel, marker, or ICA metadata ([#705](https://github.com/cbrnr/mnelab/issues/705) by [Clemens Brunner](https://github.com/cbrnr))
 - Apply the selected Number of Components setting when running ICA ([#694](https://github.com/cbrnr/mnelab/pull/694) by [Clemens Brunner](https://github.com/cbrnr))
 - Record compact History entries when batch-renaming channels ([#696](https://github.com/cbrnr/mnelab/issues/696) by [Clemens Brunner](https://github.com/cbrnr))
 - Create a new data set before batch-renaming channels ([#696](https://github.com/cbrnr/mnelab/issues/696) by [Clemens Brunner](https://github.com/cbrnr))
