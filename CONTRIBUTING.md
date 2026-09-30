@@ -24,10 +24,10 @@ Open a terminal and change into the folder where you would like your MNELAB fork
 In a terminal, change to the `mnelab` folder containing your MNELAB fork and run the following command:
 
 ```
-uv sync --locked --all-extras
+uv sync --locked --all-groups --all-extras
 ```
 
-You can then run MNELAB with `uv run mnelab`, or run the tests with `uv run pytest`.
+You can then run MNELAB with `uv run mnelab`, or run the tests with `uv run pytest -W error tests`.
 
 
 ### Creating a new branch
@@ -42,9 +42,9 @@ Once you have committed all of your changes, you can push them to your remote fo
 
 ### Modifying icons
 
-MNELAB bundles its icons in the `icons` folder, which contains two themes ("light" and "dark"). If you want to modify an existing icon or add a new one, make sure to apply your changes to both the "light" and "dark" themes. All icons are SVGs and taken from the [Material Symbols](https://fonts.google.com/icons) icon set.
+MNELAB bundles its icons in `src/mnelab/icons`, which contains two themes ("light" and "dark"). If you want to modify an existing icon or add a new one, make sure to apply your changes to both the "light" and "dark" themes. All icons are SVGs from the [Material Symbols](https://fonts.google.com/icons) icon set or follow its style.
 
-If you want to add a new icon, download it from the Material Symbols website, rename it (use a suitable name reflecting its intended action), and place it in the `icons/light/actions` folder. Next, edit the SVG file in a text editor and add the `fill="black"` attribute to the `<svg>` tag. Finally, copy the SVG file to the `icons/dark/actions` folder and change the `fill` attribute to `fill="white"`.
+If you want to add a new icon, download it from the Material Symbols website, rename it (use a suitable name reflecting its intended action), and place it in the `src/mnelab/icons/light/actions` folder. Next, edit the SVG file in a text editor and add the `fill="black"` attribute to the `<svg>` tag. Finally, copy the SVG file to the `src/mnelab/icons/dark/actions` folder and change the `fill` attribute to `fill="white"`.
 
 
 ### Creating screenshots for the documentation
@@ -59,11 +59,13 @@ To take a screenshot of a specific window, use Spectacle and choose *Active Wind
 
 Instructions for taking screenshots on macOS and Windows will follow soon.
 
-Because the display is set to 200% scaling, each screenshot will be twice as wide and tall in pixels as it appears on screen. In the documentation source, render the image at half its pixel size to match the original visual size using the `style` attribute:
+At 200% display scaling, a screenshot has twice as many pixels in each dimension as its size on screen. Add the `.screenshot` marker to a PNG image in the documentation source:
 
 ```markdown
-![Description](images/screenshot.png){ style="width: 50%" }
+![Description](images/screenshot.png){ .screenshot }
 ```
+
+The documentation build reads the PNG width and displays it at half that width, with a maximum of the available column width. Odd pixel widths are supported; for example, a 941-pixel-wide image is displayed at 470.5 CSS pixels.
 
 
 ### Adding a changelog entry
@@ -73,7 +75,7 @@ Once you have an open pull request, add an entry to the top of `CHANGELOG.md` in
 
 ### Coding style
 
-MNELAB uses [Ruff](https://docs.astral.sh/ruff/formatter/) for formatting. Because [PySide6](https://doc.qt.io/qtforpython-6/index.html) is based on the C++-based Qt library, most of its names use camel case instead of snake case. In your own code, please use snake case wherever possible.
+MNELAB uses [Ruff](https://docs.astral.sh/ruff/formatter/) for formatting. Before committing, run `uv run ruff check --fix` and `uv run ruff format`. Because [PySide6](https://doc.qt.io/qtforpython-6/index.html) is based on the C++-based Qt library, most of its names use camel case instead of snake case. In your own code, please use snake case wherever possible.
 
 
 ## Making a PyPI release

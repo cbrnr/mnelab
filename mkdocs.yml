@@ -41,6 +41,8 @@ theme:
     - content.code.copy
 plugins:
   - search
+hooks:
+  - tools/docs_screenshots.py
 markdown_extensions:
   - attr_list
   - admonition
