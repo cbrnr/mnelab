@@ -1,6 +1,6 @@
 ## [UNRELEASED] · YYYY-MM-DD
 ### ✨ Added
-- Add pipelines with support for common processing actions ([#683](https://github.com/cbrnr/mnelab/pull/683) by [Clemens Brunner](https://github.com/cbrnr))
+- Add pipelines with support for common processing actions ([#700](https://github.com/cbrnr/mnelab/pull/700) by [Clemens Brunner](https://github.com/cbrnr))
 - Add tooltips in many places ([#694](https://github.com/cbrnr/mnelab/pull/694) by [Clemens Brunner](https://github.com/cbrnr))
 - Add History entries for editing events or annotations ([#695](https://github.com/cbrnr/mnelab/issues/695) by [Clemens Brunner](https://github.com/cbrnr))
 - Add a Remove Line Noise action using MNEXTEND ([#697](https://github.com/cbrnr/mnelab/pull/697) by [Clemens Brunner](https://github.com/cbrnr))
@@ -9,6 +9,7 @@
 - Apply the selected Number of Components setting when running ICA ([#694](https://github.com/cbrnr/mnelab/pull/694) by [Clemens Brunner](https://github.com/cbrnr))
 - Record compact History entries when batch-renaming channels ([#696](https://github.com/cbrnr/mnelab/issues/696) by [Clemens Brunner](https://github.com/cbrnr))
 - Create a new data set before batch-renaming channels ([#696](https://github.com/cbrnr/mnelab/issues/696) by [Clemens Brunner](https://github.com/cbrnr))
+- Hide main window hover controls while a modal dialog is open ([#701](https://github.com/cbrnr/mnelab/pull/701) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🌀 Changed
 - Validate generated history syntax during tests ([#696](https://github.com/cbrnr/mnelab/issues/696) by [Clemens Brunner](https://github.com/cbrnr))

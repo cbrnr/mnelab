@@ -283,6 +283,8 @@ class SidebarTreeWidget(QTreeWidget):
 
     def showCloseButton(self, hovered_item):
         """Show the close button on the hovered item; remove it from all others."""
+        if QApplication.activeModalWidget() is not None:
+            hovered_item = None
         for item in self._all_items():
             if item is hovered_item:
                 if self.itemWidget(item, 2) is not None:
@@ -388,8 +390,14 @@ class SidebarWidget(QWidget):
         self.tree.refresh_theme()
         self._apply_bar_background()
 
+    def clear_hover(self):
+        """Hide the controls shown while hovering over the sidebar."""
+        self.tree.showCloseButton(None)
+        self._collapse_btn.hide()
+
     def enterEvent(self, event):
-        self._collapse_btn.show()
+        if QApplication.activeModalWidget() is None:
+            self._collapse_btn.show()
         super().enterEvent(event)
 
     def leaveEvent(self, event):
