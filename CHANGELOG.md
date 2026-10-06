@@ -1,4 +1,4 @@
-## [UNRELEASED] · YYYY-MM-DD
+## [1.6.0] · 2026-10-06
 MNELAB 1.6.0 introduces **pipelines**: it now records the processing steps you apply to a dataset and can replay them on other datasets in one go (*Process – Create Pipeline from Dataset*, *Pipeline…*, and *Apply Pipeline*; pipelines can also be saved and loaded as JSON files). This is a first iteration, so please expect some rough edges, and note that some actions (such as running ICA or interactive edits) cannot be replayed yet. We would love to hear about any problems or ideas on [GitHub](https://github.com/cbrnr/mnelab/issues)! In addition, this release includes a new **Remove Line Noise** action, which fits and subtracts line noise sinusoids instead of applying a notch filter, as well as tooltips throughout the app, History entries for event and annotation edits, and several bug fixes (see below).
 
 ### ✨ Added
