@@ -208,10 +208,10 @@ class Model:
             "import numpy as np",
             (
                 "from mnelab.utils import ("
-                "detect_extreme_values,"
-                "detect_kurtosis,"
-                "detect_peak_to_peak,"
-                "detect_with_autoreject,"
+                "find_bad_epochs_amplitude,"
+                "find_bad_epochs_autoreject,"
+                "find_bad_epochs_kurtosis,"
+                "find_bad_epochs_ptp,"
                 ")"
             ),
             "",
@@ -572,6 +572,7 @@ class Model:
                 "data: " + preview
             )
         self.current["data"].info["bads"] = bads
+        self.history.append(f'data.info["bads"] = {bads}')
 
     @data_changed
     @pipeline_step(serialize=serialize_import)
@@ -633,6 +634,10 @@ class Model:
         existing = self.current["data"].annotations
         new = mne.Annotations(onsets, durations, descs, orig_time=existing.orig_time)
         self.current["data"].set_annotations(existing + new)
+        self.history.append(
+            "data.set_annotations(data.annotations + mne.Annotations("
+            f"{onsets}, {durations}, {descs}, orig_time=data.annotations.orig_time))"
+        )
 
     @data_changed
     @pipeline_step(serialize=serialize_import)
@@ -922,7 +927,7 @@ class Model:
                 op = validate_for_data(
                     step, staged.current["data"], staged.current["dtype"]
                 )
-                params = step["params"].copy()
+                params = deepcopy(step["params"])
                 if op == "epoch_data" and params["baseline"] is not None:
                     params["baseline"] = tuple(params["baseline"])
                 if op == "crop" and params["start"] is None:
@@ -1107,7 +1112,6 @@ class Model:
         self.current["name"] += " (ICA)"
 
     @data_changed(invalidate_cache=False)
-    @pipeline_step(unsupported=True)
     def get_iclabels(self):
         """Get ICLabel classifications for current ICA solution."""
         if self.current["iclabel"] is None:
@@ -1201,7 +1205,7 @@ class Model:
             )
             row_ids = [row_ids[index] for index in order]
         self.current["data"].set_annotations(
-            mne.Annotations(onset, duration, description)
+            mne.Annotations(onset, duration, description, orig_time=old.orig_time)
         )
         if row_ids is not None:
             history = annotations_history(

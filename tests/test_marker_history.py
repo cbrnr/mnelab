@@ -88,3 +88,22 @@ def test_annotations_history_replays(old, new, row_ids):
     if row_ids == [1, 0]:
         assert "np.lexsort" in history
         assert "[1, 0]" not in history
+
+
+def test_annotations_history_replacement_keeps_orig_time():
+    """Replacing all annotations of cropped data keeps their times."""
+    data = mne.io.RawArray(np.zeros((1, 300)), mne.create_info(1, 10))
+    data.set_meas_date(1_700_000_000)
+    data.set_annotations(mne.Annotations([15.0, 20.0], [1.0, 1.0], ["A", "B"]))
+    data.crop(10, None)
+    old = data.annotations.copy()
+    expected = mne.Annotations(
+        [15.0, 25.0], [1.0, 1.0], ["A", "C"], orig_time=old.orig_time
+    )
+    history = annotations_history(old, expected, [0, 0])
+
+    exec(history, {"data": data, "mne": mne, "np": np})  # noqa: S102
+
+    assert "mne.Annotations" in history
+    np.testing.assert_allclose(data.annotations.onset, expected.onset)
+    assert data.annotations.description.tolist() == ["A", "C"]

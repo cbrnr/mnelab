@@ -206,7 +206,8 @@ def _set_annotations_history(annotations):
     return (
         "data.set_annotations(mne.Annotations("
         f"{annotations.onset.tolist()}, {annotations.duration.tolist()}, "
-        f"{annotations.description.tolist()}))"
+        f"{annotations.description.tolist()}, "
+        "orig_time=data.annotations.orig_time))"
     )
 
 

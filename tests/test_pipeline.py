@@ -690,3 +690,61 @@ def test_sidebar_dataset_can_fill_pipeline(model_with_raw, qtbot, monkeypatch):
     )
     view.sidebar._show_context_menu(QPoint())
     assert view.pipeline == root["pipeline_steps"]
+
+
+def test_file_rule_identifier_stops_at_separator(tmp_path):
+    """A shared character after the identifier does not prevent matching."""
+    spec = make_file_spec(tmp_path / "sub-01_events.csv", tmp_path / "sub-01_eeg.fif")
+
+    assert spec == {
+        "mode": "matching",
+        "data_pattern": "{id}_eeg.fif",
+        "file_pattern": "{id}_events.csv",
+    }
+
+
+def test_crop_to_end_replays_on_shorter_data(model_with_raw):
+    model = model_with_raw
+    model.current["data"].crop(0, 3)
+
+    model.apply_pipeline([{"op": "crop", "params": {"start": 1, "stop": None}}])
+
+    np.testing.assert_allclose(model.current["data"].times[-1], 2)
+
+
+def test_iclabels_do_not_add_pipeline_steps(model_with_raw):
+    model = model_with_raw
+    model.current["pipeline_steps"] = []
+    model.current["iclabel"] = np.zeros((1, 7))
+
+    model.get_iclabels()
+
+    assert model.current["pipeline_steps"] == []
+
+
+def test_replayed_embedded_imports_record_history(model_with_raw):
+    model = model_with_raw
+    expected = deepcopy(model.current["data"])
+    model.apply_pipeline(
+        [
+            {
+                "op": "import_bads",
+                "params": {"file": {"mode": "embedded", "data": ["EEG 001"]}},
+            },
+            {
+                "op": "import_annotations",
+                "params": {
+                    "file": {"mode": "embedded", "data": [["A", 1.0, 0.5]]},
+                    "types": None,
+                    "description": None,
+                    "unit": "seconds",
+                },
+            },
+        ]
+    )
+
+    exec("\n".join(model.history[-2:]), {"data": expected, "mne": mne})  # noqa: S102
+
+    assert expected.info["bads"] == ["EEG 001"]
+    assert expected.annotations.description.tolist() == ["A"]
+    np.testing.assert_allclose(expected.annotations.onset, [1.0])
