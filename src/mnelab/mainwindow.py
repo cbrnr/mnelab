@@ -867,15 +867,24 @@ class MainWindow(QMainWindow):
 
     def _import_into_new_dataset(self, f, fname, **kwargs):
         """Protect the current data set and discard a failed duplicate."""
+        parent_index = self.model.index
         history = self.model.history.copy()
         duplicated = self.auto_duplicate()
         try:
             return f(fname, **kwargs)
         except Exception:
             if duplicated:
-                self.model.remove_data()
-                self.model.history[:] = history
+                self._discard_duplicate(parent_index, history)
             raise
+
+    def _discard_duplicate(self, parent_index, history):
+        """Remove a failed duplicate and select its parent data set again."""
+        self.model.remove_data()
+        self.model.index = parent_index
+        if self.model.current["data"] is None:  # evicted by memory saving
+            self.model.reload_dataset(parent_index)
+        self.model.history[:] = history
+        self.data_changed()
 
     def xdf_chunks(self):
         """Inspect XDF chunks."""
@@ -1131,9 +1140,9 @@ class MainWindow(QMainWindow):
     def edit_annotations(self):
         fs = self.model.current["data"].info["sfreq"]
         pos = self.model.current["data"].annotations.onset
-        pos = (pos * fs).astype(int).tolist()
+        pos = np.round(pos * fs).astype(int).tolist()
         dur = self.model.current["data"].annotations.duration
-        dur = (dur * fs).astype(int).tolist()
+        dur = np.round(dur * fs).astype(int).tolist()
         desc = self.model.current["data"].annotations.description.tolist()
         dialog = AnnotationsDialog(self, pos, dur, desc)
         if dialog.exec():
@@ -1201,10 +1210,13 @@ class MainWindow(QMainWindow):
         stop = self.model.current["data"].times[-1]
         dialog = CropDialog(self, 0, stop)
         if dialog.exec():
-            if dialog.start is None and dialog.stop is None:
-                return
             start = max(dialog.start, 0) if dialog.start is not None else 0
-            end = min(dialog.stop, stop) if dialog.stop is not None else None
+            # record "until the end" so pipelines also work with shorter data
+            end = dialog.stop
+            if end is not None and end >= round(stop, 2):
+                end = None
+            if start == 0 and end is None:
+                return
             self.auto_duplicate()
             self.model.crop(start, end)
 
@@ -1493,6 +1505,13 @@ class MainWindow(QMainWindow):
                 job.cancel()
                 print("ICA calculation aborted...")
             else:
+                try:
+                    job.get()  # raise fitting errors before creating a new data set
+                except Exception as e:
+                    ErrorMessageBox(
+                        self, "Could not run ICA", str(e), traceback.format_exc()
+                    ).show()
+                    return
                 self.auto_duplicate()
                 self.model.finish_ica(job)
                 self.data_changed()
@@ -1522,14 +1541,14 @@ class MainWindow(QMainWindow):
 
     def interpolate_bads(self):
         """Interpolate bad channels."""
+        parent_index = self.model.index
+        history = self.model.history.copy()
         duplicated = self.auto_duplicate()
         try:
             self.model.interpolate_bads()
         except ValueError as e:
             if duplicated:  # undo
-                self.model.remove_data()
-                self.model.index -= 1
-                self.data_changed()
+                self._discard_duplicate(parent_index, history)
             msgbox = ErrorMessageBox(
                 self,
                 "Could not interpolate bad channels",
@@ -1594,10 +1613,17 @@ class MainWindow(QMainWindow):
         if not self.pipeline or self.model.current is None:
             return
         parent_index = self.model.index
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         try:
             self.model.apply_pipeline(self.pipeline)
         except ValueError as error:
-            QMessageBox.warning(self, "Could Not Apply Pipeline", str(error))
+            message = str(error)
+        else:
+            message = None
+        finally:
+            QApplication.restoreOverrideCursor()
+        if message is not None:
+            QMessageBox.warning(self, "Could Not Apply Pipeline", message)
             return
         if read_settings("memory_saving"):
             self.model.evict_dataset(parent_index)
@@ -1705,15 +1731,15 @@ class MainWindow(QMainWindow):
             else:
                 baseline = None
 
+            parent_index = self.model.index
+            history = self.model.history.copy()
             duplicated = self.auto_duplicate()
 
             try:
                 self.model.epoch_data(dialog.selected_events, tmin, tmax, baseline)
             except ValueError as e:
                 if duplicated:  # undo
-                    self.model.remove_data()
-                    self.model.index -= 1
-                    self.data_changed()
+                    self._discard_duplicate(parent_index, history)
                 msgbox = ErrorMessageBox(
                     self, "Could not create epochs", str(e), traceback.format_exc()
                 )
@@ -1773,14 +1799,14 @@ class MainWindow(QMainWindow):
                     ref = [c.text() for c in dialog.reref_channellist.selectedItems()]
             else:
                 ref = None
+            parent_index = self.model.index
+            history = self.model.history.copy()
             duplicated = self.auto_duplicate()
             try:
                 self.model.change_reference(add, ref)
             except ValueError as e:
                 if duplicated:  # undo
-                    self.model.remove_data()
-                    # self.model.index -= 1
-                    self.data_changed()
+                    self._discard_duplicate(parent_index, history)
                 msgbox = ErrorMessageBox(
                     self,
                     "Error while changing references:",

@@ -87,6 +87,8 @@ RAW_ONLY = {
 }
 EPOCHS_ONLY = {"drop_bad_epochs"}
 
+SEPARATORS = ("-", "_", ".")  # characters that delimit a dataset identifier
+
 
 def _json_safe(value):
     """Convert ordinary model arguments into JSON-compatible values."""
@@ -111,20 +113,22 @@ def make_file_spec(fname, source_fname=None):
     if source_fname is not None:
         source = Path(source_fname).expanduser().resolve()
         if path.parent == source.parent:
-            identifier = commonprefix((source.name, path.name)).rstrip("-_.")
-            source_rest = source.name[len(identifier) :]
-            file_rest = path.name[len(identifier) :]
-            boundaries = ("", "-", "_", ".")
-            if (
-                identifier
-                and source_rest[:1] in boundaries
-                and file_rest[:1] in boundaries
-            ):
-                return {
-                    "mode": "matching",
-                    "data_pattern": f"{{id}}{source_rest}",
-                    "file_pattern": f"{{id}}{file_rest}",
-                }
+            prefix = commonprefix((source.name, path.name))
+            # the identifier must end right before a separator in both names
+            for end in range(len(prefix), 0, -1):
+                if prefix[end - 1] in SEPARATORS:
+                    continue
+                source_rest = source.name[end:]
+                file_rest = path.name[end:]
+                if source_rest[:1] in ("", *SEPARATORS) and file_rest[:1] in (
+                    "",
+                    *SEPARATORS,
+                ):
+                    return {
+                        "mode": "matching",
+                        "data_pattern": f"{{id}}{source_rest}",
+                        "file_pattern": f"{{id}}{file_rest}",
+                    }
     return {"mode": "fixed", "path": str(path)}
 
 
@@ -251,7 +255,7 @@ def pipeline_step(_method=None, *, unsupported=False, serialize=None):
                     return result
                 step = {"op": method.__name__, "params": params}
                 validate_step(step)
-            except (TypeError, ValueError):
+            except Exception:  # recording must never fail a successful operation
                 self.mark_pipeline_unsupported(method.__name__)
             else:
                 self.current.setdefault("pipeline_steps", []).append(step)

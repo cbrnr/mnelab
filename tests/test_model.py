@@ -429,3 +429,30 @@ def test_duplicate_does_not_share_parent_cache(model_two_datasets):
 
     model.reload_dataset(child_index)
     assert model.data[child_index]["data"] is not None
+
+
+def test_set_annotations_after_crop_keeps_onsets():
+    """Editing annotations of cropped data does not shift them."""
+    info = mne.create_info(["EEG 001"], 100, ch_types="eeg")
+    raw = mne.io.RawArray(np.zeros((1, 3000)), info)
+    raw.set_meas_date(1_700_000_000)
+    raw.set_annotations(Annotations([15.0, 20.0], [1.0, 1.0], ["A", "B"]))
+    raw.crop(10, None)
+    model = Model()
+    model.insert_data({"name": "Cropped", "data": raw, "_cache_path": None})
+    annotations = raw.annotations
+
+    model.set_annotations(
+        annotations.onset.tolist(),
+        annotations.duration.tolist(),
+        ["C", "B"],
+        row_ids=[0, 1],
+    )
+
+    np.testing.assert_allclose(raw.annotations.onset, [15.0, 20.0])
+    assert raw.annotations.description.tolist() == ["C", "B"]
+
+
+def test_history_header_imports():
+    """The History of a new model starts with imports that exist."""
+    exec("\n".join(Model().history), {})  # noqa: S102

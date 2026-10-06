@@ -1,4 +1,6 @@
 ## [UNRELEASED] · YYYY-MM-DD
+MNELAB 1.6.0 introduces **pipelines**: it now records the processing steps you apply to a dataset and can replay them on other datasets in one go (*Process – Create Pipeline from Dataset*, *Pipeline…*, and *Apply Pipeline*; pipelines can also be saved and loaded as JSON files). This is a first iteration, so please expect some rough edges, and note that some actions (such as running ICA or interactive edits) cannot be replayed yet. We would love to hear about any problems or ideas on [GitHub](https://github.com/cbrnr/mnelab/issues)! In addition, this release includes a new **Remove Line Noise** action, which fits and subtracts line noise sinusoids instead of applying a notch filter, as well as tooltips throughout the app, History entries for event and annotation edits, and several bug fixes (see below).
+
 ### ✨ Added
 - Add pipelines with support for common processing actions ([#700](https://github.com/cbrnr/mnelab/pull/700) by [Clemens Brunner](https://github.com/cbrnr))
 - Add tooltips in many places ([#694](https://github.com/cbrnr/mnelab/pull/694) by [Clemens Brunner](https://github.com/cbrnr))
@@ -11,6 +13,10 @@
 - Record compact History entries when batch-renaming channels ([#696](https://github.com/cbrnr/mnelab/issues/696) by [Clemens Brunner](https://github.com/cbrnr))
 - Create a new data set before batch-renaming channels ([#696](https://github.com/cbrnr/mnelab/issues/696) by [Clemens Brunner](https://github.com/cbrnr))
 - Hide main window hover controls while a modal dialog is open ([#701](https://github.com/cbrnr/mnelab/pull/701) by [Clemens Brunner](https://github.com/cbrnr))
+- Preserve annotation times when editing annotations of cropped data ([#706](https://github.com/cbrnr/mnelab/pull/706) by [Clemens Brunner](https://github.com/cbrnr))
+- Round annotation onsets and durations to the nearest sample in the annotations editor ([#706](https://github.com/cbrnr/mnelab/pull/706) by [Clemens Brunner](https://github.com/cbrnr))
+- Select the original data set again after a failed import, epoching, interpolation, or re-referencing ([#706](https://github.com/cbrnr/mnelab/pull/706) by [Clemens Brunner](https://github.com/cbrnr))
+- Import the correct artifact detection functions at the top of the History ([#706](https://github.com/cbrnr/mnelab/pull/706) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🌀 Changed
 - Validate generated history syntax during tests ([#696](https://github.com/cbrnr/mnelab/issues/696) by [Clemens Brunner](https://github.com/cbrnr))
