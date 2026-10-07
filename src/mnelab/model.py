@@ -1216,8 +1216,7 @@ class Model:
 
     @data_changed(invalidate_cache=False)
     def move_data(self, source, target):
-        """
-        Change the position of a single data set in `self.data`.
+        """Change the position of a single data set in `self.data`.
 
         Parameters
         ----------

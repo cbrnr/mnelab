@@ -590,8 +590,7 @@ class MainWindow(QMainWindow):
         ErrorMessageBox(self, exception_text, "", traceback_text).show()
 
     def _sidebar_item_changed(self, item, column):
-        """
-        Triggered when a tree item's data changes (e.g. after inline name editing).
+        """Triggered when a tree item's data changes (e.g. after inline name editing).
 
         Parameters
         ----------
