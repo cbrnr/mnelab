@@ -26,6 +26,7 @@ def main():
     mp.freeze_support()
     mp.set_start_method("spawn", force=True)
 
+    import argparse
     import os
     import signal
     from pathlib import Path
@@ -42,7 +43,22 @@ def main():
 
     from mnelab.mainwindow import MainWindow
     from mnelab.model import Model
-    from mnelab.settings import read_settings
+    from mnelab.settings import read_profile, read_settings, set_overrides
+
+    parser = argparse.ArgumentParser(prog="mnelab")
+    parser.add_argument("files", nargs="*", help="files to open")
+    parser.add_argument(
+        "--settings",
+        metavar="FILE",
+        help="apply settings from a JSON profile for this session only",
+    )
+    # Qt may inject additional arguments, which are left for QApplication
+    args, qt_args = parser.parse_known_args(sys.argv[1:])
+    if args.settings is not None:
+        try:
+            set_overrides(read_profile(args.settings))
+        except (OSError, ValueError) as error:
+            parser.error(f"could not load settings from {args.settings}: {error}")
 
     QLoggingCategory.setFilterRules("*.debug=false\n*.warning=false")
 
@@ -61,7 +77,7 @@ def main():
                 return True
             return super().event(event)
 
-    app = MNELAB(sys.argv)
+    app = MNELAB([sys.argv[0], *qt_args])
     app.setApplicationName("mnelab")
     app.setApplicationDisplayName("MNELAB")
     app.setDesktopFileName("mnelab")
@@ -80,9 +96,8 @@ def main():
     model = Model()
     model.view = MainWindow(model)
     app.mainwindow = model.view
-    if len(sys.argv) > 1:  # open files from command line arguments
-        for f in sys.argv[1:]:
-            model.view.open_data(f)
+    for f in args.files:  # open files from command line arguments
+        model.view.open_data(f)
     model.view.show()
 
     # allow Ctrl-C in the terminal to shut down gracefully (only for dev versions)

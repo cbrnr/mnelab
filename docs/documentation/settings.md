@@ -12,7 +12,7 @@ First, the *View* menu contains an option to toggle the status bar. On Linux and
 
 ## Settings
 
-The *Settings* menu contains three main sections: *General*, *Plotting*, and *Toolbar*. Note that you can always revert to the default settings by clicking the *Reset to Defaults* button. Let's now go through each of these sections in detail.
+The *Settings* menu contains three main sections: *General*, *Plotting*, and *Toolbar*. Note that you can always revert to the default settings by clicking the *Reset to Defaults* button. Settings can also be shared as profiles (see [below](#profiles)). Let's now go through each of these sections in detail.
 
 
 ### General
@@ -50,3 +50,27 @@ The *Toolbar* section allows you to customize the appearance of the toolbar in M
 The *Available Actions* list on the left contains all the actions that can be added to the toolbar, whereas the *Toolbar* list on the right shows the actions that are currently included in the toolbar. To add an action to the toolbar, simply select it in the *Available Actions* list and click the right arrow button. To remove an action from the toolbar, select it in the *Toolbar* list and click the left arrow button. You can also rearrange the order of actions in the toolbar by selecting an action in the *Toolbar* list and using the up and down arrow buttons to move it.
 
 If you want to reset the toolbar to its default configuration, simply click the *Reset Toolbar* button.
+
+
+### Profiles
+
+If you work with different kinds of data (for example EEG and NIRS), you might want to switch between different sets of settings quickly. To do so, click *Export…* in the *Settings* dialog to save the settings currently shown in the dialog as a JSON file, and *Import…* to load such a file. Imported values are shown in the dialog and are applied when you click *OK*.
+
+A profile is a JSON object that contains any of the settings in the *General*, *Plotting*, and *Toolbar* sections. Profiles can be partial, so you can edit an exported file and keep only the settings you want to change. For example, the following profile shows ten minutes at once in the data browser and leaves all other settings unchanged:
+
+```json
+{
+  "duration": 600,
+  "max_channels": 40
+}
+```
+
+The available keys are `max_recent`, `dtype_badges`, `menu_icons`, `memory_saving`, `plot_backend`, `max_channels`, `duration`, `epochs`, `scalings` (`"auto"` or `"fixed"`), and `toolbar_actions`.
+
+You can also start MNELAB with a profile from the command line:
+
+```
+mnelab --settings nirs.json
+```
+
+In this case, the profile only applies to the current session and your saved settings remain untouched, so the next regular start uses your usual settings. If you change a setting in the *Settings* dialog during the session, the new value is saved and replaces the value from the profile.
