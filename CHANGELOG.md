@@ -1,6 +1,6 @@
 ## [UNRELEASED] · YYYY-MM-DD
 ### ✨ Added
-- Add settings profiles that can be imported and exported in the Settings dialog and applied from the command line with `--settings` ([#707](https://github.com/cbrnr/mnelab/issues/707) by [Clemens Brunner](https://github.com/cbrnr))
+- Add settings profiles that can be imported and exported in the Settings dialog and applied from the command line with `--settings` ([#707](https://github.com/cbrnr/mnelab/pull/707) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.6.0] · 2026-10-06
 MNELAB 1.6.0 introduces **pipelines**: it now records the processing steps you apply to a dataset and can replay them on other datasets in one go (*Process – Create Pipeline from Dataset*, *Pipeline…*, and *Apply Pipeline*; pipelines can also be saved and loaded as JSON files). This is a first iteration, so please expect some rough edges, and note that some actions (such as running ICA or interactive edits) cannot be replayed yet. We would love to hear about any problems or ideas on [GitHub](https://github.com/cbrnr/mnelab/issues)! In addition, this release includes a new **Remove Line Noise** action, which fits and subtracts line noise sinusoids instead of applying a notch filter, as well as tooltips throughout the app, History entries for event and annotation edits, and several bug fixes (see below).
@@ -8,33 +8,33 @@ MNELAB 1.6.0 introduces **pipelines**: it now records the processing steps you a
 ### ✨ Added
 - Add pipelines with support for common processing actions ([#700](https://github.com/cbrnr/mnelab/pull/700) by [Clemens Brunner](https://github.com/cbrnr))
 - Add tooltips in many places ([#694](https://github.com/cbrnr/mnelab/pull/694) by [Clemens Brunner](https://github.com/cbrnr))
-- Add History entries for editing events or annotations ([#695](https://github.com/cbrnr/mnelab/issues/695) by [Clemens Brunner](https://github.com/cbrnr))
+- Add History entries for editing events or annotations ([#695](https://github.com/cbrnr/mnelab/pull/695) by [Clemens Brunner](https://github.com/cbrnr))
 - Add a Remove Line Noise action using MNEXTEND ([#697](https://github.com/cbrnr/mnelab/pull/697) by [Clemens Brunner](https://github.com/cbrnr))
 
+### 🌀 Changed
+- Validate generated history syntax during tests ([#696](https://github.com/cbrnr/mnelab/pull/696) by [Clemens Brunner](https://github.com/cbrnr))
+
 ### 🔧 Fixed
-- Duplicate file-backed data sets and ask whether to duplicate or overwrite derived data sets when changing channel, marker, or ICA metadata ([#705](https://github.com/cbrnr/mnelab/issues/705) by [Clemens Brunner](https://github.com/cbrnr))
+- Duplicate file-backed data sets and ask whether to duplicate or overwrite derived data sets when changing channel, marker, or ICA metadata ([#705](https://github.com/cbrnr/mnelab/pull/705) by [Clemens Brunner](https://github.com/cbrnr))
 - Apply the selected Number of Components setting when running ICA ([#694](https://github.com/cbrnr/mnelab/pull/694) by [Clemens Brunner](https://github.com/cbrnr))
-- Record compact History entries when batch-renaming channels ([#696](https://github.com/cbrnr/mnelab/issues/696) by [Clemens Brunner](https://github.com/cbrnr))
-- Create a new data set before batch-renaming channels ([#696](https://github.com/cbrnr/mnelab/issues/696) by [Clemens Brunner](https://github.com/cbrnr))
+- Record compact History entries when batch-renaming channels ([#696](https://github.com/cbrnr/mnelab/pull/696) by [Clemens Brunner](https://github.com/cbrnr))
+- Create a new data set before batch-renaming channels ([#696](https://github.com/cbrnr/mnelab/pull/696) by [Clemens Brunner](https://github.com/cbrnr))
 - Hide main window hover controls while a modal dialog is open ([#701](https://github.com/cbrnr/mnelab/pull/701) by [Clemens Brunner](https://github.com/cbrnr))
 - Preserve annotation times when editing annotations of cropped data ([#706](https://github.com/cbrnr/mnelab/pull/706) by [Clemens Brunner](https://github.com/cbrnr))
 - Round annotation onsets and durations to the nearest sample in the annotations editor ([#706](https://github.com/cbrnr/mnelab/pull/706) by [Clemens Brunner](https://github.com/cbrnr))
 - Select the original data set again after a failed import, epoching, interpolation, or re-referencing ([#706](https://github.com/cbrnr/mnelab/pull/706) by [Clemens Brunner](https://github.com/cbrnr))
 - Import the correct artifact detection functions at the top of the History ([#706](https://github.com/cbrnr/mnelab/pull/706) by [Clemens Brunner](https://github.com/cbrnr))
 
-### 🌀 Changed
-- Validate generated history syntax during tests ([#696](https://github.com/cbrnr/mnelab/issues/696) by [Clemens Brunner](https://github.com/cbrnr))
-
 ## [1.5.7] · 2026-08-31
-### 🔧 Fixed
-- Handle invalid files gracefully when importing bad channels ([#686](https://github.com/cbrnr/mnelab/pull/686) by [Clemens Brunner](https://github.com/cbrnr))
-- Add missing ONNX model to standalone releases to fix the broken "Label ICs" functionality ([#692](https://github.com/cbrnr/mnelab/pull/692) by [Clemens Brunner](https://github.com/cbrnr))
-
 ### 🌀 Changed
 - Use MNEXTEND's `resolve_streams()` and `read_bvrf_header()` instead of depending on PyXDF and PyBVRF directly ([#679](https://github.com/cbrnr/mnelab/pull/679) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🗑️ Removed
 - Remove fNIRS functions ([#684](https://github.com/cbrnr/mnelab/pull/684) by [Clemens Brunner](https://github.com/cbrnr))
+
+### 🔧 Fixed
+- Handle invalid files gracefully when importing bad channels ([#686](https://github.com/cbrnr/mnelab/pull/686) by [Clemens Brunner](https://github.com/cbrnr))
+- Add missing ONNX model to standalone releases to fix the broken "Label ICs" functionality ([#692](https://github.com/cbrnr/mnelab/pull/692) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.5.6] · 2026-07-06
 ### 🔧 Fixed
@@ -42,22 +42,22 @@ MNELAB 1.6.0 introduces **pipelines**: it now records the processing steps you a
 
 ## [1.5.5] · 2026-07-02
 ### ✨ Added
-- Add a "Channel Scaling" option to the plotting settings page to choose between auto-scaling (based on the 99.5th percentile of the data) and fixed scaling (MNE defaults per channel type) ([#675](https://github.com/cbrnr/mnelab/issues/675) by [Clemens Brunner](https://github.com/cbrnr))
-- Add support for XDF string streams with more than one channel and/or regular sampling rates ([#671](https://github.com/cbrnr/mnelab/issues/671) by [Clemens Brunner](https://github.com/cbrnr))
+- Add a "Channel Scaling" option to the plotting settings page to choose between auto-scaling (based on the 99.5th percentile of the data) and fixed scaling (MNE defaults per channel type) ([#675](https://github.com/cbrnr/mnelab/pull/675) by [Clemens Brunner](https://github.com/cbrnr))
+- Add support for XDF string streams with more than one channel and/or regular sampling rates ([#671](https://github.com/cbrnr/mnelab/pull/671) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🌀 Changed
-- Do not show .GZ for XDF.GZ and FIF.GZ file types in the info widget (just show XDF and FIF) ([#672](https://github.com/cbrnr/mnelab/issues/672) by [Clemens Brunner](https://github.com/cbrnr))
+- Do not show .GZ for XDF.GZ and FIF.GZ file types in the info widget (just show XDF and FIF) ([#672](https://github.com/cbrnr/mnelab/pull/672) by [Clemens Brunner](https://github.com/cbrnr))
 - Move readers, writers, and ICLabel into the new [MNExtend](https://github.com/cbrnr/mnextend) package and use it as a dependency ([#674](https://github.com/cbrnr/mnelab/pull/674) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.5.4] · 2026-06-16
-### 🔧 Fixed
-- Fix bug where files could not be opened via drag and drop onto the sidebar ([#666](https://github.com/cbrnr/mnelab/pull/666) by [Clemens Brunner](https://github.com/cbrnr))
-- Fix crash when plotting ICA components that were computed before a montage was set ([#667](https://github.com/cbrnr/mnelab/issues/667) by [Clemens Brunner](https://github.com/cbrnr))
-- Fix a bug where plotting fewer than 21 ICA components would display an error message ([#668](https://github.com/cbrnr/mnelab/issues/668) by [Clemens Brunner](https://github.com/cbrnr))
-- Gracefully handle closing a plot when the underlying dataset has already been closed ([#669](https://github.com/cbrnr/mnelab/issues/669) by [Clemens Brunner](https://github.com/cbrnr))
-
 ### 🌀 Changed
 - The plus/minus buttons in the filter dialog now increase/decrease the cutoff frequencies by 0.5 Hz instead of 1 Hz ([#670](https://github.com/cbrnr/mnelab/pull/670) by [Clemens Brunner](https://github.com/cbrnr))
+
+### 🔧 Fixed
+- Fix bug where files could not be opened via drag and drop onto the sidebar ([#666](https://github.com/cbrnr/mnelab/pull/666) by [Clemens Brunner](https://github.com/cbrnr))
+- Fix crash when plotting ICA components that were computed before a montage was set ([#667](https://github.com/cbrnr/mnelab/pull/667) by [Clemens Brunner](https://github.com/cbrnr))
+- Fix a bug where plotting fewer than 21 ICA components would display an error message ([#668](https://github.com/cbrnr/mnelab/pull/668) by [Clemens Brunner](https://github.com/cbrnr))
+- Gracefully handle closing a plot when the underlying dataset has already been closed ([#669](https://github.com/cbrnr/mnelab/pull/669) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.5.3] · 2026-05-29
 ### ✨ Added
@@ -71,11 +71,11 @@ MNELAB 1.6.0 introduces **pipelines**: it now records the processing steps you a
 ### ✨ Added
 - Add a "Toolbar" page to the Settings dialog that allows users to customize the toolbar ([#654](https://github.com/cbrnr/mnelab/pull/654) by [Clemens Brunner](https://github.com/cbrnr))
 
-### 🔧 Fixed
-- Properly import channel locations from EEGLAB files ([#655](https://github.com/cbrnr/mnelab/pull/655) by [Clemens Brunner](https://github.com/cbrnr))
-
 ### 🌀 Changed
 - Always show the toolbar ([#659](https://github.com/cbrnr/mnelab/pull/659) by [Clemens Brunner](https://github.com/cbrnr))
+
+### 🔧 Fixed
+- Properly import channel locations from EEGLAB files ([#655](https://github.com/cbrnr/mnelab/pull/655) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.5.1] · 2026-05-21
 ### 🔧 Fixed
@@ -86,15 +86,15 @@ MNELAB 1.6.0 introduces **pipelines**: it now records the processing steps you a
 - Add a "Save Memory" setting that evicts inactive datasets from RAM and reloads them on demand ([#647](https://github.com/cbrnr/mnelab/pull/647) by [Clemens Brunner](https://github.com/cbrnr))
 - Add icons for "Change Reference", "Interpolate Bad Channels", and "Documentation" actions ([#650](https://github.com/cbrnr/mnelab/pull/650) by [Clemens Brunner](https://github.com/cbrnr))
 
-### 🔧 Fixed
-- Enforce minimum sidebar and info widget widths so they can no longer be hidden ([#642](https://github.com/cbrnr/mnelab/pull/642) by [Clemens Brunner](https://github.com/cbrnr))
-- Fix sorting in the "Channel Statistics" dialog ([#640](https://github.com/cbrnr/mnelab/pull/640) by [Clemens Brunner](https://github.com/cbrnr))
-
 ### 🌀 Changed
 - Switch to a tree-based sidebar ([#643](https://github.com/cbrnr/mnelab/pull/643) and [#649](https://github.com/cbrnr/mnelab/pull/649) by [Clemens Brunner](https://github.com/cbrnr))
 - Improve table header alignment across various dialogs ([#640](https://github.com/cbrnr/mnelab/pull/640) by [Clemens Brunner](https://github.com/cbrnr))
 - Title-case all dialog titles and labels ([#641](https://github.com/cbrnr/mnelab/pull/641) and [#644](https://github.com/cbrnr/mnelab/pull/644) by [Clemens Brunner](https://github.com/cbrnr))
 - Improved the info area by adding icons and clickable buttons for shortcuts to actions like channel properties, event editing, annotation editing, montage settings, and reference settings ([#651](https://github.com/cbrnr/mnelab/pull/651) by [Clemens Brunner](https://github.com/cbrnr))
+
+### 🔧 Fixed
+- Enforce minimum sidebar and info widget widths so they can no longer be hidden ([#642](https://github.com/cbrnr/mnelab/pull/642) by [Clemens Brunner](https://github.com/cbrnr))
+- Fix sorting in the "Channel Statistics" dialog ([#640](https://github.com/cbrnr/mnelab/pull/640) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.4.6] · 2026-05-12
 ### ✨ Added
@@ -108,15 +108,15 @@ MNELAB 1.6.0 introduces **pipelines**: it now records the processing steps you a
 - Add support for opening FIFF files containing epochs (in addition to continuous raw data) ([#629](https://github.com/cbrnr/mnelab/pull/629) by [Clemens Brunner](https://github.com/cbrnr))
 - Add line numbers in the history dialog ([#632](https://github.com/cbrnr/mnelab/pull/632) by [Clemens Brunner](https://github.com/cbrnr))
 
+### 🗑️ Removed
+- Remove manual Light/Dark theme options as this did not work reliably; the app now always follows the system theme ([#623](https://github.com/cbrnr/mnelab/pull/623) by [Clemens Brunner](https://github.com/cbrnr))
+
 ### 🔧 Fixed
 - Fix the sidebar background color on Windows and Linux ([#622](https://github.com/cbrnr/mnelab/pull/622) and [#623](https://github.com/cbrnr/mnelab/pull/623) by [Clemens Brunner](https://github.com/cbrnr))
 - Improve history syntax highlighting in dark mode ([#631](https://github.com/cbrnr/mnelab/pull/631) by [Clemens Brunner](https://github.com/cbrnr))
 - Fix "Menubar" checkbox icon ([#634](https://github.com/cbrnr/mnelab/pull/634) by [Clemens Brunner](https://github.com/cbrnr))
 - Fix hamburger menu style ([#635](https://github.com/cbrnr/mnelab/pull/635) and [#637](https://github.com/cbrnr/mnelab/pull/637) by [Clemens Brunner](https://github.com/cbrnr))
 - Improve Channel Properties dialog layout ([#638](https://github.com/cbrnr/mnelab/pull/638) by [Clemens Brunner](https://github.com/cbrnr))
-
-### 🗑️ Removed
-- Remove manual Light/Dark theme options as this did not work reliably; the app now always follows the system theme ([#623](https://github.com/cbrnr/mnelab/pull/623) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.4.4] · 2026-04-21
 ### ✨ Added
@@ -129,14 +129,14 @@ MNELAB 1.6.0 introduces **pipelines**: it now records the processing steps you a
 - Add option to change the theme (Auto/Light/Dark) ([#615](https://github.com/cbrnr/mnelab/pull/615) by [Clemens Brunner](https://github.com/cbrnr))
 - Add "Menu icons" setting to enable or disable icons in menus on all platforms ([#617](https://github.com/cbrnr/mnelab/pull/617) by [Clemens Brunner](https://github.com/cbrnr))
 
-### 🔧 Fixed
-- Improve startup time in standalone releases by properly reusing the Matplotlib font cache directory ([#618](https://github.com/cbrnr/mnelab/pull/618) by [Clemens Brunner](https://github.com/cbrnr))
-
 ### 🌀 Changed
 - Restructure main menu (replace Edit and Tools with dedicated Channels, Markers, Process, and Epochs menus) for a more intuitive EEG workflow ([#616](https://github.com/cbrnr/mnelab/pull/616) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🗑️ Removed
 - Remove poorly integrated fNIRS actions ([#616](https://github.com/cbrnr/mnelab/pull/616) by [Clemens Brunner](https://github.com/cbrnr))
+
+### 🔧 Fixed
+- Improve startup time in standalone releases by properly reusing the Matplotlib font cache directory ([#618](https://github.com/cbrnr/mnelab/pull/618) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.4.2] · 2026-03-24
 ### ✨ Added
@@ -147,12 +147,12 @@ MNELAB 1.6.0 introduces **pipelines**: it now records the processing steps you a
 - Fix sidebar hover effects on Linux and Windows ([#605](https://github.com/cbrnr/mnelab/pull/605) and [#607](https://github.com/cbrnr/mnelab/pull/607) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.4.1] · 2026-03-19
+### 🗑️ Removed
+- Remove support for Python 3.10 and 3.11 ([#600](https://github.com/cbrnr/mnelab/pull/600) by [Clemens Brunner](https://github.com/cbrnr))
+
 ### 🔧 Fixed
 - Fix a bug where the sidebar would not be visible after loading a dataset ([#601](https://github.com/cbrnr/mnelab/pull/601) by [Clemens Brunner](https://github.com/cbrnr))
 - Fix an issue where importing annotations and creating annotations from events would overwrite existing annotations instead of adding to them ([#602](https://github.com/cbrnr/mnelab/pull/602) by [Clemens Brunner](https://github.com/cbrnr))
-
-### 🗑️ Removed
-- Remove support for Python 3.10 and 3.11 ([#600](https://github.com/cbrnr/mnelab/pull/600) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.4.0] · 2026-03-17
 ### ✨ Added
@@ -164,6 +164,10 @@ MNELAB 1.6.0 introduces **pipelines**: it now records the processing steps you a
 - Add an info message to the ICA dialog reminding users to high-pass filter their data before running ICA ([#595](https://github.com/cbrnr/mnelab/pull/595) by [Clemens Brunner](https://github.com/cbrnr))
 - Add an annotation type selection dialog for export and import when multiple annotation types are present ([#599](https://github.com/cbrnr/mnelab/pull/599) by [Clemens Brunner](https://github.com/cbrnr))
 
+### 🌀 Changed
+- Consistently focus the OK button in all dialogs ([#586](https://github.com/cbrnr/mnelab/pull/586) by [Clemens Brunner](https://github.com/cbrnr))
+- Use custom spinbox widgets with inline step buttons (− / +) for a more consistent look ([#589](https://github.com/cbrnr/mnelab/pull/589) by [Clemens Brunner](https://github.com/cbrnr))
+
 ### 🔧 Fixed
 - Fix toolbar button hover effects on macOS ([#565](https://github.com/cbrnr/mnelab/pull/565) by [Clemens Brunner](https://github.com/cbrnr))
 - Add option to navigate between datasets in the sidebar with the up and down arrow keys ([#573](https://github.com/cbrnr/mnelab/pull/573) by [Richard Höchenberger](https://github.com/hoechenberger))
@@ -172,10 +176,6 @@ MNELAB 1.6.0 introduces **pipelines**: it now records the processing steps you a
 - Improve settings dialog layout and include the splitter position when resetting to defaults ([#590](https://github.com/cbrnr/mnelab/pull/590) by [Clemens Brunner](https://github.com/cbrnr))
 - Data traces are not clipped in the raw plot anymore ([#594](https://github.com/cbrnr/mnelab/pull/594) by [Clemens Brunner](https://github.com/cbrnr))
 - Work around an issue where "Plot IC properties…" (inside the "Label ICs…" dialog) would not work ([#596](https://github.com/cbrnr/mnelab/pull/596) by [Clemens Brunner](https://github.com/cbrnr))
-
-### 🌀 Changed
-- Consistently focus the OK button in all dialogs ([#586](https://github.com/cbrnr/mnelab/pull/586) by [Clemens Brunner](https://github.com/cbrnr))
-- Use custom spinbox widgets with inline step buttons (− / +) for a more consistent look ([#589](https://github.com/cbrnr/mnelab/pull/589) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.3.1] · 2026-02-25
 ### 🔧 Fixed
@@ -193,13 +193,13 @@ MNELAB 1.6.0 introduces **pipelines**: it now records the processing steps you a
 ### ✨ Added
 - Add support for BVRF import via PyBVRF ([#560](https://github.com/cbrnr/mnelab/pull/560) by [Clemens Brunner](https://github.com/cbrnr))
 
-### 🔧 Fixed
-- Fix macOS app icon to support light and dark mode ([#553](https://github.com/cbrnr/mnelab/pull/553) by [Clemens Brunner](https://github.com/cbrnr))
-- Prevent MNE-Qt-Browser from changing the app icon on macOS ([#554](https://github.com/cbrnr/mnelab/pull/554) by [Clemens Brunner](https://github.com/cbrnr))
-
 ### 🌀 Changed
 - Force epoch indexes to start at 0 and be consecutive instead of using the original event indexes ([#555](https://github.com/cbrnr/mnelab/pull/555) by [Clemens Brunner](https://github.com/cbrnr))
 - Make XDF chunk dialog resizable and show prettified XML for XML chunk contents ([#557](https://github.com/cbrnr/mnelab/pull/557) by [Clemens Brunner](https://github.com/cbrnr))
+
+### 🔧 Fixed
+- Fix macOS app icon to support light and dark mode ([#553](https://github.com/cbrnr/mnelab/pull/553) by [Clemens Brunner](https://github.com/cbrnr))
+- Prevent MNE-Qt-Browser from changing the app icon on macOS ([#554](https://github.com/cbrnr/mnelab/pull/554) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.1.0] · 2026-01-23
 ### ✨ Added
@@ -371,7 +371,7 @@ MNELAB 1.6.0 introduces **pipelines**: it now records the processing steps you a
 - Add support for plotting evoked potentials averaged over channels (Plot – Evoked comparison…) ([#256](https://github.com/cbrnr/mnelab/pull/256) by [Florian Hofer](https://github.com/hofaflo))
 - Exceptions are now shown in an error message box instead of being silently caught ([#268](https://github.com/cbrnr/mnelab/pull/268) by [Florian Hofer](https://github.com/hofaflo))
 - Add "Details" button to "Select XDF Stream" dialog ([#266](https://github.com/cbrnr/mnelab/pull/266) by [Florian Hofer](https://github.com/hofaflo))
-- Add support for plotting evoked potentials for individual channels including topomaps (Plot – Evoked…) ([#63](https://github.com/cbrnr/mnelab/pull/263) by [Florian Hofer](https://github.com/hofaflo))
+- Add support for plotting evoked potentials for individual channels including topomaps (Plot – Evoked…) ([#264](https://github.com/cbrnr/mnelab/pull/264) by [Florian Hofer](https://github.com/hofaflo))
 - Add support for plotting topomaps of evoked potentials (Plot – Evoked topomaps…) ([#277](https://github.com/cbrnr/mnelab/pull/277) by [Florian Hofer](https://github.com/hofaflo))
 - Add montage name and location count to infowidget ([#271](https://github.com/cbrnr/mnelab/pull/271) by [Florian Hofer](https://github.com/hofaflo))
 - Add possibility to specify `match_case`, `match_alias`, and `on_missing` to "Set montage…" ([#271](https://github.com/cbrnr/mnelab/pull/271) by [Florian Hofer](https://github.com/hofaflo))
@@ -383,7 +383,7 @@ MNELAB 1.6.0 introduces **pipelines**: it now records the processing steps you a
 - Add possibility to apply significance masks to ERDS plots ([#279](https://github.com/cbrnr/mnelab/pull/279) by [Florian Hofer](https://github.com/hofaflo))
 - Add basic batch renaming of channels "Edit – Rename channels…") ([#303](https://github.com/cbrnr/mnelab/pull/303) by [Florian Hofer](https://github.com/hofaflo))
 - Add support for loading data from .MAT files ([#314](https://github.com/cbrnr/mnelab/pull/314) by [Clemens Brunner](https://github.com/cbrnr))
-- Add support for reading multiple XDF streams (via resampling) ([#312](https://github.com/cbrnr/mnelab/pull/312) by [Florian Hofer](https://github.com/hofaflo))
+- Add support for reading multiple XDF streams (via resampling) ([#313](https://github.com/cbrnr/mnelab/pull/313) by [Florian Hofer](https://github.com/hofaflo))
 - Add app icon ([#319](https://github.com/cbrnr/mnelab/pull/319) by [Clemens Brunner](https://github.com/cbrnr))
 - Add dialog to modify mapping between event IDs and labels (Edit – Events…) ([#302](https://github.com/cbrnr/mnelab/pull/302) by [Florian Hofer](https://github.com/hofaflo) and [Clemens Brunner](https://github.com/cbrnr))
 - Add complete history for Find Events dialog ([#333](https://github.com/cbrnr/mnelab/pull/333) by [Clemens Brunner](https://github.com/cbrnr))
@@ -399,7 +399,7 @@ MNELAB 1.6.0 introduces **pipelines**: it now records the processing steps you a
 - Show unique event counts if there are no more than seven unique event types in the main window ([#335](https://github.com/cbrnr/mnelab/pull/335) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🔧 Fixed
-- Fix splitting name and extension for compatibility with Python 3.8 ([#252](https://github.com/cbrnr/mnelab/pull/252) by [Johan Medrano](https://github.com/yop0))
+- Fix splitting name and extension for compatibility with Python 3.8 ([#252](https://github.com/cbrnr/mnelab/pull/252) by [Johan Medrano](https://github.com/johmedr))
 - Fix exporting to BrainVision with annotations starting with "BAD" or "EDGE" ([#276](https://github.com/cbrnr/mnelab/pull/276) by [Clemens Brunner](https://github.com/cbrnr))
 - Exporting to .fif.gz now uses the correct extension on macOS ([#301](https://github.com/cbrnr/mnelab/pull/301) by [Clemens Brunner](https://github.com/cbrnr))
 - Round physical minima and maxima to integers in EDF export ([#310](https://github.com/cbrnr/mnelab/pull/310) by [Clemens Brunner](https://github.com/cbrnr))
@@ -487,14 +487,14 @@ MNELAB 1.6.0 introduces **pipelines**: it now records the processing steps you a
 
 ## [0.5.5] · 2020-06-03
 ### ✨ Added
-- Add support for appending continuous raw data ([#108](https://github.com/cbrnr/mnelab/pull/108) by [Lukas Stranger](https://github.com/stralu) and [Clemens Brunner](https://github.com/cbrnr))
-- Add support for appending epoched data ([#135](https://github.com/cbrnr/mnelab/pull/135) by [Lukas Stranger](https://github.com/stralu))
+- Add support for appending continuous raw data ([#108](https://github.com/cbrnr/mnelab/pull/108) by Lukas Stranger and [Clemens Brunner](https://github.com/cbrnr))
+- Add support for appending epoched data ([#135](https://github.com/cbrnr/mnelab/pull/135) by Lukas Stranger)
 - Add support for NIRS data and conversion to optical density and haemoglobin ([#145](https://github.com/cbrnr/mnelab/pull/145) by [Robert Luke](https://github.com/rob-luke) and [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🌀 Changed
 - Use [QtPy](https://github.com/spyder-ide/qtpy) to support both PyQt5 and PySide2 ([#118](https://github.com/cbrnr/mnelab/pull/118) by [Clemens Brunner](https://github.com/cbrnr))
 - Remove resource file and include icons directly ([#125](https://github.com/cbrnr/mnelab/pull/125) by [Clemens Brunner](https://github.com/cbrnr))
-- Improve internal logic of the ICA dialog ([#136](https://github.com/cbrnr/mnelab/pull/136) by [Lukas Stranger](https://github.com/stralu) and [Clemens Brunner](https://github.com/cbrnr))
+- Improve internal logic of the ICA dialog ([#136](https://github.com/cbrnr/mnelab/pull/136) by Lukas Stranger and [Clemens Brunner](https://github.com/cbrnr))
 - Remove Pebble again and use `multiprocessing.Pool` ([#140](https://github.com/cbrnr/mnelab/pull/140) by [Clemens Brunner](https://github.com/cbrnr))
 - Require MNE ≥ 0.20 ([#146](https://github.com/cbrnr/mnelab/pull/146) by [Clemens Brunner](https://github.com/cbrnr))
 - Add function `utils.has_locations` to determine if channel locations are available ([#147](https://github.com/cbrnr/mnelab/pull/147) by [Clemens Brunner](https://github.com/cbrnr))

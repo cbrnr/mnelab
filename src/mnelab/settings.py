@@ -123,8 +123,7 @@ def _get_value(key):
 
 
 def read_settings(key=None):
-    """
-    Read application settings.
+    """Read application settings.
 
     Parameters
     ----------
@@ -163,8 +162,7 @@ def clear_settings():
 
 
 def set_overrides(values):
-    """
-    Override settings for the current session without writing them to disk.
+    """Override settings for the current session without writing them to disk.
 
     Parameters
     ----------
@@ -198,8 +196,7 @@ def _validate_profile(values):
 
 
 def read_profile(path):
-    """
-    Read a settings profile from a JSON file.
+    """Read a settings profile from a JSON file.
 
     Parameters
     ----------
@@ -226,8 +223,7 @@ def read_profile(path):
 
 
 def write_profile(path, values):
-    """
-    Write a settings profile to a JSON file.
+    """Write a settings profile to a JSON file.
 
     Parameters
     ----------

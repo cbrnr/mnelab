@@ -13,8 +13,7 @@ from mne.viz import plot_compare_evokeds
 
 
 def _center_cmap(cmap, vmin, vmax, name="cmap_centered"):
-    """
-    Center given colormap (ranging from vmin to vmax) at value 0.
+    """Center given colormap (ranging from vmin to vmax) at value 0.
 
     Taken from MNE-Python v0.24 (it has been removed in MNE-Python v1.0).
 
@@ -73,8 +72,7 @@ def _get_rows_cols(n):
 
 
 def _calc_tfr(epochs, freqs, baseline, times, alpha=None):
-    """
-    Calculate AverageTFR and significance masks for given epochs.
+    """Calculate AverageTFR and significance masks for given epochs.
 
     Adapted from https://mne.tools/dev/auto_examples/time_frequency/time_frequency_erds.html
 
@@ -137,8 +135,7 @@ def _calc_tfr(epochs, freqs, baseline, times, alpha=None):
 
 
 def plot_erds(tfr_and_masks):
-    """
-    Plot ERDS maps from given TFR and significance masks.
+    """Plot ERDS maps from given TFR and significance masks.
 
     Parameters
     ----------
@@ -187,8 +184,7 @@ def plot_erds(tfr_and_masks):
 
 
 def plot_erds_topomaps(epochs, events, freqs, baseline, times):
-    """
-    Plot ERDS topomaps, one figure per event.
+    """Plot ERDS topomaps, one figure per event.
 
     Parameters
     ----------
@@ -240,8 +236,7 @@ def plot_evoked(
     spatial_colors,
     topomap_times,
 ):
-    """
-    Plot evoked potentials of different events for individual channels.
+    """Plot evoked potentials of different events for individual channels.
 
     If multiple events are selected, one figure will be returned for each.
 
@@ -305,8 +300,7 @@ def plot_evoked_comparison(
     combine,
     confidence_intervals,
 ):
-    """
-    Plot evoked potentials of different events averaged over channels.
+    """Plot evoked potentials of different events averaged over channels.
 
     If multiple channel types are selected, one figure will be returned for each channel
     type.
@@ -342,8 +336,7 @@ def plot_evoked_comparison(
 
 
 def plot_evoked_topomaps(epochs, events, average_method, times):
-    """
-    Plot evoked topomaps.
+    """Plot evoked topomaps.
 
     One figure is generated for each event.
 

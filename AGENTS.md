@@ -18,6 +18,17 @@ Guidelines for AI coding agents working on this repository.
   ```
 - Line length is 88 characters (the default). This limit applies to all code, including docstrings.
 - Docstrings follow [NumPy style](https://numpydoc.readthedocs.io/en/latest/format.html), but use standard Markdown syntax instead of reStructuredText and a line length of 88 characters. In particular, inline code formatting uses single backticks (`` `x` ``), not double backticks (` ``x`` `).
+- Docstrings start directly after the opening `"""` (as in the numpydoc guide), and multi-line docstrings close with `"""` on their own line. For example:
+  ```python
+  def f(x):
+      """Summarize the function in one line.
+
+      Parameters
+      ----------
+      x : int
+          Description of `x`.
+      """
+  ```
 - Inline comments should start with a lower-case letter and be a single sentence where possible.
 - Because [PySide6](https://doc.qt.io/qtforpython-6/index.html) is based on the C++-based Qt library, most of its names use camelCase. In your own code, use snake_case wherever possible.
 - Every file in `src/` and `tests/` must start with this exact license header, checked by CI (`.github/check_license_headers.py`):
@@ -29,7 +40,7 @@ Guidelines for AI coding agents working on this repository.
 
 ## Changelog
 
-Every PR must include an entry in the `[UNRELEASED]` section of [CHANGELOG.md](CHANGELOG.md). Add it under the appropriate subsection (`### ✨ Added`, `### 🔧 Fixed`, `### 🌀 Changed`, or `### 🗑️ Removed`). Follow the existing style: a single sentence starting with a capital letter, followed by the PR link and author in parentheses, e.g.:
+Every PR must include an entry in the `[UNRELEASED]` section of [CHANGELOG.md](CHANGELOG.md). Add it under the appropriate subsection (`### ✨ Added`, `### 🌀 Changed`, `### 🗑️ Removed`, or `### 🔧 Fixed`). Subsections always appear in the order Added, Changed, Deprecated, Removed, Fixed (omit empty ones). Follow the existing style: a single sentence starting with a capital letter, followed by the PR link and author in parentheses, e.g.:
 
 ```
 - Add support for XYZ ([#123](https://github.com/cbrnr/mnelab/pull/123) by [Your Name](https://github.com/yourname))
