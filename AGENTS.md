@@ -39,6 +39,7 @@ Every PR must include an entry in the `[UNRELEASED]` section of [CHANGELOG.md](C
 
 - Use the imperative mood and start with a capital letter (e.g., `Fix crash when loading XDF files`).
 - Keep the subject line concise (72 characters or fewer).
+- Do not credit yourself as an AI agent anywhere. This means no `Co-Authored-By` trailers or other attribution lines in commits, and no "Generated with" notes or similar in pull requests, issues, comments, or changelog entries.
 
 ## Icons
 
