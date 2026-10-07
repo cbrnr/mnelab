@@ -2,6 +2,9 @@
 ### ✨ Added
 - Add settings profiles that can be imported and exported in the Settings dialog and applied from the command line with `--settings` ([#707](https://github.com/cbrnr/mnelab/pull/707) by [Clemens Brunner](https://github.com/cbrnr))
 
+### 🔧 Fixed
+- Support more units in XDF files via MNEXTEND 0.4.0, which scales more data types correctly ([#708](https://github.com/cbrnr/mnelab/pull/708) by [Clemens Brunner](https://github.com/cbrnr))
+
 ## [1.6.0] · 2026-10-06
 ### ✨ Added
 - Add pipelines with support for common processing actions ([#700](https://github.com/cbrnr/mnelab/pull/700) by [Clemens Brunner](https://github.com/cbrnr))
