@@ -22,12 +22,14 @@ from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
     QDialogButtonBox,
+    QFileDialog,
     QFormLayout,
     QFrame,
     QHBoxLayout,
     QLabel,
     QListWidget,
     QListWidgetItem,
+    QMessageBox,
     QPushButton,
     QStackedWidget,
     QVBoxLayout,
@@ -85,8 +87,29 @@ _DEFAULTS = {
 
 _JSON_KEYS = {"annotation_colors", "toolbar_actions"}
 
+# preferences that can be saved in and loaded from a profile (window and session state
+# such as size, position or recent files is deliberately excluded)
+PROFILE_KEYS = (
+    "max_recent",
+    "dtype_badges",
+    "menu_icons",
+    "memory_saving",
+    "plot_backend",
+    "max_channels",
+    "duration",
+    "epochs",
+    "scalings",
+    "toolbar_actions",
+)
+
+# in-memory values that take precedence over the settings file (e.g. from a profile
+# passed on the command line)
+_overrides = {}
+
 
 def _get_value(key):
+    if key in _overrides:
+        return _overrides[key]
     if key in _JSON_KEYS:
         raw = QSettings(SETTINGS_PATH, QSettings.Format.IniFormat).value(
             key, defaultValue=None
@@ -130,11 +153,91 @@ def write_settings(**kwargs):
         if key in _JSON_KEYS:
             value = json.dumps(value)
         settings.setValue(key, value)
+        _overrides.pop(key, None)  # explicit changes replace session overrides
 
 
 def clear_settings():
     """Clear all settings."""
     QSettings(SETTINGS_PATH, QSettings.Format.IniFormat).clear()
+    _overrides.clear()
+
+
+def set_overrides(values):
+    """
+    Override settings for the current session without writing them to disk.
+
+    Parameters
+    ----------
+    values : dict
+        Setting keys and values. Writing a key with `write_settings` removes its
+        override.
+    """
+    for key in values:
+        if key not in _DEFAULTS:
+            raise KeyError(f"Invalid setting key: {key}")
+    _overrides.update(values)
+
+
+def _validate_profile(values):
+    if not isinstance(values, dict):
+        raise ValueError("A profile must be a JSON object")  # noqa: TRY004
+    for key, value in values.items():
+        if key not in PROFILE_KEYS:
+            raise ValueError(f"Unknown setting: {key}")
+        default = _DEFAULTS[key]
+        if key == "toolbar_actions":
+            valid = isinstance(value, list) and all(isinstance(v, str) for v in value)
+        else:
+            valid = type(value) is type(default)  # exact check rejects bool for int
+        if not valid:
+            raise ValueError(
+                f"Invalid value for {key}: expected {type(default).__name__}"
+            )
+    if "scalings" in values and values["scalings"] not in ("auto", "fixed"):
+        raise ValueError('Invalid value for scalings: expected "auto" or "fixed"')
+
+
+def read_profile(path):
+    """
+    Read a settings profile from a JSON file.
+
+    Parameters
+    ----------
+    path : str | Path
+        Path to the profile file.
+
+    Returns
+    -------
+    dict
+        Validated settings contained in the profile. The profile can be partial, so the
+        dictionary only contains the keys present in the file.
+
+    Raises
+    ------
+    ValueError
+        If the file is not valid JSON or contains unknown keys or invalid values.
+    """
+    try:
+        values = json.loads(Path(path).read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:
+        raise ValueError(f"Invalid JSON: {error}") from error
+    _validate_profile(values)
+    return values
+
+
+def write_profile(path, values):
+    """
+    Write a settings profile to a JSON file.
+
+    Parameters
+    ----------
+    path : str | Path
+        Path to the profile file.
+    values : dict
+        Settings to write. Keys that cannot be part of a profile are ignored.
+    """
+    profile = {key: values[key] for key in PROFILE_KEYS if key in values}
+    Path(path).write_text(json.dumps(profile, indent=2) + "\n", encoding="utf-8")
 
 
 class SettingsDialog(QDialog):
@@ -383,9 +486,24 @@ class SettingsDialog(QDialog):
         self.reset_button = self.buttonbox.addButton(
             "Reset to Defaults", QDialogButtonBox.ButtonRole.ResetRole
         )
+        self.import_button = self.buttonbox.addButton(
+            "Import…", QDialogButtonBox.ButtonRole.ActionRole
+        )
+        self.export_button = self.buttonbox.addButton(
+            "Export…", QDialogButtonBox.ButtonRole.ActionRole
+        )
+        set_tooltip(
+            "Load settings from a JSON profile (applied after clicking OK)",
+            self.import_button,
+        )
+        set_tooltip(
+            "Save the settings shown here to a JSON profile", self.export_button
+        )
         vbox.addWidget(self.buttonbox)
 
         self.reset_button.clicked.connect(self.reset_settings)
+        self.import_button.clicked.connect(self.import_profile)
+        self.export_button.clicked.connect(self.export_profile)
         self.buttonbox.accepted.connect(self.on_ok_clicked)
         self.buttonbox.rejected.connect(self.reject)
 
@@ -430,46 +548,107 @@ class SettingsDialog(QDialog):
             self._update_theme()
         super().changeEvent(event)
 
+    def _get_values(self):
+        """Return the profile settings currently shown in the dialog."""
+        return {
+            "max_recent": self.max_recent.value(),
+            "dtype_badges": self.dtype_badges.isChecked(),
+            "menu_icons": self.menu_icons.isChecked(),
+            "memory_saving": self.memory_saving.isChecked(),
+            "plot_backend": self.plot_backend.currentText(),
+            "max_channels": self.max_channels.value(),
+            "duration": self.duration.value(),
+            "epochs": self.epochs.value(),
+            "scalings": self.scalings.currentText().lower(),
+            "toolbar_actions": self._get_toolbar_action_keys(),
+        }
+
+    def _set_values(self, values):
+        """Show the given profile settings (keys that are not given stay unchanged)."""
+        if "max_recent" in values:
+            self.max_recent.setValue(values["max_recent"])
+        if "dtype_badges" in values:
+            self.dtype_badges.setChecked(values["dtype_badges"])
+        if "menu_icons" in values:
+            self.menu_icons.setChecked(values["menu_icons"])
+        if "memory_saving" in values:
+            self.memory_saving.setChecked(values["memory_saving"])
+        if "plot_backend" in values:
+            index = self.plot_backend.findText(values["plot_backend"])
+            if index < 0:  # backend not available, fall back to the default
+                index = self.plot_backend.findText(_DEFAULTS["plot_backend"])
+            self.plot_backend.setCurrentIndex(index)
+        if "max_channels" in values:
+            self.max_channels.setValue(values["max_channels"])
+        if "duration" in values:
+            self.duration.setValue(values["duration"])
+        if "epochs" in values:
+            self.epochs.setValue(values["epochs"])
+        if "scalings" in values:
+            self.scalings.setCurrentText(values["scalings"].title())
+        if "toolbar_actions" in values:
+            self._toolbar_list.clear()
+            self._available_list.clear()
+            self._populate_toolbar_page(values["toolbar_actions"])
+            self._update_toolbar_buttons()
+
     @Slot()
     def on_ok_clicked(self):
-        toolbar_keys = self._get_toolbar_action_keys()
-        write_settings(
-            max_recent=self.max_recent.value(),
-            max_channels=self.max_channels.value(),
-            duration=self.duration.value(),
-            epochs=self.epochs.value(),
-            recent=self.parent().recent,
-            plot_backend=self.plot_backend.currentText(),
-            dtype_badges=self.dtype_badges.isChecked(),
-            menu_icons=self.menu_icons.isChecked(),
-            memory_saving=self.memory_saving.isChecked(),
-            scalings=self.scalings.currentText().lower(),
-            toolbar_actions=toolbar_keys,
-        )
+        values = self._get_values()
+        # only write settings that changed, so session overrides (e.g. from a profile
+        # passed on the command line) are not persisted by accident
+        changed = {k: v for k, v in values.items() if v != read_settings(k)}
+        write_settings(recent=self.parent().recent, **changed)
         self.parent().recent = self.parent().recent[: read_settings("max_recent")]
-        self.parent()._apply_toolbar(toolbar_keys)
+        self.parent()._apply_toolbar(values["toolbar_actions"])
         self.accept()
 
     @Slot()
     def reset_settings(self):
-        self.max_recent.setValue(_DEFAULTS["max_recent"])
-        self.max_channels.setValue(_DEFAULTS["max_channels"])
-        self.duration.setValue(_DEFAULTS["duration"])
-        self.epochs.setValue(_DEFAULTS["epochs"])
-        self.dtype_badges.setChecked(_DEFAULTS["dtype_badges"])
-        self.menu_icons.setChecked(_DEFAULTS["menu_icons"])
-        self.memory_saving.setChecked(_DEFAULTS["memory_saving"])
-        self.plot_backend.setCurrentIndex(
-            self.plot_backend.findText(_DEFAULTS["plot_backend"])
-        )
-        self.scalings.setCurrentText(_DEFAULTS["scalings"].title())
+        self._set_values(_DEFAULTS)
         self.parent().resize(_DEFAULTS["size"])
         self.parent().move(_DEFAULTS["pos"])
         self.parent().recent = []
         self.parent()._set_splitter_ratio(_DEFAULTS["splitter"])
-        self._reset_toolbar_page()
         self.parent()._apply_toolbar(_DEFAULTS["toolbar_actions"])
         clear_settings()
+
+    @Slot()
+    def import_profile(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Import Settings",
+            read_settings("last_dir"),
+            "Settings Files (*.json)",
+        )
+        if not path:
+            return
+        try:
+            values = read_profile(path)
+        except (OSError, ValueError) as error:
+            QMessageBox.warning(self, "Could Not Import Settings", str(error))
+            return
+        self._set_values(values)
+        write_settings(last_dir=str(Path(path).parent))
+
+    @Slot()
+    def export_profile(self):
+        path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Export Settings",
+            read_settings("last_dir"),
+            "Settings Files (*.json)",
+        )
+        if not path:
+            return
+        if not Path(path).suffix:
+            path += ".json"
+        try:
+            write_profile(path, self._get_values())
+        except OSError as error:
+            QMessageBox.warning(self, "Could Not Export Settings", str(error))
+            return
+        write_settings(last_dir=str(Path(path).parent))
 
     def _populate_toolbar_page(self, current_keys):
         excluded = {"statusbar", "menubar"}
