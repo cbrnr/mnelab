@@ -86,6 +86,7 @@ Follow these steps to make a new [PyPI](https://pypi.org/project/mnelab/) releas
 2. Review the resulting changes, then commit and push them.
 3. Tag the release commit with the version prepended with a `v` (e.g. `v1.7.0`) and push the tag, e.g. `git tag v1.7.0 && git push origin v1.7.0`.
 4. A GitHub Action takes care of running the tests, building and uploading wheels to PyPI, building standalone installers, and creating the GitHub release.
+5. Optionally, edit the GitHub release and add user-facing highlights (e.g., a short paragraph about the main new features) above the changelog entries. Such notes live only on the GitHub release.
 
 This concludes the new release. Now prepare the source for the next planned release as follows:
 
