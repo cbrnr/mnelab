@@ -45,6 +45,18 @@ def monospace_font():
     return font
 
 
+def tabular_digits_font():
+    """Return a QFont that only enables tabular (fixed-width) digits.
+
+    Some fonts (such as the macOS system font) use proportional digits by default,
+    which misaligns numbers in columns. Setting the returned font on a widget or item
+    keeps its inherited family and size and only changes the digits.
+    """
+    font = QFont()
+    font.setFeature(QFont.Tag("tnum"), 1)
+    return font
+
+
 def natural_sort(lst):
     """Sort a list in natural order."""
 

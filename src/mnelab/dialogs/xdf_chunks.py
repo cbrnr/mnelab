@@ -18,13 +18,15 @@ from PySide6.QtWidgets import (
 )
 
 from mnelab.dialogs.utils import set_header_alignments
+from mnelab.utils import tabular_digits_font
 
 
 def _add_item(item, alignment=None):
     tmp = QStandardItem()
     tmp.setData(item, Qt.ItemDataRole.DisplayRole)
-    if alignment is not None:
+    if alignment is not None:  # only numeric columns are right-aligned
         tmp.setTextAlignment(alignment)
+        tmp.setFont(tabular_digits_font())
     return tmp
 
 

@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
+from mnelab.utils import tabular_digits_font
 from mnelab.widgets import selection_key
 
 ROW_HEIGHT = 10
@@ -58,6 +59,7 @@ class DragDropTableWidget(QTableWidget):
                 Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
             )
             self.item(i, 0).setForeground(QColor("gray"))
+            self.item(i, 0).setFont(tabular_digits_font())
             self.item(i, 0).setFlags(
                 self.item(i, 0).flags() & ~Qt.ItemFlag.ItemIsEditable
             )

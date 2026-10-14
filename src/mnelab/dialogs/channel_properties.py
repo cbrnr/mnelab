@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
 )
 
 from mnelab.dialogs.utils import CheckBoxDelegate, set_header_alignments
+from mnelab.utils import tabular_digits_font
 
 channel_types = [k.upper() for k in get_channel_type_constants()]
 
@@ -33,6 +34,7 @@ class ChannelPropertiesDialog(QDialog):
         for index, ch in enumerate(info["chs"]):
             item = QStandardItem()
             item.setData(index, Qt.ItemDataRole.DisplayRole)
+            item.setFont(tabular_digits_font())
             item.setTextAlignment(
                 Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
             )

@@ -32,6 +32,7 @@ from mnelab.utils import (
     find_bad_epochs_autoreject,
     find_bad_epochs_kurtosis,
     find_bad_epochs_ptp,
+    tabular_digits_font,
 )
 from mnelab.utils.dependencies import have
 from mnelab.widgets import FlatDoubleSpinBox
@@ -434,6 +435,7 @@ class ArtifactPreviewTable(QDialog):
             item.setData(epoch_idx, Qt.ItemDataRole.DisplayRole)
             item.setData(epoch_idx, Qt.ItemDataRole.UserRole)
             item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
+            item.setFont(tabular_digits_font())
             item.setTextAlignment(
                 Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
             )

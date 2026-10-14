@@ -20,4 +20,5 @@ from mnelab.utils.utils import (
     merge_annotations,
     monospace_font,
     natural_sort,
+    tabular_digits_font,
 )

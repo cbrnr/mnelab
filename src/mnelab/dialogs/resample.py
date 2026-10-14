@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
+from mnelab.utils import tabular_digits_font
 from mnelab.widgets import FlatDoubleSpinBox
 
 
@@ -24,6 +25,7 @@ class ResampleDialog(QDialog):
         grid.addWidget(QLabel("Current Sampling Frequency:"), 0, 0)
         current_label = QLabel(f"{current_sfreq:.1f} Hz")
         current_label.setAlignment(Qt.AlignmentFlag.AlignRight)
+        current_label.setFont(tabular_digits_font())
         grid.addWidget(current_label, 0, 1)
 
         grid.addWidget(QLabel("New Sampling Frequency:"), 1, 0)

@@ -1,4 +1,9 @@
 ## [UNRELEASED] · YYYY-MM-DD
+### 🌀 Changed
+- Use the native window background instead of a dated gray in the title bar, toolbar, and main window on macOS ([#716](https://github.com/cbrnr/mnelab/pull/716) by [Clemens Brunner](https://github.com/cbrnr))
+
+### 🔧 Fixed
+- Align numbers in numeric columns and input fields by using tabular digits, which were proportional on macOS ([#716](https://github.com/cbrnr/mnelab/pull/716) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.7.0] · 2026-10-14
 ### ✨ Added
