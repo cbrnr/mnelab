@@ -7,6 +7,8 @@ import xml.etree.ElementTree as ETree
 from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
+    QHBoxLayout,
+    QPushButton,
     QTreeWidget,
     QTreeWidgetItem,
     QVBoxLayout,
@@ -27,13 +29,13 @@ class XDFMetadataDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("XDF Metadata")
 
-        tree = QTreeWidget()
+        self.tree = tree = QTreeWidget()
         tree.setColumnCount(2)
         tree.setHeaderLabels(["Name", "Value"])
         tree.setColumnWidth(0, 200)
         tree.setColumnWidth(1, 350)
 
-        for stream in xml:
+        for stream in sorted(xml):
             header = xml[stream][2]
             header.tag = "Header"
             footer = xml[stream][6]
@@ -45,11 +47,40 @@ class XDFMetadataDialog(QDialog):
 
         tree.expandAll()
 
+        self.toggle_button = QPushButton()
+        self.toggle_button.clicked.connect(self.toggle_all)
+        tree.itemExpanded.connect(self._update_toggle_button)
+        tree.itemCollapsed.connect(self._update_toggle_button)
+        self._update_toggle_button()
+
         vbox = QVBoxLayout(self)
         vbox.addWidget(tree)
         buttonbox = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
-        vbox.addWidget(buttonbox)
+        hbox = QHBoxLayout()
+        hbox.addWidget(self.toggle_button)
+        hbox.addStretch()
+        hbox.addWidget(buttonbox)
+        vbox.addLayout(hbox)
         buttonbox.accepted.connect(self.accept)
 
         self.resize(650, 550)
         self.setFocus()
+
+    def _any_expanded(self):
+        return any(
+            self.tree.topLevelItem(i).isExpanded()
+            for i in range(self.tree.topLevelItemCount())
+        )
+
+    def _update_toggle_button(self):
+        if self._any_expanded():
+            self.toggle_button.setText("Collapse All")
+        else:
+            self.toggle_button.setText("Expand All")
+
+    def toggle_all(self):
+        """Collapse all items if any stream is expanded, otherwise expand all."""
+        if self._any_expanded():
+            self.tree.collapseAll()
+        else:
+            self.tree.expandAll()

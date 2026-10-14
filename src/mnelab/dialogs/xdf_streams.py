@@ -270,12 +270,12 @@ class XDFStreamsDialog(QDialog):
         self.resize(875, 650)
         self.header.setSectionResizeMode(COL_CHECK, QHeaderView.ResizeMode.Fixed)
         self.view.setColumnWidth(COL_CHECK, 30)
-        self.view.setColumnWidth(COL_ID, 50)
+        self.view.setColumnWidth(COL_ID, 80)
         self.view.setColumnWidth(2, 220)
-        self.view.setColumnWidth(3, 120)
+        self.view.setColumnWidth(3, 105)
         self.view.setColumnWidth(4, 75)
         self.view.setColumnWidth(5, 75)
-        self.view.setColumnWidth(6, 110)
+        self.view.setColumnWidth(6, 100)
         self.setFocus()
 
     def _stream_id(self, row):
