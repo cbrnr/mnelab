@@ -1,8 +1,10 @@
 ## [UNRELEASED] · YYYY-MM-DD
 ### ✨ Added
+- Choose whether to import each XDF stream as continuous channels, discrete channels (such as trigger codes, which are neither filtered nor altered by resampling), or annotations using the stream modes of MNEXTEND 0.5.0 ([#710](https://github.com/cbrnr/mnelab/pull/710) by [Clemens Brunner](https://github.com/cbrnr))
 - Add settings profiles that can be imported and exported in the Settings dialog and applied from the command line with `--settings` ([#707](https://github.com/cbrnr/mnelab/pull/707) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🔧 Fixed
+- Import numeric XDF streams with a nominal sampling rate of 0 Hz as annotations by default and suggest the sampling rate of the XDF stream with the most channels ([#710](https://github.com/cbrnr/mnelab/pull/710) by [Clemens Brunner](https://github.com/cbrnr))
 - Support more units in XDF files via MNEXTEND 0.4.0, which scales more data types correctly ([#709](https://github.com/cbrnr/mnelab/pull/709) by [Clemens Brunner](https://github.com/cbrnr))
 
 ## [1.6.0] · 2026-10-06
