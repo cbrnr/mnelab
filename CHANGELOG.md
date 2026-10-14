@@ -2,9 +2,6 @@
 ### 🌀 Changed
 - Smoke test the standalone apps before releasing and only publish releases if all jobs pass ([#715](https://github.com/cbrnr/mnelab/pull/715) by [Clemens Brunner](https://github.com/cbrnr))
 
-### 🔧 Fixed
-- Fix standalone apps failing to start because compiled modules of Black, isort, and pytokens were missing ([#715](https://github.com/cbrnr/mnelab/pull/715) by [Clemens Brunner](https://github.com/cbrnr))
-
 ## [1.7.0] · 2026-10-14
 ### ✨ Added
 - Choose the window length, overlap, frequency tolerance, and annotations to skip in the Remove Line Noise dialog using the new options of MNEXTEND 0.5.0 ([#712](https://github.com/cbrnr/mnelab/pull/712) by [Clemens Brunner](https://github.com/cbrnr))
