@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
     QToolButton,
     QTreeWidget,
     QTreeWidgetItem,
+    QTreeWidgetItemIterator,
     QVBoxLayout,
     QWidget,
 )
@@ -193,6 +194,23 @@ class SidebarTreeWidget(QTreeWidget):
         item.setText(1, dtype)
         item.setToolTip(1, f"Data Type: {dtype.capitalize()}" if dtype else "")
 
+    def any_expanded(self):
+        """Return whether any item with children is expanded."""
+        it = QTreeWidgetItemIterator(self)
+        while it.value():
+            item = it.value()
+            if item.childCount() > 0 and item.isExpanded():
+                return True
+            it += 1
+        return False
+
+    def toggle_all(self):
+        """Collapse all items if any is expanded, otherwise expand all."""
+        if self.any_expanded():
+            self.collapseAll()
+        else:
+            self.expandAll()
+
     def set_badges_visible(self, visible):
         """Show or hide the data type badge column."""
         self.setColumnHidden(1, not visible)
@@ -333,7 +351,7 @@ class SidebarTreeWidget(QTreeWidget):
 
 
 class SidebarWidget(QWidget):
-    """Container holding the sidebar tree and a bottom collapse-all toolbar."""
+    """Container holding the sidebar tree and a bottom collapse/expand-all toolbar."""
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -351,8 +369,6 @@ class SidebarWidget(QWidget):
 
         self._collapse_btn = QToolButton()
         self._collapse_btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self._collapse_btn.setIcon(QIcon.fromTheme("unfold-less"))
-        self._collapse_btn.setToolTip("Collapse All")
         self._collapse_btn.setStyleSheet("""
             QToolButton {
                 background: transparent;
@@ -367,7 +383,10 @@ class SidebarWidget(QWidget):
                 border-radius: 4px;
             }
         """)
-        self._collapse_btn.clicked.connect(self.tree.collapseAll)
+        self._collapse_btn.clicked.connect(self.tree.toggle_all)
+        self.tree.itemExpanded.connect(self._update_collapse_btn)
+        self.tree.itemCollapsed.connect(self._update_collapse_btn)
+        self._update_collapse_btn()
         self._collapse_btn.hide()
 
         bottom_layout.addStretch()
@@ -375,6 +394,15 @@ class SidebarWidget(QWidget):
         layout.addWidget(self._bottom_bar)
 
         self._apply_bar_background()
+
+    def _update_collapse_btn(self):
+        """Show the collapse or expand icon depending on the tree state."""
+        if self.tree.any_expanded():
+            self._collapse_btn.setIcon(QIcon.fromTheme("unfold-less"))
+            self._collapse_btn.setToolTip("Collapse All")
+        else:
+            self._collapse_btn.setIcon(QIcon.fromTheme("unfold-more"))
+            self._collapse_btn.setToolTip("Expand All")
 
     def _apply_bar_background(self):
         """Match the bottom bar background to the sidebar tree's base color."""
@@ -397,6 +425,7 @@ class SidebarWidget(QWidget):
 
     def enterEvent(self, event):
         if QApplication.activeModalWidget() is None:
+            self._update_collapse_btn()
             self._collapse_btn.show()
         super().enterEvent(event)
 
