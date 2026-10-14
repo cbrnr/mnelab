@@ -3,12 +3,14 @@
 # License: BSD (3-clause)
 
 from pathlib import Path
+from urllib.parse import urlparse
 
 from PySide6.QtCore import QEvent, QPoint, Qt, QTimer, Signal
 from PySide6.QtGui import QCursor, QGuiApplication, QIcon, QKeySequence
 from PySide6.QtWidgets import (
     QApplication,
     QGridLayout,
+    QHBoxLayout,
     QLabel,
     QSizePolicy,
     QToolButton,
@@ -42,53 +44,140 @@ _ICON_MAP = {
     "Reference": "change-reference",
 }
 
+# vertical space (in pixels) between a heading and the entries below it
+HEADING_SPACING = 6
+
+# vertical space (in pixels) above the first heading and between sections
+SECTION_SPACING = 30
+
+# maximum number of recent files shown in the empty widget
+MAX_RECENT_LINKS = 5
+
 dev_label = (
     '<p align="right"><font color="red"><small>Development Version</small></font></p>'
 )
 
 
-def _make_shortcuts_table(actions):
+def _gray():
+    """Return the color used for headings and key badges."""
     dark = QGuiApplication.styleHints().colorScheme() == Qt.ColorScheme.Dark
-    text_color = "#999" if dark else "#777"
-    kbd_bg = "#3a3a3a" if dark else "#e2e2e2"
-    font_family = monospace_font().family()
-    kbd_font = f'"{font_family}", ' if font_family != "monospace" else ""
-    html = f"""<!DOCTYPE html>
-    <html>
-      <head>
-        <style>
-          html {{ font-size: 16px; }}
-          body {{ margin-left: 8px; margin-right: 8px; }}
-          span {{
-            font-family: {kbd_font}monospace;
-            font-size: 0.8em;
-            font-weight: 600;
-            color: {text_color};
-            background-color: {kbd_bg};
-          }}
-          table {{ color: {text_color}; }}
-        </style>
-      </head>
-      <body>
-        <table>
-          <tbody>"""
-    for action in actions:
+    return "#999" if dark else "#777"
+
+
+def _make_heading(text):
+    heading = QLabel(text)
+    font = heading.font()
+    font.setBold(True)
+    font.setPointSizeF(font.pointSizeF() * 1.15)
+    heading.setFont(font)
+    heading.setStyleSheet(f"color: {_gray()};")
+    return heading
+
+
+def _make_key(text):
+    """Return a label that displays `text` as a key on a rounded rectangle."""
+    dark = QGuiApplication.styleHints().colorScheme() == Qt.ColorScheme.Dark
+    key = QLabel(text)
+    font = monospace_font()
+    font.setBold(True)
+    font.setPointSizeF(QApplication.font().pointSizeF() * 0.9)
+    key.setFont(font)
+    key.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    key.setMinimumWidth(24)
+    key.setStyleSheet(
+        f"color: {_gray()}; background-color: {'#3a3a3a' if dark else '#e2e2e2'};"
+        "border-radius: 4px; padding: 1px 4px;"
+    )
+    return key
+
+
+def _make_shortcuts(actions):
+    """Return a widget that lists the shortcuts of `actions`."""
+    widget = QWidget()
+    grid = QGridLayout(widget)
+    grid.setContentsMargins(0, 0, 0, 0)
+    grid.setVerticalSpacing(2)
+    grid.setHorizontalSpacing(12)
+    grid.setColumnStretch(2, 1)
+    for row, action in enumerate(actions):
         name = action.text().replace("&", "").replace(".", "")
         shortcut = action.shortcut().toString(
             format=QKeySequence.SequenceFormat.NativeText
         )
-        modifier, key = shortcut[:-1].strip(), shortcut[-1]
-        html += f'\n            <tr><td align="right" width="50%">{name} </td>'
-        if modifier[-1] == "+":
-            html += f"<td><span>&nbsp;{modifier[:-1]}&nbsp;</span>+"
-        else:
-            html += f"<td><span>&nbsp;{modifier}&nbsp;</span> "
-        html += f"<span>&nbsp;{key}&nbsp;</span></td></tr>"
-    html += """\n          </tbody>
-        </table>
-      </body>
-    </html>"""
-    return html
+        modifier, key = shortcut[:-1].strip(), shortcut[-1:]
+        sep = modifier.endswith("+")  # modifiers are joined by "+" on Windows/Linux
+        keys = QHBoxLayout()
+        keys.setSpacing(3)
+        keys.addWidget(_make_key(modifier.rstrip("+")))
+        if sep:
+            keys.addWidget(QLabel("+"))
+        keys.addWidget(_make_key(key))
+        keys.addStretch(1)
+        label = _LinkLabel(name)
+        label.clicked.connect(action.trigger)
+        label.setMinimumHeight(20)  # same row height as the recent files
+        grid.addWidget(label, row, 0)
+        grid.addLayout(keys, row, 1)
+    return widget
+
+
+def _clear_layout(layout):
+    while (item := layout.takeAt(0)) is not None:
+        # hide immediately because deferred deletion does not happen while a nested
+        # event loop (such as a modal message box) is running
+        if (widget := item.widget()) is not None:  # spacers have no widget
+            widget.hide()
+            widget.deleteLater()
+
+
+class _LinkLabel(QLabel):
+    """Label that behaves like a link (pointing hand, link color on hover)."""
+
+    clicked = Signal()
+
+    def __init__(self, text):
+        super().__init__(text)
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setStyleSheet("QLabel:hover { color: palette(link); }")
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.clicked.emit()
+        super().mousePressEvent(event)
+
+
+class _RecentRow(QWidget):
+    """Row with a clickable file name and a remove button shown on hover."""
+
+    clicked = Signal()
+    removed = Signal()
+
+    def __init__(self, fname):
+        super().__init__()
+        self.label = _LinkLabel(Path(fname).name)
+        self.label.setToolTip(fname)
+        self.label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
+        self.label.clicked.connect(self.clicked.emit)
+        self._icon = QIcon.fromTheme("close-data")
+        self.button = QToolButton()
+        self.button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.button.setFixedSize(20, 20)
+        self.button.setAutoRaise(True)
+        self.button.setStyleSheet(_HOVER_BTN_STYLE)
+        self.button.setToolTip("Remove from Recent Files")
+        self.button.clicked.connect(self.removed.emit)
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.label, 1)
+        layout.addWidget(self.button)
+
+    def enterEvent(self, event):
+        self.button.setIcon(self._icon)
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        self.button.setIcon(QIcon())
+        super().leaveEvent(event)
 
 
 class InfoWidget(QWidget):
@@ -280,20 +369,87 @@ class InfoWidget(QWidget):
 
 
 class EmptyWidget(QWidget):
-    def __init__(self, actions):
+    """Display keyboard shortcuts (left) and recent files (right).
+
+    Parameters
+    ----------
+    actions : list of PySide6.QtGui.QAction
+        Actions whose shortcuts are shown.
+    recent : list of str
+        Paths of recent files.
+    documentation_url : str, optional
+        URL of the documentation. If given, a link to it is shown below the shortcuts.
+    """
+
+    recent_clicked = Signal(str)
+    recent_removed = Signal(str)
+    documentation_clicked = Signal()
+
+    def __init__(self, actions, recent=None, documentation_url=None):
         from mnelab import IS_DEV_VERSION
 
         super().__init__()
         self._actions = actions
-        self._label = QLabel(_make_shortcuts_table(actions))
+        self._documentation_url = documentation_url
+        self._recent = []
+        self._shortcuts_widget = QWidget()
+        self._shortcuts_layout = QVBoxLayout(self._shortcuts_widget)
+        self._shortcuts_layout.setContentsMargins(8, 0, 8, 0)
+        self._shortcuts_layout.setSpacing(2)
+        self._recent_widget = QWidget()
+        self._recent_layout = QVBoxLayout(self._recent_widget)
+        self._recent_layout.setContentsMargins(8, 0, 8, 0)
+        self._recent_layout.setSpacing(2)
+        hbox = QHBoxLayout()
+        hbox.addWidget(self._shortcuts_widget, 1, Qt.AlignmentFlag.AlignTop)
+        hbox.addWidget(self._recent_widget, 1, Qt.AlignmentFlag.AlignTop)
         vbox = QVBoxLayout(self)
-        vbox.addStretch()
-        vbox.addWidget(self._label)
+        vbox.addSpacing(SECTION_SPACING)
+        vbox.addLayout(hbox)
         vbox.addStretch()
         if IS_DEV_VERSION:
             vbox.addWidget(QLabel(dev_label))
+        self._set_shortcuts()
+        self.set_recent(recent)
+
+    def _set_shortcuts(self):
+        _clear_layout(self._shortcuts_layout)
+        self._shortcuts_layout.addWidget(_make_heading("Keyboard Shortcuts"))
+        self._shortcuts_layout.addSpacing(HEADING_SPACING)
+        self._shortcuts_layout.addWidget(_make_shortcuts(self._actions))
+        if self._documentation_url:
+            self._shortcuts_layout.addSpacing(SECTION_SPACING)
+            self._shortcuts_layout.addWidget(_make_heading("Documentation"))
+            self._shortcuts_layout.addSpacing(HEADING_SPACING)
+            link = _LinkLabel(urlparse(self._documentation_url).netloc)
+            link.setToolTip(self._documentation_url)
+            link.clicked.connect(self.documentation_clicked)
+            self._shortcuts_layout.addWidget(link)
+
+    def set_recent(self, recent):
+        """Set the recent files (and overwrite existing ones).
+
+        Parameters
+        ----------
+        recent : list of str
+            Paths of recent files.
+        """
+        recent = [fname for fname in recent or [] if fname is not None]
+        self._recent = recent[:MAX_RECENT_LINKS]
+        _clear_layout(self._recent_layout)
+        self._recent_widget.setVisible(bool(self._recent))
+        if not self._recent:
+            return
+        self._recent_layout.addWidget(_make_heading("Recent Files"))
+        self._recent_layout.addSpacing(HEADING_SPACING)
+        for fname in self._recent:
+            row = _RecentRow(fname)
+            row.clicked.connect(lambda f=fname: self.recent_clicked.emit(f))
+            row.removed.connect(lambda f=fname: self.recent_removed.emit(f))
+            self._recent_layout.addWidget(row)
 
     def changeEvent(self, event):
         if event.type() == QEvent.Type.PaletteChange:
-            self._label.setText(_make_shortcuts_table(self._actions))
+            self._set_shortcuts()
+            self.set_recent(self._recent)
         super().changeEvent(event)
