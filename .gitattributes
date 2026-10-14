@@ -1,0 +1,5 @@
+* text=auto eol=lf
+
+# Windows-only installer scripts
+*.ps1 text eol=crlf
+*.iss text eol=crlf
