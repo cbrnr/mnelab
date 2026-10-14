@@ -16,9 +16,17 @@ from PySide6.QtWidgets import QWidget
 
 import mnelab.widgets.sidebar as sidebar_module
 from mnelab.dialogs.pipeline import FileRuleDialog, PipelineDialog
+from mnelab.dialogs.remove_line_noise import RemoveLineNoiseDialog
 from mnelab.mainwindow import MainWindow
 from mnelab.model import Model
-from mnelab.pipeline import load_pipeline, make_file_spec, save_pipeline, step_label
+from mnelab.pipeline import (
+    LINE_NOISE_DEFAULTS,
+    load_pipeline,
+    make_file_spec,
+    save_pipeline,
+    step_label,
+    validate_step,
+)
 from mnelab.settings import _DEFAULTS
 from mnelab.utils import Montage, count_locations
 
@@ -98,13 +106,102 @@ def test_pipeline_filters_and_removes_line_noise(model_with_raw):
             },
             {
                 "op": "remove_line_noise",
-                "params": {"line_freq": 50, "include_harmonics": False},
+                "params": {
+                    "line_freq": 50,
+                    **LINE_NOISE_DEFAULTS,
+                    "include_harmonics": False,
+                },
             },
         ]
     )
     assert model.current["data"].get_data().shape == source_data.shape
     assert not np.array_equal(model.current["data"].get_data(), source_data)
     np.testing.assert_array_equal(model.data[0]["data"].get_data(), source_data)
+
+
+def test_line_noise_records_and_replays_all_options(model_with_raw):
+    model = model_with_raw
+    original = model.current["data"].copy()
+    model.remove_line_noise(
+        50,
+        include_harmonics=False,
+        window_length=2.0,
+        overlap=0.25,
+        freq_tolerance=0.2,
+        skip_by_annotation=["edge"],
+    )
+    step = model.current["pipeline_steps"][-1]
+    assert step == {
+        "op": "remove_line_noise",
+        "params": {
+            "line_freq": 50,
+            "include_harmonics": False,
+            "window_length": 2.0,
+            "overlap": 0.25,
+            "freq_tolerance": 0.2,
+            "skip_by_annotation": ["edge"],
+        },
+    }
+    assert model.history[-1] == (
+        "remove_line_noise(data, 50, include_harmonics=False, window_length=2.0, "
+        "overlap=0.25, freq_tolerance=0.2, skip_by_annotation=['edge'])"
+    )
+    cleaned = model.current["data"].get_data().copy()
+    model.current["data"] = original  # replay on the uncleaned data
+    model.apply_pipeline([step])
+    np.testing.assert_allclose(model.current["data"].get_data(), cleaned)
+
+
+def test_line_noise_defaults_match_mnextend(model_with_raw):
+    model = model_with_raw
+    model.remove_line_noise(50)
+    assert model.current["pipeline_steps"][-1]["params"] == {
+        "line_freq": 50,
+        **LINE_NOISE_DEFAULTS,
+    }
+    assert model.history[-1] == "remove_line_noise(data, 50)"
+
+
+def test_line_noise_validation():
+    params = {"line_freq": 50, **LINE_NOISE_DEFAULTS}
+    for key, value in [
+        ("window_length", 0),
+        ("overlap", 1),
+        ("freq_tolerance", -1),
+        ("skip_by_annotation", "edge"),
+    ]:
+        with pytest.raises(ValueError):
+            validate_step({"op": "remove_line_noise", "params": {**params, key: value}})
+
+
+def test_load_pipeline_completes_old_line_noise_steps(tmp_path):
+    path = tmp_path / "pipeline.json"
+    old = {
+        "op": "remove_line_noise",
+        "params": {"line_freq": 50, "include_harmonics": True},
+    }
+    path.write_text(json.dumps({"version": 1, "steps": [old]}))
+    (step,) = load_pipeline(path)
+    assert step["params"] == {"line_freq": 50, **LINE_NOISE_DEFAULTS}
+
+
+def test_remove_line_noise_dialog_defaults_and_values(qtbot):
+    dialog = RemoveLineNoiseDialog(None, 250)
+    qtbot.addWidget(dialog)
+    assert dialog.parameters == {"line_freq": 50.0, **LINE_NOISE_DEFAULTS}
+    dialog._window_length.setValue(4)
+    dialog._overlap.setValue(75)
+    dialog._freq_tolerance.setValue(0)
+    dialog._skip_by_annotation.setText("edge, bad")
+    dialog.include_harmonics.setChecked(False)
+    assert dialog.parameters == {
+        "line_freq": 50.0,
+        "include_harmonics": False,
+        "window_length": 4.0,
+        "overlap": 0.75,
+        "freq_tolerance": 0.0,
+        "skip_by_annotation": ["edge", "bad"],
+    }
 
 
 def test_pipeline_file_round_trip_and_validation(tmp_path):

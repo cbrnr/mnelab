@@ -26,6 +26,7 @@ from mnextend.io.readers import raw_readers
 
 from mnelab.pipeline import (
     FILE_IMPORTS,
+    LINE_NOISE_DEFAULTS,
     pipeline_step,
     resolve_file_spec,
     serialize_import,
@@ -867,19 +868,32 @@ class Model:
 
     @data_changed
     @pipeline_step
-    def remove_line_noise(self, line_freq, include_harmonics):
+    def remove_line_noise(
+        self,
+        line_freq,
+        include_harmonics=LINE_NOISE_DEFAULTS["include_harmonics"],
+        window_length=LINE_NOISE_DEFAULTS["window_length"],
+        overlap=LINE_NOISE_DEFAULTS["overlap"],
+        freq_tolerance=LINE_NOISE_DEFAULTS["freq_tolerance"],
+        skip_by_annotation=LINE_NOISE_DEFAULTS["skip_by_annotation"],
+    ):
         """Remove line noise from the current data."""
-        remove_line_noise(
-            self.current["data"],
-            line_freq,
-            include_harmonics=include_harmonics,
-        )
+        options = {
+            "include_harmonics": include_harmonics,
+            "window_length": window_length,
+            "overlap": overlap,
+            "freq_tolerance": freq_tolerance,
+            "skip_by_annotation": list(skip_by_annotation),
+        }
+        remove_line_noise(self.current["data"], line_freq, **options)
         self.current["name"] += " (line noise removed)"
-        self.history.append(
-            "remove_line_noise("
-            f"data, {line_freq}, include_harmonics={include_harmonics}"
-            ")"
+        # only list options that differ from the MNEXTEND defaults
+        arguments = "".join(
+            f", {key}={value!r}"
+            for key, value in options.items()
+            if value != LINE_NOISE_DEFAULTS[key]
         )
+        self.history.append(f"remove_line_noise(data, {line_freq}{arguments})")
 
     @data_changed
     @pipeline_step
