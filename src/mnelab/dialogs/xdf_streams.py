@@ -3,21 +3,16 @@
 # License: BSD (3-clause)
 
 from mnextend.io.xdf import stream_modes
-from PySide6.QtCore import QPoint, QSignalBlocker, Qt, Signal, Slot
+from PySide6.QtCore import QSignalBlocker, Qt, Slot
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import (
-    QApplication,
     QCheckBox,
     QComboBox,
     QDialog,
     QDialogButtonBox,
     QHBoxLayout,
-    QHeaderView,
     QLabel,
     QPushButton,
-    QStyle,
-    QStyleOptionViewItem,
-    QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
 )
@@ -27,7 +22,7 @@ from mnelab.dialogs.utils import (
     IntTableWidgetItem,
     set_header_alignments,
 )
-from mnelab.widgets import FlatDoubleSpinBox, set_tooltip
+from mnelab.widgets import CheckTableWidget, FlatDoubleSpinBox, set_tooltip
 
 # modes as in MNEXTEND (shown capitalized)
 ANNOTATIONS = "annotations"
@@ -39,83 +34,7 @@ IMPORT_AS_TOOLTIP = (
     "Discrete: Values are kept unchanged when resampling"
 )
 FALLBACK_FS = 100.0  # suggested rate if only 0 Hz streams are loaded as channels
-COL_CHECK, COL_ID, COL_IMPORT_AS = 0, 1, 7
-UNSORTABLE_COLS = (COL_CHECK, COL_IMPORT_AS)
-
-
-class CheckTableWidgetItem(QTableWidgetItem):
-    """Checkable table item without text."""
-
-    def __init__(self):
-        super().__init__()
-        self.setFlags(self.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-        self.setCheckState(Qt.CheckState.Checked)
-        self.setToolTip("Shift-click to check or uncheck a range of streams")
-
-
-class StreamsHeaderView(QHeaderView):
-    """Horizontal header with a checkbox to check or uncheck all streams.
-
-    Clicking the checkbox column emits `check_all_clicked` instead of sorting, and
-    clicking the "Import As" column does nothing (its combo boxes cannot be sorted).
-    """
-
-    check_all_clicked = Signal()
-
-    def __init__(self, parent=None):
-        super().__init__(Qt.Orientation.Horizontal, parent)
-        self.setSectionsClickable(True)  # only the default header is clickable
-        self._check_state = Qt.CheckState.Checked
-
-    def set_check_state(self, state):
-        if state != self._check_state:
-            self._check_state = state
-            self.viewport().update()
-
-    def paintSection(self, painter, rect, logical_index):
-        painter.save()
-        super().paintSection(painter, rect, logical_index)
-        painter.restore()
-        if logical_index != COL_CHECK:
-            return
-        # draw the checkbox like the checkboxes in the cells below
-        option = QStyleOptionViewItem()
-        option.initFrom(self)
-        option.rect = rect
-        option.features |= QStyleOptionViewItem.ViewItemFeature.HasCheckIndicator
-        option.rect = self.style().subElementRect(
-            QStyle.SubElement.SE_ItemViewItemCheckIndicator, option, self.parent()
-        )
-        option.rect.moveCenter(QPoint(option.rect.center().x(), rect.center().y()))
-        option.state |= {
-            Qt.CheckState.Checked: QStyle.StateFlag.State_On,
-            Qt.CheckState.PartiallyChecked: QStyle.StateFlag.State_NoChange,
-            Qt.CheckState.Unchecked: QStyle.StateFlag.State_Off,
-        }[self._check_state]
-        self.style().drawPrimitive(
-            QStyle.PrimitiveElement.PE_IndicatorItemViewItemCheck,
-            option,
-            painter,
-            self.parent(),
-        )
-
-    def _column(self, event):
-        return self.logicalIndexAt(event.position().toPoint())
-
-    def mousePressEvent(self, event):
-        if self._column(event) not in UNSORTABLE_COLS:
-            super().mousePressEvent(event)
-
-    def mouseReleaseEvent(self, event):
-        column = self._column(event)
-        if column not in UNSORTABLE_COLS:
-            super().mouseReleaseEvent(event)
-        elif column == COL_CHECK and event.button() == Qt.MouseButton.LeftButton:
-            self.check_all_clicked.emit()
-
-    def mouseDoubleClickEvent(self, event):
-        if self._column(event) not in UNSORTABLE_COLS:
-            super().mouseDoubleClickEvent(event)
+COL_ID, COL_IMPORT_AS = 1, 7
 
 
 class XDFStreamsDialog(QDialog):
@@ -137,14 +56,13 @@ class XDFStreamsDialog(QDialog):
         self._infos = {s["stream_id"]: s for s in streams}
         self._fs_edited = False  # whether the user changed the rate manually
         self._resample_choice = False  # resample if optional (single stream)
-        self._last_check_item = None  # last (un)checked item for Shift-click ranges
 
-        self.view = QTableWidget(len(streams), 8)
-        self.header = StreamsHeaderView(self.view)
-        self.header.check_all_clicked.connect(self._check_all_clicked)
-        self.view.setHorizontalHeader(self.header)
+        # the "Import As" column contains combo boxes, which cannot be sorted
+        self.view = CheckTableWidget(
+            len(streams), 8, "streams", unsortable=(COL_IMPORT_AS,)
+        )
         for i, stream in enumerate(streams):
-            self.view.setItem(i, COL_CHECK, CheckTableWidgetItem())
+            self.view.set_check_item(i)
             self.view.setItem(i, COL_ID, IntTableWidgetItem(stream["stream_id"]))
             self.view.setItem(i, 2, QTableWidgetItem(stream["name"] or ""))
             self.view.setItem(i, 3, QTableWidgetItem(stream["type"] or ""))
@@ -166,7 +84,7 @@ class XDFStreamsDialog(QDialog):
                 combo.currentIndexChanged.connect(self.update_controls)
                 self.view.setCellWidget(i, COL_IMPORT_AS, combo)
 
-        self.view.setHorizontalHeaderLabels(
+        self.view.set_labels(
             [
                 "",
                 "ID",
@@ -179,20 +97,11 @@ class XDFStreamsDialog(QDialog):
             ]
         )
         set_header_alignments(self.view, "lrllrlrl")
-        self.view.horizontalHeaderItem(COL_CHECK).setToolTip(
-            "Check or uncheck all streams"
-        )
         self.view.horizontalHeaderItem(COL_IMPORT_AS).setToolTip(IMPORT_AS_TOOLTIP)
 
-        self.view.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-        self.view.setSelectionMode(QTableWidget.SelectionMode.NoSelection)
-        self.view.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.view.verticalHeader().setVisible(False)
-        self.view.horizontalHeader().setStretchLastSection(True)
-        self.view.setShowGrid(False)
         self.view.setSortingEnabled(True)
         self.view.sortByColumn(COL_ID, Qt.SortOrder.AscendingOrder)
-        self.view.itemChanged.connect(self._item_changed)
+        self.view.checks_changed.connect(self.update_controls)
 
         self.resample = QCheckBox()
         self.resample.clicked.connect(self._resample_clicked)
@@ -268,8 +177,6 @@ class XDFStreamsDialog(QDialog):
 
         self.update_controls()
         self.resize(875, 650)
-        self.header.setSectionResizeMode(COL_CHECK, QHeaderView.ResizeMode.Fixed)
-        self.view.setColumnWidth(COL_CHECK, 30)
         self.view.setColumnWidth(COL_ID, 80)
         self.view.setColumnWidth(2, 220)
         self.view.setColumnWidth(3, 105)
@@ -280,9 +187,6 @@ class XDFStreamsDialog(QDialog):
 
     def _stream_id(self, row):
         return self.view.item(row, COL_ID).value()
-
-    def _is_checked(self, row):
-        return self.view.item(row, COL_CHECK).checkState() == Qt.CheckState.Checked
 
     def _mode(self, row):
         """Return the mode in which the stream in `row` is imported."""
@@ -297,7 +201,7 @@ class XDFStreamsDialog(QDialog):
         modes = {
             self._stream_id(row): self._mode(row)
             for row in range(self.view.rowCount())
-            if self._is_checked(row)
+            if self.view.is_checked(row)
         }
         return dict(sorted(modes.items()))
 
@@ -335,36 +239,6 @@ class XDFStreamsDialog(QDialog):
             return max(rates)
         return FALLBACK_FS
 
-    def _item_changed(self, item):
-        """Update controls after a stream was (un)checked.
-
-        With Shift, all rows between the previously and the currently (un)checked row
-        get the new check state.
-        """
-        if item.column() != COL_CHECK:
-            return
-        shift = QApplication.keyboardModifiers() & Qt.KeyboardModifier.ShiftModifier
-        if shift and self._last_check_item is not None:
-            first, last = sorted((self._last_check_item.row(), item.row()))
-            with QSignalBlocker(self.view):
-                for row in range(first, last + 1):
-                    self.view.item(row, COL_CHECK).setCheckState(item.checkState())
-        self._last_check_item = item
-        self.update_controls()
-
-    @Slot()
-    def _check_all_clicked(self):
-        """Check all streams, or uncheck all streams if all are already checked."""
-        rows = range(self.view.rowCount())
-        if all(self._is_checked(row) for row in rows):
-            state = Qt.CheckState.Unchecked
-        else:
-            state = Qt.CheckState.Checked
-        with QSignalBlocker(self.view):
-            for row in rows:
-                self.view.item(row, COL_CHECK).setCheckState(state)
-        self.update_controls()
-
     @Slot(bool)
     def _resample_clicked(self, checked):
         self._resample_choice = checked
@@ -399,20 +273,12 @@ class XDFStreamsDialog(QDialog):
         normal = self.palette().color(QPalette.ColorRole.Text)
         with QSignalBlocker(self.view):
             for row in range(self.view.rowCount()):
-                checked = self._is_checked(row)
+                checked = self.view.is_checked(row)
                 for col in range(self.view.columnCount()):
                     self.view.item(row, col).setForeground(normal if checked else muted)
                 combo = self.view.cellWidget(row, COL_IMPORT_AS)
                 if combo is not None:
                     combo.setEnabled(checked)
-        n_checked = sum(self._is_checked(row) for row in range(self.view.rowCount()))
-        if n_checked == 0:
-            self.header.set_check_state(Qt.CheckState.Unchecked)
-        elif n_checked == self.view.rowCount():
-            self.header.set_check_state(Qt.CheckState.Checked)
-        else:
-            self.header.set_check_state(Qt.CheckState.PartiallyChecked)
-
         channels = self._checked_streams(CONTINUOUS, DISCRETE)
         forced = len(channels) > 1 or any(s["nominal_srate"] == 0 for s in channels)
         self.resample.setEnabled(len(channels) == 1 and not forced)

@@ -16,7 +16,6 @@ from PySide6.QtWidgets import (
     QHeaderView,
     QLabel,
     QLineEdit,
-    QListWidget,
     QPushButton,
     QTableWidget,
     QTableWidgetItem,
@@ -24,7 +23,8 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from mnelab.dialogs.utils import IntTableWidgetItem, select_all, set_header_alignments
+from mnelab.dialogs.utils import IntTableWidgetItem, set_header_alignments
+from mnelab.widgets import CheckListWidget
 
 _HEX_PARTIAL = re.compile(r"#[0-9A-Fa-f]{0,6}$")
 _HEX_FULL = re.compile(r"#[0-9A-Fa-f]{6}$")
@@ -199,10 +199,7 @@ class AnnotationTypesDialog(QDialog):
         vbox = QVBoxLayout(self)
         if label is not None:
             vbox.addWidget(QLabel(label))
-        self.list_widget = QListWidget()
-        self.list_widget.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
-        self.list_widget.insertItems(0, types)
-        select_all(self.list_widget)
+        self.list_widget = CheckListWidget(types, "Type", "annotation types")
         vbox.addWidget(self.list_widget)
         self.buttonbox = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
@@ -210,21 +207,21 @@ class AnnotationTypesDialog(QDialog):
         vbox.addWidget(self.buttonbox)
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
-        self.list_widget.itemSelectionChanged.connect(self.toggle_ok)
+        self.list_widget.checks_changed.connect(self.toggle_ok)
         self.toggle_ok()
         self.setFocus()
 
     @Slot()
     def toggle_ok(self):
-        """Disable OK when nothing is selected."""
+        """Disable OK when nothing is checked."""
         self.buttonbox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(
-            bool(self.list_widget.selectedItems())
+            bool(self.list_widget.checked_rows())
         )
 
     @property
     def selected_types(self):
-        """Return list of selected annotation type strings."""
-        return [item.text() for item in self.list_widget.selectedItems()]
+        """Return list of checked annotation type strings."""
+        return self.list_widget.checked_texts()
 
 
 class AnnotationColorsDialog(QDialog):

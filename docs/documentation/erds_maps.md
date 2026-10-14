@@ -38,8 +38,8 @@ The _Events_ entry in the info panel now updates to "90 (1, 2, 3)", indicating t
 
 ## Split into epochs
 Go to _Tools – Create Epochs…_ (or click on the corresponding icon in the toolbar).
-In the dialog, select events "2" and "3" (the two task onsets).
-You can click and drag to select multiple items in this dialog.
+In the dialog, check events "2" and "3" (the two task onsets).
+To check a range of events, hold <kbd>Shift</kbd> while clicking a checkbox; the checkbox in the header checks or unchecks all events.
 For _Interval around events_ enter "-1.5" and "4.5" as start and end times relative to the selected events, respectively.
 We will create ERDS maps in the time interval ranging from -1 to 4 seconds, but we add half a second at the start and end to account for edge effects.
 Uncheck _Baseline Correction_, confirm with _OK_, and select _Create a new data set_.
@@ -51,7 +51,7 @@ ERDS maps can only be calculated from Epochs.
 
 ## Pick channels
 Considering the motor imagery tasks, electrodes C3, Cz, and C4 should show the strongest activity.
-Go to _Edit – Pick channels…_ and select the desired channels.
+Go to _Edit – Pick channels…_ and check the desired channels (click the checkbox in the header to uncheck all channels first).
 Don't worry about the channel names containing trailing dots, that's how they are stored in the original data files.
 
 ![](./images/erds_maps/pick_channels.png)

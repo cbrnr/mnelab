@@ -3,13 +3,12 @@
 # License: BSD (3-clause)
 
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtGui import QColor, QPainter
+from PySide6.QtGui import QPainter
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QDialog,
     QDialogButtonBox,
     QGridLayout,
-    QHeaderView,
     QLabel,
     QPushButton,
     QTableWidget,
@@ -17,7 +16,6 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
-from mnelab.utils import tabular_digits_font
 from mnelab.widgets import selection_key
 
 ROW_HEIGHT = 10
@@ -25,6 +23,7 @@ ROW_HEIGHT = 10
 
 class DragDropTableWidget(QTableWidget):
     def __init__(self, parent=None, items=None):
+        """Table of data set names, each carrying its index in `UserRole` data."""
         super().__init__(parent)
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
@@ -35,20 +34,18 @@ class DragDropTableWidget(QTableWidget):
         self.setDragDropOverwriteMode(False)
         self.drop_row = -1
 
-        self.setColumnCount(2)
+        self.setColumnCount(1)
         self.horizontalHeader().hide()
         self.verticalHeader().hide()
         self.setShowGrid(False)
-        self.horizontalHeader().setSectionResizeMode(
-            0, QHeaderView.ResizeMode.ResizeToContents
-        )
         self.horizontalHeader().setStretchLastSection(True)
         self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         if items is not None:
             self.setRowCount(len(items))
             for i, (idx, name) in enumerate(items):
-                self.setItem(i, 0, QTableWidgetItem(str(idx)))
-                self.setItem(i, 1, QTableWidgetItem(name))
+                item = QTableWidgetItem(name)
+                item.setData(Qt.ItemDataRole.UserRole, idx)
+                self.setItem(i, 0, item)
             self.style_rows()
 
     def style_rows(self):
@@ -56,18 +53,10 @@ class DragDropTableWidget(QTableWidget):
             self.resizeRowToContents(i)
             self.setRowHeight(i, ROW_HEIGHT)
             self.item(i, 0).setTextAlignment(
-                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
-            )
-            self.item(i, 0).setForeground(QColor("gray"))
-            self.item(i, 0).setFont(tabular_digits_font())
-            self.item(i, 0).setFlags(
-                self.item(i, 0).flags() & ~Qt.ItemFlag.ItemIsEditable
-            )
-            self.item(i, 1).setTextAlignment(
                 Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
             )
-            self.item(i, 1).setFlags(
-                self.item(i, 1).flags() & ~Qt.ItemFlag.ItemIsEditable
+            self.item(i, 0).setFlags(
+                self.item(i, 0).flags() & ~Qt.ItemFlag.ItemIsEditable
             )
 
     def dragMoveEvent(self, event):
@@ -105,13 +94,7 @@ class DragDropTableWidget(QTableWidget):
         )
 
         if selected_rows:
-            row_data = [
-                [
-                    source_table.item(row, col).text()
-                    for col in range(source_table.columnCount())
-                ]
-                for row in selected_rows
-            ]
+            row_items = [source_table.item(row, 0).clone() for row in selected_rows]
 
             if source_table == self:
                 for row in selected_rows:
@@ -121,10 +104,9 @@ class DragDropTableWidget(QTableWidget):
             for row in reversed(selected_rows):
                 source_table.removeRow(row)
 
-            for i, data in enumerate(row_data):
+            for i, item in enumerate(row_items):
                 self.insertRow(drop_row + i)
-                for col, value in enumerate(data):
-                    self.setItem(drop_row + i, col, QTableWidgetItem(value))
+                self.setItem(drop_row + i, 0, item)
             self.style_rows()
             event.accept()
         self.drop_row = -1
@@ -183,9 +165,9 @@ class AppendDialog(QDialog):
     def selected_idx(self):
         selected = []
         for it in range(self.destination.rowCount()):
-            index_item = self.destination.item(it, 0)
-            if index_item:
-                selected.append(int(index_item.text()))
+            item = self.destination.item(it, 0)
+            if item:
+                selected.append(item.data(Qt.ItemDataRole.UserRole))
         return selected
 
     @Slot()
@@ -225,12 +207,10 @@ class AppendDialog(QDialog):
         )
 
         for row in rows:
-            idx_item = source_table.item(row, 0).clone()
-            name_item = source_table.item(row, 1).clone()
+            item = source_table.item(row, 0).clone()
             row_count = destination_table.rowCount()
             destination_table.insertRow(row_count)
-            destination_table.setItem(row_count, 0, idx_item)
-            destination_table.setItem(row_count, 1, name_item)
+            destination_table.setItem(row_count, 0, item)
 
         for row in reversed(rows):
             source_table.removeRow(row)

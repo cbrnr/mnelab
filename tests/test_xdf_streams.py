@@ -9,14 +9,10 @@ from PySide6.QtCore import QPoint, Qt
 from PySide6.QtWidgets import QApplication
 
 import mnelab.mainwindow as mainwindow_module
-from mnelab.dialogs.xdf_streams import (
-    COL_CHECK,
-    COL_ID,
-    COL_IMPORT_AS,
-    XDFStreamsDialog,
-)
+from mnelab.dialogs.xdf_streams import COL_ID, COL_IMPORT_AS, XDFStreamsDialog
 from mnelab.mainwindow import MainWindow
 from mnelab.model import Model
+from mnelab.widgets import COL_CHECK
 
 
 def stream(stream_id, name, type_, channel_count, channel_format, nominal_srate):
@@ -107,7 +103,7 @@ def test_defaults(make_dialog, streams):
     }
     for stream_id, choices in expected.items():
         row = find_row(dialog, stream_id)
-        assert dialog._is_checked(row)
+        assert dialog.view.is_checked(row)
         combo = dialog.view.cellWidget(row, COL_IMPORT_AS)
         if choices is None:
             assert combo is None
@@ -170,7 +166,7 @@ def checked_ids(dialog):
     return sorted(
         dialog.view.item(row, COL_ID).value()
         for row in range(dialog.view.rowCount())
-        if dialog._is_checked(row)
+        if dialog.view.is_checked(row)
     )
 
 

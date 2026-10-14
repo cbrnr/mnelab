@@ -9,10 +9,9 @@ from PySide6.QtWidgets import (
     QDialogButtonBox,
     QGridLayout,
     QLabel,
-    QListWidget,
 )
 
-from mnelab.widgets import FlatDoubleSpinBox, selection_key, set_tooltip
+from mnelab.widgets import CheckListWidget, FlatDoubleSpinBox, set_tooltip
 
 
 class EpochDialog(QDialog):
@@ -25,14 +24,10 @@ class EpochDialog(QDialog):
         label.setAlignment(Qt.AlignmentFlag.AlignTop)
         grid.addWidget(label, 0, 0, 1, 1)
 
-        self.events = QListWidget()
-        self.events.insertItems(0, event_types)
-        self.events.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
-        set_tooltip(
-            f"Use Shift-click or {selection_key}-click to select multiple event types",
-            label,
-            self.events,
+        self.events = CheckListWidget(
+            event_types, "Event Type", "event types", checked=False
         )
+        set_tooltip("Check the event types to create epochs around", label)
         grid.addWidget(self.events, 0, 1, 1, 2)
 
         grid.addWidget(QLabel("Interval Around Events:"), 1, 0, 1, 1)
@@ -84,14 +79,14 @@ class EpochDialog(QDialog):
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
         grid.addWidget(self.buttonbox, 3, 0, 1, -1)
-        self.events.itemSelectionChanged.connect(self.toggle_ok)
+        self.events.checks_changed.connect(self.toggle_ok)
         self.toggle_ok()
         grid.setSizeConstraint(QGridLayout.SizeConstraint.SetFixedSize)
         self.setFocus()
 
     @Slot()
     def toggle_ok(self):
-        if self.events.selectedItems():
+        if self.events.checked_rows():
             self.buttonbox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(True)
         else:
             self.buttonbox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(False)
@@ -107,4 +102,4 @@ class EpochDialog(QDialog):
 
     @property
     def selected_events(self):
-        return [int(item.text()) for item in self.events.selectedItems()]
+        return [int(text) for text in self.events.checked_texts()]

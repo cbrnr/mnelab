@@ -14,12 +14,6 @@ from PySide6.QtWidgets import (
 from mnelab.utils import tabular_digits_font
 
 
-def select_all(list_widget):
-    """Select all items in a QListWidget."""
-    for i in range(list_widget.count()):
-        list_widget.item(i).setSelected(True)
-
-
 def set_header_alignments(model, alignments):
     """Set text alignment for each horizontal header item.
 

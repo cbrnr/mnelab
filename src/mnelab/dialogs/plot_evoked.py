@@ -12,12 +12,10 @@ from PySide6.QtWidgets import (
     QGroupBox,
     QLabel,
     QLineEdit,
-    QListWidget,
     QRadioButton,
 )
 
-from mnelab.dialogs.utils import select_all
-from mnelab.widgets import selection_key, set_tooltip
+from mnelab.widgets import CheckListWidget, set_tooltip
 
 
 class PlotEvokedDialog(QDialog):
@@ -32,30 +30,16 @@ class PlotEvokedDialog(QDialog):
         label = QLabel("Channels:")
         label.setAlignment(Qt.AlignmentFlag.AlignTop)
         grid.addWidget(label, 0, 0)
-        self.picks = QListWidget()
-        self.picks.insertItems(0, channels)
-        self.picks.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
-        select_all(self.picks)
-        set_tooltip(
-            f"Use Shift-click or {selection_key}-click to select multiple channels",
-            label,
-            self.picks,
-        )
+        self.picks = CheckListWidget(channels, "Channel", "channels")
+        set_tooltip("Check the channels to plot", label)
         grid.addWidget(self.picks, 0, 1)
 
         label = QLabel("Events:")
         label.setAlignment(Qt.AlignmentFlag.AlignTop)
         grid.addWidget(label, 1, 0)
-        self.events = QListWidget()
-        self.events.insertItems(0, events)
-        self.events.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
-        self.events.setMaximumHeight(self.events.sizeHintForRow(0) * 5.5)
-        select_all(self.events)
-        set_tooltip(
-            f"Use Shift-click or {selection_key}-click to select multiple event types",
-            label,
-            self.events,
-        )
+        self.events = CheckListWidget(events, "Event Type", "event types")
+        self.events.set_max_visible_rows(5.5)
+        set_tooltip("Check the event types to plot", label)
         grid.addWidget(self.events, 1, 1)
 
         grid.addWidget(QLabel("Show GFP:"), 2, 0)
@@ -118,15 +102,15 @@ class PlotEvokedDialog(QDialog):
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
         grid.addWidget(self.buttonbox, 5, 0, 1, -1)
-        self.picks.itemSelectionChanged.connect(self.toggle_ok)
-        self.events.itemSelectionChanged.connect(self.toggle_ok)
+        self.picks.checks_changed.connect(self.toggle_ok)
+        self.events.checks_changed.connect(self.toggle_ok)
         self.toggle_ok()
         grid.setSizeConstraint(QGridLayout.SizeConstraint.SetFixedSize)
         self.setFocus()
 
     @Slot()
     def toggle_ok(self):
-        if self.picks.selectedItems() and self.events.selectedItems():
+        if self.picks.checked_rows() and self.events.checked_rows():
             self.buttonbox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(True)
         else:
             self.buttonbox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(False)
@@ -148,30 +132,16 @@ class PlotEvokedComparisonDialog(QDialog):
         label = QLabel("Channels:")
         label.setAlignment(Qt.AlignmentFlag.AlignTop)
         grid.addWidget(label, 0, 0, 1, 1)
-        self.picks = QListWidget()
-        self.picks.insertItems(0, channels)
-        self.picks.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
-        select_all(self.picks)
-        set_tooltip(
-            f"Use Shift-click or {selection_key}-click to select multiple channels",
-            label,
-            self.picks,
-        )
+        self.picks = CheckListWidget(channels, "Channel", "channels")
+        set_tooltip("Check the channels to plot", label)
         grid.addWidget(self.picks, 0, 1, 1, 1)
 
         label = QLabel("Events:")
         label.setAlignment(Qt.AlignmentFlag.AlignTop)
         grid.addWidget(label, 1, 0, 1, 1)
-        self.events = QListWidget()
-        self.events.insertItems(0, events)
-        self.events.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
-        self.events.setMaximumHeight(self.events.sizeHintForRow(0) * 5.5)
-        select_all(self.events)
-        set_tooltip(
-            f"Use Shift-click or {selection_key}-click to select multiple event types",
-            label,
-            self.events,
-        )
+        self.events = CheckListWidget(events, "Event Type", "event types")
+        self.events.set_max_visible_rows(5.5)
+        set_tooltip("Check the event types to plot", label)
         grid.addWidget(self.events, 1, 1, 1, 1)
 
         grid.addWidget(QLabel("Average Epochs:"), 2, 0)
@@ -204,15 +174,15 @@ class PlotEvokedComparisonDialog(QDialog):
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
         grid.addWidget(self.buttonbox, 5, 0, 1, -1)
-        self.picks.itemSelectionChanged.connect(self.toggle_ok)
-        self.events.itemSelectionChanged.connect(self.toggle_ok)
+        self.picks.checks_changed.connect(self.toggle_ok)
+        self.events.checks_changed.connect(self.toggle_ok)
         self.toggle_ok()
         grid.setSizeConstraint(QGridLayout.SizeConstraint.SetFixedSize)
         self.setFocus()
 
     @Slot()
     def toggle_ok(self):
-        if self.picks.selectedItems() and self.events.selectedItems():
+        if self.picks.checked_rows() and self.events.checked_rows():
             self.buttonbox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(True)
         else:
             self.buttonbox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(False)
@@ -230,16 +200,9 @@ class PlotEvokedTopomaps(QDialog):
         label = QLabel("Events:")
         label.setAlignment(Qt.AlignmentFlag.AlignTop)
         grid.addWidget(label, 0, 0)
-        self.events = QListWidget()
-        self.events.insertItems(0, events)
-        self.events.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
-        self.events.setMaximumHeight(self.events.sizeHintForRow(0) * 5.5)
-        select_all(self.events)
-        set_tooltip(
-            f"Use Shift-click or {selection_key}-click to select multiple event types",
-            label,
-            self.events,
-        )
+        self.events = CheckListWidget(events, "Event Type", "event types")
+        self.events.set_max_visible_rows(5.5)
+        set_tooltip("Check the event types to plot", label)
         grid.addWidget(self.events, 0, 1)
 
         grid.addWidget(QLabel("Average Epochs:"), 1, 0)
@@ -280,14 +243,14 @@ class PlotEvokedTopomaps(QDialog):
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
         grid.addWidget(self.buttonbox, 3, 0, 1, -1)
-        self.events.itemSelectionChanged.connect(self.toggle_ok)
+        self.events.checks_changed.connect(self.toggle_ok)
         self.toggle_ok()
         grid.setSizeConstraint(QGridLayout.SizeConstraint.SetFixedSize)
         self.setFocus()
 
     @Slot()
     def toggle_ok(self):
-        enable = bool(self.events.selectedItems())
+        enable = bool(self.events.checked_rows())
         self.buttonbox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(enable)
 
     @Slot()
