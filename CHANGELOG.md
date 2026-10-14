@@ -4,8 +4,10 @@
 - Choose whether to import each XDF stream as continuous channels, discrete channels (such as trigger codes, which are neither filtered nor altered by resampling), or annotations using the stream modes of MNEXTEND 0.5.0 ([#711](https://github.com/cbrnr/mnelab/pull/711) by [Clemens Brunner](https://github.com/cbrnr))
 - Add settings profiles that can be imported and exported in the Settings dialog and applied from the command line with `--settings` ([#707](https://github.com/cbrnr/mnelab/pull/707) by [Clemens Brunner](https://github.com/cbrnr))
 - Add a button to collapse and expand all streams in the XDF Metadata dialog ([#713](https://github.com/cbrnr/mnelab/pull/713) by [Clemens Brunner](https://github.com/cbrnr))
+- Show keyboard shortcuts, recent files, and a link to the documentation as clickable links in the info widget if no data set is open ([#714](https://github.com/cbrnr/mnelab/pull/714) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🌀 Changed
+- Open the documentation for the latest version in development versions and for the stable version otherwise ([#714](https://github.com/cbrnr/mnelab/pull/714) by [Clemens Brunner](https://github.com/cbrnr))
 - Sort the streams in the XDF Metadata dialog by ID ([#713](https://github.com/cbrnr/mnelab/pull/713) by [Clemens Brunner](https://github.com/cbrnr))
 - Make the collapse button in the sidebar alternate between collapsing and expanding all items ([#713](https://github.com/cbrnr/mnelab/pull/713) by [Clemens Brunner](https://github.com/cbrnr))
 

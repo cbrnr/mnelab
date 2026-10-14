@@ -81,6 +81,9 @@ from mnelab.widgets import EmptyWidget, InfoWidget, SidebarWidget
 
 SIDEBAR_MIN_WIDTH = 150
 INFOWIDGET_MIN_WIDTH = 200
+DOCUMENTATION_URL = (
+    f"https://mnelab.readthedocs.io/en/{'latest' if IS_DEV_VERSION else 'stable'}/"
+)
 
 
 class _MNELogHandler(logging.Handler):
@@ -558,10 +561,15 @@ class MainWindow(QMainWindow):
         self.infowidget.widget(0).annotations_clicked.connect(self.edit_annotations)
         self.infowidget.widget(0).montage_clicked.connect(self.set_montage)
         self.infowidget.widget(0).reference_clicked.connect(self.change_reference)
-        emptywidget = EmptyWidget(
-            itemgetter("open_file", "history", "settings")(self.all_actions)
+        self.emptywidget = EmptyWidget(
+            itemgetter("open_file", "history", "settings")(self.all_actions),
+            self.recent,
+            DOCUMENTATION_URL,
         )
-        self.infowidget.addWidget(emptywidget)
+        self.emptywidget.recent_clicked.connect(lambda path: self.open_data(path))
+        self.emptywidget.recent_removed.connect(self._remove_recent)
+        self.emptywidget.documentation_clicked.connect(self.show_documentation)
+        self.infowidget.addWidget(self.emptywidget)
         self.splitter.addWidget(self.infowidget)
         self.splitter.setCollapsible(1, False)
         QTimer.singleShot(0, lambda: self._set_splitter_ratio(settings["splitter"]))
@@ -1927,7 +1935,7 @@ class MainWindow(QMainWindow):
         msg_box.exec()
 
     def show_documentation(self):
-        url = QUrl("https://mnelab.readthedocs.io/")
+        url = QUrl(DOCUMENTATION_URL)
         if not QDesktopServices.openUrl(url):
             QMessageBox.warning(self, "Open Url", "Could not open url")
 
@@ -1936,6 +1944,7 @@ class MainWindow(QMainWindow):
         old_badges = read_settings("dtype_badges")
         old_menu_icons = read_settings("menu_icons")
         SettingsDialog(self, self.plot_backends, initial_page=page).exec()
+        self.emptywidget.set_recent(self.recent)  # recent files may have changed
         new_backend = read_settings("plot_backend")
         new_badges = read_settings("dtype_badges")
         new_menu_icons = read_settings("menu_icons")
@@ -2014,6 +2023,7 @@ class MainWindow(QMainWindow):
         self.recent.insert(0, fname)
         self.recent = self.recent[: read_settings("max_recent")]  # prune list
         write_settings(recent=self.recent)
+        self.emptywidget.set_recent(self.recent)
         if not self.recent_menu.isEnabled():
             self.recent_menu.setEnabled(True)
 
@@ -2028,6 +2038,7 @@ class MainWindow(QMainWindow):
         if fname in self.recent:
             self.recent.remove(fname)
             write_settings(recent=self.recent)
+            self.emptywidget.set_recent(self.recent)
             if not self.recent:
                 self.recent_menu.setEnabled(False)
 
