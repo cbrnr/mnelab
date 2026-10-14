@@ -13,6 +13,7 @@ from pathlib import Path
 
 import mne
 import numpy as np
+from mnextend import remove_line_noise
 
 OPERATIONS = {
     "filter": "Filter Data",
@@ -42,7 +43,14 @@ FILE_IMPORTS = frozenset(
 
 PARAMETERS = {
     "filter": {"lower", "upper", "notch"},
-    "remove_line_noise": {"line_freq", "include_harmonics"},
+    "remove_line_noise": {
+        "line_freq",
+        "include_harmonics",
+        "window_length",
+        "overlap",
+        "freq_tolerance",
+        "skip_by_annotation",
+    },
     "resample": {"sfreq"},
     "crop": {"start", "stop"},
     "pick_channels": {"picks"},
@@ -105,6 +113,22 @@ def _json_safe(value):
     if isinstance(value, dict) and all(isinstance(key, str) for key in value):
         return {key: _json_safe(item) for key, item in value.items()}
     raise TypeError(f"Cannot record pipeline parameter {value!r}.")
+
+
+# MNEXTEND defaults for the optional line noise parameters (also used to complete
+# pipelines that were saved before these parameters existed)
+LINE_NOISE_DEFAULTS = {
+    key: _json_safe(parameter.default)
+    for key, parameter in signature(remove_line_noise).parameters.items()
+    if key
+    in {
+        "include_harmonics",
+        "window_length",
+        "overlap",
+        "freq_tolerance",
+        "skip_by_annotation",
+    }
+}
 
 
 def make_file_spec(fname, source_fname=None):
@@ -418,6 +442,11 @@ def validate_step(step):
         if key == "include_harmonics":
             if not isinstance(value, bool):
                 raise ValueError("Include harmonics must be true or false.")
+        elif key == "skip_by_annotation":
+            if not isinstance(value, list) or not all(
+                isinstance(item, str) for item in value
+            ):
+                raise ValueError("Annotations to skip must be a list of names.")
         elif (
             op in {"filter", "remove_line_noise", "resample", "crop"}
             and value is not None
@@ -446,10 +475,15 @@ def validate_step(step):
             )
         if not valid:
             raise ValueError("Invalid filter frequencies.")
-    elif op == "remove_line_noise" and (
-        params["line_freq"] is None or params["line_freq"] <= 0
-    ):
-        raise ValueError("Line frequency must be positive.")
+    elif op == "remove_line_noise":
+        if params["line_freq"] is None or params["line_freq"] <= 0:
+            raise ValueError("Line frequency must be positive.")
+        if params["window_length"] is None or params["window_length"] <= 0:
+            raise ValueError("Window length must be positive.")
+        if params["overlap"] is None or not 0 <= params["overlap"] < 1:
+            raise ValueError("Overlap must be at least 0 and less than 1.")
+        if params["freq_tolerance"] is None or params["freq_tolerance"] < 0:
+            raise ValueError("Frequency tolerance must not be negative.")
     elif op == "resample" and (params["sfreq"] is None or params["sfreq"] <= 0):
         raise ValueError("Sampling frequency must be positive.")
     elif op == "crop":
@@ -534,6 +568,12 @@ def load_pipeline(path):
     if not isinstance(steps, list):
         raise TypeError("Pipeline steps must be a list.")
     for step in steps:
+        if (
+            isinstance(step, dict)
+            and step.get("op") == "remove_line_noise"
+            and isinstance(step.get("params"), dict)
+        ):  # complete pipelines saved before the optional parameters existed
+            step["params"] = {**LINE_NOISE_DEFAULTS, **step["params"]}
         validate_step(step)
     return steps
 

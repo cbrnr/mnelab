@@ -1587,10 +1587,7 @@ class MainWindow(QMainWindow):
         dialog = RemoveLineNoiseDialog(self, sfreq)
         if dialog.exec():
             self.auto_duplicate()
-            self.model.remove_line_noise(
-                dialog.line_frequency,
-                dialog.include_harmonics.isChecked(),
-            )
+            self.model.remove_line_noise(**dialog.parameters)
 
     def resample_data(self):
         """Resample data."""
