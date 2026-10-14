@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (
 )
 
 from mnelab.dialogs.utils import NumberSortProxyModel, set_header_alignments
-from mnelab.utils import calculate_channel_stats
+from mnelab.utils import calculate_channel_stats, tabular_digits_font
 
 
 class ChannelStats(QDialog):
@@ -99,6 +99,7 @@ class ChannelStats(QDialog):
             item.setData(i, Qt.ItemDataRole.UserRole)
             item.setData(i, Qt.ItemDataRole.DisplayRole)
             item.setFlags(Qt.ItemFlag.ItemIsEnabled)
+            item.setFont(tabular_digits_font())
             item.setTextAlignment(
                 Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
             )
@@ -128,6 +129,7 @@ class ChannelStats(QDialog):
                 item.setData(f"{value:.2f}", Qt.ItemDataRole.DisplayRole)
                 item.setData(value, Qt.ItemDataRole.UserRole)
                 item.setFlags(Qt.ItemFlag.ItemIsEnabled)
+                item.setFont(tabular_digits_font())
                 item.setTextAlignment(
                     Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
                 )

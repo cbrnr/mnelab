@@ -11,6 +11,8 @@ from PySide6.QtWidgets import (
     QTableWidgetItem,
 )
 
+from mnelab.utils import tabular_digits_font
+
 
 def select_all(list_widget):
     """Select all items in a QListWidget."""
@@ -46,6 +48,7 @@ def set_header_alignments(model, alignments):
 class IntTableWidgetItem(QTableWidgetItem):
     def __init__(self, value):
         super().__init__(str(value))
+        self.setFont(tabular_digits_font())
         self.setTextAlignment(
             Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
         )
@@ -74,6 +77,7 @@ class IntTableWidgetItem(QTableWidgetItem):
 class FloatTableWidgetItem(QTableWidgetItem):
     def __init__(self, value):
         super().__init__(str(value))
+        self.setFont(tabular_digits_font())
         self.setTextAlignment(
             Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
         )

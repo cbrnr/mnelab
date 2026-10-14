@@ -6,6 +6,8 @@ from PySide6.QtCore import QSize, Qt, Signal
 from PySide6.QtGui import QPainter, QPalette
 from PySide6.QtWidgets import QAbstractSpinBox, QDoubleSpinBox, QSpinBox, QWidget
 
+from mnelab.utils import tabular_digits_font
+
 
 class _StepButton(QWidget):
     """Symbol-only step button rendered as an overlay inside a spin box."""
@@ -56,6 +58,7 @@ class _FlatSpinBoxMixin:
     """Mixin that replaces the native spin-box arrows with inline − / + buttons."""
 
     def _init_buttons(self):
+        self.setFont(tabular_digits_font())
         self.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
         self._minus_btn = _StepButton("−", self)
         self._plus_btn = _StepButton("+", self)

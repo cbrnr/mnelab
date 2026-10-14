@@ -27,6 +27,7 @@ from mnelab.dialogs.utils import (
     NumberSortProxyModel,
     set_header_alignments,
 )
+from mnelab.utils import tabular_digits_font
 from mnelab.widgets import FlatDoubleSpinBox, set_tooltip
 
 
@@ -165,6 +166,7 @@ class ICLabelDialog(QDialog):
             item.setData(row_id, Qt.ItemDataRole.UserRole)
             item.setData(row_id, Qt.ItemDataRole.DisplayRole)
             item.setFlags(Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable)
+            item.setFont(tabular_digits_font())
             item.setTextAlignment(
                 Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
             )
@@ -174,6 +176,7 @@ class ICLabelDialog(QDialog):
                 prob_item = QStandardItem()
                 prob_item.setData(f"{prob:.2f}", Qt.ItemDataRole.DisplayRole)
                 prob_item.setData(prob, Qt.ItemDataRole.UserRole)
+                prob_item.setFont(tabular_digits_font())
                 prob_item.setFlags(
                     Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
                 )
