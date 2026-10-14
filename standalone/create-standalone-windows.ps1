@@ -5,6 +5,7 @@ pyinstaller `
     --collect-all sklearn `
     --collect-all mne_qt_browser `
     --collect-all pybvrf `
+    --additional-hooks-dir hooks `
     --name MNELAB `
     --windowed `
     --noupx `
