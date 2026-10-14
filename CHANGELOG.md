@@ -1,4 +1,4 @@
-## [UNRELEASED] · YYYY-MM-DD
+## [1.7.0] · 2026-10-14
 ### ✨ Added
 - Choose the window length, overlap, frequency tolerance, and annotations to skip in the Remove Line Noise dialog using the new options of MNEXTEND 0.5.0 ([#712](https://github.com/cbrnr/mnelab/pull/712) by [Clemens Brunner](https://github.com/cbrnr))
 - Choose whether to import each XDF stream as continuous channels, discrete channels (such as trigger codes, which are neither filtered nor altered by resampling), or annotations using the stream modes of MNEXTEND 0.5.0 ([#711](https://github.com/cbrnr/mnelab/pull/711) by [Clemens Brunner](https://github.com/cbrnr))
