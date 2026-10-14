@@ -526,9 +526,18 @@ class MainWindow(QMainWindow):
             self._hamburger_action.setVisible(hamburger_enabled)
             self.menuBar().setVisible(not hamburger_enabled)
             self.all_actions["menubar"].setChecked(not hamburger_enabled)
-        self.setUnifiedTitleAndToolBarOnMac(True)
         if sys.platform == "darwin":
+            # show the native window background everywhere instead of a dated gray
+            # unified title and toolbar; Qt's palette color for it is darker, so widgets
+            # must not paint over it (the window itself stays opaque)
+            self.setWindowFlag(Qt.WindowType.NoTitleBarBackgroundHint)
+            self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+            self.statusBar().setStyleSheet("QStatusBar { background: transparent; }")
             self.toolbar.setStyleSheet("""
+                QToolBar {
+                    background: transparent;
+                    border: none;
+                }
                 QToolButton:hover {
                     background: rgba(128, 128, 128, 0.2);
                     border-radius: 4px;
