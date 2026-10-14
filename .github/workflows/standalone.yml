@@ -27,6 +27,10 @@ jobs:
       - name: Build app bundle
         working-directory: standalone
         run: uv run python create-standalone-macos.py build-app
+      - name: Smoke test app bundle
+        run: |
+          export QT_QPA_PLATFORM=offscreen
+          standalone/dist/MNELAB.app/Contents/MacOS/MNELAB --smoke-test smoke-test.log
       - name: Import Developer ID certificate
         run: |
           echo "$MACOS_CERT_P12_BASE64" | base64 --decode > certificate.p12
@@ -82,6 +86,19 @@ jobs:
         run: |
           . ..\.venv\Scripts\Activate.ps1
           .\create-standalone-windows.ps1
+      - name: Smoke test standalone app
+        shell: pwsh
+        run: |
+          $env:QT_QPA_PLATFORM = "offscreen"
+          $process = Start-Process standalone\dist\MNELAB\MNELAB.exe `
+            -ArgumentList "--smoke-test", "$PWD\smoke-test.log" -PassThru
+          # a startup crash of the windowed app shows a dialog and would hang the job
+          if (-not $process.WaitForExit(300000)) {
+            $process.Kill()
+            throw "Smoke test timed out"
+          }
+          Get-Content smoke-test.log -ErrorAction SilentlyContinue
+          if ($process.ExitCode -ne 0) { throw "Smoke test failed" }
       - name: Upload Windows installer
         uses: actions/upload-artifact@v7
         with:

@@ -50,3 +50,29 @@ with patch("PySide6.QtWidgets.QApplication.exec", return_value=0):
         f"Expected window title 'MNELAB', got: {result.stdout.strip()!r}\n"
         f"stderr: {result.stderr}"
     )
+
+
+def test_smoke_test(tmp_path):
+    """Test the hidden `--smoke-test` option used by CI to verify standalone apps."""
+    logfile = tmp_path / "smoke-test.log"
+    script = f"""
+import sys
+
+from mnelab import main, settings
+
+settings.SETTINGS_PATH = {str(tmp_path / "mnelab.ini")!r}
+sys.argv = ["mnelab", "--smoke-test", {str(logfile)!r}]
+main()
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", script],
+        capture_output=True,
+        text=True,
+        timeout=120,
+        check=False,
+    )
+    assert result.returncode == 0, (
+        f"smoke test exited with code {result.returncode}.\n"
+        f"stdout: {result.stdout}\nstderr: {result.stderr}"
+    )
+    assert logfile.read_text(encoding="utf-8") == "OK\n"

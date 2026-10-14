@@ -22,7 +22,7 @@ jobs:
 
   release:
     name: Create GitHub release
-    needs: build_standalone
+    needs: [build_standalone, publish]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -59,7 +59,7 @@ jobs:
 
   publish:
     name: Publish to PyPI
-    needs: test
+    needs: [test, build_standalone]
     runs-on: ubuntu-24.04
     permissions:
       id-token: write
