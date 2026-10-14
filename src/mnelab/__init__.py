@@ -52,6 +52,8 @@ def main():
         metavar="FILE",
         help="apply settings from a JSON profile for this session only",
     )
+    # hidden option used by CI to verify built (standalone) apps
+    parser.add_argument("--smoke-test", metavar="LOGFILE", help=argparse.SUPPRESS)
     # Qt may inject additional arguments, which are left for QApplication
     args, qt_args = parser.parse_known_args(sys.argv[1:])
     if args.settings is not None:
@@ -96,6 +98,10 @@ def main():
     model = Model()
     model.view = MainWindow(model)
     app.mainwindow = model.view
+    if args.smoke_test is not None:
+        from mnelab.smoke_test import run
+
+        sys.exit(run(args.smoke_test))
     for f in args.files:  # open files from command line arguments
         model.view.open_data(f)
     model.view.show()
