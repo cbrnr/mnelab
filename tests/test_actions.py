@@ -12,6 +12,7 @@ from mnelab.dialogs.calc import CalcDialog
 from mnelab.dialogs.channel_properties import ChannelPropertiesDialog
 from mnelab.dialogs.crop import CropDialog
 from mnelab.dialogs.find_events import FindEventsDialog
+from mnelab.dialogs.xdf_streams import XDFStreamsDialog
 from mnelab.mainwindow import MainWindow
 from mnelab.model import Model
 from mnelab.settings import read_settings
@@ -147,6 +148,26 @@ def test_failed_import_reloads_evicted_parent(loaded_view, monkeypatch, tmp_path
     )
 
     _fail_bads_import(view, monkeypatch, tmp_path)
+
+    assert len(model) == 1
+    assert model.current["data"] is not None
+    model.cleanup()
+
+
+def test_canceled_open_keeps_current_data_loaded(loaded_view, monkeypatch, tmp_path):
+    """With memory saving, canceling an import dialog does not evict the data set."""
+    model, view = loaded_view
+    monkeypatch.setattr(
+        mainwindow_module,
+        "read_settings",
+        lambda key: True if key == "memory_saving" else read_settings(key),
+    )
+    monkeypatch.setattr(mainwindow_module, "resolve_streams", lambda fname: [])
+    monkeypatch.setattr(XDFStreamsDialog, "exec", lambda dialog: False)
+    fname = tmp_path / "canceled.xdf"
+    fname.touch()
+
+    view.open_data(str(fname))
 
     assert len(model) == 1
     assert model.current["data"] is not None

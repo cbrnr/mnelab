@@ -808,87 +808,91 @@ class MainWindow(QMainWindow):
                 )
                 return
 
-            if read_settings("memory_saving") and self.model.data:
-                self.model.evict_dataset(self.model.index)
+            n_before = len(self.model.data)
+            parent_index = self.model.index
+            self._load_file(fname)
+            # evict the previous data set only if a new one was actually loaded
+            if (
+                read_settings("memory_saving")
+                and parent_index > -1
+                and len(self.model.data) > n_before
+            ):
+                self.model.evict_dataset(parent_index)
 
-            self._set_last_dir(fname)
-            ext = "".join(Path(fname).suffixes)
+    def _load_file(self, fname):
+        """Load a single file into a new data set (asking for options if needed)."""
+        self._set_last_dir(fname)
+        ext = "".join(Path(fname).suffixes)
 
-            if any(ext.endswith(e) for e in (".xdf", ".xdfz", ".xdf.gz")):  # XDF
-                dialog = XDFStreamsDialog(self, resolve_streams(fname), fname=fname)
-                if dialog.exec():
-                    fs_new = None
-                    gap_threshold = 0.0
-                    if dialog.resample.isChecked():
-                        fs_new = float(dialog.fs_new.value())
-                        if dialog.gap_threshold_checkbox.isChecked():
-                            gap_threshold = float(dialog.gap_threshold.value())
-                    with warnings.catch_warnings(record=True) as caught:
-                        warnings.simplefilter("always", RuntimeWarning)
-                        warnings.filterwarnings(  # non-standard units are common
-                            "ignore", "Unrecognized unit", RuntimeWarning
-                        )
-                        self.model.load(
-                            fname,
-                            streams=dialog.streams,
-                            prefix_markers=dialog.prefix_markers,
-                            fs_new=fs_new,
-                            gap_threshold=gap_threshold,
-                        )
-                    self._show_warnings(caught, "Warnings While Importing XDF File")
-            elif ext.lower() == ".mat":
-                dialog = MatDialog(self, Path(fname).name, parse_mat(fname))
-                if dialog.exec():
+        if any(ext.endswith(e) for e in (".xdf", ".xdfz", ".xdf.gz")):  # XDF
+            dialog = XDFStreamsDialog(self, resolve_streams(fname), fname=fname)
+            if dialog.exec():
+                fs_new = None
+                gap_threshold = 0.0
+                if dialog.resample.isChecked():
+                    fs_new = float(dialog.fs_new.value())
+                    if dialog.gap_threshold_checkbox.isChecked():
+                        gap_threshold = float(dialog.gap_threshold.value())
+                with warnings.catch_warnings(record=True) as caught:
+                    warnings.simplefilter("always", RuntimeWarning)
+                    warnings.filterwarnings(  # non-standard units are common
+                        "ignore", "Unrecognized unit", RuntimeWarning
+                    )
                     self.model.load(
                         fname,
-                        variable=dialog.name,
-                        fs=dialog.fs,
-                        transpose=dialog.transpose,
+                        streams=dialog.streams,
+                        prefix_markers=dialog.prefix_markers,
+                        fs_new=fs_new,
+                        gap_threshold=gap_threshold,
                     )
-            elif ext == ".npy":
-                dialog = NpyDialog(self, parse_npy(fname))
-                if dialog.exec_():
-                    self.model.load(fname, dialog.fs, dialog.transpose)
-            elif ext == ".vhdr":
-                dialog = BrainVisionDialog(self)
-                if dialog.exec():
-                    self.model.load(
-                        fname, ignore_marker_types=dialog.ignore_marker_types
-                    )
-            elif ext in (".bvrh", ".bvrd", ".bvrm", ".bvri"):
-                try:
-                    header = read_bvrf_header(Path(fname).with_suffix(".bvrh"))
-                    if header["n_participants"] > 1:
-                        participants = [
-                            p["Id"] for p in header["yaml_header"]["Participants"]
-                        ]
-                        dialog = BVRFDialog(self, participants)
-                        if dialog.exec():
-                            selected = dialog.selected_participants
-                            if dialog.create_separate:
-                                data_dict = read_raw(
-                                    fname, participants=selected, split=True
-                                )
-                                for pid, raw in data_dict.items():
-                                    name, _ = split_name_ext(fname, raw_readers)
-                                    self.model.load_data(
-                                        raw, fname, name=f"{name} ({pid})"
-                                    )
-                            else:
-                                self.model.load(
-                                    fname, participants=selected, split=False
-                                )
-                    else:  # single participant, load directly
-                        self.model.load(fname)
-                except Exception as e:
-                    QMessageBox.critical(self, "Error loading BVRF file", str(e))
-            else:  # all other file formats
-                try:
+                self._show_warnings(caught, "Warnings While Importing XDF File")
+        elif ext.lower() == ".mat":
+            dialog = MatDialog(self, Path(fname).name, parse_mat(fname))
+            if dialog.exec():
+                self.model.load(
+                    fname,
+                    variable=dialog.name,
+                    fs=dialog.fs,
+                    transpose=dialog.transpose,
+                )
+        elif ext == ".npy":
+            dialog = NpyDialog(self, parse_npy(fname))
+            if dialog.exec_():
+                self.model.load(fname, dialog.fs, dialog.transpose)
+        elif ext == ".vhdr":
+            dialog = BrainVisionDialog(self)
+            if dialog.exec():
+                self.model.load(fname, ignore_marker_types=dialog.ignore_marker_types)
+        elif ext in (".bvrh", ".bvrd", ".bvrm", ".bvri"):
+            try:
+                header = read_bvrf_header(Path(fname).with_suffix(".bvrh"))
+                if header["n_participants"] > 1:
+                    participants = [
+                        p["Id"] for p in header["yaml_header"]["Participants"]
+                    ]
+                    dialog = BVRFDialog(self, participants)
+                    if dialog.exec():
+                        selected = dialog.selected_participants
+                        if dialog.create_separate:
+                            data_dict = read_raw(
+                                fname, participants=selected, split=True
+                            )
+                            for pid, raw in data_dict.items():
+                                name, _ = split_name_ext(fname, raw_readers)
+                                self.model.load_data(raw, fname, name=f"{name} ({pid})")
+                        else:
+                            self.model.load(fname, participants=selected, split=False)
+                else:  # single participant, load directly
                     self.model.load(fname)
-                except FileNotFoundError as e:
-                    QMessageBox.critical(self, "File not found", str(e))
-                except ValueError as e:
-                    QMessageBox.critical(self, "Unknown file type", str(e))
+            except Exception as e:
+                QMessageBox.critical(self, "Error loading BVRF file", str(e))
+        else:  # all other file formats
+            try:
+                self.model.load(fname)
+            except FileNotFoundError as e:
+                QMessageBox.critical(self, "File not found", str(e))
+            except ValueError as e:
+                QMessageBox.critical(self, "Unknown file type", str(e))
 
     def open_file(self, f, text, ffilter="*"):
         """Open file."""
