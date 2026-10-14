@@ -6,7 +6,15 @@ from functools import wraps
 
 import pytest
 
+from mnelab import settings
 from mnelab.model import Model
+
+
+@pytest.fixture(autouse=True)
+def temp_settings(tmp_path, monkeypatch):
+    """Redirect settings to a temporary file to keep the user's settings unchanged."""
+    monkeypatch.setattr(settings, "SETTINGS_PATH", str(tmp_path / "mnelab.ini"))
+    monkeypatch.setattr(settings, "_overrides", {})
 
 
 class _ValidatingHistory(list):

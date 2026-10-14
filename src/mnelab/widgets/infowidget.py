@@ -271,6 +271,9 @@ class InfoWidget(QWidget):
         self._copy_entry = None
         item = self.grid.takeAt(0)
         while item:
+            # hide immediately because deferred deletion does not happen while a
+            # nested event loop (such as a modal message box) is running
+            item.widget().hide()
             item.widget().deleteLater()
             del item
             item = self.grid.takeAt(0)

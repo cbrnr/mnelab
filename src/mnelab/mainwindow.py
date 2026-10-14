@@ -7,6 +7,7 @@ import logging
 import multiprocessing as mp
 import sys
 import traceback
+import warnings
 from functools import partial
 from operator import itemgetter
 from pathlib import Path
@@ -589,6 +590,29 @@ class MainWindow(QMainWindow):
         print(traceback_text, file=sys.stderr)
         ErrorMessageBox(self, exception_text, "", traceback_text).show()
 
+    def _show_warnings(self, caught, title):
+        """Show warnings recorded with `warnings.catch_warnings(record=True)`.
+
+        Runtime warnings (used by MNE and MNEXTEND for messages about the data) are
+        shown in a message box, all other warnings are printed as usual.
+
+        Parameters
+        ----------
+        caught : list[warnings.WarningMessage]
+            The recorded warnings.
+        title : str
+            Title of the message box.
+        """
+        messages = []
+        for w in caught:
+            if issubclass(w.category, RuntimeWarning):
+                messages.append(str(w.message))
+            else:
+                warnings.showwarning(w.message, w.category, w.filename, w.lineno)
+        messages = list(dict.fromkeys(messages))  # remove duplicates
+        if messages:
+            QMessageBox.warning(self, title, "\n\n".join(messages))
+
     def _sidebar_item_changed(self, item, column):
         """Triggered when a tree item's data changes (e.g. after inline name editing).
 
@@ -774,18 +798,7 @@ class MainWindow(QMainWindow):
             ext = "".join(Path(fname).suffixes)
 
             if any(ext.endswith(e) for e in (".xdf", ".xdfz", ".xdf.gz")):  # XDF
-                rows = [
-                    [
-                        s["stream_id"],
-                        s["name"],
-                        s["type"],
-                        s["channel_count"],
-                        s["channel_format"],
-                        s["nominal_srate"],
-                    ]
-                    for s in resolve_streams(fname)
-                ]
-                dialog = XDFStreamsDialog(self, rows, fname=fname)
+                dialog = XDFStreamsDialog(self, resolve_streams(fname), fname=fname)
                 if dialog.exec():
                     fs_new = None
                     gap_threshold = 0.0
@@ -793,14 +806,19 @@ class MainWindow(QMainWindow):
                         fs_new = float(dialog.fs_new.value())
                         if dialog.gap_threshold_checkbox.isChecked():
                             gap_threshold = float(dialog.gap_threshold.value())
-                    self.model.load(
-                        fname,
-                        stream_ids=dialog.selected_streams,
-                        marker_ids=dialog.selected_markers,
-                        prefix_markers=dialog.prefix_markers,
-                        fs_new=fs_new,
-                        gap_threshold=gap_threshold,
-                    )
+                    with warnings.catch_warnings(record=True) as caught:
+                        warnings.simplefilter("always", RuntimeWarning)
+                        warnings.filterwarnings(  # non-standard units are common
+                            "ignore", "Unrecognized unit", RuntimeWarning
+                        )
+                        self.model.load(
+                            fname,
+                            streams=dialog.streams,
+                            prefix_markers=dialog.prefix_markers,
+                            fs_new=fs_new,
+                            gap_threshold=gap_threshold,
+                        )
+                    self._show_warnings(caught, "Warnings While Importing XDF File")
             elif ext.lower() == ".mat":
                 dialog = MatDialog(self, Path(fname).name, parse_mat(fname))
                 if dialog.exec():

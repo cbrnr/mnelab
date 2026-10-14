@@ -8,6 +8,7 @@ Guidelines for AI coding agents working on this repository.
 - Install dependencies with `uv sync --locked --all-groups --all-extras`.
 - Run the app with `uv run mnelab`.
 - Run tests with `uv run pytest -W error tests` (CI promotes warnings to errors; a plain `uv run pytest` will miss these).
+- Never let tests or ad-hoc scripts change the user's MNELAB settings (for example, every file opened in a `MainWindow` is added to the user's Recent Files). Tests are isolated by the autouse `temp_settings` fixture in `tests/conftest.py`. In scripts that create a `MainWindow` or write settings, set `mnelab.settings.SETTINGS_PATH` to a temporary file first.
 
 ## Code style
 
