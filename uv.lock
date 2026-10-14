@@ -1127,7 +1127,7 @@ requires-dist = [
     { name = "matplotlib", specifier = ">=3.10.8" },
     { name = "mne", specifier = ">=1.12.1" },
     { name = "mne-qt-browser", marker = "extra == 'full'", specifier = ">=0.7.4" },
-    { name = "mnextend", specifier = ">=0.5.0" },
+    { name = "mnextend", specifier = ">=0.5.1" },
     { name = "numpy", specifier = ">=2.4.4" },
     { name = "pyside6", specifier = ">=6.11.0" },
     { name = "python-picard", marker = "extra == 'full'", specifier = ">=0.8.1" },
@@ -1150,7 +1150,7 @@ docs = [{ name = "mkdocs-material", specifier = ">=9.7.6" }]
 
 [[package]]
 name = "mnextend"
-version = "0.5.0"
+version = "0.5.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "edfio" },
@@ -1163,9 +1163,9 @@ dependencies = [
     { name = "pyxdf" },
     { name = "scipy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/69/1e/6e80d4319567adffad621c42fae60cdd25a1ea01bcbca4f3f996fd7e9cec/mnextend-0.5.0.tar.gz", hash = "sha256:9ff2220cb5dfa56449d34d1bd50c60943512ad922a3cd69323f96ef03f724a9e", size = 10809174, upload-time = "2026-10-14T06:55:32.662Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7e/39/6c4638388933771f758c3abee37601abbc6ed57e55fa292b6e705e2c671a/mnextend-0.5.1.tar.gz", hash = "sha256:df10681e06acae7acc7d58f0bc295be418188611e0c0bf29bffdfe2bf8cc9703", size = 10809509, upload-time = "2026-10-14T09:03:32.769Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e8/d6/6c8c89cac87b6e5bd3ef0c6329efef6b539ca2924d0032253630b0275266/mnextend-0.5.0-py3-none-any.whl", hash = "sha256:02be8b4953234f8cc4783736b0dc097fccf35b2405d3234eaa6963fb7d95b49e", size = 10811701, upload-time = "2026-10-14T06:55:29.572Z" },
+    { url = "https://files.pythonhosted.org/packages/0a/61/0741c9a8509d796f30f77200aa5f14b10e6206ac365f01e6ea17f56b4144/mnextend-0.5.1-py3-none-any.whl", hash = "sha256:33ca70ba81cf2ebcee6ef65c40a975841bab89283aab4dad296e9c1891175454", size = 10812038, upload-time = "2026-10-14T09:03:29.936Z" },
 ]
 
 [[package]]
