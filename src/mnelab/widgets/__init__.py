@@ -2,6 +2,11 @@
 #
 # License: BSD (3-clause)
 
+from mnelab.widgets.checktable import (
+    COL_CHECK,
+    CheckListWidget,
+    CheckTableWidget,
+)
 from mnelab.widgets.infowidget import EmptyWidget, InfoWidget
 from mnelab.widgets.sidebar import SidebarTreeWidget, SidebarWidget
 from mnelab.widgets.spinbox import FlatDoubleSpinBox, FlatSpinBox

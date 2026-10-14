@@ -1099,11 +1099,11 @@ class MainWindow(QMainWindow):
         dialog = PickChannelsDialog(self, channels, types)
         if dialog.exec():
             if dialog.by_name.isChecked():
-                picks = [item.text() for item in dialog.names.selectedItems()]
+                picks = dialog.names.checked_texts()
                 if set(channels) == set(picks):
                     return
             else:  # by type
-                picks = [item.text() for item in dialog.types.selectedItems()]
+                picks = dialog.types.checked_texts()
                 if set(types) == set(picks):
                     return
             self.auto_duplicate()
@@ -1425,7 +1425,7 @@ class MainWindow(QMainWindow):
         if dialog.exec():
             figs = plot_erds_topomaps(
                 epochs,
-                events=[item.text() for item in dialog.events.selectedItems()],
+                events=dialog.events.checked_texts(),
                 freqs=np.arange(dialog.f1, dialog.f2, dialog.step),
                 baseline=(dialog.b1, dialog.b2),
                 times=[dialog.t1, dialog.t2],
@@ -1457,8 +1457,8 @@ class MainWindow(QMainWindow):
                 topomap_times = []
             figs = plot_evoked(
                 epochs=epochs,
-                picks=[item.text() for item in dialog.picks.selectedItems()],
-                events=[item.text() for item in dialog.events.selectedItems()],
+                picks=dialog.picks.checked_texts(),
+                events=dialog.events.checked_texts(),
                 gfp=dialog.gfp.isChecked(),
                 spatial_colors=dialog.spatial_colors.isChecked(),
                 topomap_times=topomap_times,
@@ -1473,8 +1473,8 @@ class MainWindow(QMainWindow):
         if dialog.exec():
             figs = plot_evoked_comparison(
                 epochs=epochs,
-                picks=[item.text() for item in dialog.picks.selectedItems()],
-                events=[item.text() for item in dialog.events.selectedItems()],
+                picks=dialog.picks.checked_texts(),
+                events=dialog.events.checked_texts(),
                 average_method=dialog.average_epochs.currentText(),
                 combine=dialog.combine_channels.currentText(),
                 confidence_intervals=dialog.confidence_intervals.isChecked(),
@@ -1498,7 +1498,7 @@ class MainWindow(QMainWindow):
 
             figs = plot_evoked_topomaps(
                 epochs=epochs,
-                events=[item.text() for item in dialog.events.selectedItems()],
+                events=dialog.events.checked_texts(),
                 average_method=dialog.average_epochs.currentText(),
                 times=times,
             )
@@ -1831,7 +1831,7 @@ class MainWindow(QMainWindow):
                 if dialog.reref_average.isChecked():
                     ref = "average"
                 else:
-                    ref = [c.text() for c in dialog.reref_channellist.selectedItems()]
+                    ref = dialog.reref_channellist.checked_texts()
             else:
                 ref = None
             parent_index = self.model.index

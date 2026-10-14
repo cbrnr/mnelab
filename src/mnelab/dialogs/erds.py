@@ -9,12 +9,10 @@ from PySide6.QtWidgets import (
     QDialogButtonBox,
     QGridLayout,
     QLabel,
-    QListWidget,
     QVBoxLayout,
 )
 
-from mnelab.dialogs.utils import select_all
-from mnelab.widgets import FlatDoubleSpinBox, selection_key, set_tooltip
+from mnelab.widgets import CheckListWidget, FlatDoubleSpinBox, set_tooltip
 
 
 class ERDSDialog(QDialog):
@@ -211,16 +209,9 @@ class ERDSTopomapsDialog(QDialog):
         label = QLabel("Events:")
         label.setAlignment(Qt.AlignmentFlag.AlignTop)
         grid.addWidget(label, 3, 0)
-        self.events = QListWidget()
-        self.events.insertItems(0, events)
-        self.events.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
-        self.events.setMaximumHeight(self.events.sizeHintForRow(0) * 5.5)
-        select_all(self.events)
-        set_tooltip(
-            f"Use Shift-click or {selection_key}-click to select multiple event types",
-            label,
-            self.events,
-        )
+        self.events = CheckListWidget(events, "Event Type", "event types")
+        self.events.set_max_visible_rows(5.5)
+        set_tooltip("Check the event types to include", label)
         grid.addWidget(self.events, 3, 1, 1, 2)
 
         grid.addWidget(QLabel("Frequency Step:"), 4, 0)
@@ -240,13 +231,13 @@ class ERDSTopomapsDialog(QDialog):
         vbox.addWidget(self.buttonbox)
         self.buttonbox.accepted.connect(self.accept)
         self.buttonbox.rejected.connect(self.reject)
-        self.events.itemSelectionChanged.connect(self.toggle_ok)
+        self.events.checks_changed.connect(self.toggle_ok)
         vbox.setSizeConstraint(QVBoxLayout.SizeConstraint.SetFixedSize)
         self.setFocus()
 
     @Slot()
     def toggle_ok(self):
-        enable = bool(self.events.selectedItems())
+        enable = bool(self.events.checked_rows())
         self.buttonbox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(enable)
 
     @property

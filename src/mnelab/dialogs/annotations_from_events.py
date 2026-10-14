@@ -11,13 +11,12 @@ from PySide6.QtWidgets import (
     QDialogButtonBox,
     QGridLayout,
     QLabel,
-    QListWidget,
     QRadioButton,
     QVBoxLayout,
     QWidget,
 )
 
-from mnelab.widgets import FlatDoubleSpinBox, selection_key, set_tooltip
+from mnelab.widgets import CheckListWidget, FlatDoubleSpinBox, set_tooltip
 
 
 class AnnotationsIntervalDialog(QDialog):
@@ -55,12 +54,10 @@ class AnnotationsIntervalDialog(QDialog):
         # start event
         self.start_event_label = QLabel("Start Event(s):")
         self.grid.addWidget(self.start_event_label, 0, 0, Qt.AlignmentFlag.AlignTop)
-        self.start_event_list = QListWidget()
-        self.start_event_list.setSelectionMode(
-            QListWidget.SelectionMode.ExtendedSelection
+        self.start_event_list = CheckListWidget(
+            self.event_names, "Event Type", "start event types", checked=False
         )
-        self.start_event_list.addItems(self.event_names)
-        self.start_event_list.setMaximumHeight(100)
+        self.start_event_list.set_max_visible_rows(3)
         self.grid.addWidget(self.start_event_list, 0, 1)
 
         # start offset
@@ -77,12 +74,10 @@ class AnnotationsIntervalDialog(QDialog):
         # end event
         self.end_event_label = QLabel("End Event(s):")
         self.grid.addWidget(self.end_event_label, 2, 0, Qt.AlignmentFlag.AlignTop)
-        self.end_event_list = QListWidget()
-        self.end_event_list.setSelectionMode(
-            QListWidget.SelectionMode.ExtendedSelection
+        self.end_event_list = CheckListWidget(
+            self.event_names, "Event Type", "end event types", checked=False
         )
-        self.end_event_list.addItems(self.event_names)
-        self.end_event_list.setMaximumHeight(100)
+        self.end_event_list.set_max_visible_rows(3)
         self.grid.addWidget(self.end_event_list, 2, 1)
 
         # end offset
@@ -118,12 +113,8 @@ class AnnotationsIntervalDialog(QDialog):
 
         self._interval_tooltips = (
             (
-                (
-                    f"Use Shift-click or {selection_key}-click to select multiple "
-                    "start event types"
-                ),
+                "Check the event types at which annotations start",
                 self.start_event_label,
-                self.start_event_list,
             ),
             (
                 "Offset annotation starts relative to selected start events in seconds",
@@ -131,12 +122,8 @@ class AnnotationsIntervalDialog(QDialog):
                 self.start_offset_spin,
             ),
             (
-                (
-                    f"Use Shift-click or {selection_key}-click to select multiple end "
-                    "event types"
-                ),
+                "Check the event types at which annotations end",
                 self.end_event_label,
-                self.end_event_list,
             ),
             (
                 "Offset annotation ends relative to selected end events in seconds",
@@ -181,8 +168,8 @@ class AnnotationsIntervalDialog(QDialog):
         self.annotation_type_group.buttonToggled.connect(self._check_validity)
 
         # trigger checks
-        self.start_event_list.itemSelectionChanged.connect(self._check_validity)
-        self.end_event_list.itemSelectionChanged.connect(self._check_validity)
+        self.start_event_list.checks_changed.connect(self._check_validity)
+        self.end_event_list.checks_changed.connect(self._check_validity)
 
         self.annotation_combo.currentTextChanged.connect(self._check_validity)
 
@@ -201,11 +188,8 @@ class AnnotationsIntervalDialog(QDialog):
             self.warning_label.setVisible(False)
             return
 
-        start_items = self.start_event_list.selectedItems()
-        end_items = self.end_event_list.selectedItems()
-
-        start_events = [item.text() for item in start_items]
-        end_events = [item.text() for item in end_items]
+        start_events = self.start_event_list.checked_texts()
+        end_events = self.end_event_list.checked_texts()
 
         has_start = len(start_events) > 0
         has_end = len(end_events) > 0
@@ -266,11 +250,9 @@ class AnnotationsIntervalDialog(QDialog):
 
     def event_to_event_data(self):
         return {
-            "start_events": [
-                int(i.text()) for i in self.start_event_list.selectedItems()
-            ],
+            "start_events": [int(t) for t in self.start_event_list.checked_texts()],
             "start_offset": self.start_offset_spin.value(),
-            "end_events": [int(i.text()) for i in self.end_event_list.selectedItems()],
+            "end_events": [int(t) for t in self.end_event_list.checked_texts()],
             "end_offset": self.end_offset_spin.value(),
             "annotation": self.annotation_combo.currentText(),
             "extend_start": self.to_start_check.isChecked(),

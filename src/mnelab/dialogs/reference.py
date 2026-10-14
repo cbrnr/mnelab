@@ -10,12 +10,11 @@ from PySide6.QtWidgets import (
     QGroupBox,
     QLabel,
     QLineEdit,
-    QListWidget,
     QRadioButton,
     QVBoxLayout,
 )
 
-from mnelab.widgets import selection_key
+from mnelab.widgets import CheckListWidget
 
 
 class ReferenceDialog(QDialog):
@@ -48,20 +47,15 @@ class ReferenceDialog(QDialog):
 
         self.reref_average = QRadioButton("Average")
         self.reref_channels = QRadioButton("Channel(s):")
-        self.reref_channellist = QListWidget()
-        self.reref_channellist.insertItems(0, available_channels)
+        self.reref_channellist = CheckListWidget(
+            available_channels, "Channel", "channels", checked=False
+        )
         self.reref_average.setChecked(True)
         self.reref_average.setToolTip("Re-reference EEG channels to their average")
         self.reref_channels.setToolTip(
             "Re-reference EEG channels to the selected channels"
         )
         self.reref_channellist.setEnabled(False)
-        self.reref_channellist.setSelectionMode(
-            QListWidget.SelectionMode.ExtendedSelection
-        )
-        self.reref_channellist.setToolTip(
-            f"Use Shift-click or {selection_key}-click to select multiple channels"
-        )
         reref_grid = QGridLayout()
         reref_grid.setColumnStretch(0, 2)
         reref_grid.setColumnStretch(1, 3)
@@ -78,7 +72,7 @@ class ReferenceDialog(QDialog):
         self.add_channellist.textChanged.connect(self.toggle_ok)
         self.reref_group.toggled.connect(self.toggle_ok)
         self.reref_channels.toggled.connect(self.toggle_ok)
-        self.reref_channellist.itemSelectionChanged.connect(self.toggle_ok)
+        self.reref_channellist.checks_changed.connect(self.toggle_ok)
 
         self.buttonbox = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
@@ -104,7 +98,7 @@ class ReferenceDialog(QDialog):
         if (
             self.reref_group.isChecked()
             and self.reref_channels.isChecked()
-            and not self.reref_channellist.selectedItems()
+            and not self.reref_channellist.checked_rows()
         ):
             self.buttonbox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(False)
             return
