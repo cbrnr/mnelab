@@ -2,6 +2,7 @@
 #
 # License: BSD (3-clause)
 
+import mne
 import numpy as np
 import pytest
 
@@ -9,6 +10,7 @@ from mnelab.utils import (
     annotations_between_events,
     get_annotation_types_from_file,
     merge_annotations,
+    resample_with_nan,
 )
 
 SFREQ = 100.0
@@ -421,3 +423,36 @@ def test_check_annotation_values_are_integer_empty_file(tmp_path):
     csv.write_text("type,onset,duration\n")
     _, values_are_integer = get_annotation_types_from_file(csv)
     assert values_are_integer is False
+
+
+def test_resample_with_nan():
+    """NaN samples must not spread to the rest of the signal when resampling."""
+    sfreq = 200.0
+    times = np.arange(2000) / sfreq
+    data = np.sin(2 * np.pi * 5 * times)[np.newaxis].repeat(2, axis=0)
+    data[0, -30:] = np.nan  # NaN at the end of one channel only
+    data[1, 500:520] = np.nan  # NaN in the middle of the other channel
+    raw = mne.io.RawArray(data, mne.create_info(2, sfreq, "eeg"), verbose=False)
+
+    assert resample_with_nan(raw, 100.0)
+    assert raw.info["sfreq"] == 100.0
+    result = raw.get_data()
+    assert result.shape == (2, 1000)
+    assert np.isnan(result[0, -15:]).all()
+    assert np.isnan(result[0, :-16]).sum() == 0
+    assert np.isnan(result[1, 250:260]).all()
+    assert np.isnan(result[1]).sum() in (10, 11)
+    valid = ~np.isnan(result[0])
+    expected = np.sin(2 * np.pi * 5 * np.arange(1000) / 100.0)
+    assert np.abs(result[0, valid][100:-100] - expected[valid][100:-100]).max() < 0.1
+
+
+def test_resample_with_nan_without_nan():
+    raw = mne.io.RawArray(
+        np.random.default_rng(0).standard_normal((2, 1000)),
+        mne.create_info(2, 100.0, "eeg"),
+        verbose=False,
+    )
+    assert not resample_with_nan(raw, 50.0)
+    assert raw.info["sfreq"] == 50.0
+    assert not np.isnan(raw.get_data()).any()
