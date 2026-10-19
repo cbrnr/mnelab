@@ -97,6 +97,54 @@ def calculate_channel_stats(raw):
     return cols, nchan
 
 
+# remove once MNE handles NaN in resample
+# (https://github.com/mne-tools/mne-python/issues/14421)
+def resample_with_nan(inst, sfreq):
+    """Resample data in place, keeping NaN samples out of the Fourier-based resampling.
+
+    MNE resamples in the frequency domain, so a single NaN sample would turn the entire
+    channel into NaN. This function temporarily fills NaN samples by linear
+    interpolation (holding the nearest value at the edges), resamples, and sets the
+    samples that correspond to the original NaN samples back to NaN.
+
+    Parameters
+    ----------
+    inst : mne.io.Raw | mne.Epochs
+        Data to resample (in place). Only preloaded `Raw` objects are checked for NaN.
+    sfreq : float
+        New sampling frequency in Hz.
+
+    Returns
+    -------
+    bool
+        Whether the data contained NaN (otherwise, this is the same as `inst.resample`).
+    """
+    if not isinstance(inst, mne.io.BaseRaw):
+        inst.resample(sfreq)
+        return False
+    data = inst.get_data()
+    nan = np.isnan(data)
+    if not nan.any():
+        inst.resample(sfreq)
+        return False
+    old_sfreq = inst.info["sfreq"]
+    samples = np.arange(data.shape[1])
+    for i in np.flatnonzero(nan.any(axis=1)):
+        valid = ~nan[i]
+        data[i, nan[i]] = (
+            np.interp(samples[nan[i]], samples[valid], data[i, valid])
+            if valid.any()
+            else 0
+        )
+    inst[:, :] = data
+    inst.resample(sfreq)
+    # map each new sample to the nearest original sample to restore NaN
+    nearest = np.rint(np.arange(inst.n_times) * old_sfreq / sfreq).astype(int)
+    nan = nan[:, np.minimum(nearest, nan.shape[1] - 1)]
+    inst[:, :] = np.where(nan, np.nan, inst.get_data())
+    return True
+
+
 def annotations_between_events(
     events,
     sfreq,

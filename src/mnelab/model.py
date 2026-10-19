@@ -33,7 +33,7 @@ from mnelab.pipeline import (
     serialize_montage,
     validate_for_data,
 )
-from mnelab.utils import Montage, count_locations
+from mnelab.utils import Montage, count_locations, resample_with_nan
 from mnelab.utils.marker_history import annotations_history, events_history
 
 
@@ -205,7 +205,7 @@ class Model:
             "from copy import deepcopy",
             "import mne",
             "from mnextend import read_raw, remove_line_noise, run_iclabel",
-            "from mnelab.utils import annotations_between_events",
+            "from mnelab.utils import annotations_between_events, resample_with_nan",
             "import numpy as np",
             (
                 "from mnelab.utils import ("
@@ -898,9 +898,11 @@ class Model:
     @data_changed
     @pipeline_step
     def resample(self, sfreq):
-        self.current["data"].resample(sfreq)
+        has_nan = resample_with_nan(self.current["data"], sfreq)
         self.current["name"] += f" ({sfreq}\u2009Hz)"
-        self.history.append(f"data.resample({sfreq})")
+        # plain resampling would spread NaN over all samples
+        func = "resample_with_nan(data, " if has_nan else "data.resample("
+        self.history.append(f"{func}{sfreq})")
 
     @data_changed
     @pipeline_step

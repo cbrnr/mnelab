@@ -4,6 +4,7 @@
 - Use the native window background instead of a dated gray in the title bar, toolbar, and main window on macOS ([#716](https://github.com/cbrnr/mnelab/pull/716) by [Clemens Brunner](https://github.com/cbrnr))
 
 ### 🔧 Fixed
+- Fix resampling turning all samples into NaN if the data contain NaN ([#719](https://github.com/cbrnr/mnelab/pull/719) by [Clemens Brunner](https://github.com/cbrnr))
 - Fix an error when opening actions after canceling a file import with memory saving enabled ([#717](https://github.com/cbrnr/mnelab/pull/717) by [Clemens Brunner](https://github.com/cbrnr))
 - Align numbers in numeric columns and input fields by using tabular digits, which were proportional on macOS ([#716](https://github.com/cbrnr/mnelab/pull/716) by [Clemens Brunner](https://github.com/cbrnr))
 
