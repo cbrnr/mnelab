@@ -57,7 +57,17 @@ jobs:
           AC_USERNAME: ${{ secrets.AC_USERNAME }}
           AC_PASSWORD: ${{ secrets.AC_PASSWORD }}
       - name: Staple notarization ticket
-        run: xcrun stapler staple standalone/dist/MNELAB.app
+        timeout-minutes: 15
+        run: |
+          # stapling fetches the ticket from Apple and often times out, so retry
+          for attempt in 1 2 3 4 5; do
+            if perl -e 'alarm 120; exec @ARGV' xcrun stapler staple standalone/dist/MNELAB.app; then
+              exit 0
+            fi
+            echo "Stapling failed (attempt $attempt of 5)"
+            sleep 30
+          done
+          exit 1
       - name: Create DMG from signed and notarized app
         working-directory: standalone
         run: uv run python create-standalone-macos.py build-dmg
